@@ -1,0 +1,38 @@
+<html>
+<head>
+<title>heart.js test</title>
+<script src="heart.js/heart.js"></script>
+<script src="jquery-1.11.1.min.js"></script>
+<script>
+var matrix = null
+var size = 6
+
+heart.load = function() {
+	heart.attach("cnv");
+	$.get('derp.json', function(data) {
+		matrix = JSON.parse(data)["tiles"]
+		console.log("loaded (" + matrix.length + " entries)")
+	})
+}
+
+heart.draw = function() {
+	heart.graphics.setColor(255, 255, 255)
+
+	if(matrix === null) return;
+	for(var i = 0; i < matrix.length; i++) {
+		for(var j = 0; j < matrix[0].length; j++) {
+				var tile = matrix[j][i];
+				heart.graphics.setColor(tile, tile, tile)
+				heart.graphics.rectangle("fill", (99-i)*size, j*size, size, size)
+		}
+	}
+}
+
+</script>
+</head>
+<body>
+
+<canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
+
+</body>
+</html>
