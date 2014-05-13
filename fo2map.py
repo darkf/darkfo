@@ -194,4 +194,7 @@ with open("derp.map", "rb") as f:
 		g.write(']\n')
 		g.write('\n}')
 
-	print c.most_common(5)
+	print c.most_common(20)
+	print len(c), "unique tiles"
+	for t,o in c.iteritems():
+		print t

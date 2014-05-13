@@ -9,8 +9,8 @@ var size = 6
 var tile_width = 80
 var tile_height = 36
 var images = {}
-var cameraX = 0
-var cameraY = 0
+var cameraX = 3375
+var cameraY = 105
 
 var transX = 48, transY = 24
 
@@ -20,9 +20,67 @@ var xdy = ydy - tile_height
 var ydx = tile_width - xdx
 
 heart.preload = function() {
-	heart.graphics.newImage("cav4009.png", function(r) { images["cav4009.png"] = r; });
-	heart.graphics.newImage("cav4010.png", function(r) { images["cav4010.png"] = r; });
-	heart.graphics.newImage("cav1000.png", function(r) { images["cav1000.png"] = r; });
+	function load(file) {
+		heart.graphics.newImage("tiles/"+file, function(r) { images[file] = r; })
+	}
+	load("edg6009.png")
+	load("edg1001.png")
+	load("edg4003.png")
+	load("cav2002.png")
+	load("cav1004.png")
+	load("edg2003.png")
+	load("edg6004.png")
+	load("cav3001.png")
+	load("cav2003.png")
+	load("cav4013.png")
+	load("edg2000.png")
+	load("cav4009.png")
+	load("edg4004.png")
+	load("cav4001.png")
+	load("cav2001.png")
+	load("edg6008.png")
+	load("cav1007.png")
+	load("grid000.png")
+	load("edg2001.png")
+	load("edg3000.png")
+	load("cav4012.png")
+	load("cav4002.png")
+	load("edg6002.png")
+	load("edg4005.png")
+	load("cav3003.png")
+	load("cav1008.png")
+	load("cav3000.png")
+	load("cav4006.png")
+	load("cav4010.png")
+	load("cav4014.png")
+	load("cav3002.png")
+	load("edg1002.png")
+	load("cav1005.png")
+	load("cav2000.png")
+	load("cav1000.png")
+	load("edg4000.png")
+	load("grt2000.png")
+	load("cav4004.png")
+	load("cav3005.png")
+	load("edg6007.png")
+	load("edg6005.png")
+	load("edg1003.png")
+	load("cav1009.png")
+	load("cav4000.png")
+	load("edg5000.png")
+	load("cav4005.png")
+	load("cav4008.png")
+	load("road02.png")
+	load("cav3004.png")
+	load("edg4002.png")
+	load("cav1003.png")
+	load("edg4001.png")
+	load("cav4011.png")
+	load("cav4007.png")
+	load("cav1006.png")
+	load("cav1001.png")
+	load("cav4003.png")
+	load("cav1002.png")
 }
 
 heart.load = function() {
