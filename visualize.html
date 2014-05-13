@@ -1,11 +1,29 @@
 <html>
 <head>
 <title>heart.js test</title>
-<script src="heart.js/heart.js"></script>
+<script src="heart.js"></script>
 <script src="jquery-1.11.1.min.js"></script>
 <script>
 var matrix = null
 var size = 6
+var tile_width = 80
+var tile_height = 36
+var images = {}
+var cameraX = 0
+var cameraY = 0
+
+var transX = 48, transY = 24
+
+var xdx = transX
+var ydy = transY
+var xdy = ydy - tile_height
+var ydx = tile_width - xdx
+
+heart.preload = function() {
+	heart.graphics.newImage("cav4009.png", function(r) { images["cav4009.png"] = r; });
+	heart.graphics.newImage("cav4010.png", function(r) { images["cav4010.png"] = r; });
+	heart.graphics.newImage("cav1000.png", function(r) { images["cav1000.png"] = r; });
+}
 
 heart.load = function() {
 	heart.attach("cnv");
@@ -15,15 +33,39 @@ heart.load = function() {
 	})
 }
 
+heart.keydown = function(k) {
+	if(k == 'down') cameraY += 15
+	if(k == 'right') cameraX += 15
+	if(k == 'left') cameraX -= 15
+	if(k == 'up') cameraY -= 15
+}
+
 heart.draw = function() {
 	heart.graphics.setColor(255, 255, 255)
 
 	if(matrix === null) return;
 	for(var i = 0; i < matrix.length; i++) {
 		for(var j = 0; j < matrix[0].length; j++) {
-				var tile = matrix[j][i];
-				heart.graphics.setColor(tile, tile, tile)
-				heart.graphics.rectangle("fill", (99-i)*size, j*size, size, size)
+				var tile = matrix[j][i]
+				//var x = (99-i)*size
+				//var y = j*size
+				var x = 99-i
+				var y = j
+
+				if(images[tile] !== undefined) {
+					//console.log("draw")
+					//var sx = (y * tile_width / 2) + (x * tile_width / 2)
+					//var sy = (x * tile_height / 2) - (y * tile_height / 2)
+
+					var sx = x * xdx + y * ydx + 0
+					var sy = x * xdy + y * ydy + 0
+
+					heart.graphics.draw(images[tile], sx - cameraX, sy - cameraY)
+				}
+				//else console.log(tile)
+				
+				//heart.graphics.setColor(tile, tile, tile)
+				//heart.graphics.rectangle("fill", (99-i)*size, j*size, size, size)
 		}
 	}
 }

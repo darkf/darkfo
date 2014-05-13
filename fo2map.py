@@ -1,5 +1,6 @@
-import sys, math, struct
+import sys, math, struct, os
 from construct import *
+from collections import Counter
 
 def pidType(pid):
 	return (pid >> 24) & 0xff
@@ -70,8 +71,12 @@ def getProSubType(path):
 		print "subtype:", sub
 		return sub
 
-def getProFile(id):
-	pass
+def loadLst(lst):
+	with open(os.path.join("data", lst), "r") as f:
+		return list(f)
+
+def getProFile(lst, id):
+	return lst[id]
 
 ExtraObjectInfo = \
 	Switch("extra", lambda ctx: ctx.type, {
@@ -172,14 +177,21 @@ with open("derp.map", "rb") as f:
 
 	#print [tile.floor for tile in map_.tiles]
 	#print sum(len(row) for row in newmap)
+	lst = loadLst("art/tiles/tiles.lst")
+	c = Counter()
 	with open("derp.json", "w") as g:
 		g.write("{\"tiles\":\n")
 		#g.write(repr(newmap))
 		g.write('[\n')
 		for i,row in enumerate(newmap):
-			g.write('\t' + repr(row))
+			row = [getProFile(lst, t).rstrip() for t in row]
+			for t in row:
+				c[t] += 1
+			g.write('\t' + repr(row).replace("'", '"').replace(".frm", ".png"))
 			if i != len(newmap)-1:
 				g.write(',\n')
 			else: g.write('\n')
 		g.write(']\n')
 		g.write('\n}')
+
+	print c.most_common(5)
