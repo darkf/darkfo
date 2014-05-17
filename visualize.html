@@ -44,6 +44,37 @@ function hexToScreen(x, y) {
 	return {x: sx, y: sy}
 }
 
+function hexFromScreen(x, y) {
+	var mx = (x - hexOffsetX) / -hexTransX
+	var my = (y - hexOffsetY) / hexTransY
+
+	var hexX = Math.floor((mx + my + 1) / 2)
+	var hexY = Math.floor(Math.floor(my) - hexX/2)
+
+	return {x: hexX, y: hexY}
+/*
+	Point HexGeometry::fromScreen(const Point& pos) const {
+
+		// FIXME: hit testing is not pixel-perfect; hexs are just being
+		// approximated by boxes. Even accounting for that, things still
+		// seem to be a bit off. Still, this seems much better than before.
+		// -jwt
+
+		float mouse_x = static_cast<float>(pos.x - m_offset.x) / (-m_transform.x);
+		float mouse_y = static_cast<float>(pos.y - m_offset.y) / m_transform.y;
+
+		Point hex;
+
+		// x coordinates seem to be off by half a hex; corrected by adding 1.0f
+		// to the mouse coordinates (just another offset!)
+		hex.x = static_cast<int32_t>(floor((mouse_x + mouse_y + 1.0f) / 2.0f));
+		hex.y = static_cast<int32_t>(floor(mouse_y)) - (hex.x / 2); 
+
+		return hex;
+	}
+*/
+}
+
 var _h = hexToScreen(200 /* map size */ - 1, 0)
 hexOffsetX = _hexOffsetX - _h.x
 hexOffsetY = _hexOffsetY - _h.y
@@ -145,6 +176,10 @@ heart.keydown = function(k) {
 heart.draw = function() {
 	heart.graphics.setColor(255, 255, 255)
 
+	var mousePos = heart.mouse.getPosition();
+	//var mouseTile = tileFromScreen(mousePos[0], mousePos[1])
+	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
+
 	// draw tile grid
 	if(matrix === null) return;
 	for(var i = 0; i < matrix.length; i++) {
@@ -165,8 +200,13 @@ heart.draw = function() {
 		for(var j = 0; j < hexMatrix[0].length; j++) {
 			var scr = hexToScreen(i, j)
 			heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
+			if(i == mouseHex.x && j == mouseHex.y) {
+				heart.graphics.print("m", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
+			}
 		}
 	}
+
+	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
 }
 
 </script>
