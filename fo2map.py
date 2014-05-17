@@ -111,7 +111,7 @@ ExtraObjectInfo = \
 		#objtype_tile: Padding(0),
 		objtype_wall: Struct("",
 			Value("type", lambda _: "wall"),
-			Value("artPath", lambda ctx: "art/wall/" + stripExt(getProFile(wallsLst, (ctx._.frmPID & 0xffff))))
+			Value("artPath", lambda ctx: "art/walls/" + stripExt(getProFile(wallsLst, (ctx._.frmPID & 0xffff))))
 		)
 	})
 
@@ -217,21 +217,34 @@ def main():
 
 		#print [tile.floor for tile in map_.tiles]
 		#print sum(len(row) for row in newmap)
-		"""
 		lst = loadLst("art/tiles/tiles.lst")
 		c = Counter()
-		with open("derp.json", "w") as g:
+		writeTiles = True
+		with open(stripExt(MAP_FILE) + ".json", "w") as g:
 			g.write("{\"tiles\":\n")
 			#g.write(repr(newmap))
 			g.write('[\n')
-			for i,row in enumerate(newmap):
-				row = [getProFile(lst, t).rstrip() for t in row]
-				for t in row:
-					c[t] += 1
-				g.write('\t' + repr(row).replace("'", '"').replace(".frm", ".png"))
-				if i != len(newmap)-1:
-					g.write(',\n')
-				else: g.write('\n')
+			if writeTiles:
+				for i,row in enumerate(newmap):
+					row = [getProFile(lst, t).rstrip() for t in row]
+					for t in row:
+						c[t] += 1
+					g.write('\t' + repr(row).replace("'", '"').replace(".frm", ".png"))
+					if i != len(newmap)-1:
+						g.write(',\n')
+					else: g.write('\n')
+			g.write(']\n')
+			g.write(', "objects": [\n')
+			for obj in map_.object:
+				g.write('{"type": "' + obj.extra.type + '",\n')
+				x = obj.position % 200
+				y = obj.position / 200
+				g.write(' "position": {"x":%d, "y":%d},\n' % (x,y))
+				g.write(' "elevation": ' + str(obj.elevation+1) + ',\n')
+				if hasattr(obj.extra, "artPath"):
+					g.write(' "art": "' + str(obj.extra.artPath) + '"\n')
+
+				g.write('}\n')
 			g.write(']\n')
 			g.write('\n}')
 
@@ -239,7 +252,6 @@ def main():
 		print len(c), "unique tiles"
 		for t,o in c.iteritems():
 			print t
-		"""
 
 if __name__ == '__main__':
 	main()
