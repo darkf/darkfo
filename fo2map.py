@@ -89,10 +89,11 @@ def getProFile(lst, id):
 
 itemsLst = loadLst("proto/items/items.lst")
 
-ItemInfo = Struct("iteminfo",
+ItemInfo = Struct("",
 	Value("subtype", lambda ctx: getProSubType("proto/items/" + getProFile(itemsLst, (ctx._.protoPID & 0xffff) - 1))),
+	Value("type", lambda _: "item"),
 	Switch("info", lambda ctx: ctx.subtype, {
-		itemtype_ammo: UBInt32("ammoCount")
+		itemtype_ammo: Struct("", Value("subtype", lambda _: "ammo"), UBInt32("ammoCount"))
 	})
 )
 
@@ -100,7 +101,7 @@ ExtraObjectInfo = \
 	Switch("extra", lambda ctx: ctx.objtype, {
 		objtype_item: ItemInfo,
 		#objtype_tile: Padding(0),
-		objtype_wall: Padding(0)
+		objtype_wall: Struct("", Value("type", lambda _: "wall"))
 	})
 
 def computeLevels(ctx):
@@ -193,7 +194,7 @@ def main():
 		print len(map_.tiles), "tiles"
 		print map_.totalObjects, "objects"
 		print map_.totalObjectsLevel, "objects on level 1"
-		
+
 		print map_.object[0]
 
 		# quick export
