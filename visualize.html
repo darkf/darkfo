@@ -19,6 +19,12 @@ var ydy = transY
 var xdy = ydy - tile_height
 var ydx = tile_width - xdx
 
+function tileToScreen(x, y) {
+	var sx = x * xdx + y * ydx + 0
+	var sy = x * xdy + y * ydy + 0
+	return {x: sx, y: sy}
+}
+
 // hex grid geometry info
 var hexTileW = 32
 var hexTileH = 16
@@ -148,10 +154,8 @@ heart.draw = function() {
 			var y = j
 
 			if(images[tile] !== undefined) {
-				var sx = x * xdx + y * ydx + 0
-				var sy = x * xdy + y * ydy + 0
-
-				heart.graphics.draw(images[tile], sx - cameraX, sy - cameraY)
+				var scr = tileToScreen(x, y)
+				heart.graphics.draw(images[tile], scr.x - cameraX, scr.y - cameraY)
 			}
 		}
 	}
