@@ -84,16 +84,24 @@ def loadLst(lst):
 	with open(os.path.join("data", lst), "r") as f:
 		return [x.rstrip() for x in list(f)]
 
+def stripExt(path):
+	return os.path.splitext(path)[0]
+
 def getProFile(lst, id):
 	return lst[id]
 
 itemsLst = loadLst("proto/items/items.lst")
+wallsLst = loadLst("art/walls/walls.lst")
 
 ItemInfo = Struct("",
 	Value("subtype", lambda ctx: getProSubType("proto/items/" + getProFile(itemsLst, (ctx._.protoPID & 0xffff) - 1))),
 	Value("type", lambda _: "item"),
 	Switch("info", lambda ctx: ctx.subtype, {
-		itemtype_ammo: Struct("", Value("subtype", lambda _: "ammo"), UBInt32("ammoCount"))
+		itemtype_ammo: Struct("",
+			Value("subtype", lambda _: "ammo"),
+			UBInt32("ammoCount"),
+			Value("artPath", lambda ctx: "art/items/" + stripExt(getProFile(wallsLst, (ctx._._.frmPID & 0xffff))))
+		)
 	})
 )
 
@@ -101,7 +109,10 @@ ExtraObjectInfo = \
 	Switch("extra", lambda ctx: ctx.objtype, {
 		objtype_item: ItemInfo,
 		#objtype_tile: Padding(0),
-		objtype_wall: Struct("", Value("type", lambda _: "wall"))
+		objtype_wall: Struct("",
+			Value("type", lambda _: "wall"),
+			Value("artPath", lambda ctx: "art/wall/" + stripExt(getProFile(wallsLst, (ctx._.frmPID & 0xffff))))
+		)
 	})
 
 def computeLevels(ctx):
