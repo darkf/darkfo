@@ -64,8 +64,17 @@ objtype_inventory = 7
 objtype_head = 8
 objtype_background = 9
 
+# items
+itemtype_armor = 0
+itemtype_container = 1
+itemtype_drug = 2
+itemtype_weapon = 3
+itemtype_ammo = 4
+itemtype_misc = 5
+itemtype_key = 6
+
 def getProSubType(path):
-	with open(path, "rb") as f:
+	with open(os.path.join("data", path), "rb") as f:
 		f.seek(0x20)
 		sub = struct.unpack("!L", f.read(4))[0]
 		print "subtype:", sub
@@ -73,16 +82,23 @@ def getProSubType(path):
 
 def loadLst(lst):
 	with open(os.path.join("data", lst), "r") as f:
-		return list(f)
+		return [x.rstrip() for x in list(f)]
 
 def getProFile(lst, id):
 	return lst[id]
 
-#			Value("subtype", lambda ctx: getProSubType("data/proto/items/" + getProFile((ctx.protoPID & 0xffff) - 1))),
+itemsLst = loadLst("proto/items/items.lst")
+
+ItemInfo = Struct("iteminfo",
+	Value("subtype", lambda ctx: getProSubType("proto/items/" + getProFile(itemsLst, (ctx._.protoPID & 0xffff) - 1))),
+	Switch("info", lambda ctx: ctx.subtype, {
+		itemtype_ammo: UBInt32("ammoCount")
+	})
+)
 
 ExtraObjectInfo = \
 	Switch("extra", lambda ctx: ctx.objtype, {
-		#objtype_item: Padding(0),
+		objtype_item: ItemInfo,
 		#objtype_tile: Padding(0),
 		objtype_wall: Padding(0)
 	})
@@ -177,7 +193,8 @@ def main():
 		print len(map_.tiles), "tiles"
 		print map_.totalObjects, "objects"
 		print map_.totalObjectsLevel, "objects on level 1"
-		#print map_.object[0].type
+		
+		print map_.object[0]
 
 		# quick export
 		# break down list of 1000 tiles into a 100x100 2d list
