@@ -11,6 +11,7 @@ var tile_height = 36
 var images = {}
 var cameraX = 3375
 var cameraY = 105
+var showHexOverlay = false
 
 // tile grid geometry info
 var transX = 48, transY = 24
@@ -195,15 +196,20 @@ heart.draw = function() {
 		}
 	}
 
-	// draw hex grid
-	for(var i = 0; i < hexMatrix.length; i++) {
-		for(var j = 0; j < hexMatrix[0].length; j++) {
-			var scr = hexToScreen(i, j)
-			heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
-			if(i == mouseHex.x && j == mouseHex.y) {
-				heart.graphics.print("m", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
+	// draw hex grid overlay
+	if(showHexOverlay) {
+		for(var i = 0; i < hexMatrix.length; i++) {
+			for(var j = 0; j < hexMatrix[0].length; j++) {
+				var scr = hexToScreen(i, j)
+				heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
+				if(i == mouseHex.x && j == mouseHex.y) {
+					heart.graphics.print("m", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
+				}
 			}
 		}
+	} else {
+		var scr = hexToScreen(mouseHex.x, mouseHex.y)
+		heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
 	}
 
 	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
