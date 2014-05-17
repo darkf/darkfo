@@ -78,10 +78,13 @@ def loadLst(lst):
 def getProFile(lst, id):
 	return lst[id]
 
+#			Value("subtype", lambda ctx: getProSubType("data/proto/items/" + getProFile((ctx.protoPID & 0xffff) - 1))),
+
 ExtraObjectInfo = \
-	Switch("extra", lambda ctx: ctx.type, {
-		#objtype_item: Padding(0)
-		objtype_tile: Padding(0)
+	Switch("extra", lambda ctx: ctx.objtype, {
+		#objtype_item: Padding(0),
+		#objtype_tile: Padding(0),
+		objtype_wall: Padding(0)
 	})
 
 def computeLevels(ctx):
@@ -124,9 +127,10 @@ fomap = Struct("map",
 	ScriptsIgnore("scripts"),
 
 	# map
-	# todo: elevation as well
 	SBInt32("totalObjects"),
-	Array(lambda ctx: ctx.totalObjects,
+	# todo: elevation as well
+	SBInt32("totalObjectsLevel"),
+	Array(lambda ctx: ctx.totalObjectsLevel,
 		Struct("object",
 			Padding(4), # unknown (separator)
 			SBInt32("position"),
@@ -145,8 +149,7 @@ fomap = Struct("map",
 			UBInt32("numInventory"), # TODO
 			Padding(4*3), # unknown
 
-			Value("type", lambda ctx: (ctx.protoPID >> 24) & 0xff),
-			#Value("subtype", lambda ctx: getProSubType("proto/items/" + getProFile((ctx.protoPID & 0xffff) - 1))),
+			Value("objtype", lambda ctx: (ctx.protoPID >> 24) & 0xff),
 			ExtraObjectInfo
 		)
 	)
@@ -157,44 +160,57 @@ fomap = Struct("map",
 	#)
 )
 
-with open("derp.map", "rb") as f:
-	data = f.read()
-	map_ = fomap.parse(data)
-	if map_.version != 20:
-		print "not a FO2 map"
-		sys.exit(1)
-	#print map_
-	print len(map_.tiles), "tiles"
-	print map_.totalObjects, "objects"
-	#print map_.object[0].type
+def main():
+	if len(sys.argv) != 2:
+		print "USAGE: %s MAP" % sys.argv[0]
+		return
 
-	# quick export
-	# break down list of 1000 tiles into a 100x100 2d list
-	tiles = [tile.floor for tile in map_.tiles]
-	newmap = []
-	for i in range(100):
-		newmap.append(tiles[i*100:i*100+100])
+	MAP_FILE = sys.argv[1]
 
-	#print [tile.floor for tile in map_.tiles]
-	#print sum(len(row) for row in newmap)
-	lst = loadLst("art/tiles/tiles.lst")
-	c = Counter()
-	with open("derp.json", "w") as g:
-		g.write("{\"tiles\":\n")
-		#g.write(repr(newmap))
-		g.write('[\n')
-		for i,row in enumerate(newmap):
-			row = [getProFile(lst, t).rstrip() for t in row]
-			for t in row:
-				c[t] += 1
-			g.write('\t' + repr(row).replace("'", '"').replace(".frm", ".png"))
-			if i != len(newmap)-1:
-				g.write(',\n')
-			else: g.write('\n')
-		g.write(']\n')
-		g.write('\n}')
+	with open(MAP_FILE, "rb") as f:
+		data = f.read()
+		map_ = fomap.parse(data)
+		if map_.version != 20:
+			print "not a FO2 map"
+			sys.exit(1)
+		#print map_
+		print len(map_.tiles), "tiles"
+		print map_.totalObjects, "objects"
+		print map_.totalObjectsLevel, "objects on level 1"
+		#print map_.object[0].type
 
-	print c.most_common(20)
-	print len(c), "unique tiles"
-	for t,o in c.iteritems():
-		print t
+		# quick export
+		# break down list of 1000 tiles into a 100x100 2d list
+		tiles = [tile.floor for tile in map_.tiles]
+		newmap = []
+		for i in range(100):
+			newmap.append(tiles[i*100:i*100+100])
+
+		#print [tile.floor for tile in map_.tiles]
+		#print sum(len(row) for row in newmap)
+		"""
+		lst = loadLst("art/tiles/tiles.lst")
+		c = Counter()
+		with open("derp.json", "w") as g:
+			g.write("{\"tiles\":\n")
+			#g.write(repr(newmap))
+			g.write('[\n')
+			for i,row in enumerate(newmap):
+				row = [getProFile(lst, t).rstrip() for t in row]
+				for t in row:
+					c[t] += 1
+				g.write('\t' + repr(row).replace("'", '"').replace(".frm", ".png"))
+				if i != len(newmap)-1:
+					g.write(',\n')
+				else: g.write('\n')
+			g.write(']\n')
+			g.write('\n}')
+
+		print c.most_common(20)
+		print len(c), "unique tiles"
+		for t,o in c.iteritems():
+			print t
+		"""
+
+if __name__ == '__main__':
+	main()
