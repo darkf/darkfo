@@ -143,46 +143,24 @@ heart.draw = function() {
 	if(matrix === null) return;
 	for(var i = 0; i < matrix.length; i++) {
 		for(var j = 0; j < matrix[0].length; j++) {
-				var tile = matrix[j][i]
-				//var x = (99-i)*size
-				//var y = j*size
-				var x = 99-i
-				var y = j
+			var tile = matrix[j][i]
+			var x = 99-i
+			var y = j
 
-				if(images[tile] !== undefined) {
-					//console.log("draw")
-					//var sx = (y * tile_width / 2) + (x * tile_width / 2)
-					//var sy = (x * tile_height / 2) - (y * tile_height / 2)
+			if(images[tile] !== undefined) {
+				var sx = x * xdx + y * ydx + 0
+				var sy = x * xdy + y * ydy + 0
 
-					var sx = x * xdx + y * ydx + 0
-					var sy = x * xdy + y * ydy + 0
-
-					heart.graphics.draw(images[tile], sx - cameraX, sy - cameraY)
-				}
-				//else console.log(tile)
-				
-				//heart.graphics.setColor(tile, tile, tile)
-				//heart.graphics.rectangle("fill", (99-i)*size, j*size, size, size)
+				heart.graphics.draw(images[tile], sx - cameraX, sy - cameraY)
+			}
 		}
 	}
 
 	// draw hex grid
 	for(var i = 0; i < hexMatrix.length; i++) {
 		for(var j = 0; j < hexMatrix[0].length; j++) {
-			var tile = hexMatrix[j][i]
-
-			var x = i, y = j
-			// var dx = hexTransX, dy = hexTransY
-
-			// // to screen
-			// var sx = hexOffsetX - (x*hexTileW - (x/2)*dx - y * hexTileH)
-			// var sy = hexOffsetY + (x/2)*dy + y*dy
-			var scr = hexToScreen(x, y)
-
+			var scr = hexToScreen(i, j)
 			heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
-
-			//return Point(m_offset.x - (pos.x*w - (pos.x/2)*dx - pos.y * h),
-		    //         m_offset.y + (pos.x/2)*dy + pos.y*dy);
 		}
 	}
 }
