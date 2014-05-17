@@ -12,12 +12,48 @@ var images = {}
 var cameraX = 3375
 var cameraY = 105
 
+// tile grid geometry info
 var transX = 48, transY = 24
-
 var xdx = transX
 var ydy = transY
 var xdy = ydy - tile_height
 var ydx = tile_width - xdx
+
+// hex grid geometry info
+var hexTileW = 32
+var hexTileH = 16
+var hexTransX = 16
+var hexTransY = 12
+var _hexOffsetX = 32
+var _hexOffsetY = 10
+var hexOffsetX = 0
+var hexOffsetY = 0
+
+function hexToScreen(x, y) {
+	var dx = hexTransX, dy = hexTransY
+
+	var sx = hexOffsetX - (x*hexTileW - (x/2)*dx - y * hexTileH)
+	var sy = hexOffsetY + (x/2)*dy + y*dy
+
+	return {x: sx, y: sy}
+}
+
+var _h = hexToScreen(200 /* map size */ - 1, 0)
+hexOffsetX = _hexOffsetX - _h.x
+hexOffsetY = _hexOffsetY - _h.y
+
+var hexOverlay = null
+
+// 200x200 hex grid
+var hexMatrix = []
+for(var i = 0; i < 200; i++) {
+	var t = [];
+	for(var j = 0; j < 200; j++)
+		t.push(0);
+	hexMatrix.push(t);
+}
+
+var cursor = {x: 10, y: 10}
 
 heart.preload = function() {
 	function load(file) {
@@ -81,6 +117,8 @@ heart.preload = function() {
 	load("cav1001.png")
 	load("cav4003.png")
 	load("cav1002.png")
+
+	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r; })
 }
 
 heart.load = function() {
@@ -101,6 +139,7 @@ heart.keydown = function(k) {
 heart.draw = function() {
 	heart.graphics.setColor(255, 255, 255)
 
+	// draw tile grid
 	if(matrix === null) return;
 	for(var i = 0; i < matrix.length; i++) {
 		for(var j = 0; j < matrix[0].length; j++) {
@@ -124,6 +163,26 @@ heart.draw = function() {
 				
 				//heart.graphics.setColor(tile, tile, tile)
 				//heart.graphics.rectangle("fill", (99-i)*size, j*size, size, size)
+		}
+	}
+
+	// draw hex grid
+	for(var i = 0; i < hexMatrix.length; i++) {
+		for(var j = 0; j < hexMatrix[0].length; j++) {
+			var tile = hexMatrix[j][i]
+
+			var x = i, y = j
+			// var dx = hexTransX, dy = hexTransY
+
+			// // to screen
+			// var sx = hexOffsetX - (x*hexTileW - (x/2)*dx - y * hexTileH)
+			// var sy = hexOffsetY + (x/2)*dy + y*dy
+			var scr = hexToScreen(x, y)
+
+			heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
+
+			//return Point(m_offset.x - (pos.x*w - (pos.x/2)*dx - pos.y * h),
+		    //         m_offset.y + (pos.x/2)*dy + pos.y*dy);
 		}
 	}
 }
