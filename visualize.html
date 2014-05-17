@@ -4,7 +4,9 @@
 <script src="heart.js"></script>
 <script src="jquery-1.11.1.min.js"></script>
 <script>
+var MAP_FILE = "derp_walls.json"
 var matrix = null
+var gObjects = []
 var size = 6
 var tile_width = 80
 var tile_height = 36
@@ -53,27 +55,6 @@ function hexFromScreen(x, y) {
 	var hexY = Math.floor(Math.floor(my) - hexX/2)
 
 	return {x: hexX, y: hexY}
-/*
-	Point HexGeometry::fromScreen(const Point& pos) const {
-
-		// FIXME: hit testing is not pixel-perfect; hexs are just being
-		// approximated by boxes. Even accounting for that, things still
-		// seem to be a bit off. Still, this seems much better than before.
-		// -jwt
-
-		float mouse_x = static_cast<float>(pos.x - m_offset.x) / (-m_transform.x);
-		float mouse_y = static_cast<float>(pos.y - m_offset.y) / m_transform.y;
-
-		Point hex;
-
-		// x coordinates seem to be off by half a hex; corrected by adding 1.0f
-		// to the mouse coordinates (just another offset!)
-		hex.x = static_cast<int32_t>(floor((mouse_x + mouse_y + 1.0f) / 2.0f));
-		hex.y = static_cast<int32_t>(floor(mouse_y)) - (hex.x / 2); 
-
-		return hex;
-	}
-*/
 }
 
 var _h = hexToScreen(200 /* map size */ - 1, 0)
@@ -156,14 +137,22 @@ heart.preload = function() {
 	load("cav4003.png")
 	load("cav1002.png")
 
-	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r; })
+	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r })
+	heart.graphics.newImage("vtx000.png", function(r) { images["art/walls/vtx000"] = r })
+
+	heart.graphics.newImage("va1000.png", function(r){images["art/walls/va1000"] = r})
+	heart.graphics.newImage("va2001.png", function(r){images["art/walls/va2001"] = r})
+	heart.graphics.newImage("vb4003.png", function(r){images["art/walls/vb4003"] = r})
+	heart.graphics.newImage("vcn3000.png", function(r){images["art/walls/vcn3000"] = r})
 }
 
 heart.load = function() {
 	heart.attach("cnv");
-	$.get('derp.json', function(data) {
-		matrix = JSON.parse(data)["tiles"]
-		console.log("loaded (" + matrix.length + " entries)")
+	$.get(MAP_FILE, function(data) {
+		var map = JSON.parse(data)
+		matrix = map["tiles"]
+		gObjects = map["objects"]
+		console.log("loaded (" + matrix.length + " tiles, " + gObjects.length + " objects)")
 	})
 }
 
@@ -194,6 +183,22 @@ heart.draw = function() {
 				heart.graphics.draw(images[tile], scr.x - cameraX, scr.y - cameraY)
 			}
 		}
+	}
+
+	// draw objects
+	for(var i = 0; i < gObjects.length; i++) {
+		var obj = gObjects[i]
+		var scr = hexToScreen(obj.position.x, obj.position.y)
+
+		//console.log((scr.x - cameraX) + ", " + (scr.y - cameraY))
+		//console.log(obj.position.x + ", " + obj.position.y)
+
+		//if(obj.art)
+		var offsetY = images[obj.art].getHeight()
+		heart.graphics.draw(images[obj.art], scr.x - cameraX, scr.y - offsetY - cameraY)
+
+		if(obj.position.x == mouseHex.x && obj.position.y == mouseHex.y)
+			heart.graphics.print("tile: " + obj.art, 5, 30)
 	}
 
 	// draw hex grid overlay

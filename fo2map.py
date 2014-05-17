@@ -219,6 +219,7 @@ def main():
 		#print sum(len(row) for row in newmap)
 		lst = loadLst("art/tiles/tiles.lst")
 		c = Counter()
+		cWalls = Counter()
 		writeTiles = True
 		with open(stripExt(MAP_FILE) + ".json", "w") as g:
 			g.write("{\"tiles\":\n")
@@ -235,7 +236,7 @@ def main():
 					else: g.write('\n')
 			g.write(']\n')
 			g.write(', "objects": [\n')
-			for obj in map_.object:
+			for i,obj in enumerate(map_.object):
 				g.write('{"type": "' + obj.extra.type + '",\n')
 				x = obj.position % 200
 				y = obj.position / 200
@@ -243,14 +244,24 @@ def main():
 				g.write(' "elevation": ' + str(obj.elevation+1) + ',\n')
 				if hasattr(obj.extra, "artPath"):
 					g.write(' "art": "' + str(obj.extra.artPath) + '"\n')
+					cWalls[obj.extra.artPath] += 1
 
-				g.write('}\n')
+				g.write('}')
+				if i != len(map_.object)-1:
+					g.write(',\n')
+				else: g.write('\n')
 			g.write(']\n')
 			g.write('\n}')
 
 		print c.most_common(20)
 		print len(c), "unique tiles"
 		for t,o in c.iteritems():
+			print t
+
+		print ""
+		print "walls"
+
+		for t,o in cWalls.iteritems():
 			print t
 
 if __name__ == '__main__':
