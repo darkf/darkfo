@@ -4,7 +4,7 @@
 <script src="heart.js"></script>
 <script src="jquery-1.11.1.min.js"></script>
 <script>
-var MAP_FILE = "derp_walls2.json"
+var MAP_FILE = "derp_arches.json"
 var matrix = null
 var gObjects = []
 var size = 6
@@ -82,6 +82,11 @@ var offsets = {
 	"art/walls/vcn3000": {x: 0, y: 6},
 	"art/walls/va1000": {x: 0, y: 6},
 	"art/walls/va2001": {x: 8, y: 10},
+
+	"art/walls/temple33": {x: 26, y: 8},
+	"art/walls/temple34": {x: -17, y: 14},
+	"art/walls/temple35": {x: 8, y: 4},
+	"art/walls/temple36": {x: -16, y: 14},
 }
 
 heart.preload = function() {
@@ -159,6 +164,11 @@ heart.preload = function() {
 	heart.graphics.newImage("fns1000.png", function(r){images["art/walls/fns1000"] = r})
 	heart.graphics.newImage("fns1002.png", function(r){images["art/walls/fns1002"] = r})
 	heart.graphics.newImage("fns2000.png", function(r){images["art/walls/fns2000"] = r})
+
+	heart.graphics.newImage("temple33.png", function(r){images["art/walls/temple33"] = r})
+	heart.graphics.newImage("temple34.png", function(r){images["art/walls/temple34"] = r})
+	heart.graphics.newImage("temple35.png", function(r){images["art/walls/temple35"] = r})
+	heart.graphics.newImage("temple36.png", function(r){images["art/walls/temple36"] = r})
 }
 
 heart.load = function() {
