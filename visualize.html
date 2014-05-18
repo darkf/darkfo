@@ -74,6 +74,16 @@ for(var i = 0; i < 200; i++) {
 
 var cursor = {x: 10, y: 10}
 
+var offsets = {
+	"art/walls/fns1000": {x: 8, y: 12},
+	"art/walls/fns1002": {x: 0, y: 12},
+	"art/walls/fns2000": {x: -8, y: 0},
+	"art/walls/vb4003": {x: -7, y: 2},
+	"art/walls/vcn3000": {x: 0, y: 6},
+	"art/walls/va1000": {x: 0, y: 6},
+	"art/walls/va2001": {x: 8, y: 10},
+}
+
 heart.preload = function() {
 	function load(file) {
 		heart.graphics.newImage("tiles/"+file, function(r) { images[file] = r; })
@@ -171,8 +181,7 @@ heart.keydown = function(k) {
 heart.draw = function() {
 	heart.graphics.setColor(255, 255, 255)
 
-	var mousePos = heart.mouse.getPosition();
-	//var mouseTile = tileFromScreen(mousePos[0], mousePos[1])
+	var mousePos = heart.mouse.getPosition()
 	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
 	// draw tile grid
@@ -195,17 +204,14 @@ heart.draw = function() {
 		var obj = gObjects[i]
 		var scr = hexToScreen(obj.position.x, obj.position.y)
 
-		//console.log((scr.x - cameraX) + ", " + (scr.y - cameraY))
-		//console.log(obj.position.x + ", " + obj.position.y)
-
-		//if(obj.art)
-
-		var offsetX = images[obj.art].getWidth() / 2;
+		var offsetX = images[obj.art].getWidth() / 2
 		var offsetY = images[obj.art].getHeight()
-		if(obj.art == "art/walls/fns1000")
-			offsetX -= 8;
-		if(obj.art == "art/walls/fns1002" || obj.art == "art/walls/fns1000")
-			offsetY -= 12;
+
+		if(offsets[obj.art] !== undefined) {
+			offsetX -= offsets[obj.art].x;
+			offsetY -= offsets[obj.art].y;
+		}
+
 		heart.graphics.draw(images[obj.art], scr.x - offsetX - cameraX, scr.y - offsetY - cameraY)
 
 		if(obj.position.x == mouseHex.x && obj.position.y == mouseHex.y)
