@@ -90,8 +90,95 @@ def stripExt(path):
 def getProFile(lst, id):
 	return lst[id]
 
+def getCritterArtPath(frmPID):
+	#"art/critters/" + stripExt(getProFile(critterLst, ctx._.frmPID & 0x00000fff))
+	idx =  frmPID & 0x00000fff
+	id1 = (frmPID & 0x0000f000) >> 12
+	id2 = (frmPID & 0x00ff0000) >> 16
+	id3 = (frmPID & 0x70000000) >> 28
+
+	if (id2 == 0x1b or id2 == 0x1d or
+			id2 == 0x1e or id2 == 0x37 or
+			id2 == 0x39 or id2 == 0x3a or
+			id2 == 0x21 or id2 == 0x40):
+		raise Exception("reindex")
+		#print "switching critter id from %d" % idx
+		#idx = lst.getReIndex(idx);
+		#Log("DEBUG") << "new critter id " << idx;
+
+	path = "art/critters/" + getProFile(critterLst, idx).split(",")[0]
+
+	#tmpBuf = ""
+
+	if (id1 >= 0x0b):
+		raise Exception("?")
+
+	if (id2 >= 0x26 and id2 <= 0x2f):
+		raise Exception("0x26 and 0x2f")
+		#tmpBuf = str(id1 + 'c') + str(id2 + 0x3d)
+		#tmpBuf[0] = char(id1) + 'c';
+		#tmpBuf[1] = char(id2) + 0x3d;
+		#path.append(tmpBuf);
+		#path += tmpBuf
+	elif (id2 == 0x24):
+		path += "ch"
+	elif (id2 == 0x25):
+		path += "cj"
+	elif (id2 >= 0x30):
+		raise Exception("0x30")
+		#tmpBuf[0] = 'r';
+		#tmpBuf[1] = char(id2) + 0x31;
+		#path.append(tmpBuf);
+	elif (id2 >= 0x14):
+		raise Exception("0x14")
+		#tmpBuf[0] = 'b';
+		#tmpBuf[1] = char(id2) + 0x4d;
+		#path.append(tmpBuf);
+	elif (id2 == 0x12):
+		raise Exception("0x12")
+		if id1 == 0x01:
+			path += "dm"
+		elif id1 == 0x04:
+			path += "gm"
+		else:
+			path += "as"
+	elif (id2 == 0x0d):
+		raise Exception("0x0d")
+		# if (id1 > 0) {
+		# 	tmpBuf[0] = char(id1) + 'c';
+		# 	tmpBuf[1] = 'e';
+		# 	path.append(tmpBuf);
+		# }
+		# else {
+		# 	path.append("an");
+		# }
+	else:
+		#raise Exception("other")
+		if (id2 <= 1 and id1 > 0):
+			print "ID1:", id1
+			path += chr(id1 + ord('c'))
+			#tmpBuf[0] = char(id1) + 'c';
+		else:
+			#tmpBuf[0] = 'a';
+			path += 'a'
+		#tmpBuf[1] = char(id2) + 'a';
+		path += chr(id2 + ord('a'))
+		#path.append(tmpBuf);
+
+	path += ".fr"
+	if not id3:
+		path += "m"
+	else:
+		path += str(id3 - 1)
+		#path.append(boost::lexical_cast<std::string>(id3 - 1));
+
+	return path
+
+
+
 itemsLst = loadLst("proto/items/items.lst")
 wallsLst = loadLst("art/walls/walls.lst")
+critterLst = loadLst("art/critters/critters.lst")
 
 ItemInfo = Struct("",
 	Value("subtype", lambda ctx: getProSubType("proto/items/" + getProFile(itemsLst, (ctx._.protoPID & 0xffff) - 1))),
@@ -105,6 +192,17 @@ ItemInfo = Struct("",
 	})
 )
 
+CritterInfo = Struct("",
+	Value("type", lambda _: "critter"),
+	Value("artPath", lambda ctx: stripExt(getCritterArtPath(ctx._.frmPID))),
+	Padding(4*4),
+	SBInt32("AInum"),
+	UBInt32("groupID"),
+	Padding(4),
+	UBInt32("hp"),
+	Padding(4*2)
+)
+
 ExtraObjectInfo = \
 	Switch("extra", lambda ctx: ctx.objtype, {
 		objtype_item: ItemInfo,
@@ -112,7 +210,8 @@ ExtraObjectInfo = \
 		objtype_wall: Struct("",
 			Value("type", lambda _: "wall"),
 			Value("artPath", lambda ctx: "art/walls/" + stripExt(getProFile(wallsLst, (ctx._.frmPID & 0xffff))))
-		)
+		),
+		objtype_critter: CritterInfo
 	})
 
 def computeLevels(ctx):
@@ -237,6 +336,10 @@ def main():
 			g.write(']\n')
 			g.write(', "objects": [\n')
 			for i,obj in enumerate(map_.object):
+				if obj.numInventory != 0:
+					print "error: item has inventory:"
+					print obj
+					sys.exit(1)
 				g.write('{"type": "' + obj.extra.type + '",\n')
 				x = obj.position % 200
 				y = obj.position / 200
