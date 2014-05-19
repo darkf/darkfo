@@ -1,4 +1,4 @@
-import sys, math, struct, os
+import sys, math, struct, os, json
 from construct import *
 from collections import Counter
 
@@ -100,7 +100,7 @@ def getProSubType(path):
 	with open(os.path.join("data", path), "rb") as f:
 		f.seek(0x20)
 		sub = struct.unpack("!L", f.read(4))[0]
-		print "subtype:", sub
+		#print "subtype:", sub
 		return sub
 
 def loadLst(lst):
@@ -380,6 +380,8 @@ def main():
 			print "not a FO2 map"
 			sys.exit(1)
 		#print map_
+		if map_.numLevels != 1:
+			raise Exception("elevation isn't 1")
 		print len(map_.tiles), "tiles"
 		print map_.totalObjects, "objects"
 		print map_.totalObjectsLevel, "objects on level 1"
@@ -393,54 +395,46 @@ def main():
 		for i in range(100):
 			newmap.append(tiles[i*100:i*100+100])
 
-		#print [tile.floor for tile in map_.tiles]
-		#print sum(len(row) for row in newmap)
 		lst = loadLst("art/tiles/tiles.lst")
-		c = Counter()
-		cObjects = Counter()
+		tileCounter = Counter()
+		objectCounter = Counter()
 		writeTiles = True
-		with open(stripExt(MAP_FILE) + ".json", "w") as g:
-			g.write("{\"tiles\":\n")
-			#g.write(repr(newmap))
-			g.write('[\n')
-			if writeTiles:
-				for i,row in enumerate(newmap):
-					row = [getProFile(lst, t).rstrip() for t in row]
-					for t in row:
-						c[t] += 1
-					g.write('\t' + repr(row).replace("'", '"').replace(".frm", ".png"))
-					if i != len(newmap)-1:
-						g.write(',\n')
-					else: g.write('\n')
-			g.write(']\n')
-			g.write(', "objects": [\n')
-			for i,obj in enumerate(map_.object):
-				g.write('{"type": "' + obj.extra.type + '",\n')
-				x = obj.position % 200
-				y = obj.position / 200
-				g.write(' "position": {"x":%d, "y":%d},\n' % (x,y))
-				g.write(' "elevation": ' + str(obj.elevation+1) + ',\n')
-				if hasattr(obj.extra, "artPath"):
-					g.write(' "art": "' + str(obj.extra.artPath) + '"\n')
-					cObjects[obj.extra.artPath] += 1
+		writeObjects = True
+		writeImageList = True
 
-				g.write('}')
-				if i != len(map_.object)-1:
-					g.write(',\n')
-				else: g.write('\n')
-			g.write(']\n')
-			g.write('\n}')
+		m = {"tiles": [], "objects": []}
+		if writeTiles:
+			for i,row in enumerate(newmap):
+				row = [stripExt(getProFile(lst, t).rstrip()) for t in row]
+				for tile in row:
+					tileCounter[tile] += 1
+				m["tiles"].append(row)
 
-		print c.most_common(20)
-		print len(c), "unique tiles"
-		for t,o in c.iteritems():
-			print t
+		if writeObjects:
+			for i,object_ in enumerate(map_.object):
+				x = object_.position % 200
+				y = object_.position / 200
+				obj = {"type": object_.extra.type,
+					   "position": {"x": x, "y": y},
+					   "elevation": str(object_.elevation+1)}
+				#if hasattr(object_.extra, "subtype"):
+				#	obj["subtype"] = object_.extra.subtype
+				if hasattr(object_.extra, "artPath"):
+					obj["art"] = object_.extra.artPath
+					objectCounter[object_.extra.artPath] += 1
+				m["objects"].append(obj)
 
-		print ""
-		print "objects"
+		json.dump(m, open(stripExt(MAP_FILE) + ".json", "w"))
 
-		for t,o in cObjects.iteritems():
-			print t
+		if writeImageList:
+			images = list("art/tiles/" + x for x in tileCounter) + list(objectCounter)
+			json.dump(images, open(stripExt(MAP_FILE) + ".images.json", "w"))
+			open(stripExt(MAP_FILE)+".images.txt", "w").writelines(x+"\n" for x in images)
+
+		for tile in tileCounter:
+			print "art/tiles/" + tile
+		for obj in objectCounter:
+			print obj
 
 if __name__ == '__main__':
 	main()
