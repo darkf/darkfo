@@ -211,7 +211,12 @@ ExtraObjectInfo = \
 			Value("type", lambda _: "wall"),
 			Value("artPath", lambda ctx: "art/walls/" + stripExt(getProFile(wallsLst, (ctx._.frmPID & 0xffff))))
 		),
-		objtype_critter: CritterInfo
+		objtype_critter: CritterInfo,
+		objtype_misc: Struct("",
+			Value("type", lambda _: "misc"),
+			If(lambda ctx: (ctx._.protoPID & 0xffff) != 1 and (ctx._.protoPID & 0xffff) != 12,
+				Padding(4*4))),
+		objtype_scenery: Struct("", Value("type", lambda _: "scenery")) # todo: subtypes
 	})
 
 def computeLevels(ctx):
@@ -318,7 +323,7 @@ def main():
 		#print sum(len(row) for row in newmap)
 		lst = loadLst("art/tiles/tiles.lst")
 		c = Counter()
-		cWalls = Counter()
+		cObjects = Counter()
 		writeTiles = True
 		with open(stripExt(MAP_FILE) + ".json", "w") as g:
 			g.write("{\"tiles\":\n")
@@ -347,7 +352,7 @@ def main():
 				g.write(' "elevation": ' + str(obj.elevation+1) + ',\n')
 				if hasattr(obj.extra, "artPath"):
 					g.write(' "art": "' + str(obj.extra.artPath) + '"\n')
-					cWalls[obj.extra.artPath] += 1
+					cObjects[obj.extra.artPath] += 1
 
 				g.write('}')
 				if i != len(map_.object)-1:
@@ -362,9 +367,9 @@ def main():
 			print t
 
 		print ""
-		print "walls"
+		print "objects"
 
-		for t,o in cWalls.iteritems():
+		for t,o in cObjects.iteritems():
 			print t
 
 if __name__ == '__main__':
