@@ -233,6 +233,35 @@ def computeLevels(ctx):
 		return 2
 	return 3
 
+object_ = Struct("object",
+	Padding(4), # unknown (separator)
+	SBInt32("position"),
+	Padding(4*4), # unknown
+	UBInt32("frameNum"), # index into FRM file
+	UBInt32("orientation"),
+	UBInt32("frmPID"),
+	Padding(4), # unknown flags
+	UBInt32("elevation"),
+	UBInt32("protoPID"),
+	Padding(4), # unknown
+	Padding(4), # unknown (light strength?)
+	Padding(4*2), # unknown
+	UBInt32("mapPID"),
+	SBInt32("scriptID"),
+	UBInt32("numInventory"), # TODO
+	Padding(4*3), # unknown
+
+	Value("objtype", lambda ctx: (ctx.protoPID >> 24) & 0xff),
+	ExtraObjectInfo,
+
+	Array(lambda ctx: ctx.numInventory,
+		Struct("inventory",
+			Padding(4),
+			LazyBound("", lambda: object_)
+		)
+	)
+)
+
 fomap = Struct("map",
 	UBInt32("version"),
 	String("name", 16, padchar='\0', paddir='right'),
@@ -269,29 +298,7 @@ fomap = Struct("map",
 	SBInt32("totalObjects"),
 	# todo: elevation as well
 	SBInt32("totalObjectsLevel"),
-	Array(lambda ctx: ctx.totalObjectsLevel,
-		Struct("object",
-			Padding(4), # unknown (separator)
-			SBInt32("position"),
-			Padding(4*4), # unknown
-			UBInt32("frameNum"), # index into FRM file
-			UBInt32("orientation"),
-			UBInt32("frmPID"),
-			Padding(4), # unknown flags
-			UBInt32("elevation"),
-			UBInt32("protoPID"),
-			Padding(4), # unknown
-			Padding(4), # unknown (light strength?)
-			Padding(4*2), # unknown
-			UBInt32("mapPID"),
-			SBInt32("scriptID"),
-			UBInt32("numInventory"), # TODO
-			Padding(4*3), # unknown
-
-			Value("objtype", lambda ctx: (ctx.protoPID >> 24) & 0xff),
-			ExtraObjectInfo
-		)
-	)
+	Array(lambda ctx: ctx.totalObjectsLevel, object_)
 
 	#Array(5,
 	#	SBInt32("count"),
