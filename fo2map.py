@@ -55,7 +55,7 @@ class ScriptsIgnore(Construct):
 
 class Stub(Construct):
     def _parse(self, stream, context):
-        raise Exception(self.msg)
+        raise Exception("stub: " + self.msg)
 
     def _build(self, obj, stream, context):
         raise NotImpl()
@@ -87,6 +87,14 @@ itemtype_weapon = 3
 itemtype_ammo = 4
 itemtype_misc = 5
 itemtype_key = 6
+
+# scenery
+scenerytype_portal = 0
+scenerytype_stairs = 1
+scenerytype_elevator = 2
+scenerytype_ladderup = 3
+scenerytype_ladderdown = 4
+scenerytype_generic = 5
 
 def getProSubType(path):
 	with open(os.path.join("data", path), "rb") as f:
@@ -189,13 +197,12 @@ def getCritterArtPath(frmPID):
 
 	return path
 
-
-
 itemsLst = loadLst("proto/items/items.lst")
 wallsLst = loadLst("art/walls/walls.lst")
 critterLst = loadLst("art/critters/critters.lst")
 miscLst = loadLst("art/misc/misc.lst")
 sceneryLst = loadLst("art/scenery/scenery.lst")
+sceneryProtoLst = loadLst("proto/scenery/scenery.lst")
 
 ItemInfo = Struct("",
 	Value("subtype", lambda ctx: getProSubType("proto/items/" + getProFile(itemsLst, (ctx._.protoPID & 0xffff) - 1))),
@@ -206,12 +213,15 @@ ItemInfo = Struct("",
 			UBInt32("ammoCount"),
 			Value("artPath", lambda ctx: "art/items/" + stripExt(getProFile(wallsLst, (ctx._._.frmPID & 0xffff))))
 		),
+		itemtype_weapon: Struct("",
+			Value("subtype", lambda _: "weapon"),
+			Padding(8)
+		),
 
 		# stubs
 		itemtype_armor: stub("armor"),
 		itemtype_container: stub("container"),
 		itemtype_drug: stub("drug"),
-		itemtype_weapon: stub("weapon"),
 		itemtype_misc: stub("misc"),
 		itemtype_key: stub("key")
 	})
@@ -228,6 +238,23 @@ CritterInfo = Struct("",
 	Padding(4*2)
 )
 
+SceneryInfo = Struct("",
+	Value("type", lambda _: "scenery"),
+	Value("artPath", lambda ctx: "art/scenery/" + stripExt(getProFile(sceneryLst, ctx._.frmPID & 0xffff))),
+	Value("subtype", lambda ctx: getProSubType("proto/scenery/" + getProFile(sceneryProtoLst, (ctx._.protoPID & 0xffff) - 1))),
+	Switch("extra", lambda ctx: ctx.subtype, {
+		scenerytype_portal: Struct("",
+			Value("subtype", lambda _: "portal"),
+			Padding(4)
+		),
+		scenerytype_stairs: stub("stairs"),
+		scenerytype_elevator: stub("elevator"),
+		scenerytype_ladderup: stub("ladderup"),
+		scenerytype_ladderdown: stub("ladderdown"),
+		scenerytype_generic: Struct("", Value("subtype", lambda _: "generic"))
+	})
+)
+
 ExtraObjectInfo = \
 	Switch("extra", lambda ctx: ctx.objtype, {
 		objtype_item: ItemInfo,
@@ -242,10 +269,7 @@ ExtraObjectInfo = \
 			If(lambda ctx: (ctx._.protoPID & 0xffff) != 1 and (ctx._.protoPID & 0xffff) != 12,
 				Padding(4*4))
 		),
-		objtype_scenery: Struct("",
-			Value("type", lambda _: "scenery"),
-			Value("artPath", lambda ctx: "art/scenery/" + stripExt(getProFile(sceneryLst, ctx._.frmPID & 0xffff))),
-		), # todo: subtypes
+		objtype_scenery: SceneryInfo,
 
 		# stubs
 		objtype_tile: stub("tile"),
@@ -277,7 +301,7 @@ object_ = Struct("object",
 	Padding(4*2), # unknown
 	UBInt32("mapPID"),
 	SBInt32("scriptID"),
-	UBInt32("numInventory"), # TODO
+	UBInt32("numInventory"),
 	Padding(4*3), # unknown
 
 	Value("objtype", lambda ctx: (ctx.protoPID >> 24) & 0xff),
@@ -286,6 +310,7 @@ object_ = Struct("object",
 	Array(lambda ctx: ctx.numInventory,
 		Struct("inventory",
 			Padding(4),
+			stub("inv"),
 			LazyBound("", lambda: object_)
 		)
 	)
