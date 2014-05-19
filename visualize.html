@@ -11,6 +11,7 @@ var size = 6
 var tile_width = 80
 var tile_height = 36
 var images = {}
+var imageOffsets = {}
 var cameraX = 3375
 var cameraY = 105
 var showHexOverlay = false
@@ -74,135 +75,6 @@ for(var i = 0; i < 200; i++) {
 
 var cursor = {x: 10, y: 10}
 
-var offsets = {
-	"art/walls/fns1000": {x: 8, y: 12},
-	"art/walls/fns1002": {x: 0, y: 12},
-	"art/walls/fns2000": {x: -8, y: 0},
-	"art/walls/vb4003": {x: -7, y: 2},
-	"art/walls/vcn3000": {x: 0, y: 6},
-	"art/walls/va1000": {x: 0, y: 6},
-	"art/walls/va2001": {x: 8, y: 10},
-
-	"art/walls/temple33": {x: 26, y: 8},
-	"art/walls/temple34": {x: -17, y: 14},
-	"art/walls/temple35": {x: 8, y: 4},
-	"art/walls/temple36": {x: -16, y: 14},
-
-	//
-    "art/walls/vcn6000": {x: 0, y: 13},
-    "art/scenery/weed01": {x: 10, y: 2},
-    "art/scenery/weed03": {x: 0, y: 4},
-    "art/scenery/weed02": {x: -2, y: 3},
-    "art/scenery/weed04": {x: -1, y: 1},
-    "art/scenery/weed07": {x: -27, y: 19},
-    "art/scenery/doorcomp": {x: 10, y: -6},
-    "art/misc/exitgrd8": {x: -24, y: 12},
-    "art/scenery/rock01": {x: -1, y: 13},
-    "art/walls/ca028": {x: 8, y: 3},
-    "art/scenery/rock03": {x: -4, y: 25},
-    "art/scenery/rock02": {x: 4, y: 13},
-    "art/scenery/rock05": {x: 2, y: 19},
-    "art/scenery/rock04": {x: 0, y: 21},
-    "art/scenery/rock06": {x: 4, y: 26},
-    "art/walls/vb3001": {x: -7, y: 2},
-    "art/walls/vb3000": {x: -7, y: 2},
-    "art/walls/ca023": {x: -8, y: 12},
-    "art/walls/ca022": {x: -8, y: 8},
-    "art/walls/ca025": {x: 0, y: 5},
-    "art/walls/ca024": {x: -8, y: 7},
-    "art/walls/ca027": {x: 0, y: 23},
-    "art/walls/ca026": {x: 8, y: -6},
-    "art/scenery/bone04": {x: 0, y: 8},
-    "art/walls/ca036": {x: -16, y: 10},
-    "art/walls/ca037": {x: 0, y: 11},
-    "art/walls/ca032": {x: -1, y: 9},
-    "art/walls/ca038": {x: 0, y: 9},
-    "art/walls/ca039": {x: 0, y: 8},
-    "art/scenery/weed23": {x: -10, y: -3},
-    "art/scenery/weed22": {x: -10, y: 0},
-    "art/scenery/weed21": {x: -11, y: -3},
-    "art/scenery/weed20": {x: -3, y: 1},
-    "art/scenery/weed26": {x: 16, y: -2},
-    "art/scenery/weed25": {x: 19, y: 1},
-    "art/scenery/weed24": {x: 17, y: -1},
-    "art/walls/vcn4000": {x: 5, y: 16},
-    "art/scenery/v13secur": {x: 4, y: 22},
-    "art/walls/ca043": {x: 0, y: 9},
-    "art/walls/ca042": {x: 0, y: 12},
-    "art/walls/ca041": {x: 0, y: 11},
-    "art/walls/ca040": {x: 0, y: 10},
-    "art/walls/ca047": {x: 8, y: 13},
-    "art/walls/ca046": {x: 0, y: 2},
-    "art/walls/ca045": {x: 0, y: 5},
-    "art/walls/ca044": {x: 0, y: 9},
-    "art/walls/ca048": {x: 0, y: 18},
-    "art/walls/vb4000": {x: -7, y: 2},
-    "art/walls/vb4003": {x: -7, y: 2},
-    "art/walls/block": {x: 0, y: 0},
-    "art/walls/ca050": {x: 8, y: -9},
-    "art/walls/ca053": {x: 0, y: 8},
-    "art/walls/ca054": {x: 8, y: 12},
-    "art/walls/ca055": {x: 0, y: 8},
-    "art/walls/ca056": {x: 8, y: 12},
-    "art/walls/ca057": {x: 0, y: 7},
-    "art/walls/ca058": {x: 8, y: 11},
-    "art/walls/ca059": {x: -8, y: -1},
-    "art/walls/ca060": {x: -8, y: 0},
-    "art/walls/ca063": {x: -1, y: 0},
-    "art/walls/ca069": {x: 0, y: 11},
-    "art/walls/ca068": {x: 0, y: 11},
-    "art/walls/ca065": {x: 0, y: 11},
-    "art/walls/ca064": {x: -1, y: 36},
-    "art/walls/ca067": {x: 0, y: 11},
-    "art/walls/ca066": {x: 0, y: 11},
-    "art/walls/ca061": {x: -8, y: 0},
-    "art/scenery/cstalag2": {x: -1, y: 10},
-    "art/scenery/cstalag1": {x: 0, y: 8},
-    "art/walls/ca062": {x: -8, y: 0},
-    "art/scenery/cvcolum2": {x: 1, y: 4},
-    "art/scenery/cvcolum1": {x: 0, y: 9},
-    "art/walls/va5001": {x: 8, y: 10},
-    "art/walls/ca021": {x: -8, y: 15},
-    "art/walls/ca020": {x: -8, y: 15},
-    "art/walls/ca072": {x: -13, y: 10},
-    "art/walls/ca070": {x: 0, y: 11},
-    "art/walls/ca071": {x: -4, y: 7},
-    "art/misc/ext2grd8": {x: -24, y: 12},
-    "art/misc/ext2grd5": {x: -32, y: 24},
-    "art/misc/ext2grd3": {x: 0, y: 83},
-    "art/misc/ext2grd1": {x: -32, y: 11},
-    "art/scenery/v13secr3": {x: 60, y: 79},
-    "art/scenery/v13secr2": {x: 73, y: 46},
-    "art/misc/block": {x: 0, y: 0},
-    "art/walls/vcn3000": {x: 0, y: 6},
-    "art/walls/ca009": {x: 0, y: 5},
-    "art/walls/ca008": {x: 8, y: 11},
-    "art/walls/ca007": {x: 0, y: 9},
-    "art/walls/ca006": {x: 8, y: 12},
-    "art/walls/ca005": {x: 0, y: 4},
-    "art/walls/ca004": {x: 8, y: 12},
-    "art/walls/ca003": {x: 0, y: 10},
-    "art/walls/ca002": {x: 8, y: 11},
-    "art/scenery/weed18": {x: -6, y: -3},
-    "art/scenery/weed19": {x: -5, y: 1},
-    "art/scenery/weed12": {x: 20, y: 4},
-    "art/scenery/weed13": {x: 23, y: 3},
-    "art/scenery/weed11": {x: 20, y: 4},
-    "art/scenery/block": {x: 0, y: 0},
-    "art/scenery/bone01": {x: 4, y: 12},
-    "art/scenery/bone02": {x: 3, y: 12},
-    "art/walls/ca018": {x: -8, y: 11},
-    "art/walls/ca019": {x: -8, y: 11},
-    "art/walls/ca014": {x: -8, y: 12},
-    "art/walls/ca015": {x: 0, y: 21},
-    "art/walls/ca016": {x: -8, y: 10},
-    "art/walls/ca017": {x: -8, y: 8},
-    "art/walls/ca010": {x: 8, y: 11},
-    "art/walls/ca011": {x: 0, y: 18},
-    "art/walls/ca012": {x: 8, y: 8},
-    "art/walls/ca013": {x: 0, y: 13}
-}
-
 heart.preload = function() {
 	function load(file) {
 		heart.graphics.newImage(file+".png", function(r) { images[file] = r; })
@@ -215,18 +87,28 @@ heart.preload = function() {
 
 	for(var i = 0; i < loadImages.length; i++)
 		load(loadImages[i])
+	console.log("loaded " + loadImages.length + " tiles")
 
+	var loadOffsets = null
+	$.get(MAP_NAME + ".offsets.json", function(offsets) { loadOffsets = offsets }, "json")
+
+	var numOffsets = 0
+	for(var image in loadOffsets) {
+		imageOffsets[image] = loadOffsets[image]
+		numOffsets++
+	}
+
+	console.log("loaded " + numOffsets + " offsets")
 	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r })
 }
 
 heart.load = function() {
 	heart.attach("cnv");
-	$.get(MAP_NAME+".json", function(data) {
-		var map = JSON.parse(data)
+	$.get(MAP_NAME+".json", function(map) {
 		matrix = map["tiles"]
 		gObjects = map["objects"]
 		console.log("loaded (" + matrix.length + " tiles, " + gObjects.length + " objects)")
-	})
+	}, "json")
 }
 
 heart.keydown = function(k) {
@@ -270,9 +152,9 @@ heart.draw = function() {
 		var offsetX = images[obj.art].getWidth() / 2
 		var offsetY = images[obj.art].getHeight()
 
-		if(offsets[obj.art] !== undefined) {
-			offsetX -= offsets[obj.art].x;
-			offsetY -= offsets[obj.art].y;
+		if(imageOffsets[obj.art] !== undefined) {
+			offsetX -= imageOffsets[obj.art].x;
+			offsetY -= imageOffsets[obj.art].y;
 		}
 
 		heart.graphics.draw(images[obj.art], scr.x - offsetX - cameraX, scr.y - offsetY - cameraY)

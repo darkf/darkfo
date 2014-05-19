@@ -101,7 +101,7 @@ def main():
 			frm_ = frm.parse(data)
 
 			terminator = "," if i != len(frms)-1 else ""
-			print '    "%s": {x: %d, y: %d}%s' % (files[i], frm_.shiftX[0], frm_.shiftY[0], terminator)
+			print '    "%s": {"x": %d, "y": %d}%s' % (files[i], frm_.shiftX[0], frm_.shiftY[0], terminator)
 
 	print "}"
 
