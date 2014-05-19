@@ -217,13 +217,17 @@ ItemInfo = Struct("",
 			Value("subtype", lambda _: "weapon"),
 			Padding(8)
 		),
-
-		# stubs
-		itemtype_armor: stub("armor"),
-		itemtype_container: stub("container"),
-		itemtype_drug: stub("drug"),
-		itemtype_misc: stub("misc"),
-		itemtype_key: stub("key")
+		itemtype_container: Struct("", Value("subtype", lambda _: "container")),
+		itemtype_armor: Struct("", Value("subtype", lambda _: "armor")),
+		itemtype_drug: Struct("", Value("subtype", lambda _: "drug")),
+		itemtype_misc: Struct("",
+			Value("subtype", lambda _: "misc"),
+			Padding(4)
+		),
+		itemtype_key: Struct("",
+			Value("subtype", lambda _: "key"),
+			Padding(4)
+		)
 	})
 )
 
@@ -247,8 +251,11 @@ SceneryInfo = Struct("",
 			Value("subtype", lambda _: "portal"),
 			Padding(4)
 		),
+		scenerytype_elevator: Struct("",
+			Value("subtype", lambda _: "elevator"),
+			Padding(4*2)
+		),
 		scenerytype_stairs: stub("stairs"),
-		scenerytype_elevator: stub("elevator"),
 		scenerytype_ladderup: stub("ladderup"),
 		scenerytype_ladderdown: stub("ladderdown"),
 		scenerytype_generic: Struct("", Value("subtype", lambda _: "generic"))
@@ -310,7 +317,6 @@ object_ = Struct("object",
 	Array(lambda ctx: ctx.numInventory,
 		Struct("inventory",
 			Padding(4),
-			stub("inv"),
 			LazyBound("", lambda: object_)
 		)
 	)
@@ -409,10 +415,6 @@ def main():
 			g.write(']\n')
 			g.write(', "objects": [\n')
 			for i,obj in enumerate(map_.object):
-				if obj.numInventory != 0:
-					print "error: item has inventory:"
-					print obj
-					sys.exit(1)
 				g.write('{"type": "' + obj.extra.type + '",\n')
 				x = obj.position % 200
 				y = obj.position / 200
