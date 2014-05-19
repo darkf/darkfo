@@ -53,6 +53,21 @@ class ScriptsIgnore(Construct):
         # return computed size, or raise SizeofError if not possible
         raise SizeofError()
 
+class Stub(Construct):
+    def _parse(self, stream, context):
+        raise Exception(self.msg)
+
+    def _build(self, obj, stream, context):
+        raise NotImpl()
+
+    def _sizeof(self, context):
+        raise SizeofError()
+
+def stub(msg):
+	s = Stub("stub")
+	s.msg = msg
+	return s
+
 objtype_item = 0
 objtype_critter = 1
 objtype_scenery = 2
@@ -190,7 +205,15 @@ ItemInfo = Struct("",
 			Value("subtype", lambda _: "ammo"),
 			UBInt32("ammoCount"),
 			Value("artPath", lambda ctx: "art/items/" + stripExt(getProFile(wallsLst, (ctx._._.frmPID & 0xffff))))
-		)
+		),
+
+		# stubs
+		itemtype_armor: stub("armor"),
+		itemtype_container: stub("container"),
+		itemtype_drug: stub("drug"),
+		itemtype_weapon: stub("weapon"),
+		itemtype_misc: stub("misc"),
+		itemtype_key: stub("key")
 	})
 )
 
@@ -208,7 +231,6 @@ CritterInfo = Struct("",
 ExtraObjectInfo = \
 	Switch("extra", lambda ctx: ctx.objtype, {
 		objtype_item: ItemInfo,
-		#objtype_tile: Padding(0),
 		objtype_wall: Struct("",
 			Value("type", lambda _: "wall"),
 			Value("artPath", lambda ctx: "art/walls/" + stripExt(getProFile(wallsLst, (ctx._.frmPID & 0xffff))))
@@ -223,7 +245,14 @@ ExtraObjectInfo = \
 		objtype_scenery: Struct("",
 			Value("type", lambda _: "scenery"),
 			Value("artPath", lambda ctx: "art/scenery/" + stripExt(getProFile(sceneryLst, ctx._.frmPID & 0xffff))),
-		) # todo: subtypes
+		), # todo: subtypes
+
+		# stubs
+		objtype_tile: stub("tile"),
+		objtype_interface: stub("interface"),
+		objtype_inventory: stub("inventory"),
+		objtype_head: stub("head"),
+		objtype_background: stub("background")
 	})
 
 def computeLevels(ctx):
