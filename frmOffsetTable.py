@@ -1,7 +1,7 @@
 import sys, math, struct, os
 from construct import *
 
-DATA_PATH = "../data"
+DATA_PATH = "data"
 MAX_FRAMES = 6
 
 class Frames(Construct):

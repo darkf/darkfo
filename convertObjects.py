@@ -1,6 +1,6 @@
 import sys, os
 
-DATA_PATH = "../data"
+DATA_PATH = "data"
 OUT_DIR = ""
 
 if len(sys.argv) != 2:
