@@ -179,6 +179,8 @@ def getCritterArtPath(frmPID):
 itemsLst = loadLst("proto/items/items.lst")
 wallsLst = loadLst("art/walls/walls.lst")
 critterLst = loadLst("art/critters/critters.lst")
+miscLst = loadLst("art/misc/misc.lst")
+sceneryLst = loadLst("art/scenery/scenery.lst")
 
 ItemInfo = Struct("",
 	Value("subtype", lambda ctx: getProSubType("proto/items/" + getProFile(itemsLst, (ctx._.protoPID & 0xffff) - 1))),
@@ -214,9 +216,14 @@ ExtraObjectInfo = \
 		objtype_critter: CritterInfo,
 		objtype_misc: Struct("",
 			Value("type", lambda _: "misc"),
+			Value("artPath", lambda ctx: "art/misc/" + stripExt(getProFile(miscLst, ctx._.frmPID & 0xffff))),
 			If(lambda ctx: (ctx._.protoPID & 0xffff) != 1 and (ctx._.protoPID & 0xffff) != 12,
-				Padding(4*4))),
-		objtype_scenery: Struct("", Value("type", lambda _: "scenery")) # todo: subtypes
+				Padding(4*4))
+		),
+		objtype_scenery: Struct("",
+			Value("type", lambda _: "scenery"),
+			Value("artPath", lambda ctx: "art/scenery/" + stripExt(getProFile(sceneryLst, ctx._.frmPID & 0xffff))),
+		) # todo: subtypes
 	})
 
 def computeLevels(ctx):
