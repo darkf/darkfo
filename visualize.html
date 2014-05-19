@@ -216,6 +216,9 @@ heart.draw = function() {
 		var obj = gObjects[i]
 		var scr = hexToScreen(obj.position.x, obj.position.y)
 
+		if(images[obj.art] === undefined)
+			continue; // skip images we don't have
+
 		var offsetX = images[obj.art].getWidth() / 2
 		var offsetY = images[obj.art].getHeight()
 
