@@ -4,7 +4,7 @@
 <script src="heart.js"></script>
 <script src="jquery-1.11.1.min.js"></script>
 <script>
-var MAP_NAME = "SFChina"
+var MAP_NAME = "derp_walls2"
 var matrix = null
 var gObjects = []
 var size = 6
@@ -27,6 +27,14 @@ function tileToScreen(x, y) {
 	var sx = x * xdx + y * ydx + 0
 	var sy = x * xdy + y * ydy + 0
 	return {x: sx, y: sy}
+}
+
+function tileFromScreen(x, y) {
+	var determinant = xdx*ydy - xdy*ydx
+	var tx = (x * ydy + y * -ydx) / determinant
+	var ty = (x * -xdy + y * xdx) / determinant
+
+	return {x: Math.round(tx), y: Math.round(ty) - 1}
 }
 
 // hex grid geometry info
@@ -123,13 +131,14 @@ heart.draw = function() {
 
 	var mousePos = heart.mouse.getPosition()
 	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
+	var mouseTile = tileFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
 	// draw tile grid
 	if(matrix === null) return;
 	for(var i = 0; i < matrix.length; i++) {
 		for(var j = 0; j < matrix[0].length; j++) {
 			var tile = matrix[j][i]
-			var x = 99-i
+			var x = i
 			var y = j
 			var img = "art/tiles/" + tile
 
@@ -137,7 +146,6 @@ heart.draw = function() {
 				var scr = tileToScreen(x, y)
 				heart.graphics.draw(images[img], scr.x - cameraX, scr.y - cameraY)
 			}
-			//else console.log(img)
 		}
 	}
 
@@ -160,7 +168,7 @@ heart.draw = function() {
 		heart.graphics.draw(images[obj.art], scr.x - offsetX - cameraX, scr.y - offsetY - cameraY)
 
 		if(obj.position.x == mouseHex.x && obj.position.y == mouseHex.y)
-			heart.graphics.print("tile: " + obj.art, 5, 30)
+			heart.graphics.print("tile: " + obj.art + " offset: " + offsetX + ", " + offsetY, 5, 30)
 	}
 
 	// draw hex grid overlay
@@ -179,7 +187,14 @@ heart.draw = function() {
 		heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
 	}
 
+	var tileImg = matrix[mouseTile.y][mouseTile.x]
+	heart.graphics.print("tile: " + tileImg, 5, 60)
+
+	var scr = tileToScreen(mouseTile.x, mouseTile.y)
+	heart.graphics.print("X", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
+
 	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
+	heart.graphics.print("mt: " + mouseTile.x + "," + mouseTile.y, 100, 15)
 }
 
 </script>

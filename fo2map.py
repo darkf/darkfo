@@ -386,7 +386,7 @@ def main():
 		print map_.totalObjects, "objects"
 		print map_.totalObjectsLevel, "objects on level 1"
 
-		print map_.object[0]
+		#print map_.object[0]
 
 		# quick export
 		# break down list of 1000 tiles into a 100x100 2d list
@@ -408,7 +408,7 @@ def main():
 				row = [stripExt(getProFile(lst, t).rstrip()) for t in row]
 				for tile in row:
 					tileCounter[tile] += 1
-				m["tiles"].append(row)
+				m["tiles"].append(list(reversed(row))) # reverse because FO's maps are reversed in the X axis
 
 		if writeObjects:
 			for i,object_ in enumerate(map_.object):
