@@ -12,9 +12,11 @@ var tile_width = 80
 var tile_height = 36
 var images = {}
 var imageOffsets = {}
-var cameraX = 3375
-var cameraY = 105
-var showHexOverlay = false
+//var cameraX = 3375
+//var cameraY = 105
+var cameraX = 3640
+var cameraY = 1560
+var showHexOverlay = true
 
 // tile grid geometry info
 var transX = 48, transY = 24
@@ -23,10 +25,17 @@ var ydy = transY
 var xdy = ydy - tile_height
 var ydx = tile_width - xdx
 
+// function tileToScreen(x, y) {
+// 	var sx = x * xdx + y * ydx + 0
+// 	var sy = x * xdy + y * ydy + 0
+// 	return {x: sx, y: sy}
+// }
+
 function tileToScreen(x, y) {
-	var sx = x * xdx + y * ydx + 0
-	var sy = x * xdy + y * ydy + 0
-	return {x: sx, y: sy}
+   var sx = 4752 + (32 * y) - (48 * x);
+   var sy = (24 * y) + (12 * x);
+
+   return {x: sx, y: sy}
 }
 
 function tileFromScreen(x, y) {
@@ -47,28 +56,44 @@ var _hexOffsetY = 10
 var hexOffsetX = 0
 var hexOffsetY = 0
 
-function hexToScreen(x, y) {
-	var dx = hexTransX, dy = hexTransY
+// function hexToScreen(x, y) {
+// 	var dx = hexTransX, dy = hexTransY
 
-	var sx = hexOffsetX - (x*hexTileW - (x/2)*dx - y * hexTileH)
-	var sy = hexOffsetY + (x/2)*dy + y*dy
+// 	var sx = hexOffsetX - (x*hexTileW - (x/2)*dx - y * hexTileH)
+// 	var sy = hexOffsetY + (x/2)*dy + y*dy
+
+// 	//if(x%2==0) sx += hexTileW/2;
+// 	//if(x%2==0) sy += hexTileH/2;
+
+// 	return {x: sx, y: sy}
+// }
+
+// function hexFromScreen(x, y) {
+// 	var mx = (x - hexOffsetX) / -hexTransX
+// 	var my = (y - hexOffsetY) / hexTransY
+
+// 	var hexX = Math.floor((mx + my + 1) / 2)
+// 	var hexY = Math.floor(Math.floor(my) - hexX/2)
+
+// 	return {x: hexX, y: hexY}
+// }
+
+// var _h = hexToScreen(200 /* map size */ - 1, 0)
+// hexOffsetX = _hexOffsetX - _h.x
+// hexOffsetY = _hexOffsetY - _h.y
+
+function hexToScreen(x, y) {
+	//console.log(x + ", " + y)
+	var sx = 4816 - ((((x + 1) >> 1) << 5 )+ ((x >> 1) << 4) - (y << 4)); //ver1
+	var sy = ((12 * (x >> 1)) + (y * 12)) + 11; // + 8
 
 	return {x: sx, y: sy}
 }
 
+
 function hexFromScreen(x, y) {
-	var mx = (x - hexOffsetX) / -hexTransX
-	var my = (y - hexOffsetY) / hexTransY
-
-	var hexX = Math.floor((mx + my + 1) / 2)
-	var hexY = Math.floor(Math.floor(my) - hexX/2)
-
-	return {x: hexX, y: hexY}
+	return {x: 0, y: 0}
 }
-
-var _h = hexToScreen(200 /* map size */ - 1, 0)
-hexOffsetX = _hexOffsetX - _h.x
-hexOffsetY = _hexOffsetY - _h.y
 
 var hexOverlay = null
 
@@ -149,28 +174,6 @@ heart.draw = function() {
 		}
 	}
 
-	// draw objects
-	for(var i = 0; i < gObjects.length; i++) {
-		var obj = gObjects[i]
-		var scr = hexToScreen(obj.position.x, obj.position.y)
-
-		if(images[obj.art] === undefined)
-			continue; // skip images we don't have
-
-		var offsetX = images[obj.art].getWidth() / 2
-		var offsetY = images[obj.art].getHeight()
-
-		if(imageOffsets[obj.art] !== undefined) {
-			offsetX -= imageOffsets[obj.art].x;
-			offsetY -= imageOffsets[obj.art].y;
-		}
-
-		heart.graphics.draw(images[obj.art], scr.x - offsetX - cameraX, scr.y - offsetY - cameraY)
-
-		if(obj.position.x == mouseHex.x && obj.position.y == mouseHex.y)
-			heart.graphics.print("tile: " + obj.art + " offset: " + offsetX + ", " + offsetY, 5, 30)
-	}
-
 	// draw hex grid overlay
 	if(showHexOverlay) {
 		for(var i = 0; i < hexMatrix.length; i++) {
@@ -187,11 +190,42 @@ heart.draw = function() {
 		heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
 	}
 
+	// draw objects
+	for(var i = 0; i < gObjects.length; i++) {
+		var obj = gObjects[i]
+		var scr = hexToScreen(obj.position.x, obj.position.y)
+
+		if(images[obj.art] === undefined)
+			continue; // skip images we don't have
+
+		var offsetX = Math.floor(images[obj.art].getWidth() / 2)
+		var offsetY = images[obj.art].getHeight()
+
+		if(imageOffsets[obj.art] !== undefined) {
+			offsetX -= imageOffsets[obj.art].x;
+			offsetY -= imageOffsets[obj.art].y;
+		}
+
+		// if(obj.position.x == 94 && obj.position.y == 81) {
+		// 	console.log("scr=" + scr.x + "," + scr.y + "; off=" + imageOffsets[obj.art].x + "," + imageOffsets[obj.art].y + "; size=" +
+		// 		images[obj.art].getWidth() + "," + images[obj.art].getHeight() +
+		// 		"; oscr=" + (scr.x - offsetX - cameraX) + "," + (scr.y - offsetY - cameraY));
+		// 	throw "ok";
+		// }
+
+		heart.graphics.draw(images[obj.art], scr.x - offsetX - cameraX, scr.y - offsetY - cameraY)
+
+		if(obj.position.x == mouseHex.x && obj.position.y == mouseHex.y)
+			heart.graphics.print("tile: " + obj.art + " offset: " + offsetX + ", " + offsetY, 5, 30)
+	}
+
+
 	var tileImg = matrix[mouseTile.y][mouseTile.x]
 	heart.graphics.print("tile: " + tileImg, 5, 60)
 
 	var scr = tileToScreen(mouseTile.x, mouseTile.y)
 	heart.graphics.print("X", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
+	heart.graphics.print("scr: " + scr.x + ", " + scr.y, scr.x - 3 - cameraX, scr.y - 10 - cameraY)
 
 	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
 	heart.graphics.print("mt: " + mouseTile.x + "," + mouseTile.y, 100, 15)
