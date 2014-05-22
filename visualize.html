@@ -14,9 +14,11 @@ var images = {}
 var imageOffsets = {}
 //var cameraX = 3375
 //var cameraY = 105
-var cameraX = 3640
-var cameraY = 1560
-var showHexOverlay = true
+// var cameraX = 3640
+// var cameraY = 1560
+var cameraX = 3490
+var cameraY = 1200
+var showHexOverlay = false
 
 // tile grid geometry info
 var transX = 48, transY = 24
@@ -25,15 +27,10 @@ var ydy = transY
 var xdy = ydy - tile_height
 var ydx = tile_width - xdx
 
-// function tileToScreen(x, y) {
-// 	var sx = x * xdx + y * ydx + 0
-// 	var sy = x * xdy + y * ydy + 0
-// 	return {x: sx, y: sy}
-// }
-
 function tileToScreen(x, y) {
-   var sx = 4752 + (32 * y) - (48 * x);
-   var sy = (24 * y) + (12 * x);
+	x = 99 - x // this algorithm expects x to be reversed
+	var sx = 4752 + (32 * y) - (48 * x)
+	var sy = (24 * y) + (12 * x)
 
    return {x: sx, y: sy}
 }
