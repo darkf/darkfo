@@ -12,20 +12,9 @@ var tile_width = 80
 var tile_height = 36
 var images = {}
 var imageOffsets = {}
-//var cameraX = 3375
-//var cameraY = 105
-// var cameraX = 3640
-// var cameraY = 1560
 var cameraX = 3490
 var cameraY = 1200
 var showHexOverlay = false
-
-// tile grid geometry info
-var transX = 48, transY = 24
-var xdx = transX
-var ydy = transY
-var xdy = ydy - tile_height
-var ydx = tile_width - xdx
 
 function tileToScreen(x, y) {
 	x = 99 - x // this algorithm expects x to be reversed
@@ -36,57 +25,15 @@ function tileToScreen(x, y) {
 }
 
 function tileFromScreen(x, y) {
-	var determinant = xdx*ydy - xdy*ydx
-	var tx = (x * ydy + y * -ydx) / determinant
-	var ty = (x * -xdy + y * xdx) / determinant
-
-	return {x: Math.round(tx), y: Math.round(ty) - 1}
+	return {x: 0, y: 0}
 }
 
-// hex grid geometry info
-var hexTileW = 32
-var hexTileH = 16
-var hexTransX = 16
-var hexTransY = 12
-var _hexOffsetX = 32
-var _hexOffsetY = 10
-var hexOffsetX = 0
-var hexOffsetY = 0
-
-// function hexToScreen(x, y) {
-// 	var dx = hexTransX, dy = hexTransY
-
-// 	var sx = hexOffsetX - (x*hexTileW - (x/2)*dx - y * hexTileH)
-// 	var sy = hexOffsetY + (x/2)*dy + y*dy
-
-// 	//if(x%2==0) sx += hexTileW/2;
-// 	//if(x%2==0) sy += hexTileH/2;
-
-// 	return {x: sx, y: sy}
-// }
-
-// function hexFromScreen(x, y) {
-// 	var mx = (x - hexOffsetX) / -hexTransX
-// 	var my = (y - hexOffsetY) / hexTransY
-
-// 	var hexX = Math.floor((mx + my + 1) / 2)
-// 	var hexY = Math.floor(Math.floor(my) - hexX/2)
-
-// 	return {x: hexX, y: hexY}
-// }
-
-// var _h = hexToScreen(200 /* map size */ - 1, 0)
-// hexOffsetX = _hexOffsetX - _h.x
-// hexOffsetY = _hexOffsetY - _h.y
-
 function hexToScreen(x, y) {
-	//console.log(x + ", " + y)
-	var sx = 4816 - ((((x + 1) >> 1) << 5 )+ ((x >> 1) << 4) - (y << 4)); //ver1
-	var sy = ((12 * (x >> 1)) + (y * 12)) + 11; // + 8
+	var sx = 4816 - ((((x + 1) >> 1) << 5) + ((x >> 1) << 4) - (y << 4))
+	var sy = ((12 * (x >> 1)) + (y * 12)) + 11
 
 	return {x: sx, y: sy}
 }
-
 
 function hexFromScreen(x, y) {
 	return {x: 0, y: 0}
@@ -202,13 +149,6 @@ heart.draw = function() {
 			offsetX -= imageOffsets[obj.art].x;
 			offsetY -= imageOffsets[obj.art].y;
 		}
-
-		// if(obj.position.x == 94 && obj.position.y == 81) {
-		// 	console.log("scr=" + scr.x + "," + scr.y + "; off=" + imageOffsets[obj.art].x + "," + imageOffsets[obj.art].y + "; size=" +
-		// 		images[obj.art].getWidth() + "," + images[obj.art].getHeight() +
-		// 		"; oscr=" + (scr.x - offsetX - cameraX) + "," + (scr.y - offsetY - cameraY));
-		// 	throw "ok";
-		// }
 
 		heart.graphics.draw(images[obj.art], scr.x - offsetX - cameraX, scr.y - offsetY - cameraY)
 
