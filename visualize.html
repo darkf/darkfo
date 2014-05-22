@@ -25,7 +25,18 @@ function tileToScreen(x, y) {
 }
 
 function tileFromScreen(x, y) {
-	return {x: 0, y: 0}
+	var off_x = -4800 + x
+	var off_y = y
+	var xx = off_x - off_y * 4 / 3
+	var tx = xx / 64
+
+	if (xx >= 0) tx++
+	tx = -tx
+	var yy = off_y + off_x / 4
+	ty = yy / 32
+	if (yy < 0) ty--
+
+	return {x: 99 - Math.round(tx), y: Math.round(ty)}
 }
 
 function hexToScreen(x, y) {
@@ -36,7 +47,81 @@ function hexToScreen(x, y) {
 }
 
 function hexFromScreen(x, y) {
-	return {x: 0, y: 0}
+	var x0 = 4800
+	var y0 = 0
+	var nx, ny
+
+	if (x - x0 < 0)
+		nx = (x - x0 + 1) / 16 - 1
+	else
+		nx = (x - x0) / 16
+
+	if (y - y0 < 0)
+		ny = (y - y0 + 1) / 12 - 1
+	else
+		ny = (y - y0) / 12
+
+	if (Math.abs(nx) % 2 != Math.abs(ny) % 2)
+		nx--;
+
+	var xhBase = x0 + 16 * nx
+	var yhBase = y0 + 12 * ny
+
+	var hx = (4 * (yhBase - y0) - 3 * (xhBase - x0)) / 96
+	var hy = (yhBase - y0) / 12 - hx / 2
+
+	var dx = x - xhBase
+	var dy = y - yhBase
+
+	switch(dy)
+	{
+	  case 0:
+	     if (dx < 12)
+	     {
+	    hy--;
+	    break;
+	 }
+	 if (dx > 18)
+	     {
+	    if (hx % 2 == 1)
+	       hy--;
+	        hx--;
+	        break;
+	     }
+
+	  case 1:
+	     if (dx < 8)
+	     {
+	    hx--;
+	    break;
+	 }
+	 if (dx > 23)
+	     {
+	    if (hx % 2 == 1)
+	       hy--;
+	    hx--;
+	    break;
+	 }
+
+	  case 2:
+	 if (dx < 4)
+	     {
+	    hy--;
+	    break;
+	 }
+	     if (dx > 28)
+	     {
+	    if (hx % 2 == 1)
+	       hy--;
+	        hx--;
+	    break;
+	 }
+	  default:
+	     break;
+	}
+
+
+	return {x: Math.round(hx), y: Math.round(hy)}
 }
 
 var hexOverlay = null
