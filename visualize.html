@@ -231,28 +231,39 @@ heart.draw = function() {
 		if(images[obj.art] === undefined)
 			continue; // skip images we don't have
 
-		var offsetX = Math.floor(images[obj.art].getWidth() / 2) - imageOffsets[obj.art].x
-		var offsetY = images[obj.art].getHeight() - imageOffsets[obj.art].y
-
 		var frameInfo = imageOffsets[obj.art].frameInfo
 		if(frameInfo !== undefined) {
 			var frame = frameInfo[obj.orientation * imageOffsets[obj.art].framesPerDirection]
-			offsetX = Math.floor(frame.w / 2) - imageOffsets[obj.art].x
-			offsetY = frame.h - imageOffsets[obj.art].y
+			var offsetX = Math.floor(frame.w / 2) - imageOffsets[obj.art].x
+			var offsetY = frame.h - imageOffsets[obj.art].y
+			var scrX = scr.x - offsetX, scrY = scr.y - offsetY
+
+			if(scrX + frame.w < cameraX || scrY + frame.h < cameraY ||
+			   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
+				continue;
+
 			heart.ctx.drawImage(images[obj.art].img,
 				frame.x, 0, frame.w, frame.h,
-				scr.x - offsetX - cameraX,
-				scr.y - offsetY - cameraY,
+				scrX - cameraX,
+				scrY - cameraY,
 				frame.w, frame.h
 			)
 		}
-		else
-			heart.graphics.draw(images[obj.art], scr.x - offsetX - cameraX, scr.y - offsetY - cameraY)
+		else {
+			var w = images[obj.art].getWidth()
+			var h = images[obj.art].getHeight()
+			var offsetX = Math.floor(w / 2) - imageOffsets[obj.art].x
+			var offsetY = h - imageOffsets[obj.art].y
+			var scrX = scr.x - offsetX, scrY = scr.y - offsetY
+			if(scrX + w < cameraX || scrY + h < cameraY ||
+			   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
+				continue
+			heart.graphics.draw(images[obj.art], scrX - cameraX, scrY - cameraY)
+		}
 
 		if(obj.position.x == mouseHex.x && obj.position.y == mouseHex.y)
 			heart.graphics.print("tile: " + obj.art + " offset: " + offsetX + ", " + offsetY + ", orientation: " + obj.orientation, 5, 30)
 	}
-
 
 	var tileImg = matrix[mouseTile.y][mouseTile.x]
 	heart.graphics.print("tile: " + tileImg, 5, 60)
