@@ -264,18 +264,12 @@ heart.draw = function() {
 		if(images[obj.art] === undefined)
 			continue; // skip images we don't have
 
-		var offsetX = Math.floor(images[obj.art].getWidth() / 2)
-		var offsetY = images[obj.art].getHeight()
+		var offsetX = Math.floor(images[obj.art].getWidth() / 2) - imageOffsets[obj.art].x
+		var offsetY = images[obj.art].getHeight() - imageOffsets[obj.art].y
 
-		if(imageOffsets[obj.art] !== undefined) {
-			offsetX -= imageOffsets[obj.art].x;
-			offsetY -= imageOffsets[obj.art].y;
-		}
-
-		if(obj.art in critterOffsets) {
-			var off = critterOffsets[obj.art]
-			var framesPerDir = (obj.art === "art/critters/nfasiaaa") ? 25 : 12
-			var frame = off[obj.orientation*framesPerDir]
+		var frameInfo = imageOffsets[obj.art].frameInfo
+		if(frameInfo !== undefined) {
+			var frame = frameInfo[obj.orientation * imageOffsets[obj.art].framesPerDirection]
 			offsetX = Math.floor(frame.w / 2) - imageOffsets[obj.art].x
 			offsetY = frame.h - imageOffsets[obj.art].y
 			heart.ctx.drawImage(images[obj.art].img,
