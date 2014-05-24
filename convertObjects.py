@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, glob
 
 DATA_PATH = "data"
 OUT_DIR = ""
@@ -34,25 +34,24 @@ paths = []
 for tile in tiles:
 	path = tile.rstrip() + ".frm"
 	basename = os.path.splitext(tile.rstrip())[0]
+	basedir = os.path.dirname(basename)
 	#bmp = os.path.join(basePath, basename + ".bmp")
-	out = os.path.abspath(os.path.join(basePath, basename + ".png"))
 
 	if not os.path.exists(os.path.join(dataPath, path)):
 		print "tile", path, "does not exist"
 		continue
 
-	print path, out
-	paths.append((path, out))
+	print path
+	paths.append((path, basedir))
 
-for path,out in paths:
+for path,basedir in paths:
 	os.chdir(os.path.join(dataPath, os.path.dirname(path)))
 	os.system(FRM2BMP_PATH + " " + os.path.basename(path))
 	img = os.path.splitext(os.path.basename(path))[0]
-	bmp = img+".bmp"
-	if not os.path.exists(bmp):
-		if os.path.exists(img+"_000.bmp"):
-			bmp = img+"_000.bmp"
-		else:
-			raise Exception(bmp + " does not exist")
-	os.system("gm convert -type TrueColor -transparent \"rgb(11,0,11)\" " + bmp + " " + out)
+	bmps = glob.glob(img + "*.bmp")
+	for bmp in bmps:
+		basename = os.path.splitext(bmp)[0]
+		filename = os.path.join(basedir, basename) # e.g. art/tiles/BRICK23_000.BMP
+		out = os.path.abspath(os.path.join(basePath, filename + ".png"))
+		os.system("gm convert -type TrueColor -transparent \"rgb(11,0,11)\" " + bmp + " " + out)
 	#print os.system("python " + basePath + "/../frminfo.py " + path)

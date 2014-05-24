@@ -416,7 +416,8 @@ def main():
 				y = object_.position / 200
 				obj = {"type": object_.extra.type,
 					   "position": {"x": x, "y": y},
-					   "elevation": str(object_.elevation+1)}
+					   #"elevation": str(object_.elevation+1)
+					   "orientation": object_.orientation}
 				#if hasattr(object_.extra, "subtype"):
 				#	obj["subtype"] = object_.extra.subtype
 				if hasattr(object_.extra, "artPath"):
