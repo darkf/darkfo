@@ -407,17 +407,16 @@ def main():
 		for elevation in range(map_.numLevels):
 			# break down list of 1000 tiles into a 100x100 2d list
 			tiles = [tile.floor for tile in map_.tiles[elevation]]
-			newmap = []
-			for i in range(100):
-				newmap.append(tiles[i*100:i*100+100])
+			floorMap = [tiles[i*100:i*100+100] for i in range(100)]
 
-			m = {"tiles": [], "objects": []}
+			m = {"tiles": {"floor": [], "roof": []}, "objects": []}
 			if writeTiles:
-				for i,row in enumerate(newmap):
-					row = [stripExt(getProFile(lst, t).rstrip()) for t in row]
-					for tile in row:
+				for i in range(100):
+					floorRow = [stripExt(getProFile(lst, t).rstrip()) for t in floorMap[i]]
+					for tile in floorRow:
 						tileCounter[tile] += 1
-					m["tiles"].append(list(reversed(row))) # reverse because FO's maps are reversed in the X axis
+					# reverse because FO's maps are reversed in the X axis
+					m["tiles"]["floor"].append(list(reversed(floorRow)))
 
 			if writeObjects:
 				for i,object_ in enumerate(map_.objects[elevation].object):

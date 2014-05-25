@@ -4,8 +4,8 @@
 <script src="heart.js"></script>
 <script src="jquery-1.11.1.min.js"></script>
 <script>
-var MAP_NAME = "NCR1"
-var matrix = null
+var MAP_NAME = "SFChina"
+var floorMap = null
 var gObjects = []
 var size = 6
 var tile_width = 80
@@ -141,7 +141,7 @@ var cursor = {x: 10, y: 10}
 
 function changeElevation(level) {
 	currentElevation = level
-	matrix = gMap[level]["tiles"]
+	floorMap = gMap[level]["tiles"]["floor"]
 	gObjects = gMap[level]["objects"]
 }
 
@@ -177,7 +177,7 @@ heart.load = function() {
 	$.get(MAP_NAME+".json", function(map) {
 		gMap = map
 		changeElevation(0)
-		console.log("loaded (" + map.length + " levels, level 0: " + matrix.length + " tiles, " + gObjects.length + " objects on elevation)")
+		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 	}, "json")
 }
 
@@ -198,10 +198,10 @@ heart.draw = function() {
 	var mouseTile = tileFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
 	// draw tile grid
-	if(matrix === null) return;
-	for(var i = 0; i < matrix.length; i++) {
-		for(var j = 0; j < matrix[0].length; j++) {
-			var tile = matrix[j][i]
+	if(floorMap === null) return;
+	for(var i = 0; i < floorMap.length; i++) {
+		for(var j = 0; j < floorMap[0].length; j++) {
+			var tile = floorMap[j][i]
 			var x = i
 			var y = j
 			var img = "art/tiles/" + tile
@@ -274,7 +274,7 @@ heart.draw = function() {
 			heart.graphics.print("tile: " + obj.art + " offset: " + offsetX + ", " + offsetY + ", orientation: " + obj.orientation, 5, 30)
 	}
 
-	var tileImg = matrix[mouseTile.y][mouseTile.x]
+	var tileImg = floorMap[mouseTile.y][mouseTile.x]
 	heart.graphics.print("tile: " + tileImg, 5, 60)
 
 	var scr = tileToScreen(mouseTile.x, mouseTile.y)
