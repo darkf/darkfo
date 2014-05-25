@@ -255,7 +255,10 @@ SceneryInfo = Struct("",
 			Value("subtype", lambda _: "elevator"),
 			Padding(4*2)
 		),
-		scenerytype_stairs: stub("stairs"),
+		scenerytype_stairs: Struct("",
+			Value("subtype", lambda _: "stairs"),
+			Padding(4*2)
+		),
 		scenerytype_ladderup: stub("ladderup"),
 		scenerytype_ladderdown: stub("ladderdown"),
 		scenerytype_generic: Struct("", Value("subtype", lambda _: "generic"))
