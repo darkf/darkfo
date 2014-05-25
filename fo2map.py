@@ -197,7 +197,8 @@ def getCritterArtPath(frmPID):
 
 	return path
 
-itemsLst = loadLst("proto/items/items.lst")
+itemsLst = loadLst("art/items/items.lst")
+itemsProtoLst = loadLst("proto/items/items.lst")
 wallsLst = loadLst("art/walls/walls.lst")
 critterLst = loadLst("art/critters/critters.lst")
 miscLst = loadLst("art/misc/misc.lst")
@@ -205,13 +206,13 @@ sceneryLst = loadLst("art/scenery/scenery.lst")
 sceneryProtoLst = loadLst("proto/scenery/scenery.lst")
 
 ItemInfo = Struct("",
-	Value("subtype", lambda ctx: getProSubType("proto/items/" + getProFile(itemsLst, (ctx._.protoPID & 0xffff) - 1))),
+	Value("subtype", lambda ctx: getProSubType("proto/items/" + getProFile(itemsProtoLst, (ctx._.protoPID & 0xffff) - 1))),
 	Value("type", lambda _: "item"),
+	Value("artPath", lambda ctx: "art/items/" + stripExt(getProFile(itemsLst, (ctx._.frmPID & 0xffff)))),
 	Switch("info", lambda ctx: ctx.subtype, {
 		itemtype_ammo: Struct("",
 			Value("subtype", lambda _: "ammo"),
 			UBInt32("ammoCount"),
-			Value("artPath", lambda ctx: "art/items/" + stripExt(getProFile(wallsLst, (ctx._._.frmPID & 0xffff))))
 		),
 		itemtype_weapon: Struct("",
 			Value("subtype", lambda _: "weapon"),

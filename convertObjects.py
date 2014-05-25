@@ -24,6 +24,7 @@ basePath = os.path.abspath(OUT_DIR)
 
 checkdir(basePath)
 checkdir(os.path.join(basePath, "art"))
+checkdir(os.path.join(basePath, "art/items"))
 checkdir(os.path.join(basePath, "art/walls"))
 checkdir(os.path.join(basePath, "art/scenery"))
 checkdir(os.path.join(basePath, "art/tiles"))
