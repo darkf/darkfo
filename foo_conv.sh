@@ -1,1 +1,0 @@
-gm montage $1_*.bmp -type TrueColor -transparent 'rgb(11,0,11)' -background transparent -geometry +0+0 -tile 99999x1 $2
