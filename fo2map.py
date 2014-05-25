@@ -336,18 +336,18 @@ fomap = Struct("map",
 	SBInt32("numGlobalVars"),
 	SBInt32("mapID"),
 	SBInt32("time"),
-	#Array(44, SBInt32("unknown2")),
 	Padding(4*44),
 
 	Array(lambda ctx: ctx.numGlobalVars, SBInt32("gvars")),
 	Array(lambda ctx: ctx.numLocalVars, SBInt32("lvars")),
 
-	# tiles
-	# todo: elevation
-	Array(10000,
-		Struct("tiles",
-			UBInt16("roof"),
-			UBInt16("floor")
+	# floor/roof tiles
+	Array(lambda ctx: ctx.numLevels,
+		Array(10000,
+			Struct("tiles",
+				UBInt16("roof"),
+				UBInt16("floor")
+			)
 		)
 	),
 	#Padding(10000 * 4),
@@ -356,14 +356,10 @@ fomap = Struct("map",
 
 	# map
 	SBInt32("totalObjects"),
-	# todo: elevation as well
-	SBInt32("totalObjectsLevel"),
-	Array(lambda ctx: ctx.totalObjectsLevel, object_)
-
-	#Array(5,
-	#	SBInt32("count"),
-	#	
-	#)
+	Array(lambda ctx: ctx.numLevels, Struct("objects",
+		SBInt32("totalObjectsLevel"),
+		Array(lambda ctx: ctx.totalObjectsLevel, object_)
+	))
 )
 
 def main():
@@ -379,22 +375,17 @@ def main():
 		if map_.version != 20:
 			print "not a FO2 map"
 			sys.exit(1)
-		#print map_
-		if map_.numLevels != 1:
-			raise Exception("elevation isn't 1")
-		print len(map_.tiles), "tiles"
+		print "elevation:", map_.numLevels
+		print sum(len(level) for level in map_.tiles), "tiles"
 		print map_.totalObjects, "objects"
-		print map_.totalObjectsLevel, "objects on level 1"
+		print map_.objects[0].totalObjectsLevel, "objects on level 1"
+
+		if map_.totalObjects != sum(level.totalObjectsLevel for level in map_.objects):
+			raise Exception("totalObjects != sum of objects in each level?")
 
 		#print map_.object[0]
 
-		# quick export
-		# break down list of 1000 tiles into a 100x100 2d list
-		tiles = [tile.floor for tile in map_.tiles]
-		newmap = []
-		for i in range(100):
-			newmap.append(tiles[i*100:i*100+100])
-
+		elevm = [] # each elevation
 		lst = loadLst("art/tiles/tiles.lst")
 		tileCounter = Counter()
 		objectCounter = Counter()
@@ -402,30 +393,38 @@ def main():
 		writeObjects = True
 		writeImageList = True
 
-		m = {"tiles": [], "objects": []}
-		if writeTiles:
-			for i,row in enumerate(newmap):
-				row = [stripExt(getProFile(lst, t).rstrip()) for t in row]
-				for tile in row:
-					tileCounter[tile] += 1
-				m["tiles"].append(list(reversed(row))) # reverse because FO's maps are reversed in the X axis
+		for elevation in range(map_.numLevels):
+			# break down list of 1000 tiles into a 100x100 2d list
+			tiles = [tile.floor for tile in map_.tiles[elevation]]
+			newmap = []
+			for i in range(100):
+				newmap.append(tiles[i*100:i*100+100])
 
-		if writeObjects:
-			for i,object_ in enumerate(map_.object):
-				x = object_.position % 200
-				y = object_.position / 200
-				obj = {"type": object_.extra.type,
-					   "position": {"x": x, "y": y},
-					   #"elevation": str(object_.elevation+1)
-					   "orientation": object_.orientation}
-				#if hasattr(object_.extra, "subtype"):
-				#	obj["subtype"] = object_.extra.subtype
-				if hasattr(object_.extra, "artPath"):
-					obj["art"] = object_.extra.artPath
-					objectCounter[object_.extra.artPath] += 1
-				m["objects"].append(obj)
+			m = {"tiles": [], "objects": []}
+			if writeTiles:
+				for i,row in enumerate(newmap):
+					row = [stripExt(getProFile(lst, t).rstrip()) for t in row]
+					for tile in row:
+						tileCounter[tile] += 1
+					m["tiles"].append(list(reversed(row))) # reverse because FO's maps are reversed in the X axis
 
-		json.dump(m, open(stripExt(MAP_FILE) + ".json", "w"))
+			if writeObjects:
+				for i,object_ in enumerate(map_.objects[elevation].object):
+					x = object_.position % 200
+					y = object_.position / 200
+					obj = {"type": object_.extra.type,
+						   "position": {"x": x, "y": y},
+						   "orientation": object_.orientation}
+					#if hasattr(object_.extra, "subtype"):
+					#	obj["subtype"] = object_.extra.subtype
+					if hasattr(object_.extra, "artPath"):
+						obj["art"] = object_.extra.artPath
+						objectCounter[object_.extra.artPath] += 1
+					m["objects"].append(obj)
+
+			elevm.append(m)
+
+		json.dump(elevm, open(stripExt(MAP_FILE) + ".json", "w"))
 
 		if writeImageList:
 			images = list("art/tiles/" + x for x in tileCounter) + list(objectCounter)

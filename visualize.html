@@ -4,7 +4,7 @@
 <script src="heart.js"></script>
 <script src="jquery-1.11.1.min.js"></script>
 <script>
-var MAP_NAME = "SFChina"
+var MAP_NAME = "NCR1"
 var matrix = null
 var gObjects = []
 var size = 6
@@ -16,6 +16,7 @@ var cameraX = 3490
 var cameraY = 1365//1200
 var showHexOverlay = false
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
+var currentElevation = 0
 
 function tileToScreen(x, y) {
 	x = 99 - x // this algorithm expects x to be reversed
@@ -138,6 +139,12 @@ for(var i = 0; i < 200; i++) {
 
 var cursor = {x: 10, y: 10}
 
+function changeElevation(level) {
+	currentElevation = level
+	matrix = gMap[level]["tiles"]
+	gObjects = gMap[level]["objects"]
+}
+
 heart.preload = function() {
 	function load(file) {
 		heart.graphics.newImage(file+".png", function(r) { images[file] = r; })
@@ -168,9 +175,9 @@ heart.preload = function() {
 heart.load = function() {
 	heart.attach("cnv");
 	$.get(MAP_NAME+".json", function(map) {
-		matrix = map["tiles"]
-		gObjects = map["objects"]
-		console.log("loaded (" + matrix.length + " tiles, " + gObjects.length + " objects)")
+		gMap = map
+		changeElevation(0)
+		console.log("loaded (" + map.length + " levels, level 0: " + matrix.length + " tiles, " + gObjects.length + " objects on elevation)")
 	}, "json")
 }
 
@@ -179,6 +186,8 @@ heart.keydown = function(k) {
 	if(k == 'right') cameraX += 15
 	if(k == 'left') cameraX -= 15
 	if(k == 'up') cameraY -= 15
+	if(k == 'q') { if(currentElevation-1 >= 0) changeElevation(currentElevation-1) }
+	if(k == 'e') { if(currentElevation+1 < gMap.length) changeElevation(currentElevation+1) }
 }
 
 heart.draw = function() {
