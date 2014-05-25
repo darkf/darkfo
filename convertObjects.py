@@ -54,7 +54,7 @@ for path,basedir in paths:
 		else:
 			os.system(FRM2BMP_PATH + " " + os.path.basename(path))
 	bmps = glob.glob(img + "*.bmp")
-	bmps_multiframe = [bmp for bmp in bmps if '_' in bmp]
+	bmps_multiframe = [bmp for bmp in bmps if '_' in bmp and '_' not in img]
 	if len(bmps_multiframe) == 0:
 		# single frame
 		bmp = bmps[0]

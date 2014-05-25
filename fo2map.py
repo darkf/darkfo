@@ -243,6 +243,13 @@ CritterInfo = Struct("",
 	Padding(4*2)
 )
 
+Ladder = Struct("",
+	IfThenElse("foo", lambda ctx: ctx._._._._.version == 20,
+		Padding(2*4), # fallout 2
+		Padding(4) # fallout 1
+	)
+)
+
 SceneryInfo = Struct("",
 	Value("type", lambda _: "scenery"),
 	Value("artPath", lambda ctx: "art/scenery/" + stripExt(getProFile(sceneryLst, ctx._.frmPID & 0xffff))),
@@ -260,8 +267,8 @@ SceneryInfo = Struct("",
 			Value("subtype", lambda _: "stairs"),
 			Padding(4*2)
 		),
-		scenerytype_ladderup: stub("ladderup"),
-		scenerytype_ladderdown: stub("ladderdown"),
+		scenerytype_ladderup: Ladder,
+		scenerytype_ladderdown: Ladder,
 		scenerytype_generic: Struct("", Value("subtype", lambda _: "generic"))
 	})
 )
