@@ -187,6 +187,12 @@ heart.load = function() {
 		changeElevation(0)
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 	}, "json")
+
+	window.onmousewheel = function(evt) {
+		var delta = Math.max(-1, Math.min(1, (evt.wheelDelta || -evt.detail)))
+		onMousewheelScroll(delta)
+        if (evt.preventDefault) evt.preventDefault();
+	}
 }
 
 heart.keydown = function(k) {
@@ -219,10 +225,20 @@ heart.mousereleased = function() {
 }
 
 heart.mousemoved = function(x,y) {
-	if(isMouseDown && currentSelection !== null) {
+	if(isMouseDown && currentSelection !== null && currentSelection.type === "object") {
 		// move selected object
 		var mouseHex = hexFromScreen(x + cameraX, y + cameraY)
 		currentSelection.selection.position = mouseHex
+	}
+}
+
+function onMousewheelScroll(delta) {
+	if(currentSelection !== null && currentSelection.type === "object") {
+		// change orientation of selected object
+		var orientation = currentSelection.selection.orientation + delta
+		if(orientation < 0) orientation = 5
+		else if(orientation > 5) orientation = 0
+		currentSelection.selection.orientation = orientation
 	}
 }
 
