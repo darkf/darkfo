@@ -4,10 +4,11 @@
 <script src="heart.js"></script>
 <script src="jquery-1.11.1.min.js"></script>
 <script>
-var MAP_NAME = "SFChina"
+var MAP_NAME = "NAVARRO"
 var floorMap = null
 var roofMap = null
 var gObjects = []
+var imageGroups = {}
 var size = 6
 var tile_width = 80
 var tile_height = 36
@@ -153,18 +154,22 @@ function changeElevation(level) {
 	gObjects = gMap[level]["objects"]
 }
 
-heart.preload = function() {
-	function load(file) {
-		heart.graphics.newImage(file+".png", function(r) { images[file] = r; })
-	}
+function getGroupByName(art) {
+	return art.split("/")[1].slice(null, -1)
+}
 
+function loadImage(art, f) {
+	heart.graphics.newImage(art+".png", function(r) { images[art] = r; if(f !== undefined) f(art, r.img) })
+}
+
+heart.preload = function() {
 	$.ajaxSetup({async: false})
 
 	var loadImages = null
 	$.get(MAP_NAME + ".images.json", function(images_) { loadImages = images_ }, "json")
 
 	for(var i = 0; i < loadImages.length; i++)
-		load(loadImages[i])
+		loadImage(loadImages[i])
 	console.log("loaded " + loadImages.length + " tiles")
 
 	var loadOffsets = null
@@ -177,6 +182,13 @@ heart.preload = function() {
 	}
 
 	console.log("loaded " + numOffsets + " offsets")
+
+	$.get("images.json", function(images) {
+		imageGroups = images
+		for(var group in imageGroups)
+			imageGroups[group].loaded = false
+	}, "json")
+
 	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r })
 }
 
@@ -193,6 +205,40 @@ heart.load = function() {
 		onMousewheelScroll(delta)
         if (evt.preventDefault) evt.preventDefault();
 	}
+
+	$(".imagegroupheader").click(function() {
+		var el = $(this).parent(), group = el.attr("group");
+		el.toggleClass("collapsed")
+		if(!el.hasClass("collapsed") && !imageGroups[group].loaded) {
+			// load group...
+			console.log("loading group " + group)
+
+			var loaded = 0
+			for(var i = 0; i < imageGroups[group].length; i++) {
+				loadImage(imageGroups[group][i].fullname, function(art, img) {
+					imageOffsets[art] = {x: 0, y: 0} // hack
+
+					$(img).attr("group", group)
+					$(img).attr("art", art)
+					$(img).attr("title", art)
+					$(img).on("click", function(e) {
+						var art = $(e.target).attr("art")
+						var group = $(e.target).attr("group")
+						console.log("click: " + art + " " + group)
+						gObjects.push({type: group, orientation: 0, art: art, position: {x: cursor.x, y: cursor.y}})
+						currentSelection = {type: "object", selection: gObjects[gObjects.length-1]}
+						isMouseDown = true
+					})
+					el.append(img)
+					el.append(" ")
+				})
+				loaded++
+			}
+
+			console.log("loaded " + loaded + " images from group " + group)
+			imageGroups[group].loaded = true
+		}
+	})
 }
 
 heart.keydown = function(k) {
@@ -225,6 +271,8 @@ heart.mousereleased = function() {
 }
 
 heart.mousemoved = function(x,y) {
+	cursor = hexFromScreen(x + cameraX, y + cameraY)
+
 	if(isMouseDown && currentSelection !== null && currentSelection.type === "object") {
 		// move selected object
 		var mouseHex = hexFromScreen(x + cameraX, y + cameraY)
@@ -283,9 +331,6 @@ heart.draw = function() {
 				}
 			}
 		}
-	} else {
-		var scr = hexToScreen(mouseHex.x, mouseHex.y)
-		heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
 	}
 
 	// draw objects
@@ -335,6 +380,10 @@ heart.draw = function() {
 	if(showRoof && roofMap !== null)
 		drawTileMap(roofMap, -96);
 
+	if(!showHexOverlay) {
+		var scr = hexToScreen(cursor.x, cursor.y)
+		heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
+	}
 
 	var tileImg = floorMap[mouseTile.y][mouseTile.x]
 	heart.graphics.print("tile: " + tileImg, 5, 60)
@@ -348,10 +397,44 @@ heart.draw = function() {
 }
 
 </script>
+<style>
+	#groupcontainer {
+		float: right;
+		width: 25%;
+	}
+
+	.imagegroup {
+		border: 1px solid black;
+		height: 45%;
+		overflow: auto;
+	}
+
+	.imagegroupheader {
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+	}
+
+	.collapsed {
+		height: 1.2em;
+		overflow: hidden;
+	}
+
+	.collapsed img {
+		display: none;
+	}
+</style>
 </head>
 <body>
 
 <canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
+
+<div id="groupcontainer">
+	<div class="imagegroup collapsed" group="wall"><div class="imagegroupheader">walls</div></div><br>
+	<div class="imagegroup collapsed" group="critter"><div class="imagegroupheader">critters</div></div><br>
+	<div class="imagegroup collapsed" group="item"><div class="imagegroupheader">items</div></div><br>
+	<div class="imagegroup collapsed" group="misc"><div class="imagegroupheader">misc</div></div>
+</div>
 
 </body>
 </html>
