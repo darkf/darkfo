@@ -4,7 +4,7 @@
 <script src="heart.js"></script>
 <script src="jquery-1.11.1.min.js"></script>
 <script>
-var MAP_NAME = "NAVARRO"
+var MAP_NAME = "SFChina"
 var floorMap = null
 var roofMap = null
 var gObjects = []
@@ -216,7 +216,8 @@ heart.load = function() {
 			var loaded = 0
 			for(var i = 0; i < imageGroups[group].length; i++) {
 				loadImage(imageGroups[group][i].fullname, function(art, img) {
-					imageOffsets[art] = {x: 0, y: 0} // hack
+					if(imageOffsets[art] === undefined)
+						imageOffsets[art] = {x: 0, y: 0} // hack
 
 					$(img).attr("group", group)
 					$(img).attr("art", art)
