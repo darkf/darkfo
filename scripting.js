@@ -87,6 +87,11 @@ var scriptingEngine = (function() {
 		dialogueOptionProcs[id]()
 	}
 
+	function dialogueExit() {
+		$("#dialogue").css("visibility", "hidden") // todo: some sort of transition
+		dialogueOptionProcs = []
+	}
+
 	var ScriptProto = {
 		dude_obj: "<Dude Object>",
 		'true': true,
@@ -144,7 +149,11 @@ var scriptingEngine = (function() {
 		tile_contains_pid_obj: function(tile, elevation, pid) { stub("tile_contains_pid_obj", arguments) },
 
 		// dialogue
+		Node999: function() { // exit dialogue
+			dialogueExit()
+		},
 		gdialog_set_barter_mod: function(mod) { stub("gdialog_set_barter_mod", arguments) },
+		gdialog_mod_barter: function(mod) { stub("gdialog_mod_barter", arguments) }, // todo: switch to barter mode
 		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) {
 			$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
 			stub("start_gdialog", arguments)
@@ -230,6 +239,12 @@ var scriptingEngine = (function() {
 			obj.scriptName = name
 			scriptObject = obj
 			console.log('script obj: ' + obj)
+
+			// remove any defined Node999 (exit dialogue) procedures
+			// so we can take them over
+			if(obj.hasOwnProperty("Node999"))
+				delete obj.Node999
+
 		}, "text").fail(function(err) { console.log("script loading error: "  + err) })
 
 		return scriptObject
