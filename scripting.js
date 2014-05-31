@@ -132,6 +132,14 @@ var scriptingEngine = (function() {
 		tile_distance: function(a, b) { stub("tile_distance", arguments) },
 		tile_num: function(obj) { stub("tile_num", arguments) },
 
+		// animation
+		reg_anim_func: function(_, _) { stub("reg_anim_func", arguments) },
+		reg_anim_animate_forever: function(obj, anim) {
+			if(!isGameObject(obj)) return
+			//console.log("ANIM FOREVER: " + obj.art + " / " + anim)
+			stub("reg_anim_animate_forever", arguments)
+		},
+
 		// party
 		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 }
 	}
@@ -192,6 +200,7 @@ var scriptingEngine = (function() {
 		gameObjects = objects
 		gameElevation = elevation
 
+		mapScript.combat_is_initialized = 0
 		if(mapScript.map_update_p_proc !== undefined)
 			mapScript.map_update_p_proc()
 
@@ -199,11 +208,14 @@ var scriptingEngine = (function() {
 		for(var i = 0; i < gameObjects.length; i++) {
 			var script = gameObjects[i]._script
 			if(script !== undefined && script.map_update_p_proc !== undefined) {
+				script.combat_is_initialized = 0
+				script.self_obj = gameObjects[i]
 				script.map_update_p_proc()
 				updated++
 			}
 		}
-		info("updated " + updated + " objects")
+
+		// info("updated " + updated + " objects")
 	}
 
 	function enterMap(mapScript, objects, elevation) {
@@ -214,6 +226,8 @@ var scriptingEngine = (function() {
 			console.log("calling map enter")
 			mapScript.map_enter_p_proc()
 		}
+
+		// todo: update game objects
 	}
 
 	function init(dude) {
