@@ -20,6 +20,9 @@ var showHexOverlay = false
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
 var currentElevation = 0
 
+var player = {position: {x: 105, y: 90}, orientation: 0, art: "art/critters/NMVALTAA", isPlayer: true}
+player.toString = function() { return "The Dude" }
+
 var showFloor = true
 var showRoof = true
 var showObjects = true
@@ -151,7 +154,7 @@ function changeElevation(level) {
 	roofMap  = gMap[level]["tiles"]["roof"]
 	gObjects = gMap[level]["objects"]
 
-	scriptingEngine.updateMap(MAP_NAME)
+	scriptingEngine.updateMap(MAP_NAME, gObjects, currentElevation)
 }
 
 heart.preload = function() {
@@ -188,9 +191,9 @@ heart.load = function() {
 		changeElevation(0)
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 
-		scriptingEngine.init()
+		scriptingEngine.init(player)
 		scriptingEngine.loadScript(MAP_NAME)
-		scriptingEngine.enterMap(MAP_NAME)
+		scriptingEngine.enterMap(MAP_NAME, gObjects, currentElevation)
 	}, "json")
 }
 
@@ -254,6 +257,7 @@ heart.draw = function() {
 
 	// draw objects
 	if(showObjects) {
+		gObjects.push(player)
 		for(var i = 0; i < gObjects.length; i++) {
 			var obj = gObjects[i]
 			var scr = hexToScreen(obj.position.x, obj.position.y)
@@ -294,6 +298,7 @@ heart.draw = function() {
 			if(obj.position.x === mouseHex.x && obj.position.y === mouseHex.y)
 				heart.graphics.print("tile: " + obj.art + " offset: " + offsetX + ", " + offsetY + ", orientation: " + obj.orientation, 5, 30)
 		}
+		gObjects.length -= 1 // hack: to draw player
 	}
 
 	if(showRoof && roofMap !== null)

@@ -1,5 +1,15 @@
 var scriptingEngine = (function() {
-	scriptObjects = {};
+	var scriptObjects = {}
+	var gameObjects = []
+	var gameElevation = 0
+	var dudeObject = null
+	var mapVars = {
+		"Raiders2": {
+			0: 0, // MVAR_Been_Here_1
+			1: 0, // MVAR_Been_Here_2
+			2: 0, // MVAR_Been_Here_1
+		}
+	}
 
 	function stub(name, args) {
 		var a = ""
@@ -17,6 +27,10 @@ var scriptingEngine = (function() {
 		//console.log("log: " + name + ": " + a)
 	}
 
+	function warn(msg) {
+		console.log("WARNING: " + msg)
+	}
+
 	// http://stackoverflow.com/a/23304189/1958152
 	function seed(s) {
 	    Math.random = function() {
@@ -28,6 +42,18 @@ var scriptingEngine = (function() {
 		return Math.floor(Math.random() * (max - min + 1)) + min
 	}
 
+	function isGameObject(obj) {
+		if(obj.isPlayer) return true
+		for(var i = 0; i < gameObjects.length; i++) {
+			if(gameObjects[i] === obj) {
+				console.log("is GO: " + obj.toString())
+				return true
+			}
+		}
+		console.log("is NOT GO: " + obj.toString())
+		return false
+	}
+
 	var ScriptProto = {
 		dude_obj: "<Dude Object>",
 		'true': true,
@@ -35,7 +61,16 @@ var scriptingEngine = (function() {
 		set_global_var: function(gvar, value) { stub("set_global_var", arguments) },
 		set_local_var: function(lvar, value) { stub("set_local_var", arguments) },
 		local_var: function(lvar) { stub("local_var", arguments) },
-		map_var: function(mvar) { stub("map_var", arguments) },
+		map_var: function(mvar) {
+			if(mapVars[this.scriptName] !== undefined && mapVars[this.scriptName][mvar] !== undefined)
+				return mapVars[this.scriptName][mvar]
+			warn("map_var: unknown mvar " + mvar + " on script " + this.scriptName)
+		},
+		set_map_var: function(mvar, value) {
+			if(mapVars[this.scriptName] === undefined)
+				mapVars[this.scriptName] = {}
+			mapVars[this.scriptName][mvar] = value
+		},
 		global_var: function(gvar) { stub("global_var", arguments) },
 		random: function(min, max) { log("random", arguments); return getRandomInt(min, max) },
 		debug_msg: function(msg) { console.log("DEBUG MSG: " + msg) },
@@ -46,7 +81,8 @@ var scriptingEngine = (function() {
 		// critters
 		get_critter_stat: function(obj, stat) { stub("get_critter_stat", arguments); return 10 },
 		critter_add_trait: function(obj, traitType, trait, amount) { stub("critter_add_trait", arguments) },
-		elevation: function(obj) { stub("elevation", arguments) },
+		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
+								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
@@ -69,34 +105,45 @@ var scriptingEngine = (function() {
 			var f = new Function(code)
 			f.prototype = ScriptProto
 			var obj = new f()
+			obj.scriptName = name
 			console.log('script obj: ' + obj)
 			scriptObjects[name] = obj
 		}, "text").fail(function(err) { console.log("script loading error: "  + err) })
 	}
 
-	function updateMap(mapName) {
+	function updateMap(mapName, objects, elevation) {
 		var script = scriptObjects[mapName];
 		if(script === undefined)
 			return;
+
+		gameObjects = objects
+		gameElevation = elevation
+
 		if(script.map_update_p_proc !== undefined) {
 			console.log("calling map update")
 			script.map_update_p_proc()
 		}
 	}
 
-	function enterMap(mapName) {
+	function enterMap(mapName, objects, elevation) {
 		var script = scriptObjects[mapName];
 		if(script === undefined)
 			return;
+
+		gameObjects = objects
+		gameElevation = elevation
+
 		if(script.map_enter_p_proc !== undefined) {
 			console.log("calling map enter")
 			script.map_enter_p_proc()
 		}
 	}
 
-	function init() {
+	function init(dude) {
 		//console.log("hi")
 		seed(123)
+		dudeObject = dude
+		ScriptProto.dude_obj = dudeObject
 		/*$.ajaxSetup({error: function(_, status, err) {
 			console.log("AJAX error: status: " + status + ", err: " + err)
 		}})*/
