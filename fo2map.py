@@ -398,8 +398,10 @@ def main():
 
 		elevm = [] # each elevation
 		lst = loadLst("art/tiles/tiles.lst")
+		scriptLst = loadLst("scripts/scripts.lst")
 		tileCounter = Counter()
 		objectCounter = Counter()
+		scriptCounter = Counter()
 		writeTiles = True
 		writeObjects = True
 		writeImageList = True
@@ -435,6 +437,10 @@ def main():
 					if hasattr(object_.extra, "artPath"):
 						obj["art"] = object_.extra.artPath
 						objectCounter[object_.extra.artPath] += 1
+					if hasattr(object_, "scriptID"):
+						scriptName = stripExt(getProFile(scriptLst, object_.scriptID).split()[0])
+						obj["script"] = scriptName
+						scriptCounter[scriptName] += 1
 					m["objects"].append(obj)
 
 			elevm.append(m)
@@ -450,6 +456,8 @@ def main():
 			print "art/tiles/" + tile
 		for obj in objectCounter:
 			print obj
+		for script in scriptCounter:
+			print script
 
 if __name__ == '__main__':
 	main()
