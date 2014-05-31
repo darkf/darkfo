@@ -249,7 +249,7 @@ heart.keydown = function(k) {
 		var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
-				console.log("y")
+				console.log("object at index " + i)
 				if(gObjects[i]._script && gObjects[i]._script.talk_p_proc !== undefined) {
 					console.log("calling talk proc")
 					gObjects[i]._script.talk_p_proc()

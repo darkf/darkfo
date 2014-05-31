@@ -143,7 +143,11 @@ var scriptingEngine = (function() {
 		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) { stub("start_gdialog", arguments) },
 		gSay_Start: function() { stub("gSay_Start", arguments) },
 		//gSay_Option: function(msgList, msgID, target, reaction) { stub("gSay_Option", arguments) },
-		gSay_Reply: function(msgList, msgID) { stub("gSay_Reply", arguments) },
+		gSay_Reply: function(msgList, msgID) {
+			var msg = getScriptMessage(msgList, msgID)
+			console.log("REPLY: " + msg)
+			stub("gSay_Reply", arguments)
+		},
 		gSay_End: function() { stub("gSay_End", arguments) },
 		end_dialogue: function() { stub("end_dialogue", arguments) },
 		giQ_Option: function(iqTest, msgList, msgID, target, reaction) {
