@@ -15,6 +15,7 @@ var scriptingEngine = (function() {
 	var scriptIDs = {
 		800: "Raiders2",
 		14: "GENERIC",
+		825: "FCGUNMER",
 	}
 	var scriptMessages = {}
 
@@ -119,7 +120,11 @@ var scriptingEngine = (function() {
 
 		// critters
 		get_critter_stat: function(obj, stat) { stub("get_critter_stat", arguments); return 10 },
+		has_trait: function(traitType, obj, trait) { stub("has_trait", arguments) },
 		critter_add_trait: function(obj, traitType, trait, amount) { stub("critter_add_trait", arguments) },
+		item_caps_total: function(obj) { stub("item_caps_total", arguments) },
+		item_caps_adjust: function(obj, amount) { stub("item_caps_adjust", arguments) },
+		move_obj_inven_to_obj: function(obj, other) { stub("move_obj_inven_to_obj", arguments) },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
 
@@ -131,6 +136,21 @@ var scriptingEngine = (function() {
 		tile_distance_objs: function(a, b) { stub("tile_distance_objs", arguments) },
 		tile_distance: function(a, b) { stub("tile_distance", arguments) },
 		tile_num: function(obj) { stub("tile_num", arguments) },
+		tile_contains_pid_obj: function(tile, elevation, pid) { stub("tile_contains_pid_obj", arguments) },
+
+		// dialogue
+		gdialog_set_barter_mod: function(mod) { stub("gdialog_set_barter_mod", arguments) },
+		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) { stub("start_gdialog", arguments) },
+		gSay_Start: function() { stub("gSay_Start", arguments) },
+		//gSay_Option: function(msgList, msgID, target, reaction) { stub("gSay_Option", arguments) },
+		gSay_Reply: function(msgList, msgID) { stub("gSay_Reply", arguments) },
+		gSay_End: function() { stub("gSay_End", arguments) },
+		end_dialogue: function() { stub("end_dialogue", arguments) },
+		giQ_Option: function(iqTest, msgList, msgID, target, reaction) {
+			var msg = getScriptMessage(msgList, msgID)
+			console.log("DIALOGUE OPTION: " + msg + " [INT " + ((iqTest >= 0) ? (">="+iqTest) : ("<="+-iqTest)) + "]")
+			stub("giQ_Option", arguments)
+		},
 
 		// animation
 		reg_anim_func: function(_, _) { stub("reg_anim_func", arguments) },
@@ -227,7 +247,16 @@ var scriptingEngine = (function() {
 			mapScript.map_enter_p_proc()
 		}
 
-		// todo: update game objects
+		var updated = 0
+		for(var i = 0; i < gameObjects.length; i++) {
+			var script = gameObjects[i]._script
+			if(script !== undefined && script.map_enter_p_proc !== undefined) {
+				script.combat_is_initialized = 0
+				script.self_obj = gameObjects[i]
+				script.map_enter_p_proc()
+				updated++
+			}
+		}
 	}
 
 	function init(dude) {

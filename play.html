@@ -5,7 +5,7 @@
 <script src="jquery-1.11.1.min.js"></script>
 <script src="scripting.js"></script>
 <script>
-var MAP_NAME = "Raiders2"
+var MAP_NAME = "SFChina"
 var gMapScript = null
 var floorMap = null
 var roofMap = null
@@ -15,8 +15,8 @@ var tile_width = 80
 var tile_height = 36
 var images = {}
 var imageOffsets = {}
-var cameraX = 3490
-var cameraY = 1365//1200
+var cameraX = 5080
+var cameraY = 1545//1200
 var showHexOverlay = false
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
 var currentElevation = 0
@@ -163,7 +163,8 @@ function loadObjectScripts(objects) {
 		if(scriptName === undefined || objects[i]._script !== undefined) continue
 		if(goodScripts[scriptName] === false) continue
 
-		console.log("loading " + scriptName + " for " + objects[i].art + " (" + objects[i].type + ")")
+		console.log("loading " + scriptName + " for " + objects[i].art + " (" + objects[i].type + ")" +
+			" @ " + objects[i].position.x + ", " + objects[i].position.y)
 		var script = scriptingEngine.loadScript(scriptName)
 		if(script === null) {
 			console.log("load script failed for " + scriptName)
@@ -243,6 +244,20 @@ heart.keydown = function(k) {
 	if(k == 'r') { showRoof = !showRoof }
 	if(k == 'f') { showFloor = !showFloor }
 	if(k == 'o') { showObjects = !showObjects }
+	if(k == 't') {
+		var mousePos = heart.mouse.getPosition()
+		var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
+		for(var i = 0; i < gObjects.length; i++) {
+			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
+				console.log("y")
+				if(gObjects[i]._script && gObjects[i]._script.talk_p_proc !== undefined) {
+					console.log("calling talk proc")
+					gObjects[i]._script.talk_p_proc()
+				}
+				break
+			}
+		}
+	}
 }
 
 function drawTileMap(matrix, offsetY) {
