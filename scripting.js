@@ -18,6 +18,7 @@ var scriptingEngine = (function() {
 		825: "FCGUNMER",
 	}
 	var scriptMessages = {}
+	var dialogueOptionProcs = []
 
 	function stub(name, args) {
 		var a = ""
@@ -82,6 +83,10 @@ var scriptingEngine = (function() {
 		return scriptMessages[scriptIDs[id]][msg]
 	}
 
+	function dialogueReply(id) {
+		dialogueOptionProcs[id]()
+	}
+
 	var ScriptProto = {
 		dude_obj: "<Dude Object>",
 		'true': true,
@@ -140,12 +145,16 @@ var scriptingEngine = (function() {
 
 		// dialogue
 		gdialog_set_barter_mod: function(mod) { stub("gdialog_set_barter_mod", arguments) },
-		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) { stub("start_gdialog", arguments) },
+		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) {
+			$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
+			stub("start_gdialog", arguments)
+		},
 		gSay_Start: function() { stub("gSay_Start", arguments) },
 		//gSay_Option: function(msgList, msgID, target, reaction) { stub("gSay_Option", arguments) },
 		gSay_Reply: function(msgList, msgID) {
 			var msg = getScriptMessage(msgList, msgID)
 			console.log("REPLY: " + msg)
+			$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
 			stub("gSay_Reply", arguments)
 		},
 		gSay_End: function() { stub("gSay_End", arguments) },
@@ -153,6 +162,12 @@ var scriptingEngine = (function() {
 		giQ_Option: function(iqTest, msgList, msgID, target, reaction) {
 			var msg = getScriptMessage(msgList, msgID)
 			console.log("DIALOGUE OPTION: " + msg + " [INT " + ((iqTest >= 0) ? (">="+iqTest) : ("<="+-iqTest)) + "]")
+			var that = this
+			dialogueOptionProcs.push(function() {
+				$("#dialogue").append(msg + "<br>")
+				target.call(that)
+			})
+			$("#dialogue").append("<a href=\"javascript:dialogueReply(" + (dialogueOptionProcs.length-1) + ")\">" + msg + "</a><br>")
 			stub("giQ_Option", arguments)
 		},
 
@@ -273,5 +288,5 @@ var scriptingEngine = (function() {
 		}})*/
 	}
 
-	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript}
+	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript, dialogueReply: dialogueReply}
 })()

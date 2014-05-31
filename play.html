@@ -367,11 +367,30 @@ heart.draw = function() {
 	heart.graphics.print("mt: " + mouseTile.x + "," + mouseTile.y, 100, 15)
 }
 
+function dialogueReply(id) {
+	scriptingEngine.dialogueReply(id)
+}
+
 </script>
+<style>
+	body {
+		font-family: sans-serif;
+	}
+
+	#dialogue {
+		float: right;
+		width: 30%;
+		height: 60%;
+		border: 1px solid black;
+		visibility: hidden;
+	}
+</style>
 </head>
 <body>
 
 <canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
+
+<div id="dialogue"></div>
 
 </body>
 </html>
