@@ -10,8 +10,12 @@ var scriptingEngine = (function() {
 			2: 0, // MVAR_Been_Here_1
 		}
 	}
+	var globalVars = {
+		88: 0, // GVAR_VAULT_RAIDERS
+	}
 	var scriptIDs = {
-		800: "Raiders2"
+		800: "Raiders2",
+		14: "GENERIC",
 	}
 	var scriptMessages = {}
 
@@ -91,12 +95,21 @@ var scriptingEngine = (function() {
 				mapVars[this.scriptName] = {}
 			mapVars[this.scriptName][mvar] = value
 		},
-		global_var: function(gvar) { stub("global_var", arguments) },
+		global_var: function(gvar) {
+			if(globalVars[gvar] === undefined) {
+				warn("global_var: unknown gvar " + gvar)
+				return null
+			}
+			return globalVars[gvar]
+		},
 		random: function(min, max) { log("random", arguments); return getRandomInt(min, max) },
 		debug_msg: function(msg) { console.log("DEBUG MSG: " + msg) },
-		display_msg: function(msg) { stub("display_msg", arguments); console.log("DISPLAY MSG: " + msg) },
+		display_msg: function(msg) { console.log("DISPLAY MSG: " + msg) },
 		message_str: function(msgList, msgNum) { return getScriptMessage(msgList, msgNum) },
 		metarule: function(_, _) { stub("metarule", arguments) }, // ???
+
+		// player
+		give_exp_points: function(xp) { stub("give_exp_points", arguments) },
 
 		// critters
 		get_critter_stat: function(obj, stat) { stub("get_critter_stat", arguments); return 10 },
@@ -124,10 +137,27 @@ var scriptingEngine = (function() {
 				scriptMessages[name] = {}
 
 			// parse message file
-			var lines = msg.split("\n")
+			var lines = msg.split(/\r|\n/)
+
+			// preprocess and merge lines
+			for(var i = 0; i < lines.length; i++) {
+				// comments/blanks
+				if(lines[i][0] === '#' || lines[i].trim() === '') {
+					lines.splice(i--, 1)
+					continue
+				}
+
+				// probably a continuation -- merge it with the last line
+				if(lines[i][0] !== '{') {
+					lines[i-1] += lines[i]
+					lines.splice(i--, 1)
+					continue
+				}
+			}
+
 			for(var i = 0; i < lines.length; i++) {
 				// e.g. {100}{}{You have entered a dark cave in the side of a mountain.}
-				var m = lines[i].match(/\{(\d+)\}\{\}\{(.+)\}/)
+				var m = lines[i].match(/\{(\d+)\}\{\}\{(.*)\}/)
 				if(m === null)
 					throw "message parsing: not a valid line: " + lines[i]
 				scriptMessages[name][m[1]] = m[2]

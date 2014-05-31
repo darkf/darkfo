@@ -194,6 +194,7 @@ heart.load = function() {
 		scriptingEngine.init(player)
 		scriptingEngine.loadScript(MAP_NAME)
 		scriptingEngine.enterMap(MAP_NAME, gObjects, currentElevation)
+		scriptingEngine.updateMap(MAP_NAME, gObjects, currentElevation)
 	}, "json")
 }
 
