@@ -150,13 +150,15 @@ var scriptingEngine = (function() {
 
 		// dialogue
 		Node999: function() { // exit dialogue
+			console.log("DIALOGUE EXIT (Node999)")
 			dialogueExit()
 		},
 		gdialog_set_barter_mod: function(mod) { stub("gdialog_set_barter_mod", arguments) },
 		gdialog_mod_barter: function(mod) { stub("gdialog_mod_barter", arguments) }, // todo: switch to barter mode
 		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) {
+			console.log("DIALOGUE START")
 			$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
-			stub("start_gdialog", arguments)
+			//stub("start_gdialog", arguments)
 		},
 		gSay_Start: function() { stub("gSay_Start", arguments) },
 		//gSay_Option: function(msgList, msgID, target, reaction) { stub("gSay_Option", arguments) },
@@ -164,7 +166,7 @@ var scriptingEngine = (function() {
 			var msg = getScriptMessage(msgList, msgID)
 			console.log("REPLY: " + msg)
 			$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
-			stub("gSay_Reply", arguments)
+			//stub("gSay_Reply", arguments)
 		},
 		gSay_End: function() { stub("gSay_End", arguments) },
 		end_dialogue: function() { stub("end_dialogue", arguments) },
@@ -177,7 +179,7 @@ var scriptingEngine = (function() {
 				target.call(that)
 			})
 			$("#dialogue").append("<a href=\"javascript:dialogueReply(" + (dialogueOptionProcs.length-1) + ")\">" + msg + "</a><br>")
-			stub("giQ_Option", arguments)
+			//stub("giQ_Option", arguments)
 		},
 
 		// animation
