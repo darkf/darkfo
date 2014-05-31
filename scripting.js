@@ -39,6 +39,10 @@ var scriptingEngine = (function() {
 		console.log("WARNING: " + msg)
 	}
 
+	function info(msg) {
+		console.log("INFO: " + msg)
+	}
+
 	// http://stackoverflow.com/a/23304189/1958152
 	function seed(s) {
 	    Math.random = function() {
@@ -82,7 +86,10 @@ var scriptingEngine = (function() {
 		dude_obj: "<Dude Object>",
 		'true': true,
 		'false': false,
-		set_global_var: function(gvar, value) { stub("set_global_var", arguments) },
+		set_global_var: function(gvar, value) {
+			globalVars[gvar] = value
+			info("set_global_var: " + gvar + " = " + value)
+		},
 		set_local_var: function(lvar, value) { stub("set_local_var", arguments) },
 		local_var: function(lvar) { stub("local_var", arguments) },
 		map_var: function(mvar) {
