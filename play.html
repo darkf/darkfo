@@ -6,6 +6,7 @@
 <script src="scripting.js"></script>
 <script>
 var MAP_NAME = "Raiders2"
+var gMapScript = null
 var floorMap = null
 var roofMap = null
 var gObjects = []
@@ -148,13 +149,14 @@ for(var i = 0; i < 200; i++) {
 
 var cursor = {x: 10, y: 10}
 
-function changeElevation(level) {
+function changeElevation(level, updateScripts) {
 	currentElevation = level
 	floorMap = gMap[level]["tiles"]["floor"]
 	roofMap  = gMap[level]["tiles"]["roof"]
 	gObjects = gMap[level]["objects"]
 
-	scriptingEngine.updateMap(MAP_NAME, gObjects, currentElevation)
+	if(updateScripts !== false)
+		scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 }
 
 heart.preload = function() {
@@ -188,13 +190,29 @@ heart.load = function() {
 	heart.attach("cnv");
 	$.get(MAP_NAME+".json", function(map) {
 		gMap = map
-		changeElevation(0)
+		changeElevation(0, false)
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 
 		scriptingEngine.init(player)
-		scriptingEngine.loadScript(MAP_NAME)
-		scriptingEngine.enterMap(MAP_NAME, gObjects, currentElevation)
-		scriptingEngine.updateMap(MAP_NAME, gObjects, currentElevation)
+		gMapScript = scriptingEngine.loadScript(MAP_NAME)
+		scriptingEngine.enterMap(gMapScript, gObjects, currentElevation)
+
+		var goodScripts = {} // cache scripts that don't load
+		for(var i = 0; i < gObjects.length; i++) {
+			if(gObjects[i].script !== undefined) {
+				if(goodScripts[gObjects[i].script] === false) continue
+				var script = scriptingEngine.loadScript(gObjects[i].script)
+				if(script === null) {
+					console.log("load script failed for " + gObjects[i].script)
+					goodScripts[gObjects[i].script] = false
+					continue
+				} else {
+					gObjects[i]._script = script
+				}
+			}
+		}
+
+		scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 	}, "json")
 }
 

@@ -1,5 +1,4 @@
 var scriptingEngine = (function() {
-	var scriptObjects = {}
 	var gameObjects = []
 	var gameElevation = 0
 	var dudeObject = null
@@ -174,6 +173,7 @@ var scriptingEngine = (function() {
 
 	function loadScript(name) {
 		// e.g. "Raiders2"
+		var scriptObject = null
 		console.log("loading script " + name)
 		$.get(name + ".js", function(code) {
 			//console.log("code: " + code)
@@ -181,36 +181,38 @@ var scriptingEngine = (function() {
 			f.prototype = ScriptProto
 			var obj = new f()
 			obj.scriptName = name
+			scriptObject = obj
 			console.log('script obj: ' + obj)
-			scriptObjects[name] = obj
 		}, "text").fail(function(err) { console.log("script loading error: "  + err) })
+
+		return scriptObject
 	}
 
-	function updateMap(mapName, objects, elevation) {
-		var script = scriptObjects[mapName];
-		if(script === undefined)
-			return;
-
+	function updateMap(mapScript, objects, elevation) {
 		gameObjects = objects
 		gameElevation = elevation
 
-		if(script.map_update_p_proc !== undefined) {
-			console.log("calling map update")
-			script.map_update_p_proc()
+		if(mapScript.map_update_p_proc !== undefined)
+			mapScript.map_update_p_proc()
+
+		var updated = 0
+		for(var i = 0; i < gameObjects.length; i++) {
+			var script = gameObjects[i]._script
+			if(script !== undefined && script.map_update_p_proc !== undefined) {
+				script.map_update_p_proc()
+				updated++
+			}
 		}
+		info("updated " + updated + " objects")
 	}
 
-	function enterMap(mapName, objects, elevation) {
-		var script = scriptObjects[mapName];
-		if(script === undefined)
-			return;
-
+	function enterMap(mapScript, objects, elevation) {
 		gameObjects = objects
 		gameElevation = elevation
 
-		if(script.map_enter_p_proc !== undefined) {
+		if(mapScript.map_enter_p_proc !== undefined) {
 			console.log("calling map enter")
-			script.map_enter_p_proc()
+			mapScript.map_enter_p_proc()
 		}
 	}
 
