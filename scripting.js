@@ -10,6 +10,10 @@ var scriptingEngine = (function() {
 			2: 0, // MVAR_Been_Here_1
 		}
 	}
+	var scriptIDs = {
+		800: "Raiders2"
+	}
+	var scriptMessages = {}
 
 	function stub(name, args) {
 		var a = ""
@@ -54,6 +58,22 @@ var scriptingEngine = (function() {
 		return false
 	}
 
+	function getScriptMessage(id, msg) {
+		if(scriptIDs[id] === undefined) {
+			warn("getScriptMessage: no script with ID " + id)
+			return null
+		}
+
+		if(scriptMessages[scriptIDs[id]] === undefined)
+			loadMessageFile(scriptIDs[id])
+		if(scriptMessages[scriptIDs[id]] === undefined)
+			throw "getScriptMessage: loadMessageFile failed?"
+		if(scriptMessages[scriptIDs[id]][msg] === undefined)
+			throw "getScriptMessage: no message " + msg + " for script " + id + " (" + scriptIDs[id] + ")"
+
+		return scriptMessages[scriptIDs[id]][msg]
+	}
+
 	var ScriptProto = {
 		dude_obj: "<Dude Object>",
 		'true': true,
@@ -75,7 +95,7 @@ var scriptingEngine = (function() {
 		random: function(min, max) { log("random", arguments); return getRandomInt(min, max) },
 		debug_msg: function(msg) { console.log("DEBUG MSG: " + msg) },
 		display_msg: function(msg) { stub("display_msg", arguments); console.log("DISPLAY MSG: " + msg) },
-		message_str: function(msgList, msgNum) { stub("message_str", arguments) },
+		message_str: function(msgList, msgNum) { return getScriptMessage(msgList, msgNum) },
 		metarule: function(_, _) { stub("metarule", arguments) }, // ???
 
 		// critters
@@ -95,6 +115,24 @@ var scriptingEngine = (function() {
 
 		// party
 		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 }
+	}
+
+	function loadMessageFile(name) {
+		console.log("loading message file: " + name)
+		$.get("data/text/english/dialog/" + name + ".MSG", function(msg) {
+			if(scriptMessages[name] === undefined)
+				scriptMessages[name] = {}
+
+			// parse message file
+			var lines = msg.split("\n")
+			for(var i = 0; i < lines.length; i++) {
+				// e.g. {100}{}{You have entered a dark cave in the side of a mountain.}
+				var m = lines[i].match(/\{(\d+)\}\{\}\{(.+)\}/)
+				if(m === null)
+					throw "message parsing: not a valid line: " + lines[i]
+				scriptMessages[name][m[1]] = m[2]
+			}
+		}, "text").fail(function(err) { console.log("message loading error: "  + err) })
 	}
 
 	function loadScript(name) {
