@@ -11,12 +11,15 @@ var scriptingEngine = (function() {
 	}
 	var globalVars = {
 		88: 0, // GVAR_VAULT_RAIDERS
+		83: 9, // GVAR_VAULT_PLANT_STATUS (9 = PLANT_REPAIRED)
 	}
 	var scriptIDs = {
 		800: "Raiders2",
 		14: "GENERIC",
 		825: "FCGUNMER",
 		145: "GCFOLK",
+		399: "GCHAROLD",
+		138: "GCWOOZ",
 	}
 	var mapIDs = {
 		"GECKSETL": 31
@@ -140,6 +143,7 @@ var scriptingEngine = (function() {
 		item_caps_total: function(obj) { stub("item_caps_total", arguments) },
 		item_caps_adjust: function(obj, amount) { stub("item_caps_adjust", arguments) },
 		move_obj_inven_to_obj: function(obj, other) { stub("move_obj_inven_to_obj", arguments) },
+		obj_is_carrying_obj_pid: function(obj, pid) { stub("obj_is_carrying_obj_pid", arguments); return 0 },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
 
@@ -229,7 +233,7 @@ var scriptingEngine = (function() {
 
 			for(var i = 0; i < lines.length; i++) {
 				// e.g. {100}{}{You have entered a dark cave in the side of a mountain.}
-				var m = lines[i].match(/\{(\d+)\}\{\}\{(.*)\}/)
+				var m = lines[i].match(/\{(\d+)\}\{.*\}\{(.*)\}/)
 				if(m === null)
 					throw "message parsing: not a valid line: " + lines[i]
 				scriptMessages[name][m[1]] = m[2]
