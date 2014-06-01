@@ -5,7 +5,7 @@
 <script src="jquery-1.11.1.min.js"></script>
 <script src="scripting.js"></script>
 <script>
-var MAP_NAME = "SFChina"
+var MAP_NAME = "GECKSETL"
 var gMapScript = null
 var floorMap = null
 var roofMap = null
@@ -15,8 +15,8 @@ var tile_width = 80
 var tile_height = 36
 var images = {}
 var imageOffsets = {}
-var cameraX = 5080
-var cameraY = 1545//1200
+var cameraX = 4015
+var cameraY = 1485//1200
 var showHexOverlay = false
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
 var currentElevation = 0
@@ -220,7 +220,7 @@ heart.load = function() {
 	$.get(MAP_NAME+".json", function(map) {
 		gMap = map
 
-		scriptingEngine.init(player)
+		scriptingEngine.init(player, MAP_NAME)
 		gMapScript = scriptingEngine.loadScript(MAP_NAME)
 
 		changeElevation(0, false)

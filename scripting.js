@@ -16,7 +16,12 @@ var scriptingEngine = (function() {
 		800: "Raiders2",
 		14: "GENERIC",
 		825: "FCGUNMER",
+		145: "GCFOLK",
 	}
+	var mapIDs = {
+		"GECKSETL": 31
+	}
+	var currentMapID = null
 	var scriptMessages = {}
 	var dialogueOptionProcs = []
 
@@ -181,6 +186,9 @@ var scriptingEngine = (function() {
 			$("#dialogue").append("<a href=\"javascript:dialogueReply(" + (dialogueOptionProcs.length-1) + ")\">" + msg + "</a><br>")
 			//stub("giQ_Option", arguments)
 		},
+		float_msg: function(obj, msg, type) {			
+			console.log("FLOAT MSG: " + msg)
+		},
 
 		// animation
 		reg_anim_func: function(_, _) { stub("reg_anim_func", arguments) },
@@ -247,6 +255,8 @@ var scriptingEngine = (function() {
 			if(obj.hasOwnProperty("Node999"))
 				delete obj.Node999
 
+			obj.cur_map_index = currentMapID
+
 		}, "text").fail(function(err) { console.log("script loading error: "  + err) })
 
 		return scriptObject
@@ -295,11 +305,16 @@ var scriptingEngine = (function() {
 		}
 	}
 
-	function init(dude) {
+	function init(dude, mapName) {
 		//console.log("hi")
 		seed(123)
 		dudeObject = dude
 		ScriptProto.dude_obj = dudeObject
+
+		if(mapIDs[mapName] === undefined)
+			warn("No map ID for map " + mapName)
+		else
+			currentMapID = mapIDs[mapName]
 		/*$.ajaxSetup({error: function(_, status, err) {
 			console.log("AJAX error: status: " + status + ", err: " + err)
 		}})*/
