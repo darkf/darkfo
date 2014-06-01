@@ -21,7 +21,12 @@ var showHexOverlay = false
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
 var currentElevation = 0
 
-var player = {position: {x: 105, y: 90}, orientation: 0, art: "art/critters/NMVALTAA", isPlayer: true}
+var PLAYER_IDLE_ART = "art/critters/HANPWRAA" //HMWARRAA"
+var PLAYER_WALK_ART = "art/critters/HANPWRAB" //HMWARRAB"
+
+var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
+              art: PLAYER_IDLE_ART, isPlayer: true,
+              target: {x: 94, y: 109 + 1}, walking: false, lastFrameTime: 0}
 player.toString = function() { return "The Dude" }
 
 var showFloor = true
@@ -222,13 +227,13 @@ heart.load = function() {
 	$.get(MAP_NAME+".json", function(map) {
 		gMap = map
 
-		scriptingEngine.init(player, MAP_NAME)
-		gMapScript = scriptingEngine.loadScript(MAP_NAME)
+		//scriptingEngine.init(player, MAP_NAME)
+		//gMapScript = scriptingEngine.loadScript(MAP_NAME)
 
 		changeElevation(0, false)
-		loadObjectScripts(gObjects)
-		scriptingEngine.enterMap(gMapScript, gObjects, 0)
-		scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
+		//loadObjectScripts(gObjects)
+		//scriptingEngine.enterMap(gMapScript, gObjects, 0)
+		//scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 
 		// todo: is map_enter_p_proc called on elevation change?
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
@@ -260,6 +265,16 @@ heart.keydown = function(k) {
 			}
 		}
 	}
+	if(k == 'p') {
+		player.frame++
+		if(player.frame == 8) player.frame = 0
+	}
+	if(k == 'l') {
+		// initiate walking
+		player.art = PLAYER_WALK_ART
+		player.walking = true
+		player.frame = 0
+	}
 }
 
 function drawTileMap(matrix, offsetY) {
@@ -277,6 +292,38 @@ function drawTileMap(matrix, offsetY) {
 					continue;
 				heart.graphics.draw(images[img], scr.x - cameraX, scr.y - cameraY)
 			}
+		}
+	}
+}
+
+heart.update = function() {
+	// player animation (hack: should work for all critters)
+	var time = heart.timer.getTime()
+	var fps = 8
+	var targetScreen = hexToScreen(player.target.x, player.target.y)
+	var distance = player.target.y - player.position.y
+	var frames = distance * 4
+	if(player.walking && time - player.lastFrameTime >= 1000/fps) {
+		// advance frame
+		player.frame++
+		player.lastFrameTime = time
+		console.log(distance)
+		if(player.frame === 4 && frames === 4) { // half walk
+			player.frame = 0
+			player.position.y++
+		}
+		else if(player.frame === 8) { // full walk
+			player.frame = 0
+			player.position.y += 2
+		}
+
+		if(player.position.y == player.target.y) {
+				// reached target
+				//player.position = player.target
+				player.walking = false
+				player.target = {x: player.position.x, y: player.position.y + 3}
+				player.frame = 0
+				player.art = PLAYER_IDLE_ART
 		}
 	}
 }
