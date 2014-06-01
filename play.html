@@ -14,7 +14,7 @@ var size = 6
 var tile_width = 80
 var tile_height = 36
 var images = {}
-var imageOffsets = {}
+var imageInfo = {}
 var cameraX = 4015
 var cameraY = 1485//1200
 var showHexOverlay = false
@@ -203,15 +203,17 @@ heart.preload = function() {
 	console.log("loaded " + loadImages.length + " tiles")
 
 	var loadOffsets = null
-	$.get(MAP_NAME + ".offsets.json", function(offsets) { loadOffsets = offsets }, "json")
+	$.get(MAP_NAME + ".offsets.play.json", function(offsets) { loadOffsets = offsets }, "json")
 
-	var numOffsets = 0
+	/*var numOffsets = 0
 	for(var image in loadOffsets) {
 		imageOffsets[image] = loadOffsets[image]
 		numOffsets++
-	}
+	}*/
 
-	console.log("loaded " + numOffsets + " offsets")
+	imageInfo = loadOffsets
+
+	//console.log("loaded " + numOffsets + " offsets")
 	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r })
 }
 
@@ -316,29 +318,35 @@ heart.draw = function() {
 			if(images[obj.art] === undefined)
 				continue; // skip images we don't have
 
-			var frameInfo = imageOffsets[obj.art].frameInfo
-			if(frameInfo !== undefined) {
-				var frame = frameInfo[obj.orientation * imageOffsets[obj.art].framesPerDirection]
-				var offsetX = Math.floor(frame.w / 2) - imageOffsets[obj.art].x
-				var offsetY = frame.h - imageOffsets[obj.art].y
+			var info = imageInfo[obj.art]
+			if(info !== undefined) {
+				var frameIdx = 0
+				if(obj.isPlayer) {
+					frameIdx += obj.frame
+				}
+
+				var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
+				var dirOffset = info.directionOffsets[obj.orientation]
+				var offsetX = Math.floor(frameInfo.w / 2) - dirOffset.x - frameInfo.ox
+				var offsetY = frameInfo.h - dirOffset.y - frameInfo.oy
 				var scrX = scr.x - offsetX, scrY = scr.y - offsetY
 
-				if(scrX + frame.w < cameraX || scrY + frame.h < cameraY ||
+				if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
 				   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
 					continue;
 
 				heart.ctx.drawImage(images[obj.art].img,
-					frame.x, 0, frame.w, frame.h,
+					frameInfo.sx, 0, frameInfo.w, frameInfo.h,
 					scrX - cameraX,
 					scrY - cameraY,
-					frame.w, frame.h
+					frameInfo.w, frameInfo.h
 				)
 			}
 			else {
 				var w = images[obj.art].getWidth()
 				var h = images[obj.art].getHeight()
-				var offsetX = Math.floor(w / 2) - imageOffsets[obj.art].x
-				var offsetY = h - imageOffsets[obj.art].y
+				var offsetX = Math.floor(w / 2) - imageInfo[obj.art].directionOffsets[0].x
+				var offsetY = h - imageInfo[obj.art].directionOffsets[0].y
 				var scrX = scr.x - offsetX, scrY = scr.y - offsetY
 				if(scrX + w < cameraX || scrY + h < cameraY ||
 				   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
