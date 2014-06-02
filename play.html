@@ -449,7 +449,7 @@ function drawTileMap(matrix, offsetY) {
 				scr.y += offsetY
 				if(scr.x+tile_width < cameraX || scr.y+tile_height < cameraY ||
 				   scr.x >= cameraX+SCREEN_WIDTH || scr.y >= cameraY+SCREEN_HEIGHT)
-					continue;
+					continue
 				heart.graphics.draw(images[img], scr.x - cameraX, scr.y - cameraY)
 			}
 		}
@@ -504,11 +504,10 @@ heart.draw = function() {
 				continue; // skip images we don't have
 
 			var info = imageInfo[obj.art]
-			if(info !== undefined) {
+			if(info !== undefined /*&& info.numFrames !== 1*/) { // multi-frame object drawing
 				var frameIdx = 0
-				if(obj.isPlayer) {
+				if(obj.frame !== undefined)
 					frameIdx += obj.frame
-				}
 
 				var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
 				var dirOffset = info.directionOffsets[obj.orientation]
@@ -518,7 +517,7 @@ heart.draw = function() {
 
 				if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
 				   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
-					continue;
+					continue
 
 				heart.ctx.drawImage(images[obj.art].img,
 					frameInfo.sx, 0, frameInfo.w, frameInfo.h,
@@ -527,7 +526,9 @@ heart.draw = function() {
 					frameInfo.w, frameInfo.h
 				)
 			}
-			else {
+			else { // single-frame (e.g. static scenery) drawing
+				// todo: find out why this is slow (might be just the width/height calls)
+				// currently this codepath is not taken
 				var w = images[obj.art].getWidth()
 				var h = images[obj.art].getHeight()
 				var offsetX = Math.floor(w / 2) - imageInfo[obj.art].directionOffsets[0].x
@@ -542,12 +543,12 @@ heart.draw = function() {
 			if(obj.position.x === mouseHex.x && obj.position.y === mouseHex.y)
 				heart.graphics.print("tile: " + obj.art + " offset: " + offsetX + ", " + offsetY + ", orientation: " + obj.orientation, 5, 30)
 		}
+
 		gObjects.length -= 1 // hack: to draw player
 	}
 
 	if(showRoof && roofMap !== null)
 		drawTileMap(roofMap, -96);
-
 
 	if(floorMap[mouseTile.y] !== undefined) {
 		var tileImg = floorMap[mouseTile.y][mouseTile.x]
