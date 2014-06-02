@@ -22,15 +22,15 @@ var showHexOverlay = false
 var showCoordinates = false
 var showPath = true
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
+var HEX_GRID_SIZE = 200 // hex grid is 200x200
 var currentElevation = 0
 
 var PLAYER_IDLE_ART = "art/critters/HMWARRAA"
 var PLAYER_WALK_ART = "art/critters/HMWARRAB"
 
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
-              art: PLAYER_IDLE_ART, isPlayer: true,
-              target: {x: 94, y: 109 + 1}, walking: false, lastFrameTime: 0,
-              path: null, pathIndex: -1}
+              art: PLAYER_IDLE_ART, isPlayer: true, walking: false, lastFrameTime: 0,
+              path: null}
 player.toString = function() { return "The Dude" }
 
 var showFloor = true
@@ -154,7 +154,7 @@ function hexNeighbors(position) {
 		neighbors.push({x: x, y: y})
 	}
 
-	if(x % 2 == 0) {
+	if(x % 2 === 0) {
 	  n(x-1,y)
 	  n(x-1,y+1)
 	  n(x,y+1)
@@ -188,16 +188,6 @@ function directionOfDelta(xa, ya, xb, yb) {
 }
 
 var hexOverlay = null
-
-// 200x200 hex grid
-var hexMatrix = []
-for(var i = 0; i < 200; i++) {
-	var t = [];
-	for(var j = 0; j < 200; j++)
-		t.push(0);
-	hexMatrix.push(t);
-}
-
 var cursor = {x: 10, y: 10}
 
 /*function forEachScriptableObject(f, isLoaded) {
@@ -246,17 +236,15 @@ heart.preload = function() {
 
 	$.ajaxSetup({async: false})
 
-	var loadImages = null
-	$.get(MAP_NAME + ".images.json", function(images_) { loadImages = images_ }, "json")
+	$.get(MAP_NAME + ".images.json", function(images) {
+		for(var i = 0; i < images.length; i++)
+			load(images[i])
+		console.log("loaded " + images.length + " tiles")
+	}, "json")
 
-	for(var i = 0; i < loadImages.length; i++)
-		load(loadImages[i])
-	console.log("loaded " + loadImages.length + " tiles")
-
-	var loadOffsets = null
-	$.get(MAP_NAME + ".offsets.play.json", function(offsets) { loadOffsets = offsets }, "json")
-
-	imageInfo = loadOffsets
+	$.get(MAP_NAME + ".offsets.play.json", function(offsets) {
+		imageInfo = offsets
+	}, "json")
 
 	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r })
 }
@@ -317,7 +305,10 @@ heart.keydown = function(k) {
 function critterWalkTo(obj, target) {
 	// pathfind and set walking to target
 	var path = recalcPath(obj.position, target)
-	console.log("path: " + path)
+	if(path.length === 0) {
+		console.log("not a valid path")
+		return false
+	}
 	obj.path = path
 	obj.pathIndex = 0
 	obj.art = PLAYER_WALK_ART
@@ -339,9 +330,9 @@ function critterStopWalking(obj) {
 function recalcPath(start, goal) {
 	var matrix = []
 
-	for(var y = 0; y < 200; y++) {
+	for(var y = 0; y < HEX_GRID_SIZE; y++) {
 		var m = []
-		for(var x = 0; x < 200; x++) {
+		for(var x = 0; x < HEX_GRID_SIZE; x++) {
 			// check for blocks
 			var flag = false
 			for(var i = 0; i < gObjects.length; i++) {
@@ -395,7 +386,7 @@ function critterAdvancePath(obj) {
 		obj.pathIndex++
 
 	if(obj.pathIndex >= obj.path.length)
-		return null
+		return false
 	//console.log("advancing to path index " + obj.pathIndex)
 	var seq = longestSequenceWithoutTurning(obj.position, obj.path, obj.pathIndex)
 	//console.log("longest seq: " + JSON.stringify(seq))
@@ -404,6 +395,7 @@ function critterAdvancePath(obj) {
 	obj.target = seq.lastPosition
 	obj.targetLength = seq.seq
 	obj.distanceToGo = seq.seq
+	return true
 }
 
 heart.update = function() {
@@ -439,7 +431,7 @@ heart.update = function() {
 		if(player.position.x === player.target.x && player.position.y === player.target.y) {
 			// reached target
 			console.log("target reached")
-			if(critterAdvancePath(player) === null)
+			if(critterAdvancePath(player) === false)
 				critterStopWalking(player)
 		}
 	}
@@ -477,18 +469,18 @@ heart.draw = function() {
 
 	// draw hex grid overlay
 	if(showHexOverlay || showCoordinates) {
-		for(var y = 0; y < hexMatrix[0].length; y++) {
-			for(var x = 0; x < hexMatrix.length; x++) {
-					var scr = hexToScreen(x, y)
-					heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
-					if(showCoordinates) {
-						heart.graphics.print(x + "," + y, scr.x - 3 - cameraX, scr.y - 3 - cameraY)
-					}
-					if(!showCoordinates && (x == mouseHex.x && y == mouseHex.y)) {
-						heart.graphics.print("m", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
-					}
+		for(var y = 0; y < HEX_GRID_SIZE; y++) {
+			for(var x = 0; x < HEX_GRID_SIZE; x++) {
+				var scr = hexToScreen(x, y)
+				heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
+				if(showCoordinates) {
+					heart.graphics.print(x + "," + y, scr.x - 3 - cameraX, scr.y - 3 - cameraY)
+				}
+				if(!showCoordinates && (x === mouseHex.x && y === mouseHex.y)) {
+					heart.graphics.print("m", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
 				}
 			}
+		}
 	} else {
 		var scr = hexToScreen(mouseHex.x, mouseHex.y)
 		heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
@@ -557,14 +549,10 @@ heart.draw = function() {
 		drawTileMap(roofMap, -96);
 
 
-	if(floorMap[mouseTile.y]) {
+	if(floorMap[mouseTile.y] !== undefined) {
 		var tileImg = floorMap[mouseTile.y][mouseTile.x]
 		heart.graphics.print("tile: " + tileImg, 5, 60)
 	}
-
-	var scr = tileToScreen(mouseTile.x, mouseTile.y)
-	//heart.graphics.print("X", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
-	//heart.graphics.print("scr: " + scr.x + ", " + scr.y, scr.x - 3 - cameraX, scr.y - 10 - cameraY)
 
 	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
 	heart.graphics.print("mt: " + mouseTile.x + "," + mouseTile.y, 100, 15)
