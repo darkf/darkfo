@@ -18,6 +18,7 @@ var imageInfo = {}
 var cameraX = 4015
 var cameraY = 1485//1200
 var showHexOverlay = false
+var showCoordinates = false
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
 var currentElevation = 0
 
@@ -340,12 +341,15 @@ heart.draw = function() {
 		drawTileMap(floorMap, 0);
 
 	// draw hex grid overlay
-	if(showHexOverlay) {
-		for(var i = 0; i < hexMatrix.length; i++) {
-			for(var j = 0; j < hexMatrix[0].length; j++) {
-				var scr = hexToScreen(i, j)
+	if(showHexOverlay || showCoordinates) {
+	for(var y = 0; y < hexMatrix[0].length; y++) {
+		for(var x = 0; x < hexMatrix.length; x++) {
+				var scr = hexToScreen(x, y)
 				heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
-				if(i == mouseHex.x && j == mouseHex.y) {
+				if(showCoordinates) {
+					heart.graphics.print(x + "," + y, scr.x - 3 - cameraX, scr.y - 3 - cameraY)
+				}
+				if(!showCoordinates && (x == mouseHex.x && y == mouseHex.y)) {
 					heart.graphics.print("m", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
 				}
 			}
@@ -411,8 +415,10 @@ heart.draw = function() {
 		drawTileMap(roofMap, -96);
 
 
-	var tileImg = floorMap[mouseTile.y][mouseTile.x]
-	heart.graphics.print("tile: " + tileImg, 5, 60)
+	if(floorMap[mouseTile.y]) {
+		var tileImg = floorMap[mouseTile.y][mouseTile.x]
+		heart.graphics.print("tile: " + tileImg, 5, 60)
+	}
 
 	var scr = tileToScreen(mouseTile.x, mouseTile.y)
 	//heart.graphics.print("X", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
