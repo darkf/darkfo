@@ -145,6 +145,48 @@ function hexFromScreen(x, y) {
 	return {x: Math.round(hx), y: Math.round(hy)}
 }
 
+function hexNeighbors(position) {
+	var neighbors = []
+	var x = position.x
+	var y = position.y
+
+	function n(x, y) {
+		neighbors.push({x: x, y: y})
+	}
+
+	if(x % 2 == 0) {
+	  n(x-1,y)
+	  n(x-1,y+1)
+	  n(x,y+1)
+	  n(x+1,y+1)
+	  n(x+1,y)
+	  n(x,y-1)
+	} else{
+	  n(x-1,y-1)
+	  n(x-1,y)
+	  n(x,y+1)
+	  n(x+1,y)
+	  n(x+1,y-1)
+	  n(x,y-1)
+	}
+
+	return neighbors
+}
+
+function hexInDirection(position, dir) {
+	return hexNeighbors(position)[dir]
+}
+
+function directionOfDelta(xa, ya, xb, yb) {
+	var neighbors = hexNeighbors({x: xa, y: ya})
+	for(var i = 0; i < neighbors.length; i++) {
+		if(neighbors[i].x === xb && neighbors[i].y === yb)
+			return i
+	}
+
+	return null
+}
+
 var hexOverlay = null
 
 // 200x200 hex grid
@@ -214,15 +256,8 @@ heart.preload = function() {
 	var loadOffsets = null
 	$.get(MAP_NAME + ".offsets.play.json", function(offsets) { loadOffsets = offsets }, "json")
 
-	/*var numOffsets = 0
-	for(var image in loadOffsets) {
-		imageOffsets[image] = loadOffsets[image]
-		numOffsets++
-	}*/
-
 	imageInfo = loadOffsets
 
-	//console.log("loaded " + numOffsets + " offsets")
 	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r })
 }
 
@@ -243,9 +278,6 @@ heart.load = function() {
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 		//scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 	}, "json")
-
-	//gObjects.push({position: {x: 2, y: 2}, art: "art/scenery/TREE7", orientation: 0})
-	//gObjects.push({position: {x: 3, y: 2}, art: "art/scenery/TREE7", orientation: 0})
 }
 
 heart.keydown = function(k) {
@@ -277,23 +309,31 @@ heart.keydown = function(k) {
 		player.frame++
 		if(player.frame == 8) player.frame = 0
 	}
-	if(k == 'l') {
-		// initiate walking
-		player.art = PLAYER_WALK_ART
-		player.walking = true
-		player.frame = 0
-	}
 	if(k == 'm') {
-		var path = recalcPath(player.position, mouseHex)
-		console.log("path: " + path)
-		player.path = path
-		player.pathIndex = 0
-		player.art = PLAYER_WALK_ART
-		player.walking = true
-		player.frame = 0
-		player.targetLength = undefined
-		advancePath(player)
+		critterWalkTo(player, mouseHex)
 	}
+}
+
+function critterWalkTo(obj, target) {
+	// pathfind and set walking to target
+	var path = recalcPath(obj.position, target)
+	console.log("path: " + path)
+	obj.path = path
+	obj.pathIndex = 0
+	obj.art = PLAYER_WALK_ART
+	obj.walking = true
+	obj.frame = 0
+	obj.targetLength = null
+	critterAdvancePath(obj)
+}
+
+function critterStopWalking(obj) {
+	obj.walking = false
+	obj.target = null
+	obj.targetLength = null
+	obj.path = null
+	obj.pathIndex = 0
+	obj.art = PLAYER_IDLE_ART // TODO: have different animations for all critters
 }
 
 function recalcPath(start, goal) {
@@ -323,49 +363,8 @@ function recalcPath(start, goal) {
 	return path
 }
 
-function hexNeighbors(position) {
-	var neighbors = []
-	var x = position.x
-	var y = position.y
-
-	function n(x, y) {
-		neighbors.push({x: x, y: y})
-	}
-
-	if(x % 2 == 0) {
-	  n(x-1,y)
-	  n(x-1,y+1)
-	  n(x,y+1)
-	  n(x+1,y+1)
-	  n(x+1,y)
-	  n(x,y-1)
-	} else{
-	  n(x-1,y-1)
-	  n(x-1,y)
-	  n(x,y+1)
-	  n(x+1,y)
-	  n(x+1,y-1)
-	  n(x,y-1)
-	}
-
-	return neighbors
-}
-
-function hexInDirection(position, dir) {
-	return hexNeighbors(position)[dir]
-}
-
-function directionOfDelta(xa, ya, xb, yb) {
-	var neighbors = hexNeighbors({x: xa, y: ya})
-	for(var i = 0; i < neighbors.length; i++) {
-		if(neighbors[i].x === xb && neighbors[i].y === yb)
-			return i
-	}
-
-	return null
-}
-
 function longestSequenceWithoutTurning(start, path, index) {
+	// todo: make logic less complex
 	var firstDir = directionOfDelta(start.x, start.y, path[index][0], path[index][1])
 	if(index+1 >= path.length)
 		return {seq: 1, lastPosition: {x: path[index][0], y: path[index][1]}, firstDirection: firstDir}
@@ -389,18 +388,17 @@ function longestSequenceWithoutTurning(start, path, index) {
 	return {seq: n, lastPosition: {x: pos[0], y: pos[1]}, firstDirection: firstDir}
 }
 
-function advancePath(obj) {
-	if(obj.targetLength !== undefined)
+function critterAdvancePath(obj) {
+	if(obj.targetLength !== undefined && obj.targetLength !== null)
 		obj.pathIndex += obj.targetLength
 	else
 		obj.pathIndex++
 
 	if(obj.pathIndex >= obj.path.length)
 		return null
-	console.log("advancing to path index " + obj.pathIndex)
+	//console.log("advancing to path index " + obj.pathIndex)
 	var seq = longestSequenceWithoutTurning(obj.position, obj.path, obj.pathIndex)
-	console.log("longest seq: " + JSON.stringify(seq))
-	//console.log("new target: " + obj.target.x + ", " + obj.target.y)
+	//console.log("longest seq: " + JSON.stringify(seq))
 
 	obj.orientation = seq.firstDirection
 	obj.target = seq.lastPosition
@@ -415,45 +413,34 @@ heart.update = function() {
 	var time = heart.timer.getTime()
 	var fps = 8
 	var targetScreen = hexToScreen(player.target.x, player.target.y)
-	//var distance = player.target.y - player.position.y
 	var frames = player.distanceToGo * 4
+
 	if(player.walking && time - player.lastFrameTime >= 1000/fps) {
 		// advance frame
 		player.frame++
 		player.lastFrameTime = time
-		//console.log("distance: " + distance)
+
 		if(player.frame === 4 && frames === 4) { // half walk, one tile
-			//console.log("one")
 			player.frame = 0
 			var h = hexInDirection(player.position, player.orientation)
-			console.log("h2: " + h)
+			//console.log("h2: " + h)
 			player.position = h
 			player.distanceToGo -= 1
-			//advancePath(player)
 		}
-		else if(player.frame === 8) { // full walk
+		else if(player.frame === 8) { // full walk, two tiles
 			player.frame = 0
 			var h = hexInDirection(player.position, player.orientation)
 			var h2 = hexInDirection(h, player.orientation)
-			console.log("h8_2: " + h2.x + ", " + h2.y + " | target: " + player.target.x + ", " + player.target.y)
+			//console.log("h8_2: " + h2.x + ", " + h2.y + " | target: " + player.target.x + ", " + player.target.y)
 			player.position = h2
 			player.distanceToGo -= 2
-			//advancePath(player)
 		}
 
 		if(player.position.x === player.target.x && player.position.y === player.target.y) {
-				// reached target
-				console.log("target reached")
-				player.frame = 0
-				if(advancePath(player) === null) {
-					player.walking = false
-					player.target = null
-					player.targetLength = null
-					player.path = null
-					player.pathIndex = 0
-					player.art = PLAYER_IDLE_ART
-					//player.orientation = 4
-				}
+			// reached target
+			console.log("target reached")
+			if(critterAdvancePath(player) === null)
+				critterStopWalking(player)
 		}
 	}
 }
