@@ -4,6 +4,7 @@
 <script src="heart.js"></script>
 <script src="jquery-1.11.1.min.js"></script>
 <script src="scripting.js"></script>
+<script src="pathfinding-browser.js"></script>
 <script>
 var MAP_NAME = "GECKSETL"
 var gMapScript = null
@@ -19,6 +20,7 @@ var cameraX = 4015
 var cameraY = 1485//1200
 var showHexOverlay = false
 var showCoordinates = false
+var showPath = true
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
 var currentElevation = 0
 
@@ -29,6 +31,7 @@ var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: PLAYER_IDLE_ART, isPlayer: true,
               target: {x: 94, y: 109 + 1}, walking: false, lastFrameTime: 0}
 player.toString = function() { return "The Dude" }
+var curPath = null
 
 var showFloor = true
 var showRoof = true
@@ -240,9 +243,15 @@ heart.load = function() {
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 		//scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 	}, "json")
+
+	//gObjects.push({position: {x: 2, y: 2}, art: "art/scenery/TREE7", orientation: 0})
+	//gObjects.push({position: {x: 3, y: 2}, art: "art/scenery/TREE7", orientation: 0})
 }
 
 heart.keydown = function(k) {
+	var mousePos = heart.mouse.getPosition()
+	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
+
 	if(k == 'down') cameraY += 15
 	if(k == 'right') cameraX += 15
 	if(k == 'left') cameraX -= 15
@@ -253,8 +262,6 @@ heart.keydown = function(k) {
 	if(k == 'f') { showFloor = !showFloor }
 	if(k == 'o') { showObjects = !showObjects }
 	if(k == 't') {
-		var mousePos = heart.mouse.getPosition()
-		var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
 				console.log("object at index " + i)
@@ -276,6 +283,38 @@ heart.keydown = function(k) {
 		player.walking = true
 		player.frame = 0
 	}
+	if(k == 'm') {
+		var path = recalcPath(player.position, mouseHex)
+		console.log("path: " + path)
+		curPath = path
+	}
+}
+
+function recalcPath(start, goal) {
+	var matrix = []
+
+	for(var y = 0; y < 200; y++) {
+		var m = []
+		for(var x = 0; x < 200; x++) {
+			// check for blocks
+			var flag = false
+			for(var i = 0; i < gObjects.length; i++) {
+				if(gObjects[i].position.x === x && gObjects[i].position.y === y) {
+					m.push(1)
+					flag = true
+					break
+				}
+			}
+			if(!flag)
+				m.push(0)
+		}
+		matrix.push(m)
+	}
+
+	var grid = new PF.Grid(200, 200, matrix)
+	var finder = new PF.AStarFinder()
+	var path = finder.findPath(start.x, start.y, goal.x, goal.y, grid)
+	return path
 }
 
 function drawTileMap(matrix, offsetY) {
@@ -342,21 +381,28 @@ heart.draw = function() {
 
 	// draw hex grid overlay
 	if(showHexOverlay || showCoordinates) {
-	for(var y = 0; y < hexMatrix[0].length; y++) {
-		for(var x = 0; x < hexMatrix.length; x++) {
-				var scr = hexToScreen(x, y)
-				heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
-				if(showCoordinates) {
-					heart.graphics.print(x + "," + y, scr.x - 3 - cameraX, scr.y - 3 - cameraY)
-				}
-				if(!showCoordinates && (x == mouseHex.x && y == mouseHex.y)) {
-					heart.graphics.print("m", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
+		for(var y = 0; y < hexMatrix[0].length; y++) {
+			for(var x = 0; x < hexMatrix.length; x++) {
+					var scr = hexToScreen(x, y)
+					heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
+					if(showCoordinates) {
+						heart.graphics.print(x + "," + y, scr.x - 3 - cameraX, scr.y - 3 - cameraY)
+					}
+					if(!showCoordinates && (x == mouseHex.x && y == mouseHex.y)) {
+						heart.graphics.print("m", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
+					}
 				}
 			}
-		}
 	} else {
 		var scr = hexToScreen(mouseHex.x, mouseHex.y)
 		heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
+
+		if(showPath && curPath !== null) {
+			for(var i = 0; i < curPath.length; i++) {
+				var scr = hexToScreen(curPath[i][0], curPath[i][1])
+				heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
+			}
+		} 
 	}
 
 	// draw objects
