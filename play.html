@@ -24,14 +24,14 @@ var showPath = true
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
 var currentElevation = 0
 
-var PLAYER_IDLE_ART = "art/critters/HANPWRAA" //HMWARRAA"
-var PLAYER_WALK_ART = "art/critters/HANPWRAB" //HMWARRAB"
+var PLAYER_IDLE_ART = "art/critters/HMWARRAA"
+var PLAYER_WALK_ART = "art/critters/HMWARRAB"
 
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: PLAYER_IDLE_ART, isPlayer: true,
-              target: {x: 94, y: 109 + 1}, walking: false, lastFrameTime: 0}
+              target: {x: 94, y: 109 + 1}, walking: false, lastFrameTime: 0,
+              path: null, pathIndex: -1}
 player.toString = function() { return "The Dude" }
-var curPath = null
 
 var showFloor = true
 var showRoof = true
@@ -286,7 +286,12 @@ heart.keydown = function(k) {
 	if(k == 'm') {
 		var path = recalcPath(player.position, mouseHex)
 		console.log("path: " + path)
-		curPath = path
+		player.path = path
+		player.pathIndex = 0
+		player.art = PLAYER_WALK_ART
+		player.walking = true
+		//player.walking = true
+		advancePath(player)
 	}
 }
 
@@ -317,6 +322,166 @@ function recalcPath(start, goal) {
 	return path
 }
 
+function hexInDirection(position, dir) {
+	var neighbors = []
+	var x = position.x
+	var y = position.y
+
+	function n(x, y) {
+		neighbors.push({x: x, y: y})
+	}
+
+	if(x % 2 == 0) {
+	  n(x-1,y)
+	  n(x-1,y+1)
+	  n(x,y+1)
+	  n(x+1,y+1)
+	  n(x+1,y)
+	  n(x,y-1)
+	} else{
+	  n(x-1,y-1)
+	  n(x-1,y)
+	  n(x,y+1)
+	  n(x+1,y)
+	  n(x+1,y-1)
+	  n(x,y-1)
+	}
+
+	return neighbors[dir]
+}
+
+function directionOfDelta(xa, ya, xb, yb) {
+	var neighbors = []
+	var j = 0
+	function n(x, y) {
+		neighbors.push([x, y, j])
+		j++
+	}
+
+	//console.log(xa + ", " + ya + " | " + xb + ", " + yb)
+
+	var x = xa
+	var y = ya
+	if(x % 2 == 0) {
+	  n(x-1,y)
+	  n(x-1,y+1)
+	  n(x,y+1)
+	  n(x+1,y+1)
+	  n(x+1,y)
+	  n(x,y-1)
+	} else{
+	  n(x-1,y-1)
+	  n(x-1,y)
+	  n(x,y+1)
+	  n(x+1,y)
+	  n(x+1,y-1)
+	  n(x,y-1)
+	}
+
+	for(var i = 0; i < neighbors.length; i++) {
+		//console.log("neighbor: " + neighbors[i][0] + ", " + neighbors[i][1])
+		if(neighbors[i][0] == xb && neighbors[i][1] == yb) {
+			//console.log("yes")
+			return neighbors[i][2]
+		}
+	}
+
+	return null
+}
+
+function longestSequenceWithoutTurning(start, path, index) {
+	var firstDir = directionOfDelta(start.x, start.y, path[index][0], path[index][1])
+	if(index+1 >= path.length)
+		return {seq: 1, lastPosition: {x: path[index][0], y: path[index][1]}, firstDirection: firstDir}
+
+	var pos = path[index]
+	var dir = firstDir
+	var n = 1
+	for(var i = index+1; i < path.length; i++) {
+		//console.log("i " + i)
+		var deltaDir = directionOfDelta(pos[0], pos[1], path[i][0], path[i][1])
+		//console.log("deltaDir: " + deltaDir)
+			         
+		if(deltaDir !== dir) {
+			//console.log("bad deltaDir: " + deltaDir)
+			return {seq: n, lastPosition: {x: path[i-1][0], y: path[i-1][1]}, firstDirection: firstDir}
+		}
+		n++
+		pos = path[i]
+	}
+
+	return {seq: n, lastPosition: {x: pos[0], y: pos[1]}, firstDirection: firstDir}
+}
+
+function advancePath(obj) {
+	if(obj.targetLength !== undefined)
+		obj.pathIndex += obj.targetLength
+	else
+		obj.pathIndex++
+
+	if(obj.pathIndex >= obj.path.length)
+		return null
+	console.log("advancing to path index " + obj.pathIndex)
+	var seq = longestSequenceWithoutTurning(obj.position, obj.path, obj.pathIndex)
+	console.log("longest seq: " + JSON.stringify(seq))
+	//console.log("new target: " + obj.target.x + ", " + obj.target.y)
+
+	obj.orientation = seq.firstDirection
+	obj.target = seq.lastPosition
+	obj.targetLength = seq.seq
+	obj.distanceToGo = seq.seq
+}
+
+heart.update = function() {
+	// player animation (hack: should work for all critters)
+	if(!player.walking) return
+
+	var time = heart.timer.getTime()
+	var fps = 8
+	var targetScreen = hexToScreen(player.target.x, player.target.y)
+	//var distance = player.target.y - player.position.y
+	var frames = player.distanceToGo * 4
+	if(player.walking && time - player.lastFrameTime >= 1000/fps) {
+		// advance frame
+		player.frame++
+		player.lastFrameTime = time
+		//console.log("distance: " + distance)
+		if(player.frame === 4 && frames === 4) { // half walk, one tile
+			//console.log("one")
+			player.frame = 0
+			var h = hexInDirection(player.position, player.orientation)
+			console.log("h2: " + h)
+			player.position = h
+			player.distanceToGo -= 1
+			//advancePath(player)
+		}
+		else if(player.frame === 8) { // full walk
+			player.frame = 0
+			var h = hexInDirection(player.position, player.orientation)
+			var h2 = hexInDirection(h, player.orientation)
+			console.log("h8_2: " + h2.x + ", " + h2.y + " | target: " + player.target.x + ", " + player.target.y)
+			player.position = h2
+			player.distanceToGo -= 2
+			//advancePath(player)
+		}
+
+		if(player.position.x === player.target.x && player.position.y === player.target.y) {
+				// reached target
+				console.log("target reached")
+				player.frame = 0
+				if(advancePath(player) === null) {
+					player.walking = false
+					player.target = null
+					player.targetLength = null
+					player.path = null
+					player.pathIndex = 0
+					player.art = PLAYER_IDLE_ART
+					//player.orientation = 4
+				}
+		}
+	}
+}
+
 function drawTileMap(matrix, offsetY) {
 	for(var i = 0; i < matrix.length; i++) {
 		for(var j = 0; j < matrix[0].length; j++) {
@@ -332,38 +497,6 @@ function drawTileMap(matrix, offsetY) {
 					continue;
 				heart.graphics.draw(images[img], scr.x - cameraX, scr.y - cameraY)
 			}
-		}
-	}
-}
-
-heart.update = function() {
-	// player animation (hack: should work for all critters)
-	var time = heart.timer.getTime()
-	var fps = 8
-	var targetScreen = hexToScreen(player.target.x, player.target.y)
-	var distance = player.target.y - player.position.y
-	var frames = distance * 4
-	if(player.walking && time - player.lastFrameTime >= 1000/fps) {
-		// advance frame
-		player.frame++
-		player.lastFrameTime = time
-		console.log(distance)
-		if(player.frame === 4 && frames === 4) { // half walk
-			player.frame = 0
-			player.position.y++
-		}
-		else if(player.frame === 8) { // full walk
-			player.frame = 0
-			player.position.y += 2
-		}
-
-		if(player.position.y == player.target.y) {
-				// reached target
-				//player.position = player.target
-				player.walking = false
-				player.target = {x: player.position.x, y: player.position.y + 3}
-				player.frame = 0
-				player.art = PLAYER_IDLE_ART
 		}
 	}
 }
@@ -397,9 +530,9 @@ heart.draw = function() {
 		var scr = hexToScreen(mouseHex.x, mouseHex.y)
 		heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
 
-		if(showPath && curPath !== null) {
-			for(var i = 0; i < curPath.length; i++) {
-				var scr = hexToScreen(curPath[i][0], curPath[i][1])
+		if(showPath && player.path !== null) {
+			for(var i = 0; i < player.path.length; i++) {
+				var scr = hexToScreen(player.path[i][0], player.path[i][1])
 				heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
 			}
 		} 
