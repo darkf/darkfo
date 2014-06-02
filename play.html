@@ -290,7 +290,8 @@ heart.keydown = function(k) {
 		player.pathIndex = 0
 		player.art = PLAYER_WALK_ART
 		player.walking = true
-		//player.walking = true
+		player.frame = 0
+		player.targetLength = undefined
 		advancePath(player)
 	}
 }
@@ -322,7 +323,7 @@ function recalcPath(start, goal) {
 	return path
 }
 
-function hexInDirection(position, dir) {
+function hexNeighbors(position) {
 	var neighbors = []
 	var x = position.x
 	var y = position.y
@@ -347,43 +348,18 @@ function hexInDirection(position, dir) {
 	  n(x,y-1)
 	}
 
-	return neighbors[dir]
+	return neighbors
+}
+
+function hexInDirection(position, dir) {
+	return hexNeighbors(position)[dir]
 }
 
 function directionOfDelta(xa, ya, xb, yb) {
-	var neighbors = []
-	var j = 0
-	function n(x, y) {
-		neighbors.push([x, y, j])
-		j++
-	}
-
-	//console.log(xa + ", " + ya + " | " + xb + ", " + yb)
-
-	var x = xa
-	var y = ya
-	if(x % 2 == 0) {
-	  n(x-1,y)
-	  n(x-1,y+1)
-	  n(x,y+1)
-	  n(x+1,y+1)
-	  n(x+1,y)
-	  n(x,y-1)
-	} else{
-	  n(x-1,y-1)
-	  n(x-1,y)
-	  n(x,y+1)
-	  n(x+1,y)
-	  n(x+1,y-1)
-	  n(x,y-1)
-	}
-
+	var neighbors = hexNeighbors({x: xa, y: ya})
 	for(var i = 0; i < neighbors.length; i++) {
-		//console.log("neighbor: " + neighbors[i][0] + ", " + neighbors[i][1])
-		if(neighbors[i][0] == xb && neighbors[i][1] == yb) {
-			//console.log("yes")
-			return neighbors[i][2]
-		}
+		if(neighbors[i].x === xb && neighbors[i].y === yb)
+			return i
 	}
 
 	return null
