@@ -296,6 +296,14 @@ heart.keydown = function(k) {
 			}
 		}
 	}
+	if(k == 'i') {
+		for(var i = 0; i < gObjects.length; i++) {
+			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
+				console.log("object is at index " + i)
+				break
+			}
+		}
+	}
 	if(k == 'p') {
 		player.frame++
 		if(player.frame == 8) player.frame = 0
@@ -316,6 +324,7 @@ function critterWalkTo(obj, target) {
 	obj.walking = true
 	obj.art = PLAYER_WALK_ART
 	obj.frame = 0
+	obj.lastFrameTime = 0
 	critterAdvancePath(obj)
 }
 
@@ -396,42 +405,51 @@ function critterAdvancePath(obj) {
 	return true
 }
 
-heart.update = function() {
-	// player animation (hack: should work for all critters)
-	if(player.walking !== true) return
+function critterUpdateAnimation(obj) {
+	if(obj.walking !== true) return
 
 	var time = heart.timer.getTime()
 	var fps = 8
-	var targetScreen = hexToScreen(player.path.target.x, player.path.target.y)
-	var frames = player.path.distance * 4
+	var targetScreen = hexToScreen(obj.path.target.x, obj.path.target.y)
+	var frames = obj.path.distance * 4
 
-	if(time - player.lastFrameTime >= 1000/fps) {
+	if(time - obj.lastFrameTime >= 1000/fps) {
 		// advance frame
-		player.frame++
-		player.lastFrameTime = time
+		obj.frame++
+		obj.lastFrameTime = time
 
-		if(player.frame === 4 && frames === 4) { // half walk, one tile
-			player.frame = 0
-			var h = hexInDirection(player.position, player.orientation)
+		if(obj.frame === 4 && frames === 4) { // half walk, one tile
+			obj.frame = 0
+			var h = hexInDirection(obj.position, obj.orientation)
 			//console.log("h2: " + h)
-			player.position = h
-			player.path.distance -= 1
+			obj.position = h
+			obj.path.distance -= 1
 		}
-		else if(player.frame === 8) { // full walk, two tiles
-			player.frame = 0
-			var h = hexInDirection(player.position, player.orientation)
-			var h2 = hexInDirection(h, player.orientation)
-			//console.log("h8_2: " + h2.x + ", " + h2.y + " | target: " + player.target.x + ", " + player.target.y)
-			player.position = h2
-			player.path.distance -= 2
+		else if(obj.frame === 8) { // full walk, two tiles
+			obj.frame = 0
+			var h = hexInDirection(obj.position, obj.orientation)
+			var h2 = hexInDirection(h, obj.orientation)
+			//console.log("h8_2: " + h2.x + ", " + h2.y + " | target: " + obj.target.x + ", " + obj.target.y)
+			obj.position = h2
+			obj.path.distance -= 2
 		}
 
-		if(player.position.x === player.path.target.x && player.position.y === player.path.target.y) {
+		if(obj.position.x === obj.path.target.x && obj.position.y === obj.path.target.y) {
 			// reached target
 			console.log("target reached")
-			if(critterAdvancePath(player) === false)
-				critterStopWalking(player)
+			if(critterAdvancePath(obj) === false)
+				critterStopWalking(obj)
 		}
+	}
+}
+
+heart.update = function() {
+	// player animation (hack: should work for all critters)
+	critterUpdateAnimation(player)
+
+	for(var i = 0; i < gObjects.length; i++) {
+		if(gObjects[i].type === "critter")
+			critterUpdateAnimation(gObjects[i])
 	}
 }
 
