@@ -6,11 +6,14 @@
 <script src="scripting.js"></script>
 <script src="pathfinding-browser.js"></script>
 <script>
+"use strict";
+
 var MAP_NAME = "GECKSETL"
 var gMapScript = null
 var floorMap = null
 var roofMap = null
 var gObjects = []
+var gMap = null
 var size = 6
 var tile_width = 80
 var tile_height = 36
@@ -54,7 +57,7 @@ function tileFromScreen(x, y) {
 	if (xx >= 0) tx++
 	tx = -tx
 	var yy = off_y + off_x / 4
-	ty = yy / 32
+	var ty = yy / 32
 	if (yy < 0) ty--
 
 	return {x: 99 - Math.round(tx), y: Math.round(ty)}
