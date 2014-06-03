@@ -361,27 +361,17 @@ function critterStopWalking(obj) {
 }
 
 function recalcPath(start, goal) {
-	var matrix = []
+	var matrix = new Array(HEX_GRID_SIZE)
 
-	for(var y = 0; y < HEX_GRID_SIZE; y++) {
-		var m = []
-		for(var x = 0; x < HEX_GRID_SIZE; x++) {
-			// check for blocks
-			var flag = false
-			for(var i = 0; i < gObjects.length; i++) {
-				if(gObjects[i].position.x === x && gObjects[i].position.y === y) {
-					m.push(1)
-					flag = true
-					break
-				}
-			}
-			if(!flag)
-				m.push(0)
-		}
-		matrix.push(m)
+	for(var y = 0; y < HEX_GRID_SIZE; y++)
+		matrix[y] = new Array(HEX_GRID_SIZE)
+
+	for(var i = 0; i < gObjects.length; i++) {
+		var obj = gObjects[i]
+		matrix[obj.position.y][obj.position.x] = 1
 	}
 
-	var grid = new PF.Grid(200, 200, matrix)
+	var grid = new PF.Grid(HEX_GRID_SIZE, HEX_GRID_SIZE, matrix)
 	var finder = new PF.AStarFinder()
 	var path = finder.findPath(start.x, start.y, goal.x, goal.y, grid)
 	return path
