@@ -19,14 +19,15 @@ var tile_width = 80
 var tile_height = 36
 var images = {}
 var imageInfo = {}
-var cameraX = 4015
-var cameraY = 1485//1200
+var cameraX = 3970
+var cameraY = 1425//1200
 var showHexOverlay = false
 var showCoordinates = false
 var showPath = true
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
 var HEX_GRID_SIZE = 200 // hex grid is 200x200
 var currentElevation = 0
+var doLoadScripts = true // should we load scripts?
 
 var PLAYER_IDLE_ART = "art/critters/HMWARRAA"
 var PLAYER_WALK_ART = "art/critters/HMWARRAB"
@@ -39,6 +40,15 @@ player.toString = function() { return "The Dude" }
 var showFloor = true
 var showRoof = true
 var showObjects = true
+
+// todo: these will go in a separate utilities file
+function toTileNum(position) {
+	return position.y * 200 + position.x
+}
+
+function fromTileNum(tile) {
+	return {x: tile % 200, y: Math.floor(tile / 200)}
+}
 
 function tileToScreen(x, y) {
 	x = 99 - x // this algorithm expects x to be reversed
@@ -257,13 +267,15 @@ heart.load = function() {
 	$.get(MAP_NAME+".json", function(map) {
 		gMap = map
 
-		//scriptingEngine.init(player, MAP_NAME)
-		//gMapScript = scriptingEngine.loadScript(MAP_NAME)
+		if(doLoadScripts === true) {
+			scriptingEngine.init(player, MAP_NAME)
+			gMapScript = scriptingEngine.loadScript(MAP_NAME)
 
-		changeElevation(0, false)
-		//loadObjectScripts(gObjects)
-		//scriptingEngine.enterMap(gMapScript, gObjects, 0)
-		//scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
+			changeElevation(0, false)
+			loadObjectScripts(gObjects)
+			scriptingEngine.enterMap(gMapScript, gObjects, 0)
+			scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
+		}
 
 		// todo: is map_enter_p_proc called on elevation change?
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
@@ -299,7 +311,8 @@ heart.keydown = function(k) {
 	if(k == 'i') {
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
-				console.log("object is at index " + i)
+				var hasScripts = (gObjects[i].script !== undefined ? ("yes (" + gObjects[i].script + ")") : "no") + " " + (gObjects[i]._script === undefined ? "and is NOT loaded" : "and is loaded")
+				console.log("object is at index " + i + ", has scripts? " + hasScripts)
 				break
 			}
 		}
@@ -310,6 +323,19 @@ heart.keydown = function(k) {
 	}
 	if(k == 'm') {
 		critterWalkTo(player, mouseHex)
+	}
+
+	if(k == 'g') {
+		critterWalkTo(gObjects[1260], mouseHex)
+	}
+
+	if(k == 'w') {
+		for(var i = 0; i < gObjects.length; i++) {
+			if(gObjects[i]._script !== undefined && gObjects[i]._script.timed_event_p_proc !== undefined) {
+				console.log("calling timed_event_p_proc(1) on " + gObjects[i].script)
+				scriptingEngine.timedEvent(gObjects[i]._script, 1)
+			}
+		}
 	}
 }
 

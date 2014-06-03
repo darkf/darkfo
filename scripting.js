@@ -154,8 +154,13 @@ var scriptingEngine = (function() {
 		// tiles
 		tile_distance_objs: function(a, b) { stub("tile_distance_objs", arguments) },
 		tile_distance: function(a, b) { stub("tile_distance", arguments) },
-		tile_num: function(obj) { stub("tile_num", arguments) },
+		tile_num: function(obj) {
+			if(!isGameObject(obj)) { warn("tile_num: not game object"); return }
+			console.log("TILE NUM: " + obj.position)
+			return toTileNum(obj.position)
+		},
 		tile_contains_pid_obj: function(tile, elevation, pid) { stub("tile_contains_pid_obj", arguments) },
+		tile_num_in_direction: function(tile, direction) { return toTileNum(hexInDirection(fromTileNum(tile), direction)) },
 
 		// dialogue
 		Node999: function() { // exit dialogue
@@ -197,9 +202,15 @@ var scriptingEngine = (function() {
 		// animation
 		reg_anim_func: function(_, _) { stub("reg_anim_func", arguments) },
 		reg_anim_animate_forever: function(obj, anim) {
+			stub("reg_anim_animate_forever", arguments)
 			if(!isGameObject(obj)) return
 			//console.log("ANIM FOREVER: " + obj.art + " / " + anim)
-			stub("reg_anim_animate_forever", arguments)
+		},
+		animate_move_obj_to_tile: function(obj, tile, speed) {
+			stub("animate_move_obj_to_tile", arguments)
+			if(!isGameObject(obj)) return
+			tile = fromTileNum(tile)
+			critterWalkTo(obj, tile)
 		},
 
 		// party
@@ -266,6 +277,15 @@ var scriptingEngine = (function() {
 		return scriptObject
 	}
 
+	function timedEvent(script, userdata) {
+		console.log("timedEvent: " + script.scriptName + ": " + userdata)
+		if(script.timed_event_p_proc === undefined)
+			throw "timedEvent called on script without a timed_event_p_proc!"
+
+		script.fixed_param = userdata
+		script.timed_event_p_proc()
+	}
+
 	function updateMap(mapScript, objects, elevation) {
 		gameObjects = objects
 		gameElevation = elevation
@@ -324,5 +344,6 @@ var scriptingEngine = (function() {
 		}})*/
 	}
 
-	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript, dialogueReply: dialogueReply}
+	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
+		    dialogueReply: dialogueReply, timedEvent: timedEvent}
 })()
