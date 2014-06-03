@@ -27,13 +27,14 @@ var scriptingEngine = (function() {
 	var currentMapID = null
 	var scriptMessages = {}
 	var dialogueOptionProcs = []
+	var timeEventList = []
 
 	function stub(name, args) {
 		var a = ""
 		for(var i = 0; i < args.length; i++)
 			if(i === args.length-1) a += args[i]
 			else a += args[i] + ", "
-		console.log("STUB: " + name + ": " + a)
+		//console.log("STUB: " + name + ": " + a)
 	}
 
 	function log(name, args) {
@@ -45,7 +46,7 @@ var scriptingEngine = (function() {
 	}
 
 	function warn(msg) {
-		console.log("WARNING: " + msg)
+		//console.log("WARNING: " + msg)
 	}
 
 	function info(msg) {
@@ -67,7 +68,7 @@ var scriptingEngine = (function() {
 		if(obj.isPlayer) return true
 		for(var i = 0; i < gameObjects.length; i++) {
 			if(gameObjects[i] === obj) {
-				console.log("is GO: " + obj.toString())
+				//console.log("is GO: " + obj.toString())
 				return true
 			}
 		}
@@ -146,6 +147,7 @@ var scriptingEngine = (function() {
 		obj_is_carrying_obj_pid: function(obj, pid) { stub("obj_is_carrying_obj_pid", arguments); return 0 },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
+		obj_can_see_obj: function(a, b) { stub("obj_can_see_obj", arguments); return 0 },
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
@@ -156,7 +158,6 @@ var scriptingEngine = (function() {
 		tile_distance: function(a, b) { stub("tile_distance", arguments) },
 		tile_num: function(obj) {
 			if(!isGameObject(obj)) { warn("tile_num: not game object"); return }
-			console.log("TILE NUM: " + obj.position)
 			return toTileNum(obj.position)
 		},
 		tile_contains_pid_obj: function(tile, elevation, pid) { stub("tile_contains_pid_obj", arguments) },
@@ -212,6 +213,17 @@ var scriptingEngine = (function() {
 			tile = fromTileNum(tile)
 			critterWalkTo(obj, tile)
 		},
+
+		// timing
+		add_timer_event: function(obj, ticks, userdata) {
+			info("timer event added in " + ticks + " ticks (userdata " + userdata + ")")
+			// trigger timedEvent in `ticks` game ticks
+			timeEventList.push({ticks: ticks, fn: function() {
+				timedEvent(obj._script, userdata)
+			}.bind(this)})
+			stub("add_timer_event", arguments)
+		},
+		game_ticks: function(seconds) { return seconds*10 },
 
 		// party
 		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 }
@@ -286,6 +298,14 @@ var scriptingEngine = (function() {
 		script.timed_event_p_proc()
 	}
 
+	function updateCritter(script) {
+		// critter heartbeat (critter_p_proc)
+		if(script.critter_p_proc === undefined)
+			return
+
+		script.critter_p_proc()
+	}
+
 	function updateMap(mapScript, objects, elevation) {
 		gameObjects = objects
 		gameElevation = elevation
@@ -345,5 +365,6 @@ var scriptingEngine = (function() {
 	}
 
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
-		    dialogueReply: dialogueReply, timedEvent: timedEvent}
+		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
+		    timeEventList: timeEventList}
 })()

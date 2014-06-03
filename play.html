@@ -28,6 +28,10 @@ var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
 var HEX_GRID_SIZE = 200 // hex grid is 200x200
 var currentElevation = 0
 var doLoadScripts = true // should we load scripts?
+var doUpdateCritters = true // should we give critters heartbeats?
+var doTimedEvents = true // should we handle registered timed events?
+var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
+var lastGameTick = 0
 
 var PLAYER_IDLE_ART = "art/critters/HMWARRAA"
 var PLAYER_WALK_ART = "art/critters/HMWARRAB"
@@ -460,12 +464,35 @@ function critterUpdateAnimation(obj) {
 }
 
 heart.update = function() {
-	// player animation (hack: should work for all critters)
-	critterUpdateAnimation(player)
+	var time = heart.timer.getTime()
 
-	for(var i = 0; i < gObjects.length; i++) {
-		if(gObjects[i].type === "critter")
-			critterUpdateAnimation(gObjects[i])
+	if(time - lastGameTick >= 1000/10) { // 10 Hz game tick
+		lastGameTick = time
+		gameTickTime++
+		//console.log("tick: " + gameTickTime)
+
+		if(doTimedEvents === true) {
+			// check and update timed events
+			var timedEvents = scriptingEngine.timeEventList
+			for(var i = 0; i < timedEvents.length; i++) {
+				timedEvents[i].ticks--
+				if(timedEvents[i].ticks <= 0) {
+					console.log("timed event triggered")
+					timedEvents[i].fn()
+					timedEvents.splice(i--, 1)
+				}
+			}
+		}
+
+		critterUpdateAnimation(player)
+
+		for(var i = 0; i < gObjects.length; i++) {
+			if(gObjects[i].type === "critter") {
+				if(doUpdateCritters === true && gObjects[i]._script !== undefined)
+					scriptingEngine.updateCritter(gObjects[i]._script)
+				critterUpdateAnimation(gObjects[i])
+			}
+		}
 	}
 }
 
