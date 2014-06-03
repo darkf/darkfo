@@ -312,21 +312,16 @@ function critterWalkTo(obj, target) {
 		console.log("not a valid path")
 		return false
 	}
-	obj.path = path
-	obj.pathIndex = 0
-	obj.art = PLAYER_WALK_ART
+	obj.path = {path: path, index: 0, target: null, seqLength: null, distance: null}
 	obj.walking = true
+	obj.art = PLAYER_WALK_ART
 	obj.frame = 0
-	obj.targetLength = null
 	critterAdvancePath(obj)
 }
 
 function critterStopWalking(obj) {
 	obj.walking = false
-	obj.target = null
-	obj.targetLength = null
 	obj.path = null
-	obj.pathIndex = 0
 	obj.art = PLAYER_IDLE_ART // TODO: have different animations for all critters
 }
 
@@ -383,34 +378,34 @@ function longestSequenceWithoutTurning(start, path, index) {
 }
 
 function critterAdvancePath(obj) {
-	if(obj.targetLength !== undefined && obj.targetLength !== null)
-		obj.pathIndex += obj.targetLength
+	if(obj.path.seqLength !== undefined && obj.path.seqLength !== null)
+		obj.path.index += obj.path.seqLength
 	else
-		obj.pathIndex++
+		obj.path.index++
 
-	if(obj.pathIndex >= obj.path.length)
+	if(obj.path.index >= obj.path.path.length)
 		return false
-	//console.log("advancing to path index " + obj.pathIndex)
-	var seq = longestSequenceWithoutTurning(obj.position, obj.path, obj.pathIndex)
+	//console.log("advancing to path index " + obj.path.index)
+	var seq = longestSequenceWithoutTurning(obj.position, obj.path.path, obj.path.index)
 	//console.log("longest seq: " + JSON.stringify(seq))
 
 	obj.orientation = seq.firstDirection
-	obj.target = seq.lastPosition
-	obj.targetLength = seq.seq
-	obj.distanceToGo = seq.seq
+	obj.path.target = seq.lastPosition
+	obj.path.seqLength = seq.seq
+	obj.path.distance = seq.seq
 	return true
 }
 
 heart.update = function() {
 	// player animation (hack: should work for all critters)
-	if(!player.walking) return
+	if(player.walking !== true) return
 
 	var time = heart.timer.getTime()
 	var fps = 8
-	var targetScreen = hexToScreen(player.target.x, player.target.y)
-	var frames = player.distanceToGo * 4
+	var targetScreen = hexToScreen(player.path.target.x, player.path.target.y)
+	var frames = player.path.distance * 4
 
-	if(player.walking && time - player.lastFrameTime >= 1000/fps) {
+	if(time - player.lastFrameTime >= 1000/fps) {
 		// advance frame
 		player.frame++
 		player.lastFrameTime = time
@@ -420,7 +415,7 @@ heart.update = function() {
 			var h = hexInDirection(player.position, player.orientation)
 			//console.log("h2: " + h)
 			player.position = h
-			player.distanceToGo -= 1
+			player.path.distance -= 1
 		}
 		else if(player.frame === 8) { // full walk, two tiles
 			player.frame = 0
@@ -428,10 +423,10 @@ heart.update = function() {
 			var h2 = hexInDirection(h, player.orientation)
 			//console.log("h8_2: " + h2.x + ", " + h2.y + " | target: " + player.target.x + ", " + player.target.y)
 			player.position = h2
-			player.distanceToGo -= 2
+			player.path.distance -= 2
 		}
 
-		if(player.position.x === player.target.x && player.position.y === player.target.y) {
+		if(player.position.x === player.path.target.x && player.position.y === player.path.target.y) {
 			// reached target
 			console.log("target reached")
 			if(critterAdvancePath(player) === false)
@@ -488,9 +483,9 @@ heart.draw = function() {
 		var scr = hexToScreen(mouseHex.x, mouseHex.y)
 		heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
 
-		if(showPath && player.path !== null) {
-			for(var i = 0; i < player.path.length; i++) {
-				var scr = hexToScreen(player.path[i][0], player.path[i][1])
+		if(showPath === true && player.path !== null) {
+			for(var i = 0; i < player.path.path.length; i++) {
+				var scr = hexToScreen(player.path.path[i][0], player.path.path[i][1])
 				heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
 			}
 		} 
