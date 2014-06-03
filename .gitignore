@@ -1,0 +1,6 @@
+*.json
+*.images.txt
+*.map
+*.pyc
+data/
+art/
