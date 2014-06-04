@@ -129,7 +129,7 @@ def getCritterArtPath(frmPID):
 		#idx = lst.getReIndex(idx);
 		#Log("DEBUG") << "new critter id " << idx;
 
-	path = "art/critters/" + getProFile(critterLst, idx).split(",")[0]
+	path = "art/critters/" + getProFile(critterLst, idx).split(",")[0].upper()
 
 	#tmpBuf = ""
 
@@ -179,13 +179,13 @@ def getCritterArtPath(frmPID):
 		#raise Exception("other")
 		if (id2 <= 1 and id1 > 0):
 			print "ID1:", id1
-			path += chr(id1 + ord('c'))
+			path += chr(id1 + ord('c')).upper()
 			#tmpBuf[0] = char(id1) + 'c';
 		else:
 			#tmpBuf[0] = 'a';
-			path += 'a'
+			path += 'A'
 		#tmpBuf[1] = char(id2) + 'a';
-		path += chr(id2 + ord('a'))
+		path += chr(id2 + ord('a')).upper()
 		#path.append(tmpBuf);
 
 	path += ".fr"

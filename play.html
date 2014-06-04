@@ -33,11 +33,8 @@ var doTimedEvents = true // should we handle registered timed events?
 var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0
 
-var PLAYER_IDLE_ART = "art/critters/HMWARRAA"
-var PLAYER_WALK_ART = "art/critters/HMWARRAB"
-
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
-              art: PLAYER_IDLE_ART, isPlayer: true, walking: false, lastFrameTime: 0,
+              art: "art/critters/HMJMPSAA", isPlayer: true, walking: false, lastFrameTime: 0,
               path: null}
 player.toString = function() { return "The Dude" }
 
@@ -343,6 +340,15 @@ heart.keydown = function(k) {
 	}
 }
 
+function critterGetAnim(obj, anim) {
+	var base = obj.art.slice(0, -2)
+	switch(anim) {
+		case "idle": return base + "AA"
+		case "walk": return base + "AB"
+		default: throw "Unknown animation: " + anim
+	}
+}
+
 function critterWalkTo(obj, target) {
 	// pathfind and set walking to target
 	var path = recalcPath(obj.position, target)
@@ -352,7 +358,7 @@ function critterWalkTo(obj, target) {
 	}
 	obj.path = {path: path, index: 0, target: null, seqLength: null, distance: null}
 	obj.walking = true
-	obj.art = PLAYER_WALK_ART
+	obj.art = critterGetAnim(obj, "walk")
 	obj.frame = 0
 	obj.lastFrameTime = 0
 	critterAdvancePath(obj)
@@ -361,7 +367,7 @@ function critterWalkTo(obj, target) {
 function critterStopWalking(obj) {
 	obj.walking = false
 	obj.path = null
-	obj.art = PLAYER_IDLE_ART // TODO: have different animations for all critters
+	obj.art = critterGetAnim(obj, "idle")
 }
 
 function recalcPath(start, goal) {
@@ -588,6 +594,7 @@ heart.draw = function() {
 			else { // single-frame (e.g. static scenery) drawing
 				// todo: find out why this is slow (might be just the width/height calls)
 				// currently this codepath is not taken
+				console.log("single-frame: " + obj.art)
 				var w = images[obj.art].getWidth()
 				var h = images[obj.art].getHeight()
 				var offsetX = Math.floor(w / 2) - imageInfo[obj.art].directionOffsets[0].x
