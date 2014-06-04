@@ -348,8 +348,21 @@ function critterGetAnim(obj, anim) {
 		case "idle": return base + "AA"
 		case "walk": return base + "AB"
 		case "run":  return base + "AT"
+		case "shoot": return base + "JJ"
 		default: throw "Unknown animation: " + anim
 	}
+}
+
+function getAnimDistance(art) {
+	var info = imageInfo[art]
+	if(info === undefined)
+		throw "no image info for " + art
+
+	var firstShift = info.frameOffsets[0][0].ox
+	var lastShift = info.frameOffsets[1][info.numFrames-1].ox
+
+	// distance = (shift x of last frame) - (shift x of first frame(?) + 16) / 32
+	return Math.floor((lastShift - firstShift + 16) / 32)
 }
 
 function critterWalkTo(obj, target, running) {
@@ -436,13 +449,11 @@ function critterAdvancePath(obj) {
 
 function critterUpdateAnimation(obj) {
 	if(obj.anim === undefined || obj.anim === "idle") return
-	// todo: some NPCs (like ghouls, most likely monsters) have different
-	// walk speeds and whatnot. how is that calculated?
-
 	var time = heart.timer.getTime()
-	var fps = 8
+	var fps = 8 // todo: get FPS from image info
 	var targetScreen = hexToScreen(obj.path.target.x, obj.path.target.y)
-	var tilePerFrame = (obj.anim === "run") ? 2 : 4 // walk/run
+	var moveDistance = getAnimDistance(obj.art)
+	var tilePerFrame = Math.floor(imageInfo[obj.art].numFrames / moveDistance)
 
 	if(time - obj.lastFrameTime >= 1000/fps) {
 		// advance frame
