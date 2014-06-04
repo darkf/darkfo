@@ -25,8 +25,8 @@ class Frames(Construct):
     			)
     		)._parse(stream, context)
 
-    		if any(frame.s != frame.width * frame.height for frame in frames):
-    			raise Exception("sanity check error")
+    		#if any(frame.s != frame.width * frame.height for frame in frames):
+    		#	raise Exception("sanity check error")
 
     		xoff_total = sum(frame._xoff for frame in frames)
     		yoff_total = sum(frame._yoff for frame in frames)
@@ -98,7 +98,10 @@ def main():
 	with open(FILE, "rb") as f:
 		data = f.read()
 		frm_ = frm.parse(data)
-		print frm_
+		print "fps:", frm_.fps
+		print "frames:", frm_.framesPerDirection
+		print "action frame:", frm_.actionFrame
+		#print frm_
 
 if __name__ == '__main__':
 	main()

@@ -35,8 +35,14 @@ var lastGameTick = 0
 
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/HMJMPSAA", isPlayer: true, anim: "idle", lastFrameTime: 0,
-              path: null}
+              path: null, animCallback: null}
 player.toString = function() { return "The Dude" }
+
+var animInfo = {"idle": {type: "static"},
+                "shoot": {type: "static"},
+                "weapon-reload": {type: "static"},
+                "walk": {type: "move"},
+                "run": {type: "move"}}
 
 var showFloor = true
 var showRoof = true
@@ -329,7 +335,9 @@ heart.keydown = function(k) {
 		critterWalkTo(player, mouseHex, true)
 	}
 	if(k == 'g') {
-		critterWalkTo(gObjects[1260], mouseHex)
+		critterStaticAnim(player, "shoot", function() {
+			critterStaticAnim(player, "weapon-reload")
+		})
 	}
 
 	if(k == 'w') {
@@ -349,6 +357,7 @@ function critterGetAnim(obj, anim) {
 		case "walk": return base + "AB"
 		case "run":  return base + "AT"
 		case "shoot": return base + "JJ"
+		case "weapon-reload": return base + "JA"
 		default: throw "Unknown animation: " + anim
 	}
 }
@@ -365,7 +374,7 @@ function getAnimDistance(art) {
 	return Math.floor((lastShift - firstShift + 16) / 32)
 }
 
-function critterWalkTo(obj, target, running) {
+function critterWalkTo(obj, target, running, callback) {
 	// pathfind and set walking to target
 	var path = recalcPath(obj.position, target)
 	if(path.length === 0) {
@@ -375,15 +384,26 @@ function critterWalkTo(obj, target, running) {
 	obj.path = {path: path, index: 0, target: null, seqLength: null, distance: null}
 	obj.anim = (running === true) ? "run" : "walk"
 	obj.art = critterGetAnim(obj, obj.anim)
+	obj.animCallback = (callback !== undefined) ? callback : (function() { critterStopWalking(obj) })
 	obj.frame = 0
 	obj.lastFrameTime = 0
 	critterAdvancePath(obj)
 }
 
+function critterStaticAnim(obj, anim, callback) {
+	obj.art = critterGetAnim(obj, anim)
+	obj.frame = 0
+	obj.lastFrameTime = 0
+	obj.anim = anim
+	obj.animCallback = (callback !== undefined) ? callback : (function() { critterStopWalking(obj) })
+}
+
 function critterStopWalking(obj) {
 	obj.path = null
 	obj.anim = "idle"
+	obj.frame = 0
 	obj.art = critterGetAnim(obj, "idle")
+	obj.animCallback = null
 }
 
 function recalcPath(start, goal) {
@@ -447,8 +467,27 @@ function critterAdvancePath(obj) {
 	return true
 }
 
+function critterUpdateStaticAnimation(obj) {
+	var time = heart.timer.getTime()
+	var fps = 8 // todo: get FPS from image info
+
+	if(time - obj.lastFrameTime >= 1000/fps) {
+		obj.frame++
+		obj.lastFrameTime = time
+
+		if(obj.frame === imageInfo[obj.art].numFrames) {
+			// animation is done
+			// todo: some sort of callback or action when completed?
+			if(obj.animCallback)
+				obj.animCallback()
+		}
+	}
+}
+
 function critterUpdateAnimation(obj) {
 	if(obj.anim === undefined || obj.anim === "idle") return
+	if(animInfo[obj.anim].type === "static") return critterUpdateStaticAnimation(obj)
+
 	var time = heart.timer.getTime()
 	var fps = 8 // todo: get FPS from image info
 	var targetScreen = hexToScreen(obj.path.target.x, obj.path.target.y)
@@ -478,7 +517,8 @@ function critterUpdateAnimation(obj) {
 			// reached target
 			console.log("target reached")
 			if(critterAdvancePath(obj) === false)
-				critterStopWalking(obj)
+				if(obj.animCallback)
+					obj.animCallback()
 		}
 	}
 }
