@@ -34,7 +34,7 @@ var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0
 
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
-              art: "art/critters/HMJMPSAA", isPlayer: true, walking: false, lastFrameTime: 0,
+              art: "art/critters/HMJMPSAA", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null}
 player.toString = function() { return "The Dude" }
 
@@ -325,7 +325,9 @@ heart.keydown = function(k) {
 	if(k == 'm') {
 		critterWalkTo(player, mouseHex)
 	}
-
+	if(k == 'r') {
+		critterWalkTo(player, mouseHex, true)
+	}
 	if(k == 'g') {
 		critterWalkTo(gObjects[1260], mouseHex)
 	}
@@ -345,11 +347,12 @@ function critterGetAnim(obj, anim) {
 	switch(anim) {
 		case "idle": return base + "AA"
 		case "walk": return base + "AB"
+		case "run":  return base + "AT"
 		default: throw "Unknown animation: " + anim
 	}
 }
 
-function critterWalkTo(obj, target) {
+function critterWalkTo(obj, target, running) {
 	// pathfind and set walking to target
 	var path = recalcPath(obj.position, target)
 	if(path.length === 0) {
@@ -357,16 +360,16 @@ function critterWalkTo(obj, target) {
 		return false
 	}
 	obj.path = {path: path, index: 0, target: null, seqLength: null, distance: null}
-	obj.walking = true
-	obj.art = critterGetAnim(obj, "walk")
+	obj.anim = (running === true) ? "run" : "walk"
+	obj.art = critterGetAnim(obj, obj.anim)
 	obj.frame = 0
 	obj.lastFrameTime = 0
 	critterAdvancePath(obj)
 }
 
 function critterStopWalking(obj) {
-	obj.walking = false
 	obj.path = null
+	obj.anim = "idle"
 	obj.art = critterGetAnim(obj, "idle")
 }
 
@@ -432,30 +435,30 @@ function critterAdvancePath(obj) {
 }
 
 function critterUpdateAnimation(obj) {
-	if(obj.walking !== true) return
+	if(obj.anim === undefined || obj.anim === "idle") return
+	// todo: some NPCs (like ghouls, most likely monsters) have different
+	// walk speeds and whatnot. how is that calculated?
 
 	var time = heart.timer.getTime()
 	var fps = 8
 	var targetScreen = hexToScreen(obj.path.target.x, obj.path.target.y)
-	var frames = obj.path.distance * 4
+	var tilePerFrame = (obj.anim === "run") ? 2 : 4 // walk/run
 
 	if(time - obj.lastFrameTime >= 1000/fps) {
 		// advance frame
 		obj.frame++
 		obj.lastFrameTime = time
 
-		if(obj.frame === 4 && frames === 4) { // half walk, one tile
+		if(obj.frame === tilePerFrame && obj.path.distance === 1) { // half walk, one tile
 			obj.frame = 0
 			var h = hexInDirection(obj.position, obj.orientation)
-			//console.log("h2: " + h)
 			obj.position = h
 			obj.path.distance -= 1
 		}
-		else if(obj.frame === 8) { // full walk, two tiles
+		else if(obj.frame === tilePerFrame*2) { // full walk, 2+ tiles
 			obj.frame = 0
 			var h = hexInDirection(obj.position, obj.orientation)
 			var h2 = hexInDirection(h, obj.orientation)
-			//console.log("h8_2: " + h2.x + ", " + h2.y + " | target: " + obj.target.x + ", " + obj.target.y)
 			obj.position = h2
 			obj.path.distance -= 2
 		}
