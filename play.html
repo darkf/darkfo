@@ -4,6 +4,7 @@
 <script src="heart.js"></script>
 <script src="jquery-1.11.1.min.js"></script>
 <script src="scripting.js"></script>
+<script src="combat.js"></script>
 <script src="pathfinding-browser.js"></script>
 <script>
 "use strict";
@@ -32,6 +33,8 @@ var doUpdateCritters = true // should we give critters heartbeats?
 var doTimedEvents = true // should we handle registered timed events?
 var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0
+var combat = null
+var inCombat = false
 
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/HMJMPSAA", isPlayer: true, anim: "idle", lastFrameTime: 0,
@@ -42,6 +45,7 @@ var animInfo = {"idle": {type: "static"},
                 "shoot": {type: "static"},
                 "weapon-reload": {type: "static"},
                 "walk": {type: "move"},
+                "static-idle": {type: "static"},
                 "run": {type: "move"}}
 
 var showFloor = true
@@ -288,6 +292,11 @@ heart.load = function() {
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 		//scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 	}, "json")
+
+	// for testing
+	var a = gObjects[1175]
+	var b = gObjects[1260]
+	gObjects = [a, b]
 }
 
 heart.keydown = function(k) {
@@ -348,6 +357,18 @@ heart.keydown = function(k) {
 			}
 		}
 	}
+	if(k == 'c') {
+		if(inCombat === true) {
+			console.log("[TURN]")
+			combat.nextTurn()
+		}
+		else {
+			console.log("[COMBAT BEGIN]")
+			inCombat = true
+			combat = new Combat(gObjects, player)
+			combat.nextTurn()
+		}
+	}
 }
 
 function critterGetAnim(obj, anim) {
@@ -358,6 +379,7 @@ function critterGetAnim(obj, anim) {
 		case "run":  return base + "AT"
 		case "shoot": return base + "JJ"
 		case "weapon-reload": return base + "JA"
+		case "static-idle": return base + "AA"
 		default: throw "Unknown animation: " + anim
 	}
 }
@@ -531,7 +553,7 @@ heart.update = function() {
 		gameTickTime++
 		//console.log("tick: " + gameTickTime)
 
-		if(doTimedEvents === true) {
+		if(doTimedEvents === true && inCombat !== true) {
 			// check and update timed events
 			var timedEvents = scriptingEngine.timeEventList
 			for(var i = 0; i < timedEvents.length; i++) {
@@ -548,7 +570,7 @@ heart.update = function() {
 
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].type === "critter") {
-				if(doUpdateCritters === true && gObjects[i]._script !== undefined)
+				if(doUpdateCritters === true && inCombat !== true && gObjects[i]._script !== undefined)
 					scriptingEngine.updateCritter(gObjects[i]._script)
 				critterUpdateAnimation(gObjects[i])
 			}
@@ -673,6 +695,11 @@ heart.draw = function() {
 	if(floorMap[mouseTile.y] !== undefined) {
 		var tileImg = floorMap[mouseTile.y][mouseTile.x]
 		heart.graphics.print("tile: " + tileImg, 5, 60)
+	}
+
+	if(inCombat === true) {
+		var whose = combat.whoseTurn === -1 ? "player" : combat.critters[combat.whoseTurn].art
+		heart.graphics.print("[turn " + combat.turnNum + " of " + whose + "]", SCREEN_WIDTH - 200, 15)
 	}
 
 	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
