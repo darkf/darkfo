@@ -17,6 +17,21 @@ Combat.prototype.fireDistance = function(obj) {
 	return 3; // todo: get some distance before firing
 }
 
+Combat.prototype.shoot = function(obj, target, callback) {
+	if(obj.isPlayer) {
+		critterStaticAnim(player, "shoot", function() {
+			critterStaticAnim(player, "weapon-reload", callback)
+		})
+	}
+	else {
+		// if we have a punch animation, use that, otherwise default to idling
+		var anim = critterGetAnim(obj, "punch")
+		if(imageInfo[anim] !== undefined)
+			critterStaticAnim(obj, "punch", callback)
+		else critterStaticAnim(obj, "static-idle", callback)
+	}
+}
+
 Combat.prototype.doAITurn = function(obj, idx) {
 	var that = this
 	var distance = hexDistance(obj.position, this.player.position)
@@ -53,8 +68,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 		this.AP[idx] -= 4
 		// turn towards player
 		obj.orientation = 5 - this.player.orientation
-
-		critterStaticAnim(obj, "static-idle", function() {
+		this.shoot(obj, this.player, function() {
 			critterStopWalking(obj)
 			that.doAITurn(obj, idx)
 		})
@@ -67,12 +81,12 @@ Combat.prototype.nextTurn = function() {
 	if(this.whoseTurn >= this.critters.length) {
 		// end of turn
 		this.whoseTurn = -1
-		return
 	}
 
 	if(this.whoseTurn === -1) {
 		// player
 		this.inPlayerTurn = true
+		this.player.AP = 4
 	}
 	else {
 		this.AP[this.whoseTurn] = 4 // reset AP

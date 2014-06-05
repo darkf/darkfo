@@ -46,6 +46,7 @@ var animInfo = {"idle": {type: "static"},
                 "weapon-reload": {type: "static"},
                 "walk": {type: "move"},
                 "static-idle": {type: "static"},
+                "punch": {type: "static"},
                 "run": {type: "move"}}
 
 var showFloor = true
@@ -351,9 +352,24 @@ heart.keydown = function(k) {
 		critterWalkTo(player, mouseHex, true)
 	}
 	if(k == 'g') {
-		critterStaticAnim(player, "shoot", function() {
-			critterStaticAnim(player, "weapon-reload")
-		})
+		if(!inCombat || !combat.inPlayerTurn || player.anim !== "idle") {
+			console.log("You can't do that yet.")
+			return
+		}
+
+		if(player.AP < 4) {
+			console.log("You don't have enough AP for that.")
+			return
+		}
+
+		for(var i = 0; i < combat.critters.length; i++) {
+			if(combat.critters[i].position.x === mouseHex.x && combat.critters[i].position.y === mouseHex.y) {
+				player.AP -= 4
+				console.log("Shooting...")
+				combat.shoot(player, combat.critters[i])
+				break
+			}
+		}
 	}
 
 	if(k == 'w') {
@@ -387,6 +403,7 @@ function critterGetAnim(obj, anim) {
 		case "shoot": return base + "JJ"
 		case "weapon-reload": return base + "JA"
 		case "static-idle": return base + "AA"
+		case "punch": return base + "AQ"
 		default: throw "Unknown animation: " + anim
 	}
 }
@@ -706,7 +723,8 @@ heart.draw = function() {
 
 	if(inCombat === true) {
 		var whose = combat.whoseTurn === -1 ? "player" : combat.critters[combat.whoseTurn].art
-		heart.graphics.print("[turn " + combat.turnNum + " of " + whose + "]", SCREEN_WIDTH - 200, 15)
+		var AP = combat.whoseTurn === -1 ? player.AP : combat.AP[combat.whoseTurn]
+		heart.graphics.print("[turn " + combat.turnNum + " of " + whose + " AP: " + AP + "]", SCREEN_WIDTH - 200, 15)
 	}
 
 	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
