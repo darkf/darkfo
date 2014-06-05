@@ -1,23 +1,65 @@
 var Combat = function(objects, player) {
 	this.critters = []
 	for(var i = 0; i < objects.length; i++) {
-		if(objects[i].type === "critter")
+		if(objects[i].type === "critter") {
 			this.critters.push(objects[i])
+		}
 	}
 
+	this.AP = new Array(this.critters.length)
 	this.player = player
 	this.turnNum = 0
 	this.whoseTurn = -2
 	this.inPlayerTurn = false
 }
 
-Combat.prototype.doTurn = function(obj) {
-	// behaviors
+Combat.prototype.fireDistance = function(obj) {
+	return 3; // todo: get some distance before firing
+}
+
+Combat.prototype.doAITurn = function(obj, idx) {
 	var that = this
-	critterStaticAnim(obj, "static-idle", function() {
-		critterStopWalking(obj)
-		that.nextTurn()
-	})
+	var distance = hexDistance(obj.position, this.player.position)
+	var AP = this.AP[idx]
+
+	if(AP <= 0) { // out of AP
+		this.nextTurn()
+		return
+	}
+
+	// behaviors
+
+	if(distance > this.fireDistance(obj)) {
+		// todo: some sane direction, and also path checking
+		console.log("[AI CREEPS]")
+		this.AP[idx] -= 2
+		var neighbors = hexNeighbors(this.player.position)
+		for(var i = 0; i < neighbors.length; i++) {
+			if(critterWalkTo(obj, neighbors[i], false, function() {
+				critterStopWalking(obj)
+				that.doAITurn(obj, idx)
+			}) !== false) {
+				// OK
+				return
+			}
+		}
+
+		// no path
+		console.log("[NO PATH]")
+		that.doAITurn(obj, idx)
+	}
+	else if(AP >= 4) {
+		console.log("[SHOOTING]")
+		this.AP[idx] -= 4
+		// turn towards player
+		obj.orientation = 5 - this.player.orientation
+
+		critterStaticAnim(obj, "static-idle", function() {
+			critterStopWalking(obj)
+			that.doAITurn(obj, idx)
+		})
+	}
+	else this.nextTurn()
 }
 
 Combat.prototype.nextTurn = function() {
@@ -32,6 +74,8 @@ Combat.prototype.nextTurn = function() {
 		// player
 		this.inPlayerTurn = true
 	}
-	else
-		this.doTurn(this.critters[this.whoseTurn])
+	else {
+		this.AP[this.whoseTurn] = 4 // reset AP
+		this.doAITurn(this.critters[this.whoseTurn], this.whoseTurn)
+	}
 }
