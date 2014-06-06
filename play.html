@@ -381,9 +381,12 @@ heart.keydown = function(k) {
 		}
 	}
 	if(k == 'c') {
-		if(inCombat === true) {
+		if(inCombat === true && combat.inPlayerTurn === true) {
 			console.log("[TURN]")
 			combat.nextTurn()
+		}
+		else if(inCombat === true) {
+			console.log("Wait your turn...")
 		}
 		else {
 			console.log("[COMBAT BEGIN]")

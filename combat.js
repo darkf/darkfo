@@ -90,6 +90,7 @@ Combat.prototype.nextTurn = function() {
 		this.player.AP = 4
 	}
 	else {
+		this.inPlayerTurn = false
 		this.AP[this.whoseTurn] = 4 // reset AP
 		this.doAITurn(this.critters[this.whoseTurn], this.whoseTurn)
 	}
