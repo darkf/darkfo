@@ -56,7 +56,13 @@ Combat.prototype.shoot = function(obj, target, callback) {
 	if(target.hp <= 0) {
 		console.log("...And killed them.")
 		target.dead = true
-		// todo: death animation
+
+		if(critterHasAnim(target, "death"))
+			critterStaticAnim(target, "death", function() {
+				// todo: corpse-ify
+				target.frame-- // go to last frame
+				target.anim = undefined
+			})
 	}
 }
 

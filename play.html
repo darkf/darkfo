@@ -49,6 +49,7 @@ var animInfo = {"idle": {type: "static"},
                 "walk": {type: "move"},
                 "static-idle": {type: "static"},
                 "punch": {type: "static"},
+                "death": {type: "static"},
                 "run": {type: "move"}}
 
 var showFloor = true
@@ -413,6 +414,7 @@ function critterGetAnim(obj, anim) {
 		case "weapon-reload": return base + "JA"
 		case "static-idle": return base + "AA"
 		case "punch": return base + "AQ"
+		case "death": return base + "BO"
 		default: throw "Unknown animation: " + anim
 	}
 }
