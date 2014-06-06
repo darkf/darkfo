@@ -25,8 +25,9 @@ Combat.prototype.shoot = function(obj, target, callback) {
 	}
 	else {
 		// if we have a punch animation, use that, otherwise default to idling
-		var anim = critterGetAnim(obj, "punch")
-		if(imageInfo[anim] !== undefined)
+		if(critterHasAnim(obj, "shoot"))
+			critterStaticAnim(obj, "shoot", callback)
+		else if(critterHasAnim(obj, "punch"))
 			critterStaticAnim(obj, "punch", callback)
 		else critterStaticAnim(obj, "static-idle", callback)
 	}

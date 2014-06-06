@@ -408,6 +408,10 @@ function critterGetAnim(obj, anim) {
 	}
 }
 
+function critterHasAnim(obj, anim) {
+	return imageInfo[critterGetAnim(obj, anim)] !== undefined
+}
+
 function getAnimDistance(art) {
 	var info = imageInfo[art]
 	if(info === undefined)
