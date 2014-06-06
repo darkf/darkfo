@@ -6,6 +6,9 @@ var Combat = function(objects, player) {
 
 			if(objects[i].stats === undefined)
 				objects[i].stats = this.getDefaultStats(objects[i])
+			if(objects[i].hp === undefined)
+				objects[i].hp = 100
+			objects[i].dead = false
 		}
 	}
 
@@ -17,7 +20,7 @@ var Combat = function(objects, player) {
 }
 
 Combat.prototype.fireDistance = function(obj) {
-	return 3; // todo: get some distance before firing
+	return 5; // todo: get some distance before firing
 }
 
 Combat.prototype.getDefaultStats = function(obj) {
@@ -28,11 +31,13 @@ Combat.prototype.getMaxAP = function(obj) {
 	return 5 + Math.floor(obj.stats.agi/2)
 }
 
+Combat.prototype.getDamageDone = function(obj, target) {
+	return 55
+}
+
 Combat.prototype.shoot = function(obj, target, callback) {
 	if(obj.isPlayer) {
-		critterStaticAnim(player, "shoot", function() {
-			critterStaticAnim(player, "weapon-reload", callback)
-		})
+		critterStaticAnim(player, "shoot", callback)
 	}
 	else {
 		// if we have a punch animation, use that, otherwise default to idling
@@ -41,6 +46,17 @@ Combat.prototype.shoot = function(obj, target, callback) {
 		else if(critterHasAnim(obj, "punch"))
 			critterStaticAnim(obj, "punch", callback)
 		else critterStaticAnim(obj, "static-idle", callback)
+	}
+
+	var damage = this.getDamageDone(obj, target)
+	var who = obj.isPlayer ? "You" : "An NPC"
+	console.log(who + " hit the target for " + damage + " damage")
+	target.hp -= damage
+
+	if(target.hp <= 0) {
+		console.log("...And killed them.")
+		target.dead = true
+		// todo: death animation
 	}
 }
 
@@ -82,7 +98,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 		console.log("[SHOOTING]")
 		this.AP[idx] -= 4
 		// turn towards player
-		obj.orientation = 5 - this.player.orientation
+		// todo: actually do that
 		this.shoot(obj, this.player, function() {
 			critterStopWalking(obj)
 			that.doAITurn(obj, idx)
@@ -106,6 +122,8 @@ Combat.prototype.nextTurn = function() {
 	else {
 		this.inPlayerTurn = false
 		var critter = this.critters[this.whoseTurn]
+		if(critter.dead === true)
+			return this.nextTurn()
 		this.AP[this.whoseTurn] = this.getMaxAP(critter) // reset AP
 		this.doAITurn(critter, this.whoseTurn)
 	}

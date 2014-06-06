@@ -39,7 +39,8 @@ var inCombat = false
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/HMJMPSAA", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null,
-          	  stats: {str: 4, per: 5, end: 5, chr: 5, int: 5, agi: 6, luk: 5}}
+          	  stats: {str: 4, per: 5, end: 5, chr: 5, int: 5, agi: 6, luk: 5}, hp: 100,
+          	  dead: false}
 player.toString = function() { return "The Dude" }
 
 var animInfo = {"idle": {type: "static"},
@@ -217,6 +218,10 @@ function hexDistance(a, b) {
 	var dx = a.x - b.x
 	var dy = a.y - b.y
 	return Math.sqrt(dx*dx + dy*dy)
+}
+
+function hexOppositeDirection(direction) {
+	return (direction + 3) % 6
 }
 
 var hexOverlay = null
@@ -738,6 +743,11 @@ heart.draw = function() {
 		var whose = combat.whoseTurn === -1 ? "player" : combat.critters[combat.whoseTurn].art
 		var AP = combat.whoseTurn === -1 ? player.AP : combat.AP[combat.whoseTurn]
 		heart.graphics.print("[turn " + combat.turnNum + " of " + whose + " AP: " + AP + "]", SCREEN_WIDTH - 200, 15)
+	}
+
+	if(player.dead === true) {
+		heart.graphics.setColor(255, 0, 0, 50)
+		heart.graphics.rectangle("fill", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 	}
 
 	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
