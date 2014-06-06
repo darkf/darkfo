@@ -38,7 +38,8 @@ var inCombat = false
 
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/HMJMPSAA", isPlayer: true, anim: "idle", lastFrameTime: 0,
-              path: null, animCallback: null}
+              path: null, animCallback: null,
+          	  stats: {str: 4, per: 5, end: 5, chr: 5, int: 5, agi: 6, luk: 5}}
 player.toString = function() { return "The Dude" }
 
 var animInfo = {"idle": {type: "static"},
@@ -427,13 +428,18 @@ function getAnimDistance(art) {
 	return Math.floor((lastShift - firstShift + 16) / 32)
 }
 
-function critterWalkTo(obj, target, running, callback) {
+function critterWalkTo(obj, target, running, callback, maxLength) {
 	// pathfind and set walking to target
 	var path = recalcPath(obj.position, target)
 	if(path.length === 0) {
 		console.log("not a valid path")
 		return false
 	}
+	if(maxLength !== undefined && path.length > maxLength) {
+		console.log("truncating path (to length " + maxLength + ")")
+		path = path.slice(0, maxLength)
+	}
+
 	obj.path = {path: path, index: 0, target: null, seqLength: null, distance: null}
 	obj.anim = (running === true) ? "run" : "walk"
 	obj.art = critterGetAnim(obj, obj.anim)

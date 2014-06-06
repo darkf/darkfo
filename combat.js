@@ -3,6 +3,9 @@ var Combat = function(objects, player) {
 	for(var i = 0; i < objects.length; i++) {
 		if(objects[i].type === "critter") {
 			this.critters.push(objects[i])
+
+			if(objects[i].stats === undefined)
+				objects[i].stats = this.getDefaultStats(objects[i])
 		}
 	}
 
@@ -15,6 +18,14 @@ var Combat = function(objects, player) {
 
 Combat.prototype.fireDistance = function(obj) {
 	return 3; // todo: get some distance before firing
+}
+
+Combat.prototype.getDefaultStats = function(obj) {
+	return {str: 4, per: 5, end: 5, chr: 1, int: 1, agi: 1, luk: 1}
+}
+
+Combat.prototype.getMaxAP = function(obj) {
+	return 5 + Math.floor(obj.stats.agi/2)
 }
 
 Combat.prototype.shoot = function(obj, target, callback) {
@@ -45,17 +56,20 @@ Combat.prototype.doAITurn = function(obj, idx) {
 
 	// behaviors
 
-	if(distance > this.fireDistance(obj)) {
+	var fireDistance = this.fireDistance(obj)
+	if(distance > fireDistance) {
 		// todo: some sane direction, and also path checking
 		console.log("[AI CREEPS]")
-		this.AP[idx] -= 2
 		var neighbors = hexNeighbors(this.player.position)
+		var maxDistance = Math.min(this.AP[idx], fireDistance)
+		
 		for(var i = 0; i < neighbors.length; i++) {
 			if(critterWalkTo(obj, neighbors[i], false, function() {
 				critterStopWalking(obj)
 				that.doAITurn(obj, idx)
-			}) !== false) {
+			}, maxDistance) !== false) {
 				// OK
+				this.AP[idx] -= obj.path.path.length
 				return
 			}
 		}
@@ -87,11 +101,12 @@ Combat.prototype.nextTurn = function() {
 	if(this.whoseTurn === -1) {
 		// player
 		this.inPlayerTurn = true
-		this.player.AP = 4
+		this.player.AP = this.getMaxAP(this.player)
 	}
 	else {
 		this.inPlayerTurn = false
-		this.AP[this.whoseTurn] = 4 // reset AP
-		this.doAITurn(this.critters[this.whoseTurn], this.whoseTurn)
+		var critter = this.critters[this.whoseTurn]
+		this.AP[this.whoseTurn] = this.getMaxAP(critter) // reset AP
+		this.doAITurn(critter, this.whoseTurn)
 	}
 }
