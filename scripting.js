@@ -121,6 +121,9 @@ var scriptingEngine = (function() {
 		dude_obj: "<Dude Object>",
 		'true': true,
 		'false': false,
+
+		floor: function(x) { return Math.floor(x) }, // TODO: does the language have floats? Are we handling division incorrectly?
+
 		set_global_var: function(gvar, value) {
 			globalVars[gvar] = value
 			info("set_global_var: " + gvar + " = " + value)
@@ -130,7 +133,13 @@ var scriptingEngine = (function() {
 			info("set_local_var: " + lvar + " = " + value + " [" + this.scriptName + "]", "lvars")
 			log("set_local_var", arguments, "lvars")
 		},
-		local_var: function(lvar) { log("local_var", arguments, "lvars"); return this.lvars[lvar] },
+		local_var: function(lvar) {
+			log("local_var", arguments, "lvars");
+			if(this.lvars[lvar] === undefined) {
+				warn("local_var: setting default value (0) for LVAR " + lvar)
+				this.lvars[lvar] = 0
+			}
+			return this.lvars[lvar] },
 		map_var: function(mvar) {
 			if(mapVars[this.scriptName] !== undefined && mapVars[this.scriptName][mvar] !== undefined)
 				return mapVars[this.scriptName][mvar]
@@ -158,8 +167,8 @@ var scriptingEngine = (function() {
 		give_exp_points: function(xp) { stub("give_exp_points", arguments) },
 
 		// critters
-		get_critter_stat: function(obj, stat) { stub("get_critter_stat", arguments); return 10 },
-		has_trait: function(traitType, obj, trait) { stub("has_trait", arguments) },
+		get_critter_stat: function(obj, stat) { stub("get_critter_stat", arguments); return 5 },
+		has_trait: function(traitType, obj, trait) { stub("has_trait", arguments); return 0 },
 		critter_add_trait: function(obj, traitType, trait, amount) { stub("critter_add_trait", arguments) },
 		item_caps_total: function(obj) { stub("item_caps_total", arguments) },
 		item_caps_adjust: function(obj, amount) { stub("item_caps_adjust", arguments) },
@@ -184,7 +193,7 @@ var scriptingEngine = (function() {
 		tile_num_in_direction: function(tile, direction) { return toTileNum(hexInDirection(fromTileNum(tile), direction)) },
 
 		// dialogue
-		Node999: function() { // exit dialogue
+		node999: function() { // exit dialogue
 			info("DIALOGUE EXIT (Node999)")
 			dialogueExit()
 		},
@@ -196,17 +205,17 @@ var scriptingEngine = (function() {
 			$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
 			//stub("start_gdialog", arguments)
 		},
-		gSay_Start: function() { stub("gSay_Start", arguments) },
+		gsay_start: function() { stub("gSay_Start", arguments) },
 		//gSay_Option: function(msgList, msgID, target, reaction) { stub("gSay_Option", arguments) },
-		gSay_Reply: function(msgList, msgID) {
+		gsay_reply: function(msgList, msgID) {
 			var msg = getScriptMessage(msgList, msgID)
 			info("REPLY: " + msg, "dialogue")
 			$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
 			//stub("gSay_Reply", arguments)
 		},
-		gSay_End: function() { stub("gSay_End", arguments) },
+		gsay_end: function() { stub("gSay_End", arguments) },
 		end_dialogue: function() { stub("end_dialogue", arguments) },
-		giQ_Option: function(iqTest, msgList, msgID, target, reaction) {
+		giq_option: function(iqTest, msgList, msgID, target, reaction) {
 			var msg = getScriptMessage(msgList, msgID)
 			console.log("DIALOGUE OPTION: " + msg + " [INT " + ((iqTest >= 0) ? (">="+iqTest) : ("<="+-iqTest)) + "]")
 			var that = this
@@ -300,8 +309,8 @@ var scriptingEngine = (function() {
 
 			// remove any defined Node999 (exit dialogue) procedures
 			// so we can take them over
-			if(obj.hasOwnProperty("Node999"))
-				delete obj.Node999
+			if(obj.hasOwnProperty("node999"))
+				delete obj.node999
 
 			obj.cur_map_index = currentMapID
 
