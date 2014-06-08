@@ -281,7 +281,7 @@ var scriptingEngine = (function() {
 		// e.g. "Raiders2"
 		var scriptObject = null
 		info("loading script " + name, "load")
-		$.get(name + ".js", function(code) {
+		$.get("scripts/" + name + ".js", function(code) {
 			//console.log("code: " + code)
 			var f = new Function(code)
 			f.prototype = ScriptProto
