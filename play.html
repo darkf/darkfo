@@ -610,7 +610,7 @@ heart.update = function() {
 			for(var i = 0; i < timedEvents.length; i++) {
 				timedEvents[i].ticks--
 				if(timedEvents[i].ticks <= 0) {
-					console.log("timed event triggered")
+					scriptingEngine.info("timed event triggered", "timer")
 					timedEvents[i].fn()
 					timedEvents.splice(i--, 1)
 				}

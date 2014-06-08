@@ -29,12 +29,22 @@ var scriptingEngine = (function() {
 	var dialogueOptionProcs = []
 	var timeEventList = []
 
+	var debugLogShowType = {
+		stub: false,
+		timer: false,
+		load: true,
+		debugMessage: true,
+		displayMessage: true,
+		floatMessage: true
+	}
+
 	function stub(name, args) {
+		if(debugLogShowType.stub === false) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
 			if(i === args.length-1) a += args[i]
 			else a += args[i] + ", "
-		//console.log("STUB: " + name + ": " + a)
+		console.log("STUB: " + name + ": " + a)
 	}
 
 	function log(name, args) {
@@ -45,11 +55,13 @@ var scriptingEngine = (function() {
 		//console.log("log: " + name + ": " + a)
 	}
 
-	function warn(msg) {
+	function warn(msg, type) {
+		if(type !== undefined && debugLogShowType[type] === false) return
 		//console.log("WARNING: " + msg)
 	}
 
-	function info(msg) {
+	function info(msg, type) {
+		if(type !== undefined && debugLogShowType[type] === false) return
 		console.log("INFO: " + msg)
 	}
 
@@ -72,7 +84,7 @@ var scriptingEngine = (function() {
 				return true
 			}
 		}
-		console.log("is NOT GO: " + obj.toString())
+		warn("is NOT GO: " + obj.toString())
 		return false
 	}
 
@@ -129,8 +141,8 @@ var scriptingEngine = (function() {
 			return globalVars[gvar]
 		},
 		random: function(min, max) { log("random", arguments); return getRandomInt(min, max) },
-		debug_msg: function(msg) { console.log("DEBUG MSG: " + msg) },
-		display_msg: function(msg) { console.log("DISPLAY MSG: " + msg) },
+		debug_msg: function(msg) { log("debug_msg", arguments); info("DEBUG MSG: " + msg, "debugMessage") },
+		display_msg: function(msg) { log("display_msg", arguments); info("DISPLAY MSG: " + msg, "displayMessage") },
 		message_str: function(msgList, msgNum) { return getScriptMessage(msgList, msgNum) },
 		metarule: function(_, _) { stub("metarule", arguments) }, // ???
 
@@ -165,13 +177,14 @@ var scriptingEngine = (function() {
 
 		// dialogue
 		Node999: function() { // exit dialogue
-			console.log("DIALOGUE EXIT (Node999)")
+			info("DIALOGUE EXIT (Node999)")
 			dialogueExit()
 		},
 		gdialog_set_barter_mod: function(mod) { stub("gdialog_set_barter_mod", arguments) },
 		gdialog_mod_barter: function(mod) { stub("gdialog_mod_barter", arguments) }, // todo: switch to barter mode
 		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) {
-			console.log("DIALOGUE START")
+			log("start_gdialog", arguments)
+			info("DIALOGUE START", "dialogue")
 			$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
 			//stub("start_gdialog", arguments)
 		},
@@ -179,7 +192,7 @@ var scriptingEngine = (function() {
 		//gSay_Option: function(msgList, msgID, target, reaction) { stub("gSay_Option", arguments) },
 		gSay_Reply: function(msgList, msgID) {
 			var msg = getScriptMessage(msgList, msgID)
-			console.log("REPLY: " + msg)
+			info("REPLY: " + msg, "dialogue")
 			$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
 			//stub("gSay_Reply", arguments)
 		},
@@ -197,7 +210,7 @@ var scriptingEngine = (function() {
 			//stub("giQ_Option", arguments)
 		},
 		float_msg: function(obj, msg, type) {			
-			console.log("FLOAT MSG: " + msg)
+			info("FLOAT MSG: " + msg, "floatMessage")
 		},
 
 		// animation
@@ -216,7 +229,7 @@ var scriptingEngine = (function() {
 
 		// timing
 		add_timer_event: function(obj, ticks, userdata) {
-			info("timer event added in " + ticks + " ticks (userdata " + userdata + ")")
+			info("timer event added in " + ticks + " ticks (userdata " + userdata + ")", "timer")
 			// trigger timedEvent in `ticks` game ticks
 			timeEventList.push({ticks: ticks, fn: function() {
 				timedEvent(obj._script, userdata)
@@ -230,7 +243,7 @@ var scriptingEngine = (function() {
 	}
 
 	function loadMessageFile(name) {
-		console.log("loading message file: " + name)
+		info("loading message file: " + name, "load")
 		$.get("data/text/english/dialog/" + name + ".MSG", function(msg) {
 			if(scriptMessages[name] === undefined)
 				scriptMessages[name] = {}
@@ -267,7 +280,7 @@ var scriptingEngine = (function() {
 	function loadScript(name) {
 		// e.g. "Raiders2"
 		var scriptObject = null
-		console.log("loading script " + name)
+		info("loading script " + name, "load")
 		$.get(name + ".js", function(code) {
 			//console.log("code: " + code)
 			var f = new Function(code)
@@ -275,7 +288,6 @@ var scriptingEngine = (function() {
 			var obj = new f()
 			obj.scriptName = name
 			scriptObject = obj
-			console.log('script obj: ' + obj)
 
 			// remove any defined Node999 (exit dialogue) procedures
 			// so we can take them over
@@ -290,7 +302,7 @@ var scriptingEngine = (function() {
 	}
 
 	function timedEvent(script, userdata) {
-		console.log("timedEvent: " + script.scriptName + ": " + userdata)
+		info("timedEvent: " + script.scriptName + ": " + userdata, "timer")
 		if(script.timed_event_p_proc === undefined)
 			throw "timedEvent called on script without a timed_event_p_proc!"
 
@@ -333,7 +345,7 @@ var scriptingEngine = (function() {
 		gameElevation = elevation
 
 		if(mapScript.map_enter_p_proc !== undefined) {
-			console.log("calling map enter")
+			info("calling map enter")
 			mapScript.map_enter_p_proc()
 		}
 
@@ -366,5 +378,5 @@ var scriptingEngine = (function() {
 
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
-		    timeEventList: timeEventList}
+		    timeEventList: timeEventList, info: info}
 })()
