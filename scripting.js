@@ -20,6 +20,8 @@ var scriptingEngine = (function() {
 		145: "GCFOLK",
 		399: "GCHAROLD",
 		138: "GCWOOZ",
+		613: "HCCHAD",
+		139: "GCLENNY",
 	}
 	var mapIDs = {
 		"GECKSETL": 31
@@ -35,7 +37,9 @@ var scriptingEngine = (function() {
 		load: true,
 		debugMessage: true,
 		displayMessage: true,
-		floatMessage: true
+		floatMessage: true,
+		gvars: false,
+		lvars: true,
 	}
 
 	function stub(name, args) {
@@ -57,7 +61,7 @@ var scriptingEngine = (function() {
 
 	function warn(msg, type) {
 		if(type !== undefined && debugLogShowType[type] === false) return
-		//console.log("WARNING: " + msg)
+		console.log("WARNING: " + msg)
 	}
 
 	function info(msg, type) {
@@ -121,12 +125,16 @@ var scriptingEngine = (function() {
 			globalVars[gvar] = value
 			info("set_global_var: " + gvar + " = " + value)
 		},
-		set_local_var: function(lvar, value) { stub("set_local_var", arguments) },
-		local_var: function(lvar) { stub("local_var", arguments) },
+		set_local_var: function(lvar, value) {
+			this.lvars[lvar] = value
+			info("set_local_var: " + lvar + " = " + value + " [" + this.scriptName + "]", "lvars")
+			log("set_local_var", arguments, "lvars")
+		},
+		local_var: function(lvar) { log("local_var", arguments, "lvars"); return this.lvars[lvar] },
 		map_var: function(mvar) {
 			if(mapVars[this.scriptName] !== undefined && mapVars[this.scriptName][mvar] !== undefined)
 				return mapVars[this.scriptName][mvar]
-			warn("map_var: unknown mvar " + mvar + " on script " + this.scriptName)
+			warn("map_var: unknown mvar " + mvar + " on script " + this.scriptName, "gvars")
 		},
 		set_map_var: function(mvar, value) {
 			if(mapVars[this.scriptName] === undefined)
@@ -135,7 +143,7 @@ var scriptingEngine = (function() {
 		},
 		global_var: function(gvar) {
 			if(globalVars[gvar] === undefined) {
-				warn("global_var: unknown gvar " + gvar)
+				warn("global_var: unknown gvar " + gvar, "gvars")
 				return null
 			}
 			return globalVars[gvar]
@@ -159,7 +167,7 @@ var scriptingEngine = (function() {
 		obj_is_carrying_obj_pid: function(obj, pid) { stub("obj_is_carrying_obj_pid", arguments); return 0 },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
-		obj_can_see_obj: function(a, b) { stub("obj_can_see_obj", arguments); return 0 },
+		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
@@ -167,7 +175,7 @@ var scriptingEngine = (function() {
 
 		// tiles
 		tile_distance_objs: function(a, b) { stub("tile_distance_objs", arguments) },
-		tile_distance: function(a, b) { stub("tile_distance", arguments) },
+		tile_distance: function(a, b) { return Math.round(hexDistance(fromTileNum(a), fromTileNum(b))) }, // TODO: should we use floor?
 		tile_num: function(obj) {
 			if(!isGameObject(obj)) { warn("tile_num: not game object"); return }
 			return toTileNum(obj.position)
@@ -287,6 +295,7 @@ var scriptingEngine = (function() {
 			f.prototype = ScriptProto
 			var obj = new f()
 			obj.scriptName = name
+			obj.lvars = {}
 			scriptObject = obj
 
 			// remove any defined Node999 (exit dialogue) procedures
