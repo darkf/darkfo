@@ -10,35 +10,48 @@
 <script>
 "use strict";
 
-var MAP_NAME = "GECKSETL"
-var DEBUG = true
+var MAP_NAME = "GECKSETL" // name of the current map
+var DEBUG = true // debug mode
+
 var gMapScript = null
 var floorMap = null
 var roofMap = null
-var gObjects = []
-var gMap = null
-var size = 6
-var tile_width = 80
-var tile_height = 36
 var images = {}
 var imageInfo = {}
+var gObjects = []
+var gMap = null
+var currentElevation = 0 // current map elevation
+var hexOverlay = null
+//var cursor = {x: 10, y: 10}
+
+// position of viewport camera
 var cameraX = 3970
-var cameraY = 1425//1200
-var showHexOverlay = false
-var showCoordinates = false
-var showPath = true
-var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
+var cameraY = 1425
+
+// geometry constants
+var TILE_WIDTH = 80
+var TILE_HEIGHT = 36
 var HEX_GRID_SIZE = 200 // hex grid is 200x200
-var currentElevation = 0
+var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
+
+var showHexOverlay = false // show hex grid?
+var showCoordinates = false // show coordinates on hex grid?
+var showPath = true // show player's path?
+var showFloor = true // show floor tiles?
+var showRoof = true // show roof tiles?
+var showObjects = true // show objects?
+
 var doLoadScripts = true // should we load scripts?
 var doUpdateCritters = true // should we give critters heartbeats?
 var doTimedEvents = true // should we handle registered timed events?
 var doCombat = false // allow combat?
-var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
-var lastGameTick = 0
-var combat = null
-var inCombat = false
 
+var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
+var lastGameTick = 0 // real time of the last game tick
+var combat = null // combat object
+var inCombat = false // are we currently in combat?
+
+// the player object
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/HMJMPSAA", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null,
@@ -54,13 +67,6 @@ var animInfo = {"idle": {type: "static"},
                 "punch": {type: "static"},
                 "death": {type: "static"},
                 "run": {type: "move"}}
-
-var showFloor = true
-var showRoof = true
-var showObjects = true
-
-var hexOverlay = null
-var cursor = {x: 10, y: 10}
 
 /*function forEachScriptableObject(f, isLoaded) {
 	for(var i = 0; i < gObjects.length; i++) {
@@ -141,7 +147,7 @@ heart.load = function() {
 		//scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 	}, "json")
 
-	if(doCombat && DEBUG) {
+	if(doCombat === true && DEBUG === true) {
 		// for testing
 		var a = gObjects[1175]
 		var b = gObjects[1260]
@@ -471,7 +477,7 @@ function drawTileMap(matrix, offsetY) {
 			if(images[img] !== undefined) {
 				var scr = tileToScreen(i, j)
 				scr.y += offsetY
-				if(scr.x+tile_width < cameraX || scr.y+tile_height < cameraY ||
+				if(scr.x+TILE_WIDTH < cameraX || scr.y+TILE_HEIGHT < cameraY ||
 				   scr.x >= cameraX+SCREEN_WIDTH || scr.y >= cameraY+SCREEN_HEIGHT)
 					continue
 				heart.graphics.draw(images[img], scr.x - cameraX, scr.y - cameraY)
@@ -488,19 +494,19 @@ heart.draw = function() {
 	var mouseTile = tileFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
 	// draw tile grids
-	if(showFloor && floorMap !== null)
+	if(showFloor === true && floorMap !== null)
 		drawTileMap(floorMap, 0);
 
 	// draw hex grid overlay
-	if(showHexOverlay || showCoordinates) {
+	if(showHexOverlay === true || showCoordinates === true) {
 		for(var y = 0; y < HEX_GRID_SIZE; y++) {
 			for(var x = 0; x < HEX_GRID_SIZE; x++) {
 				var scr = hexToScreen(x, y)
 				heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
-				if(showCoordinates) {
+				if(showCoordinates === true) {
 					heart.graphics.print(x + "," + y, scr.x - 3 - cameraX, scr.y - 3 - cameraY)
 				}
-				if(!showCoordinates && (x === mouseHex.x && y === mouseHex.y)) {
+				if(showCoordinates === false && (x === mouseHex.x && y === mouseHex.y)) {
 					heart.graphics.print("m", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
 				}
 			}
@@ -518,7 +524,7 @@ heart.draw = function() {
 	}
 
 	// draw objects
-	if(showObjects) {
+	if(showObjects === true) {
 		gObjects.push(player)
 		for(var i = 0; i < gObjects.length; i++) {
 			var obj = gObjects[i]
@@ -572,7 +578,7 @@ heart.draw = function() {
 		gObjects.length -= 1 // hack: to draw player
 	}
 
-	if(showRoof && roofMap !== null)
+	if(showRoof === true && roofMap !== null)
 		drawTileMap(roofMap, -96);
 
 	if(floorMap[mouseTile.y] !== undefined) {

@@ -84,7 +84,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 		console.log("[AI CREEPS]")
 		var neighbors = hexNeighbors(this.player.position)
 		var maxDistance = Math.min(this.AP[idx], fireDistance)
-		
+
 		for(var i = 0; i < neighbors.length; i++) {
 			if(critterWalkTo(obj, neighbors[i], false, function() {
 				critterStopWalking(obj)
