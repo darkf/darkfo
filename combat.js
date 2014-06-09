@@ -36,6 +36,11 @@ Combat.prototype.getDamageDone = function(obj, target) {
 }
 
 Combat.prototype.shoot = function(obj, target, callback) {
+	// turn to face the target
+	var hex = hexNearestNeighbor(obj.position, target.position)
+	if(hex !== null)
+		obj.orientation = hex.direction
+
 	if(obj.isPlayer) {
 		critterStaticAnim(player, "shoot", callback)
 	}
@@ -103,8 +108,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 	else if(AP >= 4) {
 		console.log("[SHOOTING]")
 		this.AP[idx] -= 4
-		// turn towards player
-		// todo: actually do that
+
 		this.shoot(obj, this.player, function() {
 			critterStopWalking(obj)
 			that.doAITurn(obj, idx)
