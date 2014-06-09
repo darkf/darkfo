@@ -289,7 +289,8 @@ var scriptingEngine = (function() {
 				var m = lines[i].match(/\{(\d+)\}\{.*\}\{(.*)\}/)
 				if(m === null)
 					throw "message parsing: not a valid line: " + lines[i]
-				scriptMessages[name][m[1]] = m[2]
+				// HACK: replace unicode replacement character with an apostrophe (because the Web sucks at character encodings)
+				scriptMessages[name][m[1]] = m[2].replace(/\ufffd/g, "'")
 			}
 		}, "text").fail(function(err) { console.log("message loading error: "  + err) })
 	}
