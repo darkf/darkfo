@@ -75,6 +75,40 @@ var animInfo = {"idle": {type: "static"},
 	}
 }*/
 
+// Draws a line between a and b, returning the first object hit
+function hexLinecast(a, b) {
+	var line = hexLine(a, b)
+	if(line === null)
+		return null
+	for(var i = 0; i < line.length; i++) {
+		// todo: we could optimize this by only
+		// checking in a certain radius of `a`
+		var obj = objectsAtPosition(line[i])
+		if(obj.length !== 0)
+			return obj[0]
+	}
+	return null
+}
+
+function objectsAtPosition(position) {
+	var ret = []
+	for(var i = 0; i < gObjects.length; i++) {
+		if(gObjects[i].position.x === position.x && gObjects[i].position.y === position.y) {
+			ret.push(gObjects[i])
+		}
+	}
+	return ret
+}
+
+function critterAtPosition(position) {
+	var objects = objectsAtPosition(position)
+	for(var i = 0; i < objects.length; i++) {
+		if(objects[i].type === "critter")
+			return objects[i]
+	}
+	return null
+}
+
 function loadObjectScripts(objects) {
 	var goodScripts = {} // cache scripts that don't load
 	for(var i = 0; i < objects.length; i++) {
@@ -245,6 +279,14 @@ heart.keydown = function(k) {
 			inCombat = true
 			combat = new Combat(gObjects, player)
 			combat.nextTurn()
+		}
+	}
+
+	if(k == 'y') {
+		var obj = objectsAtPosition(mouseHex)[0]
+		if(obj !== undefined) {
+			var hit = hexLinecast(player.position, obj.position)
+			console.log("hit obj: " + hit.art)
 		}
 	}
 }

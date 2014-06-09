@@ -167,3 +167,35 @@ function hexDistance(a, b) {
 function hexOppositeDirection(direction) {
 	return (direction + 3) % 6
 }
+
+// The adjacent hex around a nearest to b
+function hexNearestNeighbor(a, b) {
+	var neighbors = hexNeighbors(a)
+	var min = Infinity, minIdx = -1
+	for(var i = 0; i < neighbors.length; i++) {
+		var dist = hexDistance(neighbors[i], b)
+		if(dist < min) {
+			min = dist
+			minIdx = i
+		}
+	}
+	if(minIdx === -1)
+		return null
+	return {hex: neighbors[minIdx], distance: min, direction: minIdx}
+}
+
+// Draws a line between a and b, returning the list of coordinates (including b)
+function hexLine(a, b) {
+	var path = []
+	var position = {x: a.x, y: a.y}
+	while(true) {
+		path.push(position)
+		if(position.x === b.x && position.y === b.y)
+			return path
+		var nearest = hexNearestNeighbor(position, b)
+		if(nearest === null)
+			return null
+		position = nearest.hex
+	}
+	throw "unreachable"
+}
