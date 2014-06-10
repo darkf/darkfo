@@ -148,13 +148,13 @@ heart.preload = function() {
 
 	$.ajaxSetup({async: false})
 
-	$.get(MAP_NAME + ".images.json", function(images) {
+	$.get("maps/" + MAP_NAME + ".images.json", function(images) {
 		for(var i = 0; i < images.length; i++)
 			load(images[i])
 		console.log("loaded " + images.length + " tiles")
 	}, "json")
 
-	$.get(MAP_NAME + ".offsets.play.json", function(offsets) {
+	$.get("maps/" + MAP_NAME + ".offsets.play.json", function(offsets) {
 		imageInfo = offsets
 	}, "json")
 
@@ -163,7 +163,7 @@ heart.preload = function() {
 
 heart.load = function() {
 	heart.attach("cnv");
-	$.get(MAP_NAME+".json", function(map) {
+	$.get("maps/"+MAP_NAME+".json", function(map) {
 		gMap = map
 
 		if(doLoadScripts === true) {
@@ -175,6 +175,7 @@ heart.load = function() {
 			scriptingEngine.enterMap(gMapScript, gObjects, 0)
 			scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 		}
+		else changeElevation(0, false)
 
 		// todo: is map_enter_p_proc called on elevation change?
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")

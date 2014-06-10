@@ -2,6 +2,8 @@ import sys, math, struct, os, json
 from construct import *
 from collections import Counter
 
+OUT_DIR = "maps"
+
 def pidType(pid):
 	return (pid >> 24) & 0xff
 
@@ -379,6 +381,7 @@ def main():
 		return
 
 	MAP_FILE = sys.argv[1]
+	MAP_NAME = os.path.basename(MAP_FILE)
 
 	with open(MAP_FILE, "rb") as f:
 		data = f.read()
@@ -445,12 +448,12 @@ def main():
 
 			elevm.append(m)
 
-		json.dump(elevm, open(stripExt(MAP_FILE) + ".json", "w"))
+		json.dump(elevm, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".json"), "w"))
 
 		if writeImageList:
 			images = list("art/tiles/" + x for x in tileCounter) + list(objectCounter)
-			json.dump(images, open(stripExt(MAP_FILE) + ".images.json", "w"))
-			open(stripExt(MAP_FILE)+".images.txt", "w").writelines(x+"\n" for x in images)
+			json.dump(images, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".images.json"), "w"))
+			open(os.path.join(OUT_DIR,stripExt(MAP_NAME)+".images.txt"), "w").writelines(x+"\n" for x in images)
 
 		for tile in tileCounter:
 			print "art/tiles/" + tile
