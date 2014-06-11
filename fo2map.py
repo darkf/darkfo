@@ -330,7 +330,7 @@ object_ = Struct("object",
 	Array(lambda ctx: ctx.numInventory,
 		Struct("inventory",
 			Padding(4),
-			LazyBound("", lambda: object_)
+			LazyBound("_obj", lambda: object_)
 		)
 	)
 )
@@ -429,10 +429,14 @@ def main():
 					m["tiles"]["roof"].append(list(reversed(roofRow)))
 
 			if writeObjects:
-				for i,object_ in enumerate(map_.objects[elevation].object):
+				def getObject(object_):
+					if hasattr(object_, "_obj"): # subobjects
+						object_ = object_._obj
+
 					x = object_.position % 200
 					y = object_.position / 200
 					obj = {"type": object_.extra.type,
+						   "pid": (object_.protoPID & 0xffff),
 						   "position": {"x": x, "y": y},
 						   "orientation": object_.orientation}
 					#if hasattr(object_.extra, "subtype"):
@@ -440,15 +444,27 @@ def main():
 					if hasattr(object_.extra, "artPath"):
 						obj["art"] = object_.extra.artPath
 						objectCounter[object_.extra.artPath] += 1
-					if hasattr(object_, "scriptID"):
+					if hasattr(object_, "scriptID") and object_.scriptID != -1:
 						scriptName = stripExt(getProFile(scriptLst, object_.scriptID).split()[0])
 						obj["script"] = scriptName
 						scriptCounter[scriptName] += 1
-					m["objects"].append(obj)
+
+					# inventory
+					obj["inventory"] = [getObject(inv) for inv in object_.inventory]
+
+					return obj
+
+
+				for i,object_ in enumerate(map_.objects[elevation].object):
+					m["objects"].append(getObject(object_))
 
 			elevm.append(m)
 
 		json.dump(elevm, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".json"), "w"))
+
+		# player (Vault 13 Jumpsuit)
+		objectCounter["art/critters/HMJMPSAA"] += 1
+		objectCounter["art/critters/HMJMPSAB"] += 1
 
 		if writeImageList:
 			images = list("art/tiles/" + x for x in tileCounter) + list(objectCounter)
