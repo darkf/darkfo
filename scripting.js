@@ -11,7 +11,7 @@ var scriptingEngine = (function() {
 	}
 	var globalVars = {
 		88: 0, // GVAR_VAULT_RAIDERS
-		83: 9, // GVAR_VAULT_PLANT_STATUS (9 = PLANT_REPAIRED)
+		83: 2, // GVAR_VAULT_PLANT_STATUS (9 = PLANT_REPAIRED, 2 = PLANT_ACCEPTED_QUEST)
 	}
 	var scriptIDs = {
 		800: "Raiders2",
@@ -22,6 +22,12 @@ var scriptingEngine = (function() {
 		138: "GCWOOZ",
 		613: "HCCHAD",
 		139: "GCLENNY",
+		143: "GCRGUARD",
+		393: "GCRGHOUL",
+		142: "GCRGLOW",
+		133: "GCHANK",
+		131: "GCFESTUS",
+		516: "GSTERM",
 	}
 	var mapIDs = {
 		"GECKSETL": 31
@@ -33,13 +39,14 @@ var scriptingEngine = (function() {
 
 	var debugLogShowType = {
 		stub: false,
-		timer: false,
+		timer: true,
 		load: true,
 		debugMessage: true,
 		displayMessage: true,
 		floatMessage: true,
 		gvars: false,
 		lvars: true,
+		tiles: true,
 	}
 
 	function stub(name, args) {
@@ -174,9 +181,16 @@ var scriptingEngine = (function() {
 		item_caps_adjust: function(obj, amount) { stub("item_caps_adjust", arguments) },
 		move_obj_inven_to_obj: function(obj, other) { stub("move_obj_inven_to_obj", arguments) },
 		obj_is_carrying_obj_pid: function(obj, pid) { stub("obj_is_carrying_obj_pid", arguments); return 0 },
+		obj_carrying_pid_obj: function(obj, pid) { stub("obj_carrying_pid_obj", arguments); return 0 },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
+		has_skill: function(obj, skill) { stub("has_skill", arguments); return 100 },
+
+		// objects
+		obj_lock: function(obj) { stub("obj_lock", arguments) },
+		obj_unlock: function(obj) { stub("obj_unlock", arguments) },
+		create_object_sid: function(pid, tile, elevation, sid) { stub("create_object_sid", arguments) },
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
@@ -189,8 +203,9 @@ var scriptingEngine = (function() {
 			if(!isGameObject(obj)) { warn("tile_num: not game object"); return }
 			return toTileNum(obj.position)
 		},
-		tile_contains_pid_obj: function(tile, elevation, pid) { stub("tile_contains_pid_obj", arguments) },
+		tile_contains_pid_obj: function(tile, elevation, pid) { stub("tile_contains_pid_obj", arguments, "tiles") },
 		tile_num_in_direction: function(tile, direction) { return toTileNum(hexInDirection(fromTileNum(tile), direction)) },
+		tile_in_tile_rect: function(_, _, _, _, t) { stub("tile_in_tile_rect", arguments, "tiles"); return 0 },
 
 		// dialogue
 		node999: function() { // exit dialogue
@@ -342,8 +357,10 @@ var scriptingEngine = (function() {
 		gameElevation = elevation
 
 		mapScript.combat_is_initialized = 0
-		if(mapScript.map_update_p_proc !== undefined)
+		if(mapScript.map_update_p_proc !== undefined) {
+			mapScript.self_obj = {_script: mapScript}
 			mapScript.map_update_p_proc()
+		}
 
 		var updated = 0
 		for(var i = 0; i < gameObjects.length; i++) {
