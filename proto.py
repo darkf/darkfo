@@ -113,10 +113,16 @@ def readPRO(f):
 	objType = (objectTypeAndID >> 24) & 0xff
 
 	obj["pid"] = pid
+	obj["textID"] = textID
 	obj["type"] = objType
 	obj["flags"] = flags
 	obj["lightRadius"] = lightRadius
 	obj["lightIntensity"] = lightIntensity
+
+	frmPID = frmTypeAndID & 0xffff
+	frmType = (frmTypeAndID >> 24) & 0xff
+	obj["frmPID"] = frmPID
+	obj["frmType"] = frmType
 
 	#print "type:", objType
 
