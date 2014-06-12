@@ -51,12 +51,33 @@ var lastGameTick = 0 // real time of the last game tick
 var combat = null // combat object
 var inCombat = false // are we currently in combat?
 
+var proFiles = {}
+
+function cloneStats(stats) { return $.extend({}, stats) }
+function addStats(a, b) {
+	var w = cloneStats(a)
+	for(var prop in b) {
+		w[prop] += b[prop]
+	}
+	return w
+}
+function calcStats(obj, pro) {
+	var stats = addStats(pro.extra.baseStats, pro.extra.bonusStats)
+	// todo: armor
+	return stats
+}
+function reprStats(stats) {
+	return JSON.stringify(stats) // todo
+}
+
 // the player object
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/HMJMPSAA", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null,
-          	  stats: {STR: 4, PER: 5, END: 5, CHR: 5, INT: 5, AGI: 6, LUK: 5, HP: 100},
+          	  baseStats: {STR: 4, PER: 5, END: 5, CHR: 5, INT: 5, AGI: 6, LUK: 5, HP: 100},
+          	  bonusStats: {STR: 0, PER: 0, END: 0, CHR: 0, INT: 0, AGI: 0, LUK: 0, HP: 0},
           	  dead: false}
+player.stats = cloneStats(player.baseStats)
 player.toString = function() { return "The Dude" }
 
 var animInfo = {"idle": {type: "static"},
@@ -74,6 +95,30 @@ var animInfo = {"idle": {type: "static"},
 			f(gObjects[i])
 	}
 }*/
+
+function pad(n, width, z) {
+  z = z || '0';
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
+function getPROType(pid) {
+	var map = {0: 'item', 1: 'critters', 2: 'scenery', 3: 'walls', 4: 'tiles', 5: 'misc'}
+	return map[(pid >> 24) & 0xff]
+}
+
+function loadPRO(pid, pidID) {
+	if(proFiles[pid] !== undefined)
+		return proFiles[pid]
+
+	var r = null
+	$.get('proto/' + getPROType(pid) + '/' + pad(pidID, 8) + '.pro.json', function(pro) {
+		r = pro
+	}, 'json')
+
+	proFiles[pid] = r
+	return r
+}
 
 // Draws a line between a and b, returning the first object hit
 function hexLinecast(a, b) {
@@ -190,6 +235,15 @@ heart.load = function() {
 
 		a.art = "art/critters/HANPWRAA"
 		b.art = "art/critters/HANPWRAA"
+	}
+
+	// load .PRO prototypes for all critters
+	for(var i = 0; i < gObjects.length; i++) {
+		var obj = gObjects[i]
+		if(obj.type !== "critter") continue
+		var pro = loadPRO(obj.pid, obj.pidID)
+		obj.pro = pro
+		obj.stats = calcStats(obj, pro)
 	}
 }
 

@@ -436,7 +436,9 @@ def main():
 					x = object_.position % 200
 					y = object_.position / 200
 					obj = {"type": object_.extra.type,
-						   "pid": (object_.protoPID & 0xffff),
+						   "pid": object_.protoPID,
+						   "pidID": (object_.protoPID & 0xffff),
+						   "frmPID": object_.frmPID,
 						   "position": {"x": x, "y": y},
 						   "orientation": object_.orientation}
 					#if hasattr(object_.extra, "subtype"):
