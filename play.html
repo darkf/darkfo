@@ -55,7 +55,7 @@ var inCombat = false // are we currently in combat?
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/HMJMPSAA", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null,
-          	  stats: {str: 4, per: 5, end: 5, chr: 5, int: 5, agi: 6, luk: 5}, hp: 100,
+          	  stats: {STR: 4, PER: 5, END: 5, CHR: 5, INT: 5, AGI: 6, LUK: 5, HP: 100},
           	  dead: false}
 player.toString = function() { return "The Dude" }
 
@@ -223,7 +223,6 @@ heart.keydown = function(k) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
 				var hasScripts = (gObjects[i].script !== undefined ? ("yes (" + gObjects[i].script + ")") : "no") + " " + (gObjects[i]._script === undefined ? "and is NOT loaded" : "and is loaded")
 				console.log("object is at index " + i + ", has scripts? " + hasScripts)
-				break
 			}
 		}
 	}
@@ -234,7 +233,7 @@ heart.keydown = function(k) {
 	if(k == 'm') {
 		critterWalkTo(player, mouseHex)
 	}
-	if(k == 'e') {
+	if(k == 'j') {
 		critterWalkTo(player, mouseHex, true)
 	}
 	if(k == 'g') {
@@ -288,6 +287,14 @@ heart.keydown = function(k) {
 		if(obj !== undefined) {
 			var hit = hexLinecast(player.position, obj.position)
 			console.log("hit obj: " + hit.art)
+		}
+	}
+
+	if(k == 'v') {
+		var obj = objectsAtPosition(mouseHex)[0]
+		if(obj !== undefined) {
+			console.log("PID: " + obj.pid)
+			console.log("inventory: " + JSON.stringify(obj.inventory))
 		}
 	}
 }

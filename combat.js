@@ -6,8 +6,6 @@ var Combat = function(objects, player) {
 
 			if(objects[i].stats === undefined)
 				objects[i].stats = this.getDefaultStats(objects[i])
-			if(objects[i].hp === undefined)
-				objects[i].hp = 100
 			objects[i].dead = false
 		}
 	}
@@ -24,11 +22,11 @@ Combat.prototype.fireDistance = function(obj) {
 }
 
 Combat.prototype.getDefaultStats = function(obj) {
-	return {str: 4, per: 5, end: 5, chr: 1, int: 1, agi: 1, luk: 1}
+	return {STR: 4, PER: 5, END: 5, CHR: 1, INT: 1, AGI: 1, LUK: 1, HP: 100}
 }
 
 Combat.prototype.getMaxAP = function(obj) {
-	return 5 + Math.floor(obj.stats.agi/2)
+	return 5 + Math.floor(obj.stats.AGI/2)
 }
 
 Combat.prototype.getDamageDone = function(obj, target) {
@@ -56,7 +54,7 @@ Combat.prototype.shoot = function(obj, target, callback) {
 	var damage = this.getDamageDone(obj, target)
 	var who = obj.isPlayer ? "You" : "An NPC"
 	console.log(who + " hit the target for " + damage + " damage")
-	target.hp -= damage
+	target.stats.hp -= damage
 
 	if(target.hp <= 0) {
 		console.log("...And killed them.")
