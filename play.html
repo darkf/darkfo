@@ -96,6 +96,16 @@ var animInfo = {"idle": {type: "static"},
 	}
 }*/
 
+function lazyLoadImage(art, callback) {
+	var img = new Image()
+	img.src = art + '.png'
+	img.onload = function() {
+		images[art] = img
+		if(callback !== undefined)
+			callback()
+	}
+}
+
 function pad(n, width, z) {
   z = z || '0';
   n = n + '';
@@ -349,6 +359,17 @@ heart.keydown = function(k) {
 		if(obj !== undefined) {
 			console.log("PID: " + obj.pid)
 			console.log("inventory: " + JSON.stringify(obj.inventory))
+
+			$("#inventory").html("")
+			for(var i = 0; i < obj.inventory.length; i++) {
+				var s = obj.inventory[i].art.split('/')
+				var inventoryImage = 'art/inven/' + s[s.length-1]
+				console.log(inventoryImage)
+				lazyLoadImage(inventoryImage)
+				var img = $("<img>").attr("src", inventoryImage+'.png').
+				          attr("width", 90).attr("height", 60) // 90x60 // 70x40
+				$("#inventory").append(img)
+			}
 		}
 	}
 }
@@ -724,6 +745,13 @@ function dialogueReply(id) {
 		visibility: hidden;
 		overflow: auto;
 	}
+
+	#inventory {
+		border: 1px solid black;
+		width: 800px;
+		height: 120px;
+		margin-top: 2px;
+	}
 </style>
 </head>
 <body>
@@ -731,6 +759,7 @@ function dialogueReply(id) {
 <canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
 
 <div id="dialogue"></div>
+<div id="inventory"></div>
 
 </body>
 </html>
