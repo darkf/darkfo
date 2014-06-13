@@ -72,7 +72,7 @@ function reprStats(stats) {
 
 // the player object
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
-              art: "art/critters/HMJMPSAA", isPlayer: true, anim: "idle", lastFrameTime: 0,
+              art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null,
           	  baseStats: {STR: 4, PER: 5, END: 5, CHR: 5, INT: 5, AGI: 6, LUK: 5, HP: 100},
           	  bonusStats: {STR: 0, PER: 0, END: 0, CHR: 0, INT: 0, AGI: 0, LUK: 0, HP: 0},
@@ -199,7 +199,7 @@ heart.preload = function() {
 		console.log("loaded " + images.length + " tiles")
 	}, "json")
 
-	$.get("maps/" + MAP_NAME + ".offsets.play.json", function(offsets) {
+	$.get("art/imageMap.json", function(offsets) {
 		imageInfo = offsets
 	}, "json")
 
@@ -233,8 +233,8 @@ heart.load = function() {
 		var b = gObjects[1260]
 		gObjects = [a, b]
 
-		a.art = "art/critters/HANPWRAA"
-		b.art = "art/critters/HANPWRAA"
+		a.art = "art/critters/hanpwraa"
+		b.art = "art/critters/hanpwraa"
 	}
 
 	// load .PRO prototypes for all critters
@@ -356,14 +356,14 @@ heart.keydown = function(k) {
 function critterGetAnim(obj, anim) {
 	var base = obj.art.slice(0, -2)
 	switch(anim) {
-		case "idle": return base + "AA"
-		case "walk": return base + "AB"
-		case "run":  return base + "AT"
-		case "shoot": return base + "JJ"
-		case "weapon-reload": return base + "JA"
-		case "static-idle": return base + "AA"
-		case "punch": return base + "AQ"
-		case "death": return base + "BO"
+		case "idle": return base + "aa"
+		case "walk": return base + "ab"
+		case "run":  return base + "at"
+		case "shoot": return base + "jj"
+		case "weapon-reload": return base + "ja"
+		case "static-idle": return base + "aa"
+		case "punch": return base + "aq"
+		case "death": return base + "bo"
 		default: throw "Unknown animation: " + anim
 	}
 }
@@ -661,6 +661,7 @@ heart.draw = function() {
 				)
 			}
 			else { // single-frame (e.g. static scenery) drawing
+				throw "single-frame: " + obj.art
 				// todo: find out why this is slow (might be just the width/height calls)
 				// currently this codepath is not taken
 				console.log("single-frame: " + obj.art)

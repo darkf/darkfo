@@ -16,7 +16,7 @@ def main():
 
 	palette = pal.readPAL(open(PALETTE, "rb"))
 
-	subdirs = ("critters", "items", "scenery", "walls", "misc") # etc
+	subdirs = ("tiles",) #("critters", "items", "scenery", "walls", "misc") # etc
 	imageInfo = {}
 
 	for subdir in subdirs:
@@ -33,9 +33,9 @@ def main():
 		
 		for FRM in FRMs:
 			name = '%s/%s' % (subdir, os.path.splitext(os.path.basename(FRM))[0])
-			outpath = "%s/%s.png" % (OUT_DIR, name)
+			outpath = "%s/%s.png" % (OUT_DIR, name.lower())
 
-			print "[%d/%d] %s..." % (i, len(FRMs), name)
+			print "[%d/%d] %s..." % (i, totalNum, name)
 			imageInfo['art/'+name] = frmpixels.exportFRM(FRM, outpath, palette)
 
 			i += 1

@@ -420,8 +420,8 @@ def main():
 			m = {"tiles": {"floor": [], "roof": []}, "objects": []}
 			if writeTiles:
 				for i in range(100):
-					floorRow = [stripExt(getProFile(lst, t).rstrip()) for t in floorMap[i]]
-					roofRow = [stripExt(getProFile(lst, t).rstrip()) for t in roofMap[i]]
+					floorRow = [stripExt(getProFile(lst, t).rstrip()).lower() for t in floorMap[i]]
+					roofRow = [stripExt(getProFile(lst, t).rstrip()).lower() for t in roofMap[i]]
 					for tile in floorRow: tileCounter[tile] += 1
 					for tile in roofRow: tileCounter[tile] += 1
 					# reverse because FO's maps are reversed in the X axis
@@ -444,8 +444,8 @@ def main():
 					#if hasattr(object_.extra, "subtype"):
 					#	obj["subtype"] = object_.extra.subtype
 					if hasattr(object_.extra, "artPath"):
-						obj["art"] = object_.extra.artPath
-						objectCounter[object_.extra.artPath] += 1
+						obj["art"] = object_.extra.artPath.lower()
+						objectCounter[object_.extra.artPath.lower()] += 1
 					if hasattr(object_, "scriptID") and object_.scriptID != -1:
 						scriptName = stripExt(getProFile(scriptLst, object_.scriptID).split()[0])
 						obj["script"] = scriptName
@@ -465,8 +465,8 @@ def main():
 		json.dump(elevm, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".json"), "w"))
 
 		# player (Vault 13 Jumpsuit)
-		objectCounter["art/critters/HMJMPSAA"] += 1
-		objectCounter["art/critters/HMJMPSAB"] += 1
+		objectCounter["art/critters/hmjmpsaa"] += 1
+		objectCounter["art/critters/hmjmpsab"] += 1
 
 		if writeImageList:
 			images = list("art/tiles/" + x for x in tileCounter) + list(objectCounter)
