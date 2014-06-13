@@ -443,6 +443,8 @@ def main():
 						   "orientation": object_.orientation}
 					#if hasattr(object_.extra, "subtype"):
 					#	obj["subtype"] = object_.extra.subtype
+					if hasattr(object_.extra, "info"):
+						obj["subtype"] = object_.extra.info.subtype
 					if hasattr(object_.extra, "artPath"):
 						obj["art"] = object_.extra.artPath.lower()
 						objectCounter[object_.extra.artPath.lower()] += 1

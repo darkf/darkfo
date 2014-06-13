@@ -76,6 +76,7 @@ var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               path: null, animCallback: null,
           	  baseStats: {STR: 4, PER: 5, END: 5, CHR: 5, INT: 5, AGI: 6, LUK: 5, HP: 100},
           	  bonusStats: {STR: 0, PER: 0, END: 0, CHR: 0, INT: 0, AGI: 0, LUK: 0, HP: 0},
+          	  leftHand: null, rightHand: null, weapon: null, armor: null,
           	  dead: false}
 player.stats = cloneStats(player.baseStats)
 player.toString = function() { return "The Dude" }
@@ -113,7 +114,7 @@ function pad(n, width, z) {
 }
 
 function getPROType(pid) {
-	var map = {0: 'item', 1: 'critters', 2: 'scenery', 3: 'walls', 4: 'tiles', 5: 'misc'}
+	var map = {0: 'items', 1: 'critters', 2: 'scenery', 3: 'walls', 4: 'tiles', 5: 'misc'}
 	return map[(pid >> 24) & 0xff]
 }
 
@@ -254,6 +255,20 @@ heart.load = function() {
 		var pro = loadPRO(obj.pid, obj.pidID)
 		obj.pro = pro
 		obj.stats = calcStats(obj, pro)
+
+		// PROs for weapons
+		for(var j = 0; j < obj.inventory.length; j++) {
+			var inv = obj.inventory[j]
+			inv.pro = loadPRO(inv.pid, inv.pidID)
+
+			if(inv.subtype === "weapon") {
+				if(obj.leftHand === undefined)
+					obj.leftHand = inv
+				else if(obj.rightHand === undefined)
+					obj.rightHand = inv
+				//console.log("left: " + obj.leftHand + " | right: " + obj.rightHand)
+			}
+		}
 	}
 }
 

@@ -17,12 +17,20 @@ TYPE_CRITTER = 1
 TYPE_SCENERY = 2
 TYPE_WALL = 3
 TYPE_TILE = 4
-TILE_MISC = 5
+TYPE_MISC = 5
+
+SUBTYPE_ARMOR = 0
+SUBTYPE_CONTAINER = 1
+SUBTYPE_DRUG = 2
+SUBTYPE_WEAPON = 3
+SUBTYPE_AMMO = 4
+SUBTYPE_MISC = 5
+SUBTYPE_KEY = 6
 
 def readItem(f):
 	obj = {}
 
-	flagsExt = f.read(3)
+	flagsExt = repr(f.read(3))
 	attackMode = ord(f.read(1))
 	scriptID = read32(f)
 	objSubType = read32(f)
@@ -43,6 +51,27 @@ def readItem(f):
 	obj["cost"] = cost
 	obj["invFRM"] = invFRM
 	obj["soundID"] = soundID
+
+	if objSubType == SUBTYPE_WEAPON:
+		obj["animCode"] = read32(f)
+		obj["minDmg"] = read32(f)
+		obj["maxDmg"] = read32(f)
+		obj["dmgType"] = read32(f)
+		obj["maxRange1"] = read32(f)
+		obj["maxRange2"] = read32(f)
+		obj["projPID"] = read32(f)
+		obj["minST"] = read32(f)
+		obj["APCost1"] = read32(f)
+		obj["APCost2"] = read32(f)
+		obj["critFail"] = read32(f)
+		obj["perk"] = read32(f)
+		obj["rounds"] = read32(f)
+		obj["caliber"] = read32(f)
+		obj["ammoPID"] = read32(f)
+		obj["maxAmmo"] = read32(f)
+		obj["soundID"] = f.read(1)
+	else:
+		print "warning: unhandled item subtype", objSubType
 
 	return obj
 
@@ -127,7 +156,7 @@ def readPRO(f):
 	#print "type:", objType
 
 	if objType == TYPE_ITEM:
-		obj["extra"] = readitem(f)
+		obj["extra"] = readItem(f)
 	elif objType == TYPE_CRITTER:
 		obj["extra"] = readCritter(f)
 	else:

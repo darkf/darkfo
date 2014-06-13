@@ -1,6 +1,11 @@
-for proto in data/proto/CRITTERS/*.pro
+subdirs=("items")
+
+for subdir in "${subdirs[@]}"
 do
-	baseFile=$(basename ${proto%.*}) # strip extension
-	echo $proto
-	python proto.py $proto > proto/$baseFile.pro
+	for proto in data/proto/$subdir/{*.pro,*.PRO}
+	do
+		baseFile=$(basename ${proto%.*}) # strip extension
+		echo $proto
+		python proto.py $proto > proto/$subdir/$baseFile.pro.json
+	done
 done
