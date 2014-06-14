@@ -8,7 +8,11 @@ To use this, you'll need a few things:
 
 - Extracted Fallout 2 game data (you might want to use [this tool](http://www.nma-fallout.com/downloads.php?do=file&id=661), extract `master.dat` and `critters.dat` into a directory called `data/`.)
 
-- Python 2.7 and `pip` (install Construct 2 via `pip install construct`)
+- Python 2.7 and `pip`
+
+- Install Construct 2 via `pip install construct`
+
+- Install [PIL](http://www.pythonware.com/products/pil/) (`pillow` may also work.)
 
 - A suitable HTTP server (I'll recommend LightTPD. On Windows, [grab this .zip](http://en.wlmp-project.net/downloads.php?cat=lighty). You'll need to point its `htdocs` to the DarkFO directory.)
 
