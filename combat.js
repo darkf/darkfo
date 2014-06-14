@@ -18,7 +18,7 @@ var Combat = function(objects, player) {
 }
 
 Combat.prototype.fireDistance = function(obj) {
-	return 5; // todo: get some distance before firing
+	return 5 // todo: get some distance before firing
 }
 
 Combat.prototype.getDefaultStats = function(obj) {
@@ -29,11 +29,32 @@ Combat.prototype.getMaxAP = function(obj) {
 	return 5 + Math.floor(obj.stats.AGI/2)
 }
 
-Combat.prototype.getDamageDone = function(obj, target) {
-	return 55
+Combat.prototype.getRandomInt = function(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-Combat.prototype.shoot = function(obj, target, callback) {
+Combat.prototype.getDamageDone = function(obj, target) {
+	var wep = obj.leftHand
+
+	var RD = this.getRandomInt(wep.minDmg, wep.maxDmg) // rand damage min..max
+	var RB = 0 // ranged bonus (via perk)
+	var CM = 2 // critical hit damage multiplier
+	var ADR = 0 // damage resistance (TODO: armor)
+	var ADT = 0 // damage threshold (TODO: armor)
+	var X = 2 // ammo dividend
+	var Y = 1 // ammo divisor
+	var RM = 0 // ammo resistance modifier
+	var CD = 100 // combat difficulty modifier (easy = 75%, normal = 100%, hard = 125%)
+	
+	var ammoDamageMult = X / Y
+	
+	var baseDamage = (CM/2) * ammoDamageMult * (RD+RB) * (CD / 100)
+	var adjustedDamage = Math.max(0, baseDamage - ADT)
+
+	return Math.ceil(adjustedDamage * (1 - (ADR+RM)/100))
+}
+
+Combat.prototype.attack = function(obj, target, callback) {
 	// turn to face the target
 	var hex = hexNearestNeighbor(obj.position, target.position)
 	if(hex !== null)
@@ -95,10 +116,13 @@ Combat.prototype.doAITurn = function(obj, idx) {
 		that.doAITurn(obj, idx)
 	}
 	else if(AP >= 4) {
-		console.log("[SHOOTING]")
+		console.log("[ATTACKING]")
 		this.AP[idx] -= 4
 
-		this.shoot(obj, this.player, function() {
+		if(!obj.leftHand)
+			throw "combatant has no left handed item"
+
+		this.attack(obj, this.player, function() {
 			critterStopWalking(obj)
 			that.doAITurn(obj, idx)
 		})

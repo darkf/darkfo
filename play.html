@@ -44,7 +44,7 @@ var showObjects = true // show objects?
 var doLoadScripts = true // should we load scripts?
 var doUpdateCritters = false // should we give critters heartbeats?
 var doTimedEvents = true // should we handle registered timed events?
-var doCombat = false // allow combat?
+var doCombat = true // allow combat?
 
 var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0 // real time of the last game tick
@@ -86,7 +86,6 @@ var animInfo = {"idle": {type: "static"},
                 "weapon-reload": {type: "static"},
                 "walk": {type: "move"},
                 "static-idle": {type: "static"},
-                //"punch": {type: "static"},
                 "death": {type: "static"},
                 "run": {type: "move"}}
 
@@ -101,14 +100,19 @@ var Weapon = function(weapon) {
 		// todo: use character stats...
 		this.type = 'melee'
 		this.minDmg = 1
-		this.maxDmg = 10
+		this.maxDmg = 2
 		this.name = 'punch'
+		this.weaponType = 'Unarmed'
 	} else { // todo: spears, etc
 		this.type = 'gun'
 		this.minDmg = weapon.pro.extra.minDmg
-		this.minDmg = weapon.pro.extra.maxDmg
+		this.maxDmg = weapon.pro.extra.maxDmg
 		var s = weapon.art.split('/')
 		this.name = s[s.length-1]
+
+		this.weaponType = {'uzi': 'Small Guns'}[this.name]
+		if(this.weaponType === undefined)
+			console.log("unknown weapon type for " + this.name)
 	}
 }
 
@@ -300,6 +304,7 @@ heart.preload = function() {
 		imageInfo = offsets
 	}, "json")
 
+	// load some testing art
 	load("art/critters/navgulij")
 	load("art/critters/navgulia")
 	load("art/critters/navgulab")

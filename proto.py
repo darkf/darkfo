@@ -70,8 +70,8 @@ def readItem(f):
 		obj["ammoPID"] = read32(f)
 		obj["maxAmmo"] = read32(f)
 		obj["soundID"] = f.read(1)
-	else:
-		print "warning: unhandled item subtype", objSubType
+	#else:
+	#	print "warning: unhandled item subtype", objSubType
 
 	return obj
 
