@@ -1,3 +1,7 @@
+// DarkFO
+// Copyright (c) 2014 darkf
+// Licensed under the terms of the zlib license
+
 var animInfo = {"idle": {type: "static"},
                 "attack": {type: "static"},
                 "weapon-reload": {type: "static"},

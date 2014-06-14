@@ -1,3 +1,7 @@
+# DarkFO
+# Copyright (c) 2014 darkf
+# Licensed under the terms of the zlib license
+
 import sys, os, struct, json
 
 def read16(f):

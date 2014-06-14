@@ -1,3 +1,7 @@
+// DarkFO
+// Copyright (c) 2014 darkf
+// Licensed under the terms of the zlib license
+
 var Combat = function(objects, player) {
 	this.critters = []
 	for(var i = 0; i < objects.length; i++) {
