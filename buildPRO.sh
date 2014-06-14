@@ -1,4 +1,4 @@
-subdirs=("items")
+subdirs=("items" "critters")
 
 for subdir in "${subdirs[@]}"
 do
