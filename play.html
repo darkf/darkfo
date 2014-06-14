@@ -90,12 +90,58 @@ var animInfo = {"idle": {type: "static"},
                 "death": {type: "static"},
                 "run": {type: "move"}}
 
+var weaponSkins = {"uzi": 'i'}
+
+var weaponAnims = {'punch': {'idle': 'aa', 'attack': 'aq'}}
+
+var Weapon = function(weapon) {
+	this.weapon = weapon
+
+	if(weapon === 'punch') { // default punch
+		// todo: use character stats...
+		this.type = 'melee'
+		this.minDmg = 1
+		this.maxDmg = 10
+		this.name = 'punch'
+	} else { // todo: spears, etc
+		this.type = 'gun'
+		this.minDmg = weapon.pro.extra.minDmg
+		this.minDmg = weapon.pro.extra.maxDmg
+		var s = weapon.art.split('/')
+		this.name = s[s.length-1]
+	}
+}
+
+Weapon.prototype.getAnim = function(anim) {
+	if(weaponAnims[this.name] && weaponAnims[this.name][anim])
+		return weaponAnims[this.name][anim]
+
+	var wep = weaponSkins[this.name] || 'a'
+	switch(anim) {
+		case 'idle': return wep + 'a'
+		case 'attack': return wep + 'j' // assumes guns
+		default: return false // let something else handle it
+	}
+}
+
+Weapon.prototype.canEquip = function(obj) {
+	return imageInfo[critterGetBase(obj) + this.getAnim('attack')] !== undefined
+}
+
 /*function forEachScriptableObject(f, isLoaded) {
 	for(var i = 0; i < gObjects.length; i++) {
 		if(gObjects[i].script !== undefined && (!isLoaded || gObjects[i]._script !== undefined))
 			f(gObjects[i])
 	}
 }*/
+
+function critterGetBase(obj) {
+	return obj.art.slice(0, -2)
+}
+
+function critterGetEquippedWeapon(obj) {
+	return obj.leftHand || obj.rightHand
+}
 
 function lazyLoadImage(art, callback) {
 	var img = new Image()
@@ -197,6 +243,46 @@ function changeElevation(level, updateScripts) {
 	}
 }
 
+function initCritters() {
+	// load .PRO prototypes for all critters
+	for(var i = 0; i < gObjects.length; i++) {
+		var obj = gObjects[i]
+		if(obj.type !== "critter") continue
+		var pro = loadPRO(obj.pid, obj.pidID)
+		obj.pro = pro
+		obj.stats = calcStats(obj, pro)
+
+		// PROs for weapons
+		for(var j = 0; j < obj.inventory.length; j++) {
+			var inv = obj.inventory[j]
+			inv.pro = loadPRO(inv.pid, inv.pidID)
+
+			if(inv.subtype === "weapon") {
+				if(obj.leftHand === undefined) {
+					var wep = new Weapon(inv)
+					if(wep.canEquip(obj))
+						obj.leftHand = wep
+				}
+				else if(obj.rightHand === undefined) {
+					var wep = new Weapon(inv)
+					if(wep.canEquip(obj))
+						obj.rightHand = wep
+				}
+				//console.log("left: " + obj.leftHand + " | right: " + obj.rightHand)
+			}
+		}
+
+		// default to punches
+		if(!obj.leftHand)
+			obj.leftHand = new Weapon("punch")
+		if(!obj.rightHand)
+			obj.rightHand = new Weapon("punch")
+
+		// set them in their proper idle state for the weapon
+		obj.art = critterGetAnim(obj, "idle")
+	}
+}
+
 heart.preload = function() {
 	function load(file) {
 		heart.graphics.newImage(file+".png", function(r) { images[file] = r; })
@@ -213,6 +299,11 @@ heart.preload = function() {
 	$.get("art/imageMap.json", function(offsets) {
 		imageInfo = offsets
 	}, "json")
+
+	load("art/critters/navgulij")
+	load("art/critters/navgulia")
+	load("art/critters/navgulab")
+	load("art/critters/naghulab")
 
 	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r })
 }
@@ -248,28 +339,7 @@ heart.load = function() {
 		b.art = "art/critters/hanpwraa"
 	}
 
-	// load .PRO prototypes for all critters
-	for(var i = 0; i < gObjects.length; i++) {
-		var obj = gObjects[i]
-		if(obj.type !== "critter") continue
-		var pro = loadPRO(obj.pid, obj.pidID)
-		obj.pro = pro
-		obj.stats = calcStats(obj, pro)
-
-		// PROs for weapons
-		for(var j = 0; j < obj.inventory.length; j++) {
-			var inv = obj.inventory[j]
-			inv.pro = loadPRO(inv.pid, inv.pidID)
-
-			if(inv.subtype === "weapon") {
-				if(obj.leftHand === undefined)
-					obj.leftHand = inv
-				else if(obj.rightHand === undefined)
-					obj.rightHand = inv
-				//console.log("left: " + obj.leftHand + " | right: " + obj.rightHand)
-			}
-		}
-	}
+	initCritters()
 }
 
 heart.keydown = function(k) {
@@ -390,16 +460,26 @@ heart.keydown = function(k) {
 }
 
 function critterGetAnim(obj, anim) {
-	var base = obj.art.slice(0, -2)
+	var base = critterGetBase(obj)
+
+	// try weapon animation first
+	var hand = obj.leftHand || obj.rightHand || null
+	if(hand) {
+		var wepAnim = hand.getAnim(anim)
+		if(wepAnim !== false)
+			return base + wepAnim
+	}
+
+	var wep = 'a'
 	switch(anim) {
-		case "idle": return base + "aa"
-		case "walk": return base + "ab"
-		case "run":  return base + "at"
-		case "shoot": return base + "jj"
-		case "weapon-reload": return base + "ja"
-		case "static-idle": return base + "aa"
-		case "punch": return base + "aq"
-		case "death": return base + "bo"
+		case "idle": return base + wep + 'a'
+		case "walk": return base + wep + 'b'
+		case "run":  return base + wep + 't'
+		case "shoot": return base + wep + 'j'
+		case "weapon-reload": return base + wep + 'a'
+		case "static-idle": return base + wep + 'a'
+		//case "punch": return base + 'aq'
+		case "death": return base + 'bo'
 		default: throw "Unknown animation: " + anim
 	}
 }
