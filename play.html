@@ -82,11 +82,11 @@ player.stats = cloneStats(player.baseStats)
 player.toString = function() { return "The Dude" }
 
 var animInfo = {"idle": {type: "static"},
-                "shoot": {type: "static"},
+                "attack": {type: "static"},
                 "weapon-reload": {type: "static"},
                 "walk": {type: "move"},
                 "static-idle": {type: "static"},
-                "punch": {type: "static"},
+                //"punch": {type: "static"},
                 "death": {type: "static"},
                 "run": {type: "move"}}
 
@@ -304,6 +304,13 @@ heart.preload = function() {
 	load("art/critters/navgulia")
 	load("art/critters/navgulab")
 	load("art/critters/naghulab")
+
+	load("art/critters/hanpwraa")
+	load("art/critters/hanpwrab")
+	load("art/critters/hanpwraq")
+	load("art/critters/hanpwria")
+	load("art/critters/hanpwrib")
+	load("art/critters/hanpwrij")
 
 	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r })
 }

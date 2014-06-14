@@ -5,7 +5,7 @@ var Combat = function(objects, player) {
 			this.critters.push(objects[i])
 
 			if(objects[i].stats === undefined)
-				objects[i].stats = this.getDefaultStats(objects[i])
+				throw "no stats"; //objects[i].stats = this.getDefaultStats(objects[i])
 			objects[i].dead = false
 		}
 	}
@@ -39,24 +39,15 @@ Combat.prototype.shoot = function(obj, target, callback) {
 	if(hex !== null)
 		obj.orientation = hex.direction
 
-	if(obj.isPlayer) {
-		critterStaticAnim(player, "shoot", callback)
-	}
-	else {
-		// if we have a punch animation, use that, otherwise default to idling
-		if(critterHasAnim(obj, "shoot"))
-			critterStaticAnim(obj, "shoot", callback)
-		else if(critterHasAnim(obj, "punch"))
-			critterStaticAnim(obj, "punch", callback)
-		else critterStaticAnim(obj, "static-idle", callback)
-	}
+	// attack!
+	critterStaticAnim(obj, "attack", callback)
 
 	var damage = this.getDamageDone(obj, target)
 	var who = obj.isPlayer ? "You" : "An NPC"
 	console.log(who + " hit the target for " + damage + " damage")
-	target.stats.hp -= damage
+	target.stats.HP -= damage
 
-	if(target.hp <= 0) {
+	if(target.stats.HP <= 0) {
 		console.log("...And killed them.")
 		target.dead = true
 
