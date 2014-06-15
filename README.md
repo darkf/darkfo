@@ -14,7 +14,9 @@ To use this, you'll need a few things:
 
 - Install [PIL](http://www.pythonware.com/products/pil/) (`pillow` may also work.)
 
-- A suitable HTTP server (I'll recommend LightTPD. On Windows, [grab this .zip](http://en.wlmp-project.net/downloads.php?cat=lighty). You'll need to point its `htdocs` to the DarkFO directory.)
+- [NumPy](http://www.numpy.org/)
+
+- A suitable HTTP server (I'll recommend LightTPD. On Windows, [grab this .zip](http://en.wlmp-project.net/downloads.php?cat=lighty). You'll need to point its `server.document.root` in `conf/lighttpd.conf` to the DarkFO directory.)
 
 Once you've got all that, you can start trying it out. I'll assume you're in a command prompt inside the the DarkFO directory:
 

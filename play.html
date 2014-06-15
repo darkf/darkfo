@@ -58,6 +58,7 @@ var combat = null // combat object
 var inCombat = false // are we currently in combat?
 
 var proFiles = {}
+var messageFiles = {}
 
 function cloneStats(stats) { return $.extend({}, stats) }
 function addStats(a, b) {
@@ -86,6 +87,52 @@ var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
           	  dead: false}
 player.stats = cloneStats(player.baseStats)
 player.toString = function() { return "The Dude" }
+
+function loadMessage(name) {
+	$.get("data/text/english/game/" + name + ".msg", function(msg) {
+		if(messageFiles[name] === undefined)
+			messageFiles[name] = {}
+
+		// parse message file
+		var lines = msg.split(/\r|\n/)
+
+		// preprocess and merge lines
+		for(var i = 0; i < lines.length; i++) {
+			// comments/blanks
+			if(lines[i][0] === '#' || lines[i].trim() === '') {
+				lines.splice(i--, 1)
+				continue
+			}
+
+			// probably a continuation -- merge it with the last line
+			if(lines[i][0] !== '{') {
+				lines[i-1] += lines[i]
+				lines.splice(i--, 1)
+				continue
+			}
+		}
+
+		for(var i = 0; i < lines.length; i++) {
+			// e.g. {100}{}{You have entered a dark cave in the side of a mountain.}
+			var m = lines[i].match(/\{(\d+)\}\{.*\}\{(.*)\}/)
+			if(m === null)
+				throw "message parsing: not a valid line: " + lines[i]
+			// HACK: replace unicode replacement character with an apostrophe (because the Web sucks at character encodings)
+			messageFiles[name][m[1]] = m[2].replace(/\ufffd/g, "'")
+		}
+	}, "text").fail(function(err) { console.log("message loading error: "  + err) })
+}
+
+function getMessage(name, id) {
+	if(messageFiles[name] !== undefined && messageFiles[name][id] !== undefined)
+		return messageFiles[name][id]
+	else {
+		loadMessage(name)
+		if(messageFiles[name] !== undefined && messageFiles[name][id] !== undefined)
+			return messageFiles[name][id]
+		else null
+	}
+}
 
 function lazyLoadImage(art, callback) {
 	var img = new Image()
@@ -202,6 +249,7 @@ function initCritters() {
 		var pro = loadPRO(obj.pid, obj.pidID)
 		obj.pro = pro
 		obj.stats = calcStats(obj, pro)
+		obj.name = getMessage("pro_crit", obj.pro.textID)
 
 		// PROs for weapons
 		for(var j = 0; j < obj.inventory.length; j++) {
