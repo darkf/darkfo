@@ -18,5 +18,3 @@ for subdir in subdirs:
 			json.dump(pro, open("proto/" + subdir + "/" + baseFile + ".pro.json", "w"))
 		except Exception:
 			print "error reading", protofile
-
-		#python proto.py $proto > proto/$subdir/$baseFile.pro.json

@@ -31,6 +31,16 @@ SUBTYPE_AMMO = 4
 SUBTYPE_MISC = 5
 SUBTYPE_KEY = 6
 
+def readDrugEffect(f):
+	obj = {}
+	
+	obj["duration"] = read32(f)
+	obj["amount0"] = read32(f)
+	obj["amount1"] = read32(f)
+	obj["amount2"] = read32(f)
+
+	return obj
+
 def readItem(f):
 	obj = {}
 
@@ -74,6 +84,41 @@ def readItem(f):
 		obj["ammoPID"] = read32(f)
 		obj["maxAmmo"] = read32(f)
 		obj["soundID"] = f.read(1)
+	elif objSubType == SUBTYPE_AMMO:
+		obj["caliber"] = read32(f)
+		obj["quantity"] = read32(f)
+		obj["AC modifier"] = read32(f)
+		obj["DR modifier"] = read32(f)
+		obj["damMult"] = read32(f)
+		obj["damDiv"] = read32(f)
+	elif objSubType == SUBTYPE_ARMOR:
+		obj["AC"] = read32(f)
+		obj["stats"] = {}
+		for stat in ["DR Normal", "DR Laser", "DR Fire",
+					 "DR Plasma", "DR Electrical", "DR EMP", "DR Explosive",
+					 "DT Normal", "DT Laser", "DT Fire", "DT Plasma", "DT Electrical",
+				 	 "DT EMP", "DT Explosive"]:
+			obj["stats"][stat] = read32(f)
+
+		obj["perk"] = read32(f)
+		obj["maleFID"] = read32(f)
+		obj["femaleFID"] = read32(f)
+	elif objSubType == SUBTYPE_DRUG:
+		obj["stat0"] = read32(f)
+		obj["stat1"] = read32(f)
+		obj["stat2"] = read32(f)
+
+		obj["amount0"] = read32(f)
+		obj["amount1"] = read32(f)
+		obj["amount2"] = read32(f)
+
+		obj["firstDelayed"] = readDrugEffect(f)
+		obj["secondDelayed"] = readDrugEffect(f)
+
+		obj["addictionRate"] = read32(f)
+		obj["addictionEffect"] = read32(f)
+		obj["addictionOnset"] = read32(f)
+
 	#else:
 	#	print "warning: unhandled item subtype", objSubType
 

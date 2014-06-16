@@ -19,7 +19,7 @@ def read16At(buf, idx):
 def read32At(buf, idx):
 	return struct.unpack('!l', buf[idx:idx + 4])[0]
 
-def readFRMInfo(f):
+def readFRMInfo(f, exportImage=True):
 	f.seek(8)
 	numFrames = read16(f)
 	dOffsetX = [read16(f) for _ in range(6)]
@@ -50,7 +50,8 @@ def readFRMInfo(f):
 			                          'h': read16At(framesData, ptr + 2)})
 
 			frameSize = read32At(framesData, ptr + 4) # w*h
-			framePixels[nDir].append(np.array([ord(byte) for byte in framesData[ptr + 12 : ptr + 12 + frameSize]]))
+			if exportImage:
+				framePixels[nDir].append(np.array([ord(byte) for byte in framesData[ptr + 12 : ptr + 12 + frameSize]]))
 
 			ptr += 12 + pixelDataSize
 
@@ -61,9 +62,9 @@ def readFRMInfo(f):
 	        'frameOffsets': frameOffset,
 	        'framePixels': framePixels}
 
-def exportFRM(frmFile, outFile, palette):
+def exportFRM(frmFile, outFile, palette, exportImage=True):
 	with open(frmFile, "rb") as f:
-		frmInfo = readFRMInfo(f)
+		frmInfo = readFRMInfo(f, exportImage)
 		framePixels = frmInfo['framePixels']
 		frameOffsets = frmInfo['frameOffsets']
 
@@ -73,7 +74,8 @@ def exportFRM(frmFile, outFile, palette):
 		maxH = max(max(fo['h'] for fo in offset) for offset in frameOffsets)
 		#print maxH
 
-		finalImg = Image.new("RGBA", (totalW, maxH))
+		if exportImage:
+			finalImg = Image.new("RGBA", (totalW, maxH))
 		currentX = 0
 
 		for nDir in range(frmInfo['numDirections']):
@@ -81,18 +83,20 @@ def exportFRM(frmFile, outFile, palette):
 				offsets = frameOffsets[nDir][frameNum]
 				w,h = offsets['w'], offsets['h']
 				#print frame.shape, w, h, nDir, frameNum
-				frame = np.reshape(frame, (h, w))
+				if exportImage:
+					frame = np.reshape(frame, (h, w))
 
-				pixels = np.empty((h, w, 4), dtype=int) # HxW RGBA
-				for rowI,row in enumerate(frame):
-					for colI,palIdx in enumerate(row):
-						pixels[(rowI, colI)] = palette[palIdx] + (0 if palIdx == 0 else 255,)
+					pixels = np.empty((h, w, 4), dtype=int) # HxW RGBA
+					for rowI,row in enumerate(frame):
+						for colI,palIdx in enumerate(row):
+							pixels[(rowI, colI)] = palette[palIdx] + (0 if palIdx == 0 else 255,)
 
-				img = Image.fromarray(pixels.astype('uint8'), "RGBA")
-				finalImg.paste(img, (currentX, 0))
+					img = Image.fromarray(pixels.astype('uint8'), "RGBA")
+					finalImg.paste(img, (currentX, 0))
 				currentX += w
 
-		finalImg.save(outFile)
+		if exportImage:
+			finalImg.save(outFile)
 
 		# build an image map
 		sx = 0 # running total width offset

@@ -51,6 +51,7 @@ var doLoadScripts = true // should we load scripts?
 var doUpdateCritters = false // should we give critters heartbeats?
 var doTimedEvents = true // should we handle registered timed events?
 var doCombat = false // allow combat?
+var doLoadItemInfo = true // load item information (such as inventory images)?
 
 var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0 // real time of the last game tick
@@ -58,6 +59,8 @@ var combat = null // combat object
 var inCombat = false // are we currently in combat?
 
 var proFiles = {}
+var lstFiles = {}
+var messageFiles = {}
 
 function cloneStats(stats) { return $.extend({}, stats) }
 function addStats(a, b) {
@@ -87,13 +90,76 @@ var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
 player.stats = cloneStats(player.baseStats)
 player.toString = function() { return "The Dude" }
 
-function lazyLoadImage(art, callback) {
+function loadMessage(name) {
+	$.get("data/text/english/game/" + name + ".msg", function(msg) {
+		if(messageFiles[name] === undefined)
+			messageFiles[name] = {}
+
+		// parse message file
+		var lines = msg.split(/\r|\n/)
+
+		// preprocess and merge lines
+		for(var i = 0; i < lines.length; i++) {
+			// comments/blanks
+			if(lines[i][0] === '#' || lines[i].trim() === '') {
+				lines.splice(i--, 1)
+				continue
+			}
+
+			// probably a continuation -- merge it with the last line
+			if(lines[i][0] !== '{') {
+				lines[i-1] += lines[i]
+				lines.splice(i--, 1)
+				continue
+			}
+		}
+
+		for(var i = 0; i < lines.length; i++) {
+			// e.g. {100}{}{You have entered a dark cave in the side of a mountain.}
+			var m = lines[i].match(/\{(\d+)\}\{.*\}\{(.*)\}/)
+			if(m === null)
+				throw "message parsing: not a valid line: " + lines[i]
+			// HACK: replace unicode replacement character with an apostrophe (because the Web sucks at character encodings)
+			messageFiles[name][m[1]] = m[2].replace(/\ufffd/g, "'")
+		}
+	}, "text").fail(function(err) { console.log("message loading error: "  + err) })
+}
+
+function getMessage(name, id) {
+	if(messageFiles[name] !== undefined && messageFiles[name][id] !== undefined)
+		return messageFiles[name][id]
+	else {
+		loadMessage(name)
+		if(messageFiles[name] !== undefined && messageFiles[name][id] !== undefined)
+			return messageFiles[name][id]
+		else null
+	}
+}
+
+function loadLst(lst) {
+	var ret = null
+	$.get("data/" + lst + ".lst", function(lst) {
+		ret = lst.split('\n')
+	}, "text").fail(function(err) { console.log("lst loading error: "  + err) })
+	return ret
+}
+
+function getLstId(lst, id) {
+	if(lstFiles[lst] === undefined)
+		lstFiles[lst] = loadLst(lst)
+	if(lstFiles[lst] === undefined)
+		return null
+
+	return lstFiles[lst][id]
+}
+
+function lazyLoadImage(art, callback, isHeartImg) {
 	var img = new Image()
 	img.src = art + '.png'
 	img.onload = function() {
-		images[art] = img
-		if(callback !== undefined)
-			callback()
+		images[art] = new heart.HeartImage(img)
+		if(callback)
+			callback(isHeartImg ? images[art] : img)
 	}
 }
 
@@ -194,19 +260,40 @@ function changeElevation(level, updateScripts) {
 	}
 }
 
+// Initialize various objects, such as items.
+function initObjects(objects) {
+	for(var i = 0; i < objects.length; i++) {
+		var obj = objects[i]
+		if(obj.type === "critter") {
+			initObjects(obj.inventory)
+			continue // critters are handled separately
+		}
+
+		if(obj.type === "item") { // load item inventory art
+			obj.pro = loadPRO(obj.pid, obj.pidID)
+			if(obj.pro === null) continue
+
+			var invPID = obj.pro.extra.invFRM & 0xffff
+			obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
+		}
+	}
+}
+
+// Initialize critters (mainly loading inventory and .PRO files)
 function initCritters() {
 	// load .PRO prototypes for all critters
 	for(var i = 0; i < gObjects.length; i++) {
 		var obj = gObjects[i]
 		if(obj.type !== "critter") continue
-		var pro = loadPRO(obj.pid, obj.pidID)
-		obj.pro = pro
-		obj.stats = calcStats(obj, pro)
+		obj.pro = loadPRO(obj.pid, obj.pidID)
+		obj.stats = calcStats(obj, obj.pro)
+		obj.name = getMessage("pro_crit", obj.pro.textID)
 
 		// PROs for weapons
 		for(var j = 0; j < obj.inventory.length; j++) {
 			var inv = obj.inventory[j]
-			inv.pro = loadPRO(inv.pid, inv.pidID)
+			if(inv.pro === undefined)
+				inv.pro = loadPRO(inv.pid, inv.pidID)
 
 			if(inv.subtype === "weapon") {
 				if(obj.leftHand === undefined) {
@@ -298,6 +385,8 @@ heart.load = function() {
 		b.art = "art/critters/hanpwraa"
 	}
 
+	if(doLoadItemInfo !== false)
+		initObjects(gObjects)
 	initCritters()
 }
 
@@ -358,8 +447,8 @@ heart.keydown = function(k) {
 		for(var i = 0; i < combat.critters.length; i++) {
 			if(combat.critters[i].position.x === mouseHex.x && combat.critters[i].position.y === mouseHex.y) {
 				player.AP -= 4
-				console.log("Shooting...")
-				combat.shoot(player, combat.critters[i])
+				console.log("Attacking...")
+				combat.attack(player, combat.critters[i])
 				break
 			}
 		}
@@ -406,10 +495,15 @@ heart.keydown = function(k) {
 
 			$("#inventory").html("")
 			for(var i = 0; i < obj.inventory.length; i++) {
-				var s = obj.inventory[i].art.split('/')
-				var inventoryImage = 'art/inven/' + s[s.length-1]
-				console.log(inventoryImage)
-				lazyLoadImage(inventoryImage)
+				if(obj.inventory[i].invArt === undefined) { // make a guess
+					var s = obj.inventory[i].art.split('/')
+					var inventoryImage = 'art/inven/' + s[s.length-1]
+				} else
+					var inventoryImage = obj.inventory[i].invArt
+
+				console.log("inv img: " + inventoryImage)
+				if(images[inventoryImage] === undefined)
+					lazyLoadImage(inventoryImage, null, false)
 				var img = $("<img>").attr("src", inventoryImage+'.png').
 				          attr("width", 90).attr("height", 60) // 90x60 // 70x40
 				$("#inventory").append(img)
