@@ -3,6 +3,9 @@ import proto
 
 subdirs = ("items", "critters")
 
+if not os.path.exists("proto"):
+	os.mkdir("proto")
+
 for subdir in subdirs:
 	if not os.path.exists("proto/" + subdir):
 		os.mkdir("proto/" + subdir)

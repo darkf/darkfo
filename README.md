@@ -18,7 +18,7 @@ To use this, you'll need a few things:
 
 Once you've got all that, you can start trying it out. I'll assume you're in a command prompt inside the the DarkFO directory:
 
-- Run `python exportImages.py`. This will take a while (~30 minutes) as it's converting all of the relevant images from the Fallout 2 format.
+- Run `python exportImages.py <data>/color.pal <data> art`. Where <data> is the combined folder of the original FO2 assets combined with the extracted ones. This will take a while (~30 minutes) as it's converting all of the relevant images from the Fallout 2 format.
 
 - Run `python buildPRO.py`
 
