@@ -3,6 +3,9 @@ import proto
 
 subdirs = ("items", "critters")
 
+if not os.path.exists("proto"):
+	os.mkdir("proto")
+
 for subdir in subdirs:
 	if not os.path.exists("proto/" + subdir):
 		os.mkdir("proto/" + subdir)
@@ -15,5 +18,3 @@ for subdir in subdirs:
 			json.dump(pro, open("proto/" + subdir + "/" + baseFile + ".pro.json", "w"))
 		except Exception:
 			print "error reading", protofile
-
-		#python proto.py $proto > proto/$subdir/$baseFile.pro.json
