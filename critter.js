@@ -10,7 +10,7 @@ var animInfo = {"idle": {type: "static"},
                 "death": {type: "static"},
                 "run": {type: "move"}}
 
-var weaponSkins = {"uzi": 'i'}
+var weaponSkins = {"uzi": 'i', "rifle": 'j'}
 
 var weaponAnims = {'punch': {'idle': 'aa', 'attack': 'aq'}}
 
@@ -44,6 +44,7 @@ Weapon.prototype.getAnim = function(anim) {
 	var wep = weaponSkins[this.name] || 'a'
 	switch(anim) {
 		case 'idle': return wep + 'a'
+		case 'walk': return wep + 'b'
 		case 'attack': return wep + 'j' // assumes guns
 		default: return false // let something else handle it
 	}

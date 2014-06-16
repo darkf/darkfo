@@ -269,11 +269,10 @@ function initObjects(objects) {
 			continue // critters are handled separately
 		}
 
-
 		if(obj.type === "item") { // load item inventory art
 			obj.pro = loadPRO(obj.pid, obj.pidID)
 			if(obj.pro === null) continue
-			
+
 			var invPID = obj.pro.extra.invFRM & 0xffff
 			obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
 		}
@@ -293,7 +292,8 @@ function initCritters() {
 		// PROs for weapons
 		for(var j = 0; j < obj.inventory.length; j++) {
 			var inv = obj.inventory[j]
-			inv.pro = loadPRO(inv.pid, inv.pidID)
+			if(inv.pro === undefined)
+				inv.pro = loadPRO(inv.pid, inv.pidID)
 
 			if(inv.subtype === "weapon") {
 				if(obj.leftHand === undefined) {
@@ -447,8 +447,8 @@ heart.keydown = function(k) {
 		for(var i = 0; i < combat.critters.length; i++) {
 			if(combat.critters[i].position.x === mouseHex.x && combat.critters[i].position.y === mouseHex.y) {
 				player.AP -= 4
-				console.log("Shooting...")
-				combat.shoot(player, combat.critters[i])
+				console.log("Attacking...")
+				combat.attack(player, combat.critters[i])
 				break
 			}
 		}
