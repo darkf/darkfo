@@ -86,9 +86,15 @@ var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
           	  baseStats: {STR: 4, PER: 5, END: 5, CHR: 5, INT: 5, AGI: 6, LUK: 5, HP: 100},
           	  bonusStats: {STR: 0, PER: 0, END: 0, CHR: 0, INT: 0, AGI: 0, LUK: 0, HP: 0},
           	  leftHand: null, rightHand: null, weapon: null, armor: null,
-          	  dead: false}
+          	  dead: false,
+          	  skills: {"Repair": 25, "Big Guns": 25, "Outdoorsman": 25, "Traps": 25, "Barter": 25,
+          	  		   "Melee": 25, "Throwing": 25, "Steal": 25, "Doctor": 25, "Sneak": 25,
+          	  		   "Unarmed": 25, "Speech": 25, "First Aid": 25, "Lockpick": 25, "Science": 25,
+          	  		   "Gambling": 25, "Small Guns": 50, "Energy Weapons": 50}}
 player.stats = cloneStats(player.baseStats)
 player.toString = function() { return "The Dude" }
+
+function repr(obj) { return JSON.stringify(obj, null, 2) }
 
 function loadMessage(name) {
 	$.get("data/text/english/game/" + name + ".msg", function(msg) {
@@ -290,6 +296,7 @@ function initCritters(objects) {
 		if(obj.type !== "critter") continue
 		obj.pro = loadPRO(obj.pid, obj.pidID)
 		obj.stats = calcStats(obj, obj.pro)
+		obj.skills = obj.pro.extra.skills
 		obj.name = getMessage("pro_crit", obj.pro.textID)
 
 		// PROs for weapons
@@ -334,7 +341,7 @@ heart.preload = function() {
 	$.get("maps/" + MAP_NAME + ".images.json", function(images) {
 		for(var i = 0; i < images.length; i++)
 			load(images[i])
-		console.log("loaded " + images.length + " tiles")
+		console.log("loading " + images.length + " images")
 	}, "json")
 
 	$.get("art/imageMap.json", function(offsets) {
