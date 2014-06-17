@@ -273,17 +273,20 @@ function initObjects(objects) {
 			obj.pro = loadPRO(obj.pid, obj.pidID)
 			if(obj.pro === null) continue
 
+			obj.name = getMessage("pro_item", obj.pro.textID)
+
 			var invPID = obj.pro.extra.invFRM & 0xffff
-			obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
+			if(invPID !== 0xffff)
+				obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
 		}
 	}
 }
 
 // Initialize critters (mainly loading inventory and .PRO files)
-function initCritters() {
+function initCritters(objects) {
 	// load .PRO prototypes for all critters
-	for(var i = 0; i < gObjects.length; i++) {
-		var obj = gObjects[i]
+	for(var i = 0; i < objects.length; i++) {
+		var obj = objects[i]
 		if(obj.type !== "critter") continue
 		obj.pro = loadPRO(obj.pid, obj.pidID)
 		obj.stats = calcStats(obj, obj.pro)
@@ -385,9 +388,11 @@ heart.load = function() {
 		b.art = "art/critters/hanpwraa"
 	}
 
-	if(doLoadItemInfo !== false)
-		initObjects(gObjects)
-	initCritters()
+	for(var level = 0; level < gMap.length; level++) {
+		if(doLoadItemInfo !== false)
+			initObjects(gMap[level]["objects"])
+		initCritters(gMap[level]["objects"])
+	}
 }
 
 heart.keydown = function(k) {
