@@ -506,6 +506,7 @@ heart.keydown = function(k) {
 					lazyLoadImage(inventoryImage, null, false)
 				var img = $("<img>").attr("src", inventoryImage+'.png').
 				          attr("width", 90).attr("height", 60) // 90x60 // 70x40
+				img.attr("title", obj.inventory[i].name)
 				$("#inventory").append(img).append("x" + obj.inventory[i].amount)
 			}
 		}
