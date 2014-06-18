@@ -90,7 +90,10 @@ var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
           	  skills: {"Repair": 25, "Big Guns": 25, "Outdoorsman": 25, "Traps": 25, "Barter": 25,
           	  		   "Melee": 25, "Throwing": 25, "Steal": 25, "Doctor": 25, "Sneak": 25,
           	  		   "Unarmed": 25, "Speech": 25, "First Aid": 25, "Lockpick": 25, "Science": 25,
-          	  		   "Gambling": 25, "Small Guns": 50, "Energy Weapons": 50}}
+          	  		   "Gambling": 25, "Small Guns": 50, "Energy Weapons": 50},
+          	  inventory: [
+          	  	{type: "misc", name: "Money", pid: 41, amount: 1337, pro: {textID: 4100, cost: 1, invFRM: 117440552}, invArt: 'art/inven/cap2'}
+          	  ]}
 player.stats = cloneStats(player.baseStats)
 player.toString = function() { return "The Dude" }
 
@@ -392,6 +395,29 @@ heart.load = function() {
 			initObjects(gMap[level]["objects"])
 		initCritters(gMap[level]["objects"])
 	}
+
+	drawInventory($("#playerInventory"), player)
+}
+
+function drawInventory($el, obj, clickCallback) {
+	$el.html("")
+	for(var i = 0; i < obj.inventory.length; i++) {
+		if(obj.inventory[i].invArt === undefined) { // make a guess
+			var s = obj.inventory[i].art.split('/')
+			var inventoryImage = 'art/inven/' + s[s.length-1]
+		} else
+			var inventoryImage = obj.inventory[i].invArt
+
+		console.log("inv img: " + inventoryImage)
+		if(images[inventoryImage] === undefined)
+			lazyLoadImage(inventoryImage, null, false)
+		var img = $("<img>").attr("src", inventoryImage+'.png').
+		          attr("width", 90).attr("height", 60) // 90x60 // 70x40
+		img.attr("title", obj.inventory[i].name)
+		if(clickCallback !== undefined)
+			img.click(clickCallback)
+		$el.append(img).append("x" + obj.inventory[i].amount)
+	}
 }
 
 heart.keydown = function(k) {
@@ -493,22 +519,7 @@ heart.keydown = function(k) {
 			console.log("PID: " + obj.pid)
 			console.log("inventory: " + JSON.stringify(obj.inventory))
 
-			$("#inventory").html("")
-			for(var i = 0; i < obj.inventory.length; i++) {
-				if(obj.inventory[i].invArt === undefined) { // make a guess
-					var s = obj.inventory[i].art.split('/')
-					var inventoryImage = 'art/inven/' + s[s.length-1]
-				} else
-					var inventoryImage = obj.inventory[i].invArt
-
-				console.log("inv img: " + inventoryImage)
-				if(images[inventoryImage] === undefined)
-					lazyLoadImage(inventoryImage, null, false)
-				var img = $("<img>").attr("src", inventoryImage+'.png').
-				          attr("width", 90).attr("height", 60) // 90x60 // 70x40
-				img.attr("title", obj.inventory[i].name)
-				$("#inventory").append(img).append("x" + obj.inventory[i].amount)
-			}
+			drawInventory($("#inventory"), obj)
 		}
 	}
 }
@@ -731,14 +742,25 @@ function dialogueReply(id) {
 		height: 120px;
 		margin-top: 2px;
 	}
+
+	#playerInventory {
+		border: 1px solid black;
+		width: 120px;
+		height: 600px;
+		margin-top: 2px;
+		float: right;
+	}
 </style>
 </head>
 <body>
 
 <canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
 
+<div id="playerInventory"></div>
+
 <div id="dialogue"></div>
 <div id="inventory"></div>
+
 
 </body>
 </html>
