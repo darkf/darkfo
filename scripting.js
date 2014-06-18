@@ -16,6 +16,7 @@ var scriptingEngine = (function() {
 	var globalVars = {
 		88: 0, // GVAR_VAULT_RAIDERS
 		83: 2, // GVAR_VAULT_PLANT_STATUS (9 = PLANT_REPAIRED, 2 = PLANT_ACCEPTED_QUEST)
+		616: 0, // GVAR_GECKO_FIND_WOODY (0 = WOODY_UNKNOWN)
 	}
 	var scriptIDs = {
 		800: "Raiders2",
@@ -32,11 +33,13 @@ var scriptingEngine = (function() {
 		133: "GCHANK",
 		131: "GCFESTUS",
 		516: "GSTERM",
+		1260: "GCPERCY",
 	}
 	var mapIDs = {
 		"GECKSETL": 31
 	}
 	var currentMapID = null
+	var currentMapObject = null
 	var scriptMessages = {}
 	var dialogueOptionProcs = []
 	var timeEventList = []
@@ -172,7 +175,11 @@ var scriptingEngine = (function() {
 		debug_msg: function(msg) { log("debug_msg", arguments); info("DEBUG MSG: " + msg, "debugMessage") },
 		display_msg: function(msg) { log("display_msg", arguments); info("DISPLAY MSG: " + msg, "displayMessage") },
 		message_str: function(msgList, msgNum) { return getScriptMessage(msgList, msgNum) },
-		metarule: function(_, _) { stub("metarule", arguments) }, // ???
+		metarule: function(id, _) {
+			stub("metarule", arguments)
+
+			if(id === 22) return 0 // is_game_loading
+		},
 
 		// player
 		give_exp_points: function(xp) { stub("give_exp_points", arguments) },
@@ -183,7 +190,21 @@ var scriptingEngine = (function() {
 		critter_add_trait: function(obj, traitType, trait, amount) { stub("critter_add_trait", arguments) },
 		item_caps_total: function(obj) { stub("item_caps_total", arguments) },
 		item_caps_adjust: function(obj, amount) { stub("item_caps_adjust", arguments) },
-		move_obj_inven_to_obj: function(obj, other) { stub("move_obj_inven_to_obj", arguments) },
+		move_obj_inven_to_obj: function(obj, other) {
+			if(obj === null || other === null) {
+				warn("move_obj_inven_to_obj: null pointer passed in")
+				return
+			}
+
+			if(!isGameObject(obj) || !isGameObject(other)) {
+				warn("move_obj_inven_to_obj: not game object")
+				return
+			}
+
+			info("move_obj_inven_to_obj: " + obj.inventory.length + " to " + other.inventory.length)
+			other.inventory = obj.inventory
+			obj.inventory = []
+		},
 		obj_is_carrying_obj_pid: function(obj, pid) { stub("obj_is_carrying_obj_pid", arguments); return 0 },
 		obj_carrying_pid_obj: function(obj, pid) { stub("obj_carrying_pid_obj", arguments); return 0 },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
@@ -217,7 +238,22 @@ var scriptingEngine = (function() {
 			dialogueExit()
 		},
 		gdialog_set_barter_mod: function(mod) { stub("gdialog_set_barter_mod", arguments) },
-		gdialog_mod_barter: function(mod) { stub("gdialog_mod_barter", arguments) }, // todo: switch to barter mode
+		gdialog_mod_barter: function(mod) { // switch to barter mode
+			console.log("--> barter mode")
+			if(!this.self_obj) throw "need self_obj"
+
+			drawInventory($("#playerInventory"), dudeObject, function(obj, critter) {
+				console.log("CLICK: " + repr(obj))
+				console.log("AND: " + repr(critter))
+			})
+
+			drawInventory($("#inventory"), this.self_obj, function(obj, critter) {
+				console.log("CLICK: " + repr(obj))
+				console.log("AND: " + repr(critter))
+			})
+
+			stub("gdialog_mod_barter", arguments)
+		},
 		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) {
 			log("start_gdialog", arguments)
 			info("DIALOGUE START", "dialogue")
@@ -231,6 +267,18 @@ var scriptingEngine = (function() {
 			info("REPLY: " + msg, "dialogue")
 			$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
 			//stub("gSay_Reply", arguments)
+		},
+		gsay_message: function(msgList, msgID, reaction) {
+			// message with [Done] option
+			if(typeof msgID === "string") { // TODO: is this _really_ allowed? GCPercy uses a string, docs say int
+				console.log("MSG: " + msgID + " [DONE] (s)")
+				$("#dialogue").append("&nbsp;&nbsp;\"" + msgID + "\"<br>[Done]<br>")
+			}
+			else {
+				var msg = getScriptMessage(msgList, msgID)
+				console.log("MSG: " + msg + " [DONE]")
+				$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>[Done]<br>")
+			}
 		},
 		gsay_end: function() { stub("gSay_End", arguments) },
 		end_dialogue: function() { stub("end_dialogue", arguments) },
@@ -334,6 +382,10 @@ var scriptingEngine = (function() {
 
 			obj.cur_map_index = currentMapID
 
+			if(currentMapObject !== null)
+				obj._mapScript = currentMapObject
+			else currentMapObject = obj // this is likely our map script loaded first
+
 		}, "text").fail(function(err) { console.log("script loading error: "  + err) })
 
 		return scriptObject
@@ -353,6 +405,7 @@ var scriptingEngine = (function() {
 		if(script.critter_p_proc === undefined)
 			return
 
+		script.game_time = gameTickTime
 		script.critter_p_proc()
 	}
 
@@ -372,6 +425,7 @@ var scriptingEngine = (function() {
 			if(script !== undefined && script.map_update_p_proc !== undefined) {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
+				script.game_time = Math.min(1, gameTickTime)
 				script.map_update_p_proc()
 				updated++
 			}
@@ -395,6 +449,7 @@ var scriptingEngine = (function() {
 			if(script !== undefined && script.map_enter_p_proc !== undefined) {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
+				script.game_time = Math.min(1, gameTickTime)
 				script.map_enter_p_proc()
 				updated++
 			}
