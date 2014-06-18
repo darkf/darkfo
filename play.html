@@ -227,13 +227,6 @@ function critterAtPosition(position) {
 	return null
 }
 
-/*function forEachScriptableObject(f, isLoaded) {
-	for(var i = 0; i < gObjects.length; i++) {
-		if(gObjects[i].script !== undefined && (!isLoaded || gObjects[i]._script !== undefined))
-			f(gObjects[i])
-	}
-}*/
-
 function loadObjectScripts(objects) {
 	var goodScripts = {} // cache scripts that don't load
 	for(var i = 0; i < objects.length; i++) {
@@ -382,7 +375,6 @@ heart.load = function() {
 
 		// todo: is map_enter_p_proc called on elevation change?
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
-		//scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 	}, "json")
 
 	if(doCombat === true && DEBUG === true) {
@@ -434,10 +426,6 @@ heart.keydown = function(k) {
 				console.log("object is at index " + i + ", has scripts? " + hasScripts)
 			}
 		}
-	}
-	if(k == 'p') {
-		player.frame++
-		if(player.frame == 8) player.frame = 0
 	}
 	if(k == 'm') {
 		critterWalkTo(player, mouseHex)
@@ -518,7 +506,7 @@ heart.keydown = function(k) {
 					lazyLoadImage(inventoryImage, null, false)
 				var img = $("<img>").attr("src", inventoryImage+'.png').
 				          attr("width", 90).attr("height", 60) // 90x60 // 70x40
-				$("#inventory").append(img)
+				$("#inventory").append(img).append("x" + obj.inventory[i].amount)
 			}
 		}
 	}
@@ -572,7 +560,6 @@ heart.update = function() {
 	if(time - lastGameTick >= 1000/10) { // 10 Hz game tick
 		lastGameTick = time
 		gameTickTime++
-		//console.log("tick: " + gameTickTime)
 
 		if(doTimedEvents === true && inCombat !== true) {
 			// check and update timed events
@@ -603,7 +590,7 @@ function drawTileMap(matrix, offsetY) {
 	for(var i = 0; i < matrix.length; i++) {
 		for(var j = 0; j < matrix[0].length; j++) {
 			var tile = matrix[j][i]
-			if(tile === "grid000") continue;
+			if(tile === "grid000") continue
 			var img = "art/tiles/" + tile
 
 			if(images[img] !== undefined) {
