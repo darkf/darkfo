@@ -618,6 +618,38 @@ function drawTileMap(matrix, offsetY) {
 	}
 }
 
+function drawObject(obj) {
+	var scr = hexToScreen(obj.position.x, obj.position.y)
+
+	if(images[obj.art] === undefined)
+		throw "No art for object: " + obj.art // skip images we don't have
+
+	var info = imageInfo[obj.art]
+	if(info === undefined)
+		throw "No image map info for: " + obj.art
+
+	var frameIdx = 0
+	if(obj.frame !== undefined)
+		frameIdx += obj.frame
+
+	var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
+	var dirOffset = info.directionOffsets[obj.orientation]
+	var offsetX = Math.floor(frameInfo.w / 2) - dirOffset.x - frameInfo.ox
+	var offsetY = frameInfo.h - dirOffset.y - frameInfo.oy
+	var scrX = scr.x - offsetX, scrY = scr.y - offsetY
+
+	if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
+	   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
+		return // out of screen bounds, no need to draw
+
+	heart.ctx.drawImage(images[obj.art].img,
+		frameInfo.sx, 0, frameInfo.w, frameInfo.h,
+		scrX - cameraX,
+		scrY - cameraY,
+		frameInfo.w, frameInfo.h
+	)
+}
+
 heart.draw = function() {
 	heart.graphics.setColor(255, 255, 255)
 
@@ -655,60 +687,12 @@ heart.draw = function() {
 		} 
 	}
 
-	// draw objects
+	// draw objects and player
 	if(showObjects === true) {
-		gObjects.push(player)
-		for(var i = 0; i < gObjects.length; i++) {
-			var obj = gObjects[i]
-			var scr = hexToScreen(obj.position.x, obj.position.y)
+		for(var i = 0; i < gObjects.length; i++)
+			drawObject(gObjects[i])
 
-			if(images[obj.art] === undefined)
-				throw "No art: " + obj.art; // skip images we don't have
-
-			var info = imageInfo[obj.art]
-			if(info !== undefined /*&& info.numFrames !== 1*/) { // multi-frame object drawing
-				var frameIdx = 0
-				if(obj.frame !== undefined)
-					frameIdx += obj.frame
-
-				var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
-				var dirOffset = info.directionOffsets[obj.orientation]
-				var offsetX = Math.floor(frameInfo.w / 2) - dirOffset.x - frameInfo.ox
-				var offsetY = frameInfo.h - dirOffset.y - frameInfo.oy
-				var scrX = scr.x - offsetX, scrY = scr.y - offsetY
-
-				if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
-				   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
-					continue
-
-				heart.ctx.drawImage(images[obj.art].img,
-					frameInfo.sx, 0, frameInfo.w, frameInfo.h,
-					scrX - cameraX,
-					scrY - cameraY,
-					frameInfo.w, frameInfo.h
-				)
-			}
-			else { // single-frame (e.g. static scenery) drawing
-				throw "single-frame: " + obj.art
-				// todo: find out why this is slow (might be just the width/height calls)
-				// currently this codepath is not taken
-				console.log("single-frame: " + obj.art)
-				var w = images[obj.art].getWidth()
-				var h = images[obj.art].getHeight()
-				var offsetX = Math.floor(w / 2) - imageInfo[obj.art].directionOffsets[0].x
-				var offsetY = h - imageInfo[obj.art].directionOffsets[0].y
-				var scrX = scr.x - offsetX, scrY = scr.y - offsetY
-				if(scrX + w < cameraX || scrY + h < cameraY ||
-				   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
-					continue
-				heart.graphics.draw(images[obj.art], scrX - cameraX, scrY - cameraY)
-			}
-
-			if(obj.position.x === mouseHex.x && obj.position.y === mouseHex.y)
-				heart.graphics.print("tile: " + obj.art + " offset: " + offsetX + ", " + offsetY + ", orientation: " + obj.orientation, 5, 30)
-		}
-
-		gObjects.length -= 1 // hack: to draw player
+		drawObject(player)
 	}
 
 	if(showRoof === true && roofMap !== null)
