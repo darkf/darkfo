@@ -333,7 +333,7 @@ object_ = Struct("object",
 
 	Array(lambda ctx: ctx.numInventory,
 		Struct("inventory",
-			Padding(4),
+			UBInt32("amount"),
 			LazyBound("_obj", lambda: object_)
 		)
 	)
@@ -435,7 +435,9 @@ def main():
 			if writeObjects:
 				def getObject(object_):
 					if hasattr(object_, "_obj"): # subobjects
+						amount = object_.amount
 						object_ = object_._obj
+						object_.amount = amount
 
 					x = object_.position % 200
 					y = object_.position / 200
@@ -456,6 +458,8 @@ def main():
 						scriptName = stripExt(getProFile(scriptLst, object_.scriptID).split()[0])
 						obj["script"] = scriptName
 						scriptCounter[scriptName] += 1
+					if hasattr(object_, "amount"):
+						obj["amount"] = object_.amount
 
 					# inventory
 					obj["inventory"] = [getObject(inv) for inv in object_.inventory]
