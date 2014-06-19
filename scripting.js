@@ -306,14 +306,31 @@ var scriptingEngine = (function() {
 			// pop up the bartering areas
 			$("#barterLeft, #barterRight").css("visibility", "visible")
 
+			function findItem(obj, item) {
+				for(var i = 0; i < obj.inventory.length; i++) {
+					if(obj.inventory[i].pid === item.pid)
+						return i
+				}
+				return -1
+			}
+
 			function cloneItem(item) { return $.extend({}, item) }
-			function swapItem(a, item, b) {
+			function swapItem(a, item, b, amount) {
 				// swap item from a -> b
-				var idx = a.inventory.indexOf(item)
+				if(amount === 0) return
+
+				var idx = findItem(a, item)
 				if(idx === -1)
-					throw "item does not exist in a"
-				a.inventory.splice(idx, 1)
-				b.inventory.push(item)
+					throw "item (" + item + ") does not exist in a"
+				if(amount !== undefined && amount < item.amount) {
+					// just deduct amount from a and give amount to b
+					item.amount -= amount
+					objectAddItem(b, cloneItem(item), amount)
+				}
+				else { // just swap them
+					a.inventory.splice(idx, 1)
+					objectAddItem(b, item, amount || 1)
+				}
 			}
 
 			var merchant = this.self_obj
@@ -372,24 +389,44 @@ var scriptingEngine = (function() {
 
 			}
 
+			function getAmount(item) {
+				while(true) {
+					var amount = prompt("How many?")
+					if(amount === null)
+						return 0
+					else if(amount === "")
+						return item.amount // all of it!
+					else amount = parseInt(amount)
+
+					if(isNaN(amount) || item.amount < amount)
+						alert("Invalid amount")
+					else return amount
+				}
+			}
+
 			function redrawBarterInventory() {
 				//  merchant -> table
 				drawInventory($("#inventory"), workingMerchantInventory, function(obj) {
 					// var money = objectGetMoney(merchant)
-					swapItem(workingMerchantInventory, obj, merchantBarterTable)
+					if(obj.amount > 1)
+						 swapItem(workingMerchantInventory, obj, merchantBarterTable, getAmount(obj))
+					else swapItem(workingMerchantInventory, obj, merchantBarterTable)
 					redrawBarterInventory()
 				})
 
 				// player -> table
 				drawInventory($("#playerInventory"), workingPlayerInventory, function(obj) {
-					// var money = objectGetMoney(merchant)
-					swapItem(workingPlayerInventory, obj, playerBarterTable)
+					if(obj.amount > 1)
+						swapItem(workingPlayerInventory, obj, playerBarterTable, getAmount(obj))
+					else swapItem(workingPlayerInventory, obj, playerBarterTable)
 					redrawBarterInventory()
 				})
 
 				// table -> merchant
 				drawInventory($("#barterLeft"), merchantBarterTable, function(obj) {
-					swapItem(merchantBarterTable, obj, workingMerchantInventory)
+					if(obj.amount > 1)
+						swapItem(merchantBarterTable, obj, workingMerchantInventory, getAmount(obj))
+					else swapItem(merchantBarterTable, obj, workingMerchantInventory)
 					redrawBarterInventory()
 				})
 				var moneyLeft = totalAmount(merchantBarterTable)
@@ -398,7 +435,9 @@ var scriptingEngine = (function() {
 
 				// table -> player
 				drawInventory($("#barterRight"), playerBarterTable, function(obj) {
-					swapItem(playerBarterTable, obj, workingPlayerInventory)
+					if(obj.amount > 1)
+						swapItem(playerBarterTable, obj, workingPlayerInventory, getAmount(obj))
+					else swapItem(playerBarterTable, obj, workingPlayerInventory)
 					redrawBarterInventory()
 				})
 				var moneyRight = totalAmount(playerBarterTable)
