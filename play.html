@@ -90,7 +90,10 @@ var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
           	  skills: {"Repair": 25, "Big Guns": 25, "Outdoorsman": 25, "Traps": 25, "Barter": 25,
           	  		   "Melee": 25, "Throwing": 25, "Steal": 25, "Doctor": 25, "Sneak": 25,
           	  		   "Unarmed": 25, "Speech": 25, "First Aid": 25, "Lockpick": 25, "Science": 25,
-          	  		   "Gambling": 25, "Small Guns": 50, "Energy Weapons": 50}}
+          	  		   "Gambling": 25, "Small Guns": 50, "Energy Weapons": 50},
+          	  inventory: [
+          	  	{type: "misc", name: "Money", pid: 41, pidID: 41, amount: 1337, pro: {textID: 4100, extra: {cost: 1}, invFRM: 117440552}, invArt: 'art/inven/cap2'}
+          	  ]}
 player.stats = cloneStats(player.baseStats)
 player.toString = function() { return "The Dude" }
 
@@ -193,6 +196,67 @@ function loadPRO(pid, pidID) {
 	return r
 }
 
+function getPROTypeName(type) {
+	// singular
+	var map = {0: 'item', 1: 'critter', 2: 'scenery', 3: 'wall', 4: 'tile', 5: 'misc'}
+	return map[type]
+}
+
+function getPROSubTypeName(type) {
+	var map = {0: 'armor', 1: 'container', 2: 'drug', 3: 'weapon', 4: 'ammo', 5: 'misc', 6: 'key'}
+	return map[type]
+}
+
+function makePID(type, pid) {
+	return (type << 24) | pid
+}
+
+function createObjectWithPID(objType, pid) {
+	var pidID = makePID(objType, pid)
+	var pro = loadPRO(pidID, pid)
+	var obj = {type: getPROTypeName(objType), pro: pro, pid: pidID, pidID: pid, amount: 1}
+	if(objType === 0) { // item
+		obj.subtype = getPROSubTypeName(pro.extra.subtype)
+		obj.name = getMessage("pro_item", pro.textID)
+
+		var invPID = pro.extra.invFRM & 0xffff
+		console.log("invPID: " + invPID + ", also: " + pid)
+		if(invPID !== 0xffff)
+			obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
+	} else {
+		console.log("createObjectWithPID: not an item")
+	}
+
+	obj.art = "art/items/RESERVED" // todo: get art from pro
+
+	return obj
+}
+
+function objectAddItem(obj, item, count) {
+	for(var i = 0; i < obj.inventory.length; i++) {
+		if(obj.inventory[i].pidID === item.pidID) { // todo: pidID or pid?
+			obj.inventory[i].amount += count
+			return
+		}
+	}
+
+	// add new inventory object
+	var item_ = $.extend(true, {}, item) // clone the item (deep copy)
+	item_.amount = count // set the amount
+	obj.inventory.push(item_)
+}
+
+function objectGetMoney(obj) {
+	var MONEY_PID = 41
+	for(var i = 0; i < obj.inventory.length; i++) {
+		if(obj.inventory[i].pid === MONEY_PID) {
+			return obj.inventory[i].amount
+		}
+	}
+
+	return 0
+}
+
 // Draws a line between a and b, returning the first object hit
 function hexLinecast(a, b) {
 	var line = hexLine(a, b)
@@ -226,13 +290,6 @@ function critterAtPosition(position) {
 	}
 	return null
 }
-
-/*function forEachScriptableObject(f, isLoaded) {
-	for(var i = 0; i < gObjects.length; i++) {
-		if(gObjects[i].script !== undefined && (!isLoaded || gObjects[i]._script !== undefined))
-			f(gObjects[i])
-	}
-}*/
 
 function loadObjectScripts(objects) {
 	var goodScripts = {} // cache scripts that don't load
@@ -382,7 +439,6 @@ heart.load = function() {
 
 		// todo: is map_enter_p_proc called on elevation change?
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
-		//scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 	}, "json")
 
 	if(doCombat === true && DEBUG === true) {
@@ -399,6 +455,31 @@ heart.load = function() {
 		if(doLoadItemInfo !== false)
 			initObjects(gMap[level]["objects"])
 		initCritters(gMap[level]["objects"])
+	}
+
+	drawInventory($("#playerInventory"), player)
+}
+
+function drawInventory($el, obj, clickCallback) {
+	$el.html("")
+	for(var i = 0; i < obj.inventory.length; i++) {
+		if(obj.inventory[i].invArt === undefined) { // make a guess
+			var s = obj.inventory[i].art.split('/')
+			var inventoryImage = 'art/inven/' + s[s.length-1]
+		} else
+			var inventoryImage = obj.inventory[i].invArt
+
+		console.log("inv img: " + inventoryImage)
+		if(images[inventoryImage] === undefined)
+			lazyLoadImage(inventoryImage, null, false)
+		var img = $("<img>").attr("src", inventoryImage+'.png').
+		          attr("width", 90).attr("height", 60) // 90x60 // 70x40
+		img.attr("title", obj.inventory[i].name)
+		if(clickCallback !== undefined)
+			(function(invObj) {
+				img.click(function() { clickCallback(invObj, obj) })
+			})(obj.inventory[i])
+		$el.append(img).append("x" + obj.inventory[i].amount)
 	}
 }
 
@@ -434,10 +515,6 @@ heart.keydown = function(k) {
 				console.log("object is at index " + i + ", has scripts? " + hasScripts)
 			}
 		}
-	}
-	if(k == 'p') {
-		player.frame++
-		if(player.frame == 8) player.frame = 0
 	}
 	if(k == 'm') {
 		critterWalkTo(player, mouseHex)
@@ -505,21 +582,7 @@ heart.keydown = function(k) {
 			console.log("PID: " + obj.pid)
 			console.log("inventory: " + JSON.stringify(obj.inventory))
 
-			$("#inventory").html("")
-			for(var i = 0; i < obj.inventory.length; i++) {
-				if(obj.inventory[i].invArt === undefined) { // make a guess
-					var s = obj.inventory[i].art.split('/')
-					var inventoryImage = 'art/inven/' + s[s.length-1]
-				} else
-					var inventoryImage = obj.inventory[i].invArt
-
-				console.log("inv img: " + inventoryImage)
-				if(images[inventoryImage] === undefined)
-					lazyLoadImage(inventoryImage, null, false)
-				var img = $("<img>").attr("src", inventoryImage+'.png').
-				          attr("width", 90).attr("height", 60) // 90x60 // 70x40
-				$("#inventory").append(img)
-			}
+			drawInventory($("#inventory"), obj)
 		}
 	}
 }
@@ -572,7 +635,6 @@ heart.update = function() {
 	if(time - lastGameTick >= 1000/10) { // 10 Hz game tick
 		lastGameTick = time
 		gameTickTime++
-		//console.log("tick: " + gameTickTime)
 
 		if(doTimedEvents === true && inCombat !== true) {
 			// check and update timed events
@@ -603,7 +665,7 @@ function drawTileMap(matrix, offsetY) {
 	for(var i = 0; i < matrix.length; i++) {
 		for(var j = 0; j < matrix[0].length; j++) {
 			var tile = matrix[j][i]
-			if(tile === "grid000") continue;
+			if(tile === "grid000") continue
 			var img = "art/tiles/" + tile
 
 			if(images[img] !== undefined) {
@@ -616,6 +678,38 @@ function drawTileMap(matrix, offsetY) {
 			}
 		}
 	}
+}
+
+function drawObject(obj) {
+	var scr = hexToScreen(obj.position.x, obj.position.y)
+
+	if(images[obj.art] === undefined)
+		throw "No art for object: " + obj.art // skip images we don't have
+
+	var info = imageInfo[obj.art]
+	if(info === undefined)
+		throw "No image map info for: " + obj.art
+
+	var frameIdx = 0
+	if(obj.frame !== undefined)
+		frameIdx += obj.frame
+
+	var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
+	var dirOffset = info.directionOffsets[obj.orientation]
+	var offsetX = Math.floor(frameInfo.w / 2) - dirOffset.x - frameInfo.ox
+	var offsetY = frameInfo.h - dirOffset.y - frameInfo.oy
+	var scrX = scr.x - offsetX, scrY = scr.y - offsetY
+
+	if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
+	   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
+		return // out of screen bounds, no need to draw
+
+	heart.ctx.drawImage(images[obj.art].img,
+		frameInfo.sx, 0, frameInfo.w, frameInfo.h,
+		scrX - cameraX,
+		scrY - cameraY,
+		frameInfo.w, frameInfo.h
+	)
 }
 
 heart.draw = function() {
@@ -655,60 +749,12 @@ heart.draw = function() {
 		} 
 	}
 
-	// draw objects
+	// draw objects and player
 	if(showObjects === true) {
-		gObjects.push(player)
-		for(var i = 0; i < gObjects.length; i++) {
-			var obj = gObjects[i]
-			var scr = hexToScreen(obj.position.x, obj.position.y)
+		for(var i = 0; i < gObjects.length; i++)
+			drawObject(gObjects[i])
 
-			if(images[obj.art] === undefined)
-				throw "No art: " + obj.art; // skip images we don't have
-
-			var info = imageInfo[obj.art]
-			if(info !== undefined /*&& info.numFrames !== 1*/) { // multi-frame object drawing
-				var frameIdx = 0
-				if(obj.frame !== undefined)
-					frameIdx += obj.frame
-
-				var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
-				var dirOffset = info.directionOffsets[obj.orientation]
-				var offsetX = Math.floor(frameInfo.w / 2) - dirOffset.x - frameInfo.ox
-				var offsetY = frameInfo.h - dirOffset.y - frameInfo.oy
-				var scrX = scr.x - offsetX, scrY = scr.y - offsetY
-
-				if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
-				   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
-					continue
-
-				heart.ctx.drawImage(images[obj.art].img,
-					frameInfo.sx, 0, frameInfo.w, frameInfo.h,
-					scrX - cameraX,
-					scrY - cameraY,
-					frameInfo.w, frameInfo.h
-				)
-			}
-			else { // single-frame (e.g. static scenery) drawing
-				throw "single-frame: " + obj.art
-				// todo: find out why this is slow (might be just the width/height calls)
-				// currently this codepath is not taken
-				console.log("single-frame: " + obj.art)
-				var w = images[obj.art].getWidth()
-				var h = images[obj.art].getHeight()
-				var offsetX = Math.floor(w / 2) - imageInfo[obj.art].directionOffsets[0].x
-				var offsetY = h - imageInfo[obj.art].directionOffsets[0].y
-				var scrX = scr.x - offsetX, scrY = scr.y - offsetY
-				if(scrX + w < cameraX || scrY + h < cameraY ||
-				   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
-					continue
-				heart.graphics.draw(images[obj.art], scrX - cameraX, scrY - cameraY)
-			}
-
-			if(obj.position.x === mouseHex.x && obj.position.y === mouseHex.y)
-				heart.graphics.print("tile: " + obj.art + " offset: " + offsetX + ", " + offsetY + ", orientation: " + obj.orientation, 5, 30)
-		}
-
-		gObjects.length -= 1 // hack: to draw player
+		drawObject(player)
 	}
 
 	if(showRoof === true && roofMap !== null)
@@ -759,14 +805,48 @@ function dialogueReply(id) {
 		height: 120px;
 		margin-top: 2px;
 	}
+
+	.verticalInventory {
+		border: 1px solid black;
+		width: 120px;
+		height: 600px;
+		margin-top: 2px;
+	}
+
+	#barterLeft {
+		float: left;
+	}
+
+	#barterLeft, #barterRight {
+		visibility: hidden;
+		display: inline-block;
+		position: relative;
+	}
+
+	#rightArea {
+		float: right;
+		width: 45%;
+	}
+
+	#playerInventory {
+		float: right;
+	}
 </style>
 </head>
 <body>
 
 <canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
 
-<div id="dialogue"></div>
+<div id="rightArea">
+	<div id="barterLeft" class="verticalInventory"></div>
+	<div id="barterRight" class="verticalInventory"></div>
+
+	<div id="playerInventory" class="verticalInventory"></div>
+
+	<div id="dialogue"></div>
+</div>
 <div id="inventory"></div>
+
 
 </body>
 </html>

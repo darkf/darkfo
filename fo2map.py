@@ -8,6 +8,8 @@ from collections import Counter
 
 OUT_DIR = "maps"
 
+mapScriptPIDs = {}
+
 def pidType(pid):
 	return (pid >> 24) & 0xff
 
@@ -30,6 +32,24 @@ class ScriptsIgnore(Construct):
         		for i in range(loop):
         			pid = SBInt32("")._parse(stream, context)
         			pid_type = pidType(pid)
+
+        			# TODO: find out more about this
+        			#print "!!! PID:", hex(pid & 0xffff)
+        			script_id = Peek(Struct("",
+        				Padding(4),
+        				Padding(0 if pid_type not in (1, 2) else 4),
+        				Padding(0 if pid_type != 2 else 4),
+        				Padding(4),
+        				UBInt32("id")
+        			))._parse(stream, context).id
+        			#print "script_id:", script_id
+        			pid_ = pid & 0xffff
+        			if pid_ > 16:
+        				print "ignoring script pid:", hex(pid), "(", pid_, ")"
+        			else:
+        				scriptName = stripExt(getProFile(scriptLst, script_id).split()[0])
+	        			print "PID", (pid_), "is", script_id, "(", scriptName, ")"
+	        			mapScriptPIDs[pid_] = scriptName
 
         			move = 15
         			if pid_type == 1:
@@ -210,6 +230,7 @@ critterLst = loadLst("art/critters/critters.lst")
 miscLst = loadLst("art/misc/misc.lst")
 sceneryLst = loadLst("art/scenery/scenery.lst")
 sceneryProtoLst = loadLst("proto/scenery/scenery.lst")
+scriptLst = loadLst("scripts/scripts.lst")
 
 ItemInfo = Struct("",
 	Value("subtype", lambda ctx: getProSubType("proto/items/" + getProFile(itemsProtoLst, (ctx._.protoPID & 0xffff) - 1))),
@@ -333,7 +354,7 @@ object_ = Struct("object",
 
 	Array(lambda ctx: ctx.numInventory,
 		Struct("inventory",
-			Padding(4),
+			UBInt32("amount"),
 			LazyBound("_obj", lambda: object_)
 		)
 	)
@@ -405,7 +426,7 @@ def main():
 
 		elevm = [] # each elevation
 		lst = loadLst("art/tiles/tiles.lst")
-		scriptLst = loadLst("scripts/scripts.lst")
+		#scriptLst = loadLst("scripts/scripts.lst")
 		tileCounter = Counter()
 		objectCounter = Counter()
 		scriptCounter = Counter()
@@ -435,7 +456,9 @@ def main():
 			if writeObjects:
 				def getObject(object_):
 					if hasattr(object_, "_obj"): # subobjects
+						amount = object_.amount
 						object_ = object_._obj
+						object_.amount = amount
 
 					x = object_.position % 200
 					y = object_.position / 200
@@ -447,15 +470,25 @@ def main():
 						   "orientation": object_.orientation}
 					#if hasattr(object_.extra, "subtype"):
 					#	obj["subtype"] = object_.extra.subtype
+
 					if hasattr(object_.extra, "info"):
 						obj["subtype"] = object_.extra.info.subtype
 					if hasattr(object_.extra, "artPath"):
 						obj["art"] = object_.extra.artPath.lower()
 						objectCounter[object_.extra.artPath.lower()] += 1
-					if hasattr(object_, "scriptID") and object_.scriptID != -1:
+					if object_.scriptID != -1:
 						scriptName = stripExt(getProFile(scriptLst, object_.scriptID).split()[0])
 						obj["script"] = scriptName
 						scriptCounter[scriptName] += 1
+					elif object_.scriptID == -1 and object_.mapPID != 0xFFFFFFFF:
+						# this is some funky stuff... let's try to use the script IDs we got from
+						# the weird script ignore step
+						scriptName = mapScriptPIDs[object_.mapPID & 0xffff]
+						obj["script"] = scriptName
+						scriptCounter[scriptName] += 1
+
+					if hasattr(object_, "amount"):
+						obj["amount"] = object_.amount
 
 					# inventory
 					obj["inventory"] = [getObject(inv) for inv in object_.inventory]

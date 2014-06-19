@@ -16,6 +16,7 @@ var scriptingEngine = (function() {
 	var globalVars = {
 		88: 0, // GVAR_VAULT_RAIDERS
 		83: 2, // GVAR_VAULT_PLANT_STATUS (9 = PLANT_REPAIRED, 2 = PLANT_ACCEPTED_QUEST)
+		616: 0, // GVAR_GECKO_FIND_WOODY (0 = WOODY_UNKNOWN)
 	}
 	var scriptIDs = {
 		800: "Raiders2",
@@ -32,11 +33,13 @@ var scriptingEngine = (function() {
 		133: "GCHANK",
 		131: "GCFESTUS",
 		516: "GSTERM",
+		1260: "GCPERCY",
 	}
 	var mapIDs = {
 		"GECKSETL": 31
 	}
 	var currentMapID = null
+	var currentMapObject = null
 	var scriptMessages = {}
 	var dialogueOptionProcs = []
 	var timeEventList = []
@@ -51,6 +54,7 @@ var scriptingEngine = (function() {
 		gvars: false,
 		lvars: true,
 		tiles: true,
+		inventory: true,
 	}
 
 	function stub(name, args) {
@@ -92,13 +96,17 @@ var scriptingEngine = (function() {
 	}
 
 	function isGameObject(obj) {
-		if(obj.isPlayer) return true
-		for(var i = 0; i < gameObjects.length; i++) {
+		if(obj === undefined || obj === null) return false
+		if(obj.isPlayer === true) return true
+		if(obj.type === "item" || obj.type === "critter" || obj.type === "scenery" ||
+		   obj.type == "wall" || obj.type === "tile" || obj.type === "misc")
+			return true
+		/*for(var i = 0; i < gameObjects.length; i++) {
 			if(gameObjects[i] === obj) {
 				//console.log("is GO: " + obj.toString())
 				return true
 			}
-		}
+		}*/
 		warn("is NOT GO: " + obj.toString())
 		return false
 	}
@@ -126,6 +134,15 @@ var scriptingEngine = (function() {
 	function dialogueExit() {
 		$("#dialogue").css("visibility", "hidden") // todo: some sort of transition
 		dialogueOptionProcs = []
+	}
+
+	function endBarter() {
+		// End barter mode -- back to dialogue mode
+		$("#dialogue").css("visibility", "visible")
+		$("#barterLeft, #barterRight").css("visibility", "hidden")
+
+		drawInventory($("#playerInventory"), dudeObject)
+		$("#inventory").html("")
 	}
 
 	var ScriptProto = {
@@ -172,7 +189,11 @@ var scriptingEngine = (function() {
 		debug_msg: function(msg) { log("debug_msg", arguments); info("DEBUG MSG: " + msg, "debugMessage") },
 		display_msg: function(msg) { log("display_msg", arguments); info("DISPLAY MSG: " + msg, "displayMessage") },
 		message_str: function(msgList, msgNum) { return getScriptMessage(msgList, msgNum) },
-		metarule: function(_, _) { stub("metarule", arguments) }, // ???
+		metarule: function(id, _) {
+			stub("metarule", arguments)
+
+			if(id === 22) return 0 // is_game_loading
+		},
 
 		// player
 		give_exp_points: function(xp) { stub("give_exp_points", arguments) },
@@ -183,8 +204,52 @@ var scriptingEngine = (function() {
 		critter_add_trait: function(obj, traitType, trait, amount) { stub("critter_add_trait", arguments) },
 		item_caps_total: function(obj) { stub("item_caps_total", arguments) },
 		item_caps_adjust: function(obj, amount) { stub("item_caps_adjust", arguments) },
-		move_obj_inven_to_obj: function(obj, other) { stub("move_obj_inven_to_obj", arguments) },
-		obj_is_carrying_obj_pid: function(obj, pid) { stub("obj_is_carrying_obj_pid", arguments); return 0 },
+		move_obj_inven_to_obj: function(obj, other) {
+			if(obj === null || other === null) {
+				warn("move_obj_inven_to_obj: null pointer passed in")
+				return
+			}
+
+			if(!isGameObject(obj) || !isGameObject(other)) {
+				warn("move_obj_inven_to_obj: not game object")
+				return
+			}
+
+			info("move_obj_inven_to_obj: " + obj.inventory.length + " to " + other.inventory.length, "inventory")
+			other.inventory = obj.inventory
+			obj.inventory = []
+		},
+		obj_is_carrying_obj_pid: function(obj, pid) { // Number of inventory items with matching PID
+			if(!isGameObject(obj)) {
+				warn("obj_is_carrying_obj_pid: not a game object")
+				return 0
+			} else if(obj.inventory === undefined) {
+				warn("obj_is_carrying_obj_pid: object has no inventory!")
+				return 0
+			}
+
+			info("obj_is_carrying_obj_pid: " + pid, "inventory")
+			var count = 0
+			for(var i = 0; i < obj.inventory.length; i++) {
+				if(obj.inventory[i].pid === pid) count++
+			}
+			return count
+		},
+		add_mult_objs_to_inven: function(obj, item, count) { // Add count copies of item to obj's inventory
+			if(!isGameObject(obj)) {
+				warn("add_mult_objs_to_inven: not a game object")
+				return
+			} else if(!isGameObject(item)) {
+				warn("add_mult_objs_to_inven: item not a game object: " + item)
+				return
+			} else if(obj.inventory === undefined) {
+				warn("add_mult_objs_to_inven: object has no inventory!")
+				return
+			}
+
+			info("add_mult_objs_to_inven: " + count + " counts of " + item.toString(), "inventory")
+			objectAddItem(obj, item, count)
+		},
 		obj_carrying_pid_obj: function(obj, pid) { stub("obj_carrying_pid_obj", arguments); return 0 },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
@@ -194,7 +259,21 @@ var scriptingEngine = (function() {
 		// objects
 		obj_lock: function(obj) { stub("obj_lock", arguments) },
 		obj_unlock: function(obj) { stub("obj_unlock", arguments) },
-		create_object_sid: function(pid, tile, elevation, sid) { stub("create_object_sid", arguments) },
+		create_object_sid: function(pid, tile, elevation, sid) { // Create object of pid and possibly script
+			info("create_object_sid: " + pid + " / " + sid)
+
+			// TODO: Does this work on anything _but_ items?
+			var obj = createObjectWithPID(0 /* type item */, pid)
+			if(obj === null)
+				warn("create_object_sid: couldn't create object")
+			//info("OBJ: " + repr(obj))
+
+			if(obj.pro.extra.scriptID != sid)
+				throw "create_object_sid: need to change script ID (" + obj.pro.extra.scriptID +
+					" to " + sid + ")"
+			//stub("create_object_sid", arguments)
+			return obj
+		},
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
@@ -217,7 +296,164 @@ var scriptingEngine = (function() {
 			dialogueExit()
 		},
 		gdialog_set_barter_mod: function(mod) { stub("gdialog_set_barter_mod", arguments) },
-		gdialog_mod_barter: function(mod) { stub("gdialog_mod_barter", arguments) }, // todo: switch to barter mode
+		gdialog_mod_barter: function(mod) { // switch to barter mode
+			console.log("--> barter mode")
+			if(!this.self_obj) throw "need self_obj"
+
+			// hide dialogue screen for now
+			$("#dialogue").css("visibility", "hidden")
+
+			// pop up the bartering areas
+			$("#barterLeft, #barterRight").css("visibility", "visible")
+
+			function findItem(obj, item) {
+				for(var i = 0; i < obj.inventory.length; i++) {
+					if(obj.inventory[i].pid === item.pid)
+						return i
+				}
+				return -1
+			}
+
+			function cloneItem(item) { return $.extend({}, item) }
+			function swapItem(a, item, b, amount) {
+				// swap item from a -> b
+				if(amount === 0) return
+
+				var idx = findItem(a, item)
+				if(idx === -1)
+					throw "item (" + item + ") does not exist in a"
+				if(amount !== undefined && amount < item.amount) {
+					// just deduct amount from a and give amount to b
+					item.amount -= amount
+					objectAddItem(b, cloneItem(item), amount)
+				}
+				else { // just swap them
+					a.inventory.splice(idx, 1)
+					objectAddItem(b, item, amount || 1)
+				}
+			}
+
+			var merchant = this.self_obj
+
+			// a copy of inventories for both parties
+			var workingPlayerInventory = {inventory: dudeObject.inventory.map(cloneItem)}
+			var workingMerchantInventory = {inventory: merchant.inventory.map(cloneItem)}
+
+			// and our working barter tables
+			var playerBarterTable = {inventory: []}
+			var merchantBarterTable = {inventory: []}
+
+			function totalAmount(obj) {
+				var total = 0
+				for(var i = 0; i < obj.inventory.length; i++) {
+					total += obj.inventory[i].pro.extra.cost * obj.inventory[i].amount
+				}
+				return total
+			}
+
+			function offer() {
+				info("[OFFER]")
+
+				var merchantOffered = totalAmount(merchantBarterTable)
+				var playerOffered = totalAmount(playerBarterTable)
+				var diffOffered = playerOffered - merchantOffered
+
+				if(diffOffered >= 0) {
+					// OK, player offered equal to more more than the value
+					info("[OFFER OK]")
+
+					// finalize and apply the deal
+
+					// swap to working inventories
+					merchant.inventory = workingMerchantInventory.inventory
+					player.inventory = workingPlayerInventory.inventory
+
+					// add in the table items
+					for(var i = 0; i < merchantBarterTable.inventory.length; i++)
+						objectAddItem(dudeObject, merchantBarterTable.inventory[i], merchantBarterTable.inventory[i].amount)
+					for(var i = 0; i < playerBarterTable.inventory.length; i++)
+						objectAddItem(merchant, playerBarterTable.inventory[i], playerBarterTable.inventory[i].amount)
+
+					// re-clone so we can continue bartering if necessary
+					workingPlayerInventory = {inventory: dudeObject.inventory.map(cloneItem)}
+					workingMerchantInventory = {inventory: merchant.inventory.map(cloneItem)}
+
+					playerBarterTable.inventory = []
+					merchantBarterTable.inventory = []
+
+					redrawBarterInventory()
+				}
+				else {
+					info("[OFFER REFUSED]")
+				}
+
+			}
+
+			function getAmount(item) {
+				while(true) {
+					var amount = prompt("How many?")
+					if(amount === null)
+						return 0
+					else if(amount === "")
+						return item.amount // all of it!
+					else amount = parseInt(amount)
+
+					if(isNaN(amount) || item.amount < amount)
+						alert("Invalid amount")
+					else return amount
+				}
+			}
+
+			function redrawBarterInventory() {
+				//  merchant -> table
+				drawInventory($("#inventory"), workingMerchantInventory, function(obj) {
+					// var money = objectGetMoney(merchant)
+					if(obj.amount > 1)
+						 swapItem(workingMerchantInventory, obj, merchantBarterTable, getAmount(obj))
+					else swapItem(workingMerchantInventory, obj, merchantBarterTable)
+					redrawBarterInventory()
+				})
+
+				// player -> table
+				drawInventory($("#playerInventory"), workingPlayerInventory, function(obj) {
+					if(obj.amount > 1)
+						swapItem(workingPlayerInventory, obj, playerBarterTable, getAmount(obj))
+					else swapItem(workingPlayerInventory, obj, playerBarterTable)
+					redrawBarterInventory()
+				})
+
+				// table -> merchant
+				drawInventory($("#barterLeft"), merchantBarterTable, function(obj) {
+					if(obj.amount > 1)
+						swapItem(merchantBarterTable, obj, workingMerchantInventory, getAmount(obj))
+					else swapItem(merchantBarterTable, obj, workingMerchantInventory)
+					redrawBarterInventory()
+				})
+				var moneyLeft = totalAmount(merchantBarterTable)
+				$("#barterLeft").append($("<span>").css(
+					{position: 'absolute', 'left':0, 'bottom': 0}).text(moneyLeft))
+
+				// table -> player
+				drawInventory($("#barterRight"), playerBarterTable, function(obj) {
+					if(obj.amount > 1)
+						swapItem(playerBarterTable, obj, workingPlayerInventory, getAmount(obj))
+					else swapItem(playerBarterTable, obj, workingPlayerInventory)
+					redrawBarterInventory()
+				})
+				var moneyRight = totalAmount(playerBarterTable)
+				$("#barterRight").append($("<span>").css(
+					{position: 'absolute', 'left':0, 'bottom': 0}).text(moneyRight))
+				$("#barterRight").append($("<button>").css(
+					{position: 'absolute', 'right':0, 'bottom': 0}).text("Offer").click(offer))
+				$("#barterRight").append($("<button>").css(
+					{position: 'absolute', 'right':0, 'bottom': 25}).text("Talk").click(endBarter))
+
+			}
+
+			redrawBarterInventory()
+
+			stub("gdialog_mod_barter", arguments)
+		},
 		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) {
 			log("start_gdialog", arguments)
 			info("DIALOGUE START", "dialogue")
@@ -231,6 +467,18 @@ var scriptingEngine = (function() {
 			info("REPLY: " + msg, "dialogue")
 			$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
 			//stub("gSay_Reply", arguments)
+		},
+		gsay_message: function(msgList, msgID, reaction) {
+			// message with [Done] option
+			if(typeof msgID === "string") { // TODO: is this _really_ allowed? GCPercy uses a string, docs say int
+				console.log("MSG: " + msgID + " [DONE] (s)")
+				$("#dialogue").append("&nbsp;&nbsp;\"" + msgID + "\"<br>[Done]<br>")
+			}
+			else {
+				var msg = getScriptMessage(msgList, msgID)
+				console.log("MSG: " + msg + " [DONE]")
+				$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>[Done]<br>")
+			}
 		},
 		gsay_end: function() { stub("gSay_End", arguments) },
 		end_dialogue: function() { stub("end_dialogue", arguments) },
@@ -334,6 +582,10 @@ var scriptingEngine = (function() {
 
 			obj.cur_map_index = currentMapID
 
+			if(currentMapObject !== null)
+				obj._mapScript = currentMapObject
+			else currentMapObject = obj // this is likely our map script loaded first
+
 		}, "text").fail(function(err) { console.log("script loading error: "  + err) })
 
 		return scriptObject
@@ -353,6 +605,7 @@ var scriptingEngine = (function() {
 		if(script.critter_p_proc === undefined)
 			return
 
+		script.game_time = gameTickTime
 		script.critter_p_proc()
 	}
 
@@ -372,6 +625,7 @@ var scriptingEngine = (function() {
 			if(script !== undefined && script.map_update_p_proc !== undefined) {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
+				script.game_time = Math.max(1, gameTickTime)
 				script.map_update_p_proc()
 				updated++
 			}
@@ -395,6 +649,7 @@ var scriptingEngine = (function() {
 			if(script !== undefined && script.map_enter_p_proc !== undefined) {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
+				script.game_time = Math.max(1, gameTickTime)
 				script.map_enter_p_proc()
 				updated++
 			}
