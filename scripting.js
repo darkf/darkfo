@@ -136,6 +136,15 @@ var scriptingEngine = (function() {
 		dialogueOptionProcs = []
 	}
 
+	function endBarter() {
+		// End barter mode -- back to dialogue mode
+		$("#dialogue").css("visibility", "visible")
+		$("#barterLeft, #barterRight").css("visibility", "hidden")
+
+		drawInventory($("#playerInventory"), dudeObject)
+		$("#inventory").html("")
+	}
+
 	var ScriptProto = {
 		dude_obj: "<Dude Object>",
 		'true': true,
@@ -239,19 +248,7 @@ var scriptingEngine = (function() {
 			}
 
 			info("add_mult_objs_to_inven: " + count + " counts of " + item.toString(), "inventory")
-
-			for(var i = 0; i < obj.inventory.length; i++) {
-				if(obj.inventory[i].pidID === item.pidID) { // todo: pidID or pid?
-					info("add_mult_objs_to_inven: adding to existing amount (" + obj.inventory[i].pid + " / " + item.pid + ")", "inventory")
-					obj.inventory[i].amount += count
-					return
-				}
-			}
-
-			// add new inventory object
-			var item_ = $.extend(true, {}, item) // clone the item (deep copy)
-			item_.amount = count // set the amount
-			obj.inventory.push(item_)
+			objectAddItem(obj, item, count)
 		},
 		obj_carrying_pid_obj: function(obj, pid) { stub("obj_carrying_pid_obj", arguments); return 0 },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
@@ -303,15 +300,118 @@ var scriptingEngine = (function() {
 			console.log("--> barter mode")
 			if(!this.self_obj) throw "need self_obj"
 
-			drawInventory($("#playerInventory"), dudeObject, function(obj, critter) {
-				console.log("CLICK: " + repr(obj))
-				console.log("AND: " + repr(critter))
-			})
+			// hide dialogue screen for now
+			$("#dialogue").css("visibility", "hidden")
 
-			drawInventory($("#inventory"), this.self_obj, function(obj, critter) {
-				console.log("CLICK: " + repr(obj))
-				console.log("AND: " + repr(critter))
-			})
+			// pop up the bartering areas
+			$("#barterLeft, #barterRight").css("visibility", "visible")
+
+			function cloneItem(item) { return $.extend({}, item) }
+			function swapItem(a, item, b) {
+				// swap item from a -> b
+				var idx = a.inventory.indexOf(item)
+				if(idx === -1)
+					throw "item does not exist in a"
+				a.inventory.splice(idx, 1)
+				b.inventory.push(item)
+			}
+
+			var merchant = this.self_obj
+
+			// a copy of inventories for both parties
+			var workingPlayerInventory = {inventory: dudeObject.inventory.map(cloneItem)}
+			var workingMerchantInventory = {inventory: merchant.inventory.map(cloneItem)}
+
+			// and our working barter tables
+			var playerBarterTable = {inventory: []}
+			var merchantBarterTable = {inventory: []}
+
+			function totalAmount(obj) {
+				var total = 0
+				for(var i = 0; i < obj.inventory.length; i++) {
+					total += obj.inventory[i].pro.extra.cost * obj.inventory[i].amount
+				}
+				return total
+			}
+
+			function offer() {
+				info("[OFFER]")
+
+				var merchantOffered = totalAmount(merchantBarterTable)
+				var playerOffered = totalAmount(playerBarterTable)
+				var diffOffered = playerOffered - merchantOffered
+
+				if(diffOffered >= 0) {
+					// OK, player offered equal to more more than the value
+					info("[OFFER OK]")
+
+					// finalize and apply the deal
+
+					// swap to working inventories
+					merchant.inventory = workingMerchantInventory.inventory
+					player.inventory = workingPlayerInventory.inventory
+
+					// add in the table items
+					for(var i = 0; i < merchantBarterTable.inventory.length; i++)
+						objectAddItem(dudeObject, merchantBarterTable.inventory[i], merchantBarterTable.inventory[i].amount)
+					for(var i = 0; i < playerBarterTable.inventory.length; i++)
+						objectAddItem(merchant, playerBarterTable.inventory[i], playerBarterTable.inventory[i].amount)
+
+					// re-clone so we can continue bartering if necessary
+					workingPlayerInventory = {inventory: dudeObject.inventory.map(cloneItem)}
+					workingMerchantInventory = {inventory: merchant.inventory.map(cloneItem)}
+
+					playerBarterTable.inventory = []
+					merchantBarterTable.inventory = []
+
+					redrawBarterInventory()
+				}
+				else {
+					info("[OFFER REFUSED]")
+				}
+
+			}
+
+			function redrawBarterInventory() {
+				//  merchant -> table
+				drawInventory($("#inventory"), workingMerchantInventory, function(obj) {
+					// var money = objectGetMoney(merchant)
+					swapItem(workingMerchantInventory, obj, merchantBarterTable)
+					redrawBarterInventory()
+				})
+
+				// player -> table
+				drawInventory($("#playerInventory"), workingPlayerInventory, function(obj) {
+					// var money = objectGetMoney(merchant)
+					swapItem(workingPlayerInventory, obj, playerBarterTable)
+					redrawBarterInventory()
+				})
+
+				// table -> merchant
+				drawInventory($("#barterLeft"), merchantBarterTable, function(obj) {
+					swapItem(merchantBarterTable, obj, workingMerchantInventory)
+					redrawBarterInventory()
+				})
+				var moneyLeft = totalAmount(merchantBarterTable)
+				$("#barterLeft").append($("<span>").css(
+					{position: 'absolute', 'left':0, 'bottom': 0}).text(moneyLeft))
+
+				// table -> player
+				drawInventory($("#barterRight"), playerBarterTable, function(obj) {
+					swapItem(playerBarterTable, obj, workingPlayerInventory)
+					redrawBarterInventory()
+				})
+				var moneyRight = totalAmount(playerBarterTable)
+				$("#barterRight").append($("<span>").css(
+					{position: 'absolute', 'left':0, 'bottom': 0}).text(moneyRight))
+				$("#barterRight").append($("<button>").css(
+					{position: 'absolute', 'right':0, 'bottom': 0}).text("Offer").click(offer))
+				$("#barterRight").append($("<button>").css(
+					{position: 'absolute', 'right':0, 'bottom': 25}).text("Talk").click(endBarter))
+
+			}
+
+			redrawBarterInventory()
 
 			stub("gdialog_mod_barter", arguments)
 		},

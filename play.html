@@ -92,7 +92,7 @@ var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
           	  		   "Unarmed": 25, "Speech": 25, "First Aid": 25, "Lockpick": 25, "Science": 25,
           	  		   "Gambling": 25, "Small Guns": 50, "Energy Weapons": 50},
           	  inventory: [
-          	  	{type: "misc", name: "Money", pid: 41, amount: 1337, pro: {textID: 4100, cost: 1, invFRM: 117440552}, invArt: 'art/inven/cap2'}
+          	  	{type: "misc", name: "Money", pid: 41, pidID: 41, amount: 1337, pro: {textID: 4100, extra: {cost: 1}, invFRM: 117440552}, invArt: 'art/inven/cap2'}
           	  ]}
 player.stats = cloneStats(player.baseStats)
 player.toString = function() { return "The Dude" }
@@ -230,6 +230,31 @@ function createObjectWithPID(objType, pid) {
 	obj.art = "art/items/RESERVED" // todo: get art from pro
 
 	return obj
+}
+
+function objectAddItem(obj, item, count) {
+	for(var i = 0; i < obj.inventory.length; i++) {
+		if(obj.inventory[i].pidID === item.pidID) { // todo: pidID or pid?
+			obj.inventory[i].amount += count
+			return
+		}
+	}
+
+	// add new inventory object
+	var item_ = $.extend(true, {}, item) // clone the item (deep copy)
+	item_.amount = count // set the amount
+	obj.inventory.push(item_)
+}
+
+function objectGetMoney(obj) {
+	var MONEY_PID = 41
+	for(var i = 0; i < obj.inventory.length; i++) {
+		if(obj.inventory[i].pid === MONEY_PID) {
+			return obj.inventory[i].amount
+		}
+	}
+
+	return 0
 }
 
 // Draws a line between a and b, returning the first object hit
@@ -781,11 +806,29 @@ function dialogueReply(id) {
 		margin-top: 2px;
 	}
 
-	#playerInventory {
+	.verticalInventory {
 		border: 1px solid black;
 		width: 120px;
 		height: 600px;
 		margin-top: 2px;
+	}
+
+	#barterLeft {
+		float: left;
+	}
+
+	#barterLeft, #barterRight {
+		visibility: hidden;
+		display: inline-block;
+		position: relative;
+	}
+
+	#rightArea {
+		float: right;
+		width: 45%;
+	}
+
+	#playerInventory {
 		float: right;
 	}
 </style>
@@ -794,9 +837,14 @@ function dialogueReply(id) {
 
 <canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
 
-<div id="playerInventory"></div>
+<div id="rightArea">
+	<div id="barterLeft" class="verticalInventory"></div>
+	<div id="barterRight" class="verticalInventory"></div>
 
-<div id="dialogue"></div>
+	<div id="playerInventory" class="verticalInventory"></div>
+
+	<div id="dialogue"></div>
+</div>
 <div id="inventory"></div>
 
 
