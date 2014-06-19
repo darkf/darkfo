@@ -54,6 +54,7 @@ var scriptingEngine = (function() {
 		gvars: false,
 		lvars: true,
 		tiles: true,
+		inventory: true,
 	}
 
 	function stub(name, args) {
@@ -95,13 +96,17 @@ var scriptingEngine = (function() {
 	}
 
 	function isGameObject(obj) {
-		if(obj.isPlayer) return true
-		for(var i = 0; i < gameObjects.length; i++) {
+		if(obj === undefined || obj === null) return false
+		if(obj.isPlayer === true) return true
+		if(obj.type === "item" || obj.type === "critter" || obj.type === "scenery" ||
+		   obj.type == "wall" || obj.type === "tile" || obj.type === "misc")
+			return true
+		/*for(var i = 0; i < gameObjects.length; i++) {
 			if(gameObjects[i] === obj) {
 				//console.log("is GO: " + obj.toString())
 				return true
 			}
-		}
+		}*/
 		warn("is NOT GO: " + obj.toString())
 		return false
 	}
@@ -201,11 +206,53 @@ var scriptingEngine = (function() {
 				return
 			}
 
-			info("move_obj_inven_to_obj: " + obj.inventory.length + " to " + other.inventory.length)
+			info("move_obj_inven_to_obj: " + obj.inventory.length + " to " + other.inventory.length, "inventory")
 			other.inventory = obj.inventory
 			obj.inventory = []
 		},
-		obj_is_carrying_obj_pid: function(obj, pid) { stub("obj_is_carrying_obj_pid", arguments); return 0 },
+		obj_is_carrying_obj_pid: function(obj, pid) { // Number of inventory items with matching PID
+			if(!isGameObject(obj)) {
+				warn("obj_is_carrying_obj_pid: not a game object")
+				return 0
+			} else if(obj.inventory === undefined) {
+				warn("obj_is_carrying_obj_pid: object has no inventory!")
+				return 0
+			}
+
+			info("obj_is_carrying_obj_pid: " + pid, "inventory")
+			var count = 0
+			for(var i = 0; i < obj.inventory.length; i++) {
+				if(obj.inventory[i].pid === pid) count++
+			}
+			return count
+		},
+		add_mult_objs_to_inven: function(obj, item, count) { // Add count copies of item to obj's inventory
+			if(!isGameObject(obj)) {
+				warn("add_mult_objs_to_inven: not a game object")
+				return
+			} else if(!isGameObject(item)) {
+				warn("add_mult_objs_to_inven: item not a game object: " + item)
+				return
+			} else if(obj.inventory === undefined) {
+				warn("add_mult_objs_to_inven: object has no inventory!")
+				return
+			}
+
+			info("add_mult_objs_to_inven: " + count + " counts of " + item.toString(), "inventory")
+
+			for(var i = 0; i < obj.inventory.length; i++) {
+				if(obj.inventory[i].pidID === item.pidID) { // todo: pidID or pid?
+					info("add_mult_objs_to_inven: adding to existing amount (" + obj.inventory[i].pid + " / " + item.pid + ")", "inventory")
+					obj.inventory[i].amount += count
+					return
+				}
+			}
+
+			// add new inventory object
+			var item_ = $.extend(true, {}, item) // clone the item (deep copy)
+			item_.amount = count // set the amount
+			obj.inventory.push(item_)
+		},
 		obj_carrying_pid_obj: function(obj, pid) { stub("obj_carrying_pid_obj", arguments); return 0 },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
@@ -215,7 +262,21 @@ var scriptingEngine = (function() {
 		// objects
 		obj_lock: function(obj) { stub("obj_lock", arguments) },
 		obj_unlock: function(obj) { stub("obj_unlock", arguments) },
-		create_object_sid: function(pid, tile, elevation, sid) { stub("create_object_sid", arguments) },
+		create_object_sid: function(pid, tile, elevation, sid) { // Create object of pid and possibly script
+			info("create_object_sid: " + pid + " / " + sid)
+
+			// TODO: Does this work on anything _but_ items?
+			var obj = createObjectWithPID(0 /* type item */, pid)
+			if(obj === null)
+				warn("create_object_sid: couldn't create object")
+			//info("OBJ: " + repr(obj))
+
+			if(obj.pro.extra.scriptID != sid)
+				throw "create_object_sid: need to change script ID (" + obj.pro.extra.scriptID +
+					" to " + sid + ")"
+			//stub("create_object_sid", arguments)
+			return obj
+		},
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
@@ -425,7 +486,7 @@ var scriptingEngine = (function() {
 			if(script !== undefined && script.map_update_p_proc !== undefined) {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
-				script.game_time = Math.min(1, gameTickTime)
+				script.game_time = Math.max(1, gameTickTime)
 				script.map_update_p_proc()
 				updated++
 			}
@@ -449,7 +510,7 @@ var scriptingEngine = (function() {
 			if(script !== undefined && script.map_enter_p_proc !== undefined) {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
-				script.game_time = Math.min(1, gameTickTime)
+				script.game_time = Math.max(1, gameTickTime)
 				script.map_enter_p_proc()
 				updated++
 			}

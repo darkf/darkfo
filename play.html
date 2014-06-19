@@ -196,6 +196,42 @@ function loadPRO(pid, pidID) {
 	return r
 }
 
+function getPROTypeName(type) {
+	// singular
+	var map = {0: 'item', 1: 'critter', 2: 'scenery', 3: 'wall', 4: 'tile', 5: 'misc'}
+	return map[type]
+}
+
+function getPROSubTypeName(type) {
+	var map = {0: 'armor', 1: 'container', 2: 'drug', 3: 'weapon', 4: 'ammo', 5: 'misc', 6: 'key'}
+	return map[type]
+}
+
+function makePID(type, pid) {
+	return (type << 24) | pid
+}
+
+function createObjectWithPID(objType, pid) {
+	var pidID = makePID(objType, pid)
+	var pro = loadPRO(pidID, pid)
+	var obj = {type: getPROTypeName(objType), pro: pro, pid: pidID, pidID: pid, amount: 1}
+	if(objType === 0) { // item
+		obj.subtype = getPROSubTypeName(pro.extra.subtype)
+		obj.name = getMessage("pro_item", pro.textID)
+
+		var invPID = pro.extra.invFRM & 0xffff
+		console.log("invPID: " + invPID + ", also: " + pid)
+		if(invPID !== 0xffff)
+			obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
+	} else {
+		console.log("createObjectWithPID: not an item")
+	}
+
+	obj.art = "art/items/RESERVED" // todo: get art from pro
+
+	return obj
+}
+
 // Draws a line between a and b, returning the first object hit
 function hexLinecast(a, b) {
 	var line = hexLine(a, b)
@@ -415,7 +451,9 @@ function drawInventory($el, obj, clickCallback) {
 		          attr("width", 90).attr("height", 60) // 90x60 // 70x40
 		img.attr("title", obj.inventory[i].name)
 		if(clickCallback !== undefined)
-			img.click(clickCallback)
+			(function(invObj) {
+				img.click(function() { clickCallback(invObj, obj) })
+			})(obj.inventory[i])
 		$el.append(img).append("x" + obj.inventory[i].amount)
 	}
 }
