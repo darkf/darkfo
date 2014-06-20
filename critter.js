@@ -169,7 +169,6 @@ function critterUpdateStaticAnimation(obj) {
 
 		if(obj.frame === imageInfo[obj.art].numFrames) {
 			// animation is done
-			// todo: some sort of callback or action when completed?
 			if(obj.animCallback)
 				obj.animCallback()
 		}

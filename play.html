@@ -257,6 +257,33 @@ function objectGetMoney(obj) {
 	return 0
 }
 
+function objectSingleAnim(obj, reversed, callback) {
+	if(reversed) obj.frame = imageInfo[obj.art].numFrames - 1
+	else obj.frame = 0
+	obj.lastFrameTime = 0
+	obj.anim = reversed ? "reverse" : "single"
+	obj.animCallback = (callback !== undefined) ? callback : (function() { obj.anim = null  })
+}
+
+function objectUpdateAnimation(obj) {
+	var time = heart.timer.getTime()
+	var fps = 8 // todo: get FPS from image info
+
+	if(time - obj.lastFrameTime >= 1000/fps) {
+		if(obj.anim === "reverse") obj.frame--
+		else obj.frame++
+		obj.lastFrameTime = time
+
+		if(obj.frame === -1 || obj.frame === imageInfo[obj.art].numFrames) {
+			// animation is done
+			if(obj.anim === "reverse") obj.frame++
+			else obj.frame--
+			if(obj.animCallback)
+				obj.animCallback()
+		}
+	}
+}
+
 // Draws a line between a and b, returning the first object hit
 function hexLinecast(a, b) {
 	var line = hexLine(a, b)
@@ -657,6 +684,8 @@ heart.update = function() {
 					scriptingEngine.updateCritter(gObjects[i]._script)
 				critterUpdateAnimation(gObjects[i])
 			}
+			else if(gObjects[i].anim === "single" || gObjects[i].anim === "reverse")
+				objectUpdateAnimation(gObjects[i])
 		}
 	}
 }
