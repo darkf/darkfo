@@ -255,8 +255,11 @@ var scriptingEngine = (function() {
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
 		has_skill: function(obj, skill) { stub("has_skill", arguments); return 100 },
+		roll_vs_skill: function(obj, skill, bonus) { stub("roll_vs_skill", arguments); return 1 },
+		is_success: function(roll) { stub("is_success", arguments); return 0 },
 
 		// objects
+		obj_is_locked: function(obj) { stub("obj_is_locked", arguments); return 0 },
 		obj_lock: function(obj) { stub("obj_lock", arguments) },
 		obj_unlock: function(obj) { stub("obj_unlock", arguments) },
 		create_object_sid: function(pid, tile, elevation, sid) { // Create object of pid and possibly script
