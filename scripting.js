@@ -34,6 +34,9 @@ var scriptingEngine = (function() {
 		131: "GCFESTUS",
 		516: "GSTERM",
 		1260: "GCPERCY",
+		451: "NCJULES",
+		337: "NCPROSTI",
+		452: "NCKITTY",
 	}
 	var mapIDs = {
 		"GECKSETL": 31
@@ -117,6 +120,9 @@ var scriptingEngine = (function() {
 			return null
 		}
 
+		if(typeof msg === "string") // passed in a string message
+			return msg
+
 		if(scriptMessages[scriptIDs[id]] === undefined)
 			loadMessageFile(scriptIDs[id])
 		if(scriptMessages[scriptIDs[id]] === undefined)
@@ -194,6 +200,7 @@ var scriptingEngine = (function() {
 
 			if(id === 22) return 0 // is_game_loading
 		},
+		metarule3: function(_, obj, _, _) { stub("metarule3", arguments) },
 
 		// player
 		give_exp_points: function(xp) { stub("give_exp_points", arguments) },
@@ -202,7 +209,10 @@ var scriptingEngine = (function() {
 		get_critter_stat: function(obj, stat) { stub("get_critter_stat", arguments); return 5 },
 		has_trait: function(traitType, obj, trait) { stub("has_trait", arguments); return 0 },
 		critter_add_trait: function(obj, traitType, trait, amount) { stub("critter_add_trait", arguments) },
-		item_caps_total: function(obj) { stub("item_caps_total", arguments) },
+		item_caps_total: function(obj) {
+			if(!isGameObject(obj)) throw "item_caps_total: not game object"
+			return objectGetMoney(obj)
+		},
 		item_caps_adjust: function(obj, amount) { stub("item_caps_adjust", arguments) },
 		move_obj_inven_to_obj: function(obj, other) {
 			if(obj === null || other === null) {
@@ -257,6 +267,15 @@ var scriptingEngine = (function() {
 		has_skill: function(obj, skill) { stub("has_skill", arguments); return 100 },
 		roll_vs_skill: function(obj, skill, bonus) { stub("roll_vs_skill", arguments); return 1 },
 		is_success: function(roll) { stub("is_success", arguments); return 0 },
+		critter_inven_obj: function(obj, where) {
+			if(!isGameObject(obj)) throw "critter_inven_obj: not game object"
+			if(where === 0) {} // INVEN_TYPE_WORN
+			else if(where === 1) {} // INVEN_TYPE_RIGHT_HAND
+			else if(where === 2) {} // INVEN_TYPE_LEFT_HAND
+			else if(where === -2) throw "INVEN_TYPE_INV_COUNT"
+			stub("critter_inven_obj", arguments)
+			return undefined
+		},
 
 		// objects
 		obj_is_locked: function(obj) { stub("obj_is_locked", arguments); return 0 },
@@ -281,6 +300,8 @@ var scriptingEngine = (function() {
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
 		override_map_start: function(x, y, elevation, rotation) { stub("override_map_start", arguments) },
+		obj_pid: function(obj) { stub("obj_pid", arguments) },
+		obj_on_screen: function(obj) { stub("obj_on_screen", arguments); return 0 },
 
 		// tiles
 		tile_distance_objs: function(a, b) { stub("tile_distance_objs", arguments) },
@@ -289,9 +310,10 @@ var scriptingEngine = (function() {
 			if(!isGameObject(obj)) { warn("tile_num: not game object"); return }
 			return toTileNum(obj.position)
 		},
-		tile_contains_pid_obj: function(tile, elevation, pid) { stub("tile_contains_pid_obj", arguments, "tiles") },
+		tile_contains_pid_obj: function(tile, elevation, pid) { stub("tile_contains_pid_obj", arguments, "tiles") ;},
 		tile_num_in_direction: function(tile, direction) { return toTileNum(hexInDirection(fromTileNum(tile), direction)) },
 		tile_in_tile_rect: function(_, _, _, _, t) { stub("tile_in_tile_rect", arguments, "tiles"); return 0 },
+		tile_contains_obj_pid: function(tile, elevation, pid) { stub("tile_contains_obj_pid", arguments); return 0 },
 
 		// dialogue
 		node999: function() { // exit dialogue
