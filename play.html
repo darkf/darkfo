@@ -751,6 +751,8 @@ function drawObject(obj) {
 	if(obj.frame !== undefined)
 		frameIdx += obj.frame
 
+	if(!(obj.orientation in info.frameOffsets))
+		obj.orientation = 0 // ...
 	var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
 	var dirOffset = info.directionOffsets[obj.orientation]
 	var offsetX = Math.floor(frameInfo.w / 2) - dirOffset.x - frameInfo.ox
