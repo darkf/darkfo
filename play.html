@@ -59,6 +59,9 @@ var lastGameTick = 0 // real time of the last game tick
 var combat = null // combat object
 var inCombat = false // are we currently in combat?
 
+var isLoading = true
+var loadingImagesLeft = 0
+
 var proFiles = {}
 var lstFiles = {}
 var messageFiles = {}
@@ -441,9 +444,16 @@ function initCritters(objects) {
 	}
 }
 
-heart.preload = function() {
-	function load(file) {
-		heart.graphics.newImage(file+".png", function(r) { images[file] = r; })
+heart.load = function() {
+	heart.attach("cnv")
+
+	function load(file, callback) {
+		loadingImagesLeft++
+		heart.graphics.newImage(file+".png", function(r) {
+			images[file] = r
+			loadingImagesLeft--
+			if(callback) callback(r)
+		})
 	}
 
 	$.ajaxSetup({async: false})
@@ -454,9 +464,7 @@ heart.preload = function() {
 		console.log("loading " + images.length + " images")
 	}, "json")
 
-	$.get("art/imageMap.json", function(offsets) {
-		imageInfo = offsets
-	}, "json")
+	$.get("art/imageMap.json", function(offsets) { imageInfo = offsets }, "json")
 
 	// load some testing art
 	load("art/critters/navgulij")
@@ -471,11 +479,8 @@ heart.preload = function() {
 	load("art/critters/hanpwrib")
 	load("art/critters/hanpwrij")
 
-	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r })
-}
+	load("hex_outline", function(r) { hexOverlay = r })
 
-heart.load = function() {
-	heart.attach("cnv");
 	$.get("maps/"+MAP_NAME+".json", function(map) {
 		gMap = map
 
@@ -493,6 +498,7 @@ heart.load = function() {
 		// todo: is map_enter_p_proc called on elevation change?
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 	}, "json")
+
 
 	if(doCombat === true && DEBUG === true) {
 		// for testing
@@ -689,6 +695,10 @@ function longestSequenceWithoutTurning(start, path, index) {
 }
 
 heart.update = function() {
+	if(isLoading === true) {
+		if(loadingImagesLeft === 0) isLoading = false
+		else return
+	}
 	var time = heart.timer.getTime()
 
 	if(time - lastGameTick >= 1000/10) { // 10 Hz game tick
@@ -776,6 +786,7 @@ function drawObject(obj) {
 }
 
 heart.draw = function() {
+	if(isLoading === true) return
 	heart.graphics.setColor(255, 255, 255)
 
 	var mousePos = heart.mouse.getPosition()
