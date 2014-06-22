@@ -17,6 +17,8 @@ var scriptingEngine = (function() {
 		88: 0, // GVAR_VAULT_RAIDERS
 		83: 2, // GVAR_VAULT_PLANT_STATUS (9 = PLANT_REPAIRED, 2 = PLANT_ACCEPTED_QUEST)
 		616: 0, // GVAR_GECKO_FIND_WOODY (0 = WOODY_UNKNOWN)
+		345: 16, // GVAR_NEW_RENO_FLAG_2 (16 = know_mordino_bit)
+		357: 2, // GVAR_NEW_RENO_LIL_JESUS_REFERS (lil_jesus_refers_yes)
 	}
 	var scriptIDs = {
 		800: "Raiders2",
@@ -37,6 +39,9 @@ var scriptingEngine = (function() {
 		451: "NCJULES",
 		337: "NCPROSTI",
 		452: "NCKITTY",
+		329: "NCPIMP",
+		456: "NCBIGJES",
+		430: "NCLILJES",
 	}
 	var mapIDs = {
 		"GECKSETL": 31
@@ -58,6 +63,11 @@ var scriptingEngine = (function() {
 		lvars: true,
 		tiles: true,
 		inventory: true,
+	}
+
+	var statMap = {
+		0: "STR", 1: "PER", 2: "END", 3: "CHR", 4: "INT",
+		5: "AGI", 6: "LUK"
 	}
 
 	function stub(name, args) {
@@ -206,7 +216,15 @@ var scriptingEngine = (function() {
 		give_exp_points: function(xp) { stub("give_exp_points", arguments) },
 
 		// critters
-		get_critter_stat: function(obj, stat) { stub("get_critter_stat", arguments); return 5 },
+		get_critter_stat: function(obj, stat) {
+			if(stat === 34) // STAT_gender
+				return obj.gender === "female" ? 1 : 0
+			var namedStat = statMap[stat]
+			if(namedStat !== undefined)
+				return critterGetStat(obj, namedStat)
+			stub("get_critter_stat", arguments)
+			return 5
+		},
 		has_trait: function(traitType, obj, trait) { stub("has_trait", arguments); return 0 },
 		critter_add_trait: function(obj, traitType, trait, amount) { stub("critter_add_trait", arguments) },
 		item_caps_total: function(obj) {
@@ -296,6 +314,7 @@ var scriptingEngine = (function() {
 			//stub("create_object_sid", arguments)
 			return obj
 		},
+		obj_name: function(obj) { return obj.name },
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
@@ -543,7 +562,6 @@ var scriptingEngine = (function() {
 			timeEventList.push({ticks: ticks, fn: function() {
 				timedEvent(obj._script, userdata)
 			}.bind(this)})
-			stub("add_timer_event", arguments)
 		},
 		game_ticks: function(seconds) { return seconds*10 },
 

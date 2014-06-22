@@ -213,3 +213,10 @@ function critterUpdateAnimation(obj) {
 		}
 	}
 }
+
+function critterGetStat(obj, stat) {
+	console.log("STAT: " + stat + " IS: " + obj.stats[stat])
+	if(obj.stats[stat] !== undefined)
+		return obj.stats[stat]
+	return null
+}
