@@ -67,7 +67,7 @@ function critterGetAnim(obj, anim) {
 
 	// try weapon animation first
 	var hand = obj.leftHand || obj.rightHand || null
-	if(hand) {
+	if(hand && doUseWeaponModel) {
 		var wepAnim = hand.getAnim(anim)
 		if(wepAnim !== false)
 			return base + wepAnim
