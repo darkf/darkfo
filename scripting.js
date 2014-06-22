@@ -210,7 +210,20 @@ var scriptingEngine = (function() {
 
 			if(id === 22) return 0 // is_game_loading
 		},
-		metarule3: function(_, obj, _, _) { stub("metarule3", arguments) },
+		metarule3: function(id, obj, userdata, radius) {
+			if(id === 100) { // METARULE3_CLR_FIXED_TIMED_EVENTS
+				for(var i = 0; i < timeEventList.length; i++) {
+					if(timeEventList[i].obj === obj && 
+					   timeEventList[i].userdata === userdata) { // todo: game object equals
+					   	info("removing timed event (userdata " + userdata + ")", "timer")
+					   	timeEventList.splice(i, 1)
+					    return
+					}
+				}
+			}
+
+			stub("metarule3", arguments)
+		},
 
 		// player
 		give_exp_points: function(xp) { stub("give_exp_points", arguments) },
@@ -225,7 +238,13 @@ var scriptingEngine = (function() {
 			stub("get_critter_stat", arguments)
 			return 5
 		},
-		has_trait: function(traitType, obj, trait) { stub("has_trait", arguments); return 0 },
+		has_trait: function(traitType, obj, trait) {
+			if(trait === 666) // OBJECT_VISIBILITY
+				return 1 // visible
+
+			stub("has_trait", arguments)
+			return 0
+		},
 		critter_add_trait: function(obj, traitType, trait, amount) { stub("critter_add_trait", arguments) },
 		item_caps_total: function(obj) {
 			if(!isGameObject(obj)) throw "item_caps_total: not game object"
@@ -303,18 +322,26 @@ var scriptingEngine = (function() {
 			info("create_object_sid: " + pid + " / " + sid)
 
 			// TODO: Does this work on anything _but_ items?
-			var obj = createObjectWithPID(0 /* type item */, pid)
+			var obj = createObjectWithPID(0 /* type item */, pid, sid)
 			if(obj === null)
 				warn("create_object_sid: couldn't create object")
 			//info("OBJ: " + repr(obj))
-
-			if(obj.pro.extra.scriptID != sid)
-				throw "create_object_sid: need to change script ID (" + obj.pro.extra.scriptID +
-					" to " + sid + ")"
 			//stub("create_object_sid", arguments)
 			return obj
 		},
 		obj_name: function(obj) { return obj.name },
+		obj_item_subtype: function(obj) {
+			if(!isGameObject(obj)) {
+				warn("obj_item_subtype: not game object: " + obj)
+				return null
+			}
+
+			if(obj.type === "item" && obj.pro !== undefined)
+				return obj.pro.extra.subtype
+			stub("obj_item_subtype", arguments)
+			return null
+		},
+		anim_busy: function(obj) { stub("anim_busy", arguments); return 0 },
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
@@ -559,11 +586,18 @@ var scriptingEngine = (function() {
 		add_timer_event: function(obj, ticks, userdata) {
 			info("timer event added in " + ticks + " ticks (userdata " + userdata + ")", "timer")
 			// trigger timedEvent in `ticks` game ticks
-			timeEventList.push({ticks: ticks, fn: function() {
+			timeEventList.push({ticks: ticks, obj: obj, userdata: userdata, fn: function() {
 				timedEvent(obj._script, userdata)
 			}.bind(this)})
 		},
 		game_ticks: function(seconds) { return seconds*10 },
+		game_time_advance: function(ticks) {
+			info("advancing time " + ticks + " ticks " + "(" + ticks/10 + " seconds)")
+			gameTickTime += ticks
+		},
+
+		// game
+		load_map: function(map, startLocation) { stub("load_map", arguments) },
 
 		// party
 		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 }

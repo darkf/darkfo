@@ -212,7 +212,7 @@ function makePID(type, pid) {
 	return (type << 24) | pid
 }
 
-function createObjectWithPID(objType, pid) {
+function createObjectWithPID(objType, pid, sid) {
 	var pidID = makePID(objType, pid)
 	var pro = loadPRO(pidID, pid)
 	var obj = {type: getPROTypeName(objType), pro: pro, pid: pidID, pidID: pid, amount: 1}
@@ -229,6 +229,10 @@ function createObjectWithPID(objType, pid) {
 	}
 
 	obj.art = "art/items/RESERVED" // todo: get art from pro
+
+	if(obj.pro !== undefined && sid !== undefined && obj.pro.extra.scriptID != sid)
+		console.log("!!! createObjectWithPID: need to change script ID (" + obj.pro.extra.scriptID +
+			" to " + sid + ")")
 
 	return obj
 }
