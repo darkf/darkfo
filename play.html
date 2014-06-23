@@ -192,7 +192,9 @@ function getPROType(pid) {
 
 function loadPRO(pid, pidID) {
 	if(proFiles[pid] !== undefined)
-		return proFiles[pid]
+		return proFiles[pid] // todo: clone?
+
+	// todo: use the proto/ .lst files to look up proto
 
 	var r = null
 	$.get('proto/' + getPROType(pid) + '/' + pad(pidID, 8) + '.pro.json', function(pro) {
@@ -319,6 +321,13 @@ function useObject(obj) {
 	}	
 }
 
+function objectBlocks(obj) {
+	if(!obj.pro) return true
+	if(obj.open !== undefined) return !obj.open
+
+	return !(obj.pro.flags & 0x00000010 /* NoBlock */)
+}
+
 // Draws a line between a and b, returning the first object hit
 function hexLinecast(a, b) {
 	var line = hexLine(a, b)
@@ -405,7 +414,9 @@ function initObjects(objects) {
 				obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
 		}
 		else if(obj.type === "scenery") {
-			obj.pro = loadPRO(obj.pid, obj.pidID)
+			var proto = getLstId("proto/scenery/scenery", obj.pidID - 1)
+			obj.pro = null
+			$.get('proto/scenery/' + proto + '.json', function(pro) { obj.pro = pro }, 'json')
 			if(obj.pro === null) continue
 			var subtypeMap = {0: "door", 1: "stairs", 2: "elevator", 3: "ladder",
 							  4: "ladder", 5: "generic"}
@@ -522,7 +533,7 @@ function loadMap(mapName) {
 
 	// load some testing art
 	load("art/critters/hmjmpsat")
-	
+
 	load("art/critters/navgulij")
 	load("art/critters/navgulia")
 	load("art/critters/navgulab")
@@ -724,8 +735,9 @@ function recalcPath(start, goal) {
 		matrix[y] = new Array(HEX_GRID_SIZE)
 
 	for(var i = 0; i < gObjects.length; i++) {
+		// if there are multiple, any blocking one will block
 		var obj = gObjects[i]
-		matrix[obj.position.y][obj.position.x] = 1
+		matrix[obj.position.y][obj.position.x] |= objectBlocks(obj)
 	}
 
 	var grid = new PF.Grid(HEX_GRID_SIZE, HEX_GRID_SIZE, matrix)
