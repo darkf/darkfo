@@ -30,9 +30,9 @@ var currentElevation = 0 // current map elevation
 var hexOverlay = null
 //var cursor = {x: 10, y: 10}
 
-// position of viewport camera
-var cameraX = 3970
-var cameraY = 1425
+// position of viewport camera (will be overriden by map starts or scripts)
+var cameraX = 3580
+var cameraY = 1020
 
 // geometry constants
 var TILE_WIDTH = 80
@@ -59,9 +59,9 @@ var lastGameTick = 0 // real time of the last game tick
 var combat = null // combat object
 var inCombat = false // are we currently in combat?
 
-var isLoading = true
-var loadingImagesLoaded = 0
-var loadingImagesTotal = 0
+var isLoading = true // are we currently loading a map?
+var loadingImagesLoaded = 0 // how many images we've loaded
+var loadingImagesTotal = 0 // out of this total
 
 var proFiles = {}
 var lstFiles = {}
@@ -572,6 +572,18 @@ function drawInventory($el, obj, clickCallback) {
 			})(obj.inventory[i])
 		$el.append(img).append("x" + obj.inventory[i].amount)
 	}
+}
+
+heart.mousepressed = function(x, y, btn) {
+	if(isLoading === true) return
+	if(btn !== "l") return
+
+	var mousePos = heart.mouse.getPosition()
+	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
+
+	// todo: object highlights/usage
+	
+	critterWalkTo(player, mouseHex)
 }
 
 heart.keydown = function(k) {
