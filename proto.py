@@ -31,6 +31,39 @@ SUBTYPE_AMMO = 4
 SUBTYPE_MISC = 5
 SUBTYPE_KEY = 6
 
+SCENERY_DOOR = 0
+SCENERY_STAIRS = 1
+SCENERY_ELEVATOR = 2
+SCENERY_LADDER_BOTTOM = 3
+SCENERY_LADDER_TOP = 4
+SCENERY_GENERIC = 5
+
+def readScenery(f):
+	obj = {}
+
+	obj["wallLightTypeFlags"] = read16(f)
+	obj["actionFlags"] = read16(f)
+	obj["scriptPID"] = read32(f)
+	obj["subType"] = read32(f)
+	obj["materialID"] = read32(f)
+	obj["soundID"] = ord(f.read(1))
+
+	if obj["subType"] == SCENERY_DOOR:
+		obj["walkthroughFlag"] = read32(f)
+		# 4-byte unknown
+	elif obj["subType"] == SCENERY_STAIRS:
+		obj["destination"] = read32(f)
+		obj["destinationMap"] = read32(f)
+	elif obj["subType"] == SCENERY_ELEVATOR:
+		obj["elevatorType"] = read32(f)
+		obj["elevatorLevel"] = read32(f)
+	elif obj["subType"] == SCENERY_LADDER_BOTTOM or obj["subType"] == SCENERY_LADDER_TOP:
+		obj["destination"] = read32(f)
+	elif obj["subType"] == SCENERY_GENERIC:
+		pass # only 4-byte unknown
+
+	return obj
+
 def readDrugEffect(f):
 	obj = {}
 	
@@ -208,6 +241,8 @@ def readPRO(f):
 		obj["extra"] = readItem(f)
 	elif objType == TYPE_CRITTER:
 		obj["extra"] = readCritter(f)
+	elif objType == TYPE_SCENERY:
+		obj["extra"] = readScenery(f)
 	else:
 		print "unhandled type", objType
 
