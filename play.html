@@ -39,6 +39,7 @@ var TILE_WIDTH = 80
 var TILE_HEIGHT = 36
 var HEX_GRID_SIZE = 200 // hex grid is 200x200
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
+var SCROLL_PADDING = 20 // how far the mouse has to be from an edge to scroll
 
 var showHexOverlay = false // show hex grid?
 var showCoordinates = false // show coordinates on hex grid?
@@ -58,6 +59,7 @@ var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0 // real time of the last game tick
 var combat = null // combat object
 var inCombat = false // are we currently in combat?
+var gameHasFocus = false // do we have input focus?
 
 var isLoading = true // are we currently loading a map?
 var loadingImagesLoaded = 0 // how many images we've loaded
@@ -550,6 +552,9 @@ heart.load = function() {
 
 	loadMap(MAP_NAME) // load initial map
 
+	$("#cnv").mouseenter(function() { gameHasFocus = true }).
+	          mouseleave(function() { gameHasFocus = false })
+
 	drawInventory($("#playerInventory"), player)
 }
 
@@ -585,7 +590,7 @@ heart.mousepressed = function(x, y, btn) {
 
 	// todo: object highlights/usage
 	
-	critterWalkTo(player, mouseHex)
+	critterWalkTo(player, mouseHex, true)
 }
 
 heart.keydown = function(k) {
@@ -618,7 +623,7 @@ heart.keydown = function(k) {
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
 				var hasScripts = (gObjects[i].script !== undefined ? ("yes (" + gObjects[i].script + ")") : "no") + " " + (gObjects[i]._script === undefined ? "and is NOT loaded" : "and is loaded")
-				console.log("object is at index " + i + ", has scripts? " + hasScripts)
+				console.log("object is at index " + i + ", of type " + gObjects[i].type + ", has art " + gObjects[i].art + ", and has scripts? " + hasScripts)
 			}
 		}
 	}
@@ -747,6 +752,15 @@ heart.update = function() {
 		else return
 	}
 	var time = heart.timer.getTime()
+
+	if(gameHasFocus) {
+		var mousePos = heart.mouse.getPosition()
+		if(mousePos[0] <= SCROLL_PADDING) cameraX -= 15
+		if(mousePos[0] >= SCREEN_WIDTH-SCROLL_PADDING) cameraX += 15
+
+		if(mousePos[1] <= SCROLL_PADDING) cameraY -= 15
+		if(mousePos[1] >= SCREEN_HEIGHT-SCROLL_PADDING) cameraY += 15
+	}
 
 	if(time - lastGameTick >= 1000/10) { // 10 Hz game tick
 		lastGameTick = time
