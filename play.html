@@ -370,9 +370,9 @@ function loadObjectScripts(objects) {
 
 function changeElevation(level, updateScripts) {
 	currentElevation = level
-	floorMap = gMap[level]["tiles"]["floor"]
-	roofMap  = gMap[level]["tiles"]["roof"]
-	gObjects = gMap[level]["objects"]
+	floorMap = gMap.levels[level]["tiles"]["floor"]
+	roofMap  = gMap.levels[level]["tiles"]["roof"]
+	gObjects = gMap.levels[level]["objects"]
 
 	if(updateScripts !== false) {
 		loadObjectScripts(gObjects)
@@ -445,6 +445,12 @@ function initCritters(objects) {
 	}
 }
 
+function centerCamera(around) {
+	var scr = hexToScreen(around.x, around.y)
+	cameraX = Math.max(0, scr.x - SCREEN_WIDTH/2)
+	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2)
+}
+
 function loadMap(mapName) {
 	function load(file, callback) {
 		if(images[file] !== undefined) return // don't load more than once
@@ -483,6 +489,10 @@ function loadMap(mapName) {
 		if(doLoadScripts === true) {
 			scriptingEngine.init(player, mapName)
 			gMapScript = scriptingEngine.loadScript(mapName)
+
+			// warp to the default position (may be overridden by map script)
+			player.position = gMap.startPosition
+			player.orientation = gMap.startOrientation
 
 			changeElevation(0, false)
 			loadObjectScripts(gObjects)
@@ -528,6 +538,8 @@ function loadMap(mapName) {
 			initObjects(gMap[level]["objects"])
 		initCritters(gMap[level]["objects"])
 	}
+
+	centerCamera(player.position)
 }
 
 heart.load = function() {

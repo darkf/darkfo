@@ -400,6 +400,9 @@ fomap = Struct("map",
 	))
 )
 
+def tileNumToPos(t):
+	return {"x": t % 200, "y": t / 200}
+
 def main():
 	if len(sys.argv) != 2:
 		print "USAGE: %s MAP" % sys.argv[0]
@@ -424,7 +427,12 @@ def main():
 
 		#print map_.object[0]
 
-		elevm = [] # each elevation
+		theMap = {
+			"levels": [], # info for each elevation
+			"startPosition": tileNumToPos(map_.playerPos),
+			"startElevation": map_.elevation,
+			"startOrientation": map_.playerOrientation
+		}
 		lst = loadLst("art/tiles/tiles.lst")
 		#scriptLst = loadLst("scripts/scripts.lst")
 		tileCounter = Counter()
@@ -460,13 +468,11 @@ def main():
 						object_ = object_._obj
 						object_.amount = amount
 
-					x = object_.position % 200
-					y = object_.position / 200
 					obj = {"type": object_.extra.type,
 						   "pid": object_.protoPID,
 						   "pidID": (object_.protoPID & 0xffff),
 						   "frmPID": object_.frmPID,
-						   "position": {"x": x, "y": y},
+						   "position": tileNumToPos(object_.position),
 						   "orientation": object_.orientation}
 					#if hasattr(object_.extra, "subtype"):
 					#	obj["subtype"] = object_.extra.subtype
@@ -499,9 +505,9 @@ def main():
 				for i,object_ in enumerate(map_.objects[elevation].object):
 					m["objects"].append(getObject(object_))
 
-			elevm.append(m)
+			theMap["levels"].append(m)
 
-		json.dump(elevm, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".json"), "w"))
+		json.dump(theMap, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".json"), "w"))
 
 		# player (Vault 13 Jumpsuit)
 		objectCounter["art/critters/hmjmpsaa"] += 1
