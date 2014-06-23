@@ -283,7 +283,7 @@ SceneryInfo = Struct("",
 	Value("subtype", lambda ctx: getProSubType("proto/scenery/" + getProFile(sceneryProtoLst, (ctx._.protoPID & 0xffff) - 1))),
 	Switch("extra", lambda ctx: ctx.subtype, {
 		scenerytype_portal: Struct("",
-			Value("subtype", lambda _: "portal"),
+			Value("subtype", lambda _: "door"),
 			Padding(4)
 		),
 		scenerytype_elevator: Struct("",
@@ -292,7 +292,8 @@ SceneryInfo = Struct("",
 		),
 		scenerytype_stairs: Struct("",
 			Value("subtype", lambda _: "stairs"),
-			Padding(4*2)
+			SBInt32("destination"),
+			SBInt32("destinationMap"),
 		),
 		scenerytype_ladderup: Ladder,
 		scenerytype_ladderdown: Ladder,
@@ -477,6 +478,8 @@ def main():
 					#if hasattr(object_.extra, "subtype"):
 					#	obj["subtype"] = object_.extra.subtype
 
+					if hasattr(object_.extra, "extra"):
+						obj["extra"] = object_.extra.extra
 					if hasattr(object_.extra, "info"):
 						obj["subtype"] = object_.extra.info.subtype
 					if hasattr(object_.extra, "artPath"):
