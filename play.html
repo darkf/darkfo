@@ -444,9 +444,8 @@ function initCritters(objects) {
 	}
 }
 
-heart.load = function() {
-	heart.attach("cnv")
 
+function loadMap(mapName) {
 	function load(file, callback) {
 		loadingImagesLeft++
 		heart.graphics.newImage(file+".png", function(r) {
@@ -456,7 +455,13 @@ heart.load = function() {
 		})
 	}
 
-	$.ajaxSetup({async: false})
+	isLoading = true
+	loadingImagesLeft = 0
+
+	// clear any previous objects/events
+	gMap = null
+	gObjects = null
+	scriptingEngine.reset()
 
 	$.get("maps/" + MAP_NAME + ".images.json", function(images) {
 		for(var i = 0; i < images.length; i++)
@@ -465,21 +470,6 @@ heart.load = function() {
 	}, "json")
 
 	$.get("art/imageMap.json", function(offsets) { imageInfo = offsets }, "json")
-
-	// load some testing art
-	load("art/critters/navgulij")
-	load("art/critters/navgulia")
-	load("art/critters/navgulab")
-	load("art/critters/naghulab")
-
-	load("art/critters/hanpwraa")
-	load("art/critters/hanpwrab")
-	load("art/critters/hanpwraq")
-	load("art/critters/hanpwria")
-	load("art/critters/hanpwrib")
-	load("art/critters/hanpwrij")
-
-	load("hex_outline", function(r) { hexOverlay = r })
 
 	$.get("maps/"+MAP_NAME+".json", function(map) {
 		gMap = map
@@ -499,6 +489,23 @@ heart.load = function() {
 		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 	}, "json")
 
+	// load some testing art
+	load("art/critters/navgulij")
+	load("art/critters/navgulia")
+	load("art/critters/navgulab")
+	load("art/critters/naghulab")
+
+	load("art/critters/naghulja")
+	load("art/critters/naghuljb")
+
+	load("art/critters/hanpwraa")
+	load("art/critters/hanpwrab")
+	load("art/critters/hanpwraq")
+	load("art/critters/hanpwria")
+	load("art/critters/hanpwrib")
+	load("art/critters/hanpwrij")
+
+	load("hex_outline", function(r) { hexOverlay = r })
 
 	if(doCombat === true && DEBUG === true) {
 		// for testing
@@ -515,6 +522,13 @@ heart.load = function() {
 			initObjects(gMap[level]["objects"])
 		initCritters(gMap[level]["objects"])
 	}
+}
+
+heart.load = function() {
+	heart.attach("cnv")
+	$.ajaxSetup({async: false})
+
+	loadMap(MAP_NAME) // load initial map
 
 	drawInventory($("#playerInventory"), player)
 }

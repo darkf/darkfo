@@ -733,9 +733,13 @@ var scriptingEngine = (function() {
 		}
 	}
 
-	function init(dude, mapName) {
-		//console.log("hi")
-		seed(123)
+	function reset(dude, mapName) {
+		timeEventList.length = 0 // clear timed events
+		dialogueOptionProcs.length = 0
+		gameObjects = null
+		currentMapObject = null
+		currentMapID = -1
+
 		dudeObject = dude
 		ScriptProto.dude_obj = dudeObject
 
@@ -743,12 +747,14 @@ var scriptingEngine = (function() {
 			warn("No map ID for map " + mapName)
 		else
 			currentMapID = mapIDs[mapName]
-		/*$.ajaxSetup({error: function(_, status, err) {
-			console.log("AJAX error: status: " + status + ", err: " + err)
-		}})*/
+	}
+
+	function init(dude, mapName) {
+		seed(123)
+		reset(dude, mapName)
 	}
 
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
-		    timeEventList: timeEventList, info: info}
+		    timeEventList: timeEventList, info: info, reset: reset}
 })()
