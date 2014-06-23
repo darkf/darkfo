@@ -43,8 +43,9 @@ var scriptingEngine = (function() {
 		456: "NCBIGJES",
 		430: "NCLILJES",
 	}
-	var mapIDs = {
-		"GECKSETL": 31
+	var mapIDs = { // map ID <-> map name
+		"GECKSETL": 31, 31: "GECKSETL",
+		"NewRSt": 60, 60: "NewRSt"
 	}
 	var currentMapID = null
 	var currentMapObject = null
@@ -597,7 +598,20 @@ var scriptingEngine = (function() {
 		},
 
 		// game
-		load_map: function(map, startLocation) { stub("load_map", arguments) },
+		load_map: function(map, startLocation) {
+			stub("load_map", arguments)
+			info("load_map: " + map)
+			if(typeof map === "string")
+				loadMap(map)
+			else {
+				if(mapIDs[map] === undefined) {
+					warn("load_map: no map name for map id " + map)
+					return
+				}
+
+				loadMap(mapIDs[map])
+			}			
+		},
 
 		// party
 		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 }

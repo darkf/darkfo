@@ -445,7 +445,6 @@ function initCritters(objects) {
 	}
 }
 
-
 function loadMap(mapName) {
 	function load(file, callback) {
 		if(images[file] !== undefined) return // don't load more than once
@@ -466,6 +465,8 @@ function loadMap(mapName) {
 	gObjects = null
 	gMapScript = null
 	scriptingEngine.reset()
+
+	console.log("loading map " + mapName)
 
 	$.get("maps/" + mapName + ".images.json", function(images) {
 		for(var i = 0; i < images.length; i++)

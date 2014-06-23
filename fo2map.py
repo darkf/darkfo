@@ -174,10 +174,10 @@ def getCritterArtPath(frmPID):
 	elif (id2 == 0x25):
 		path += "cj"
 	elif (id2 >= 0x30):
-		raise Exception("0x30")
 		#tmpBuf[0] = 'r';
 		#tmpBuf[1] = char(id2) + 0x31;
 		#path.append(tmpBuf);
+		path += 'r' + chr(id2 + 0x31)
 	elif (id2 >= 0x14):
 		raise Exception("0x14")
 		#tmpBuf[0] = 'b';
@@ -205,13 +205,13 @@ def getCritterArtPath(frmPID):
 		#raise Exception("other")
 		if (id2 <= 1 and id1 > 0):
 			print "ID1:", id1
-			path += chr(id1 + ord('c')).upper()
+			path += chr(id1 + ord('c'))
 			#tmpBuf[0] = char(id1) + 'c';
 		else:
 			#tmpBuf[0] = 'a';
 			path += 'A'
 		#tmpBuf[1] = char(id2) + 'a';
-		path += chr(id2 + ord('a')).upper()
+		path += chr(id2 + ord('a'))
 		#path.append(tmpBuf);
 
 	path += ".fr"
