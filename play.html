@@ -23,7 +23,7 @@ var gMapScript = null
 var floorMap = null
 var roofMap = null
 var images = {}
-var imageInfo = {}
+var imageInfo = null
 var gObjects = []
 var gMap = null
 var currentElevation = 0 // current map elevation
@@ -448,6 +448,7 @@ function initCritters(objects) {
 
 function loadMap(mapName) {
 	function load(file, callback) {
+		if(images[file] !== undefined) return // don't load more than once
 		loadingImagesTotal++
 		heart.graphics.newImage(file+".png", function(r) {
 			images[file] = r
@@ -463,22 +464,24 @@ function loadMap(mapName) {
 	// clear any previous objects/events
 	gMap = null
 	gObjects = null
+	gMapScript = null
 	scriptingEngine.reset()
 
-	$.get("maps/" + MAP_NAME + ".images.json", function(images) {
+	$.get("maps/" + mapName + ".images.json", function(images) {
 		for(var i = 0; i < images.length; i++)
 			load(images[i])
 		console.log("loading " + images.length + " images")
 	}, "json")
 
-	$.get("art/imageMap.json", function(offsets) { imageInfo = offsets }, "json")
+	if(imageInfo === null)
+		$.get("art/imageMap.json", function(offsets) { imageInfo = offsets }, "json")
 
-	$.get("maps/"+MAP_NAME+".json", function(map) {
+	$.get("maps/"+mapName+".json", function(map) {
 		gMap = map
 
 		if(doLoadScripts === true) {
-			scriptingEngine.init(player, MAP_NAME)
-			gMapScript = scriptingEngine.loadScript(MAP_NAME)
+			scriptingEngine.init(player, mapName)
+			gMapScript = scriptingEngine.loadScript(mapName)
 
 			changeElevation(0, false)
 			loadObjectScripts(gObjects)
@@ -559,6 +562,7 @@ function drawInventory($el, obj, clickCallback) {
 }
 
 heart.keydown = function(k) {
+	if(isLoading === true) return
 	var mousePos = heart.mouse.getPosition()
 	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
