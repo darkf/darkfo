@@ -60,7 +60,8 @@ var combat = null // combat object
 var inCombat = false // are we currently in combat?
 
 var isLoading = true
-var loadingImagesLeft = 0
+var loadingImagesLoaded = 0
+var loadingImagesTotal = 0
 
 var proFiles = {}
 var lstFiles = {}
@@ -447,16 +448,17 @@ function initCritters(objects) {
 
 function loadMap(mapName) {
 	function load(file, callback) {
-		loadingImagesLeft++
+		loadingImagesTotal++
 		heart.graphics.newImage(file+".png", function(r) {
 			images[file] = r
-			loadingImagesLeft--
+			loadingImagesLoaded++
 			if(callback) callback(r)
 		})
 	}
 
 	isLoading = true
-	loadingImagesLeft = 0
+	loadingImagesTotal = 0
+	loadingImagesLoaded = 0
 
 	// clear any previous objects/events
 	gMap = null
@@ -710,7 +712,7 @@ function longestSequenceWithoutTurning(start, path, index) {
 
 heart.update = function() {
 	if(isLoading === true) {
-		if(loadingImagesLeft === 0) isLoading = false
+		if(loadingImagesLoaded === loadingImagesTotal) isLoading = false
 		else return
 	}
 	var time = heart.timer.getTime()
@@ -800,7 +802,17 @@ function drawObject(obj) {
 }
 
 heart.draw = function() {
-	if(isLoading === true) return
+	if(isLoading === true) {
+		heart.graphics.setColor(0, 0, 0)
+		var w = 256, h = 40
+		var w2 = (loadingImagesLoaded / loadingImagesTotal) * w
+		// draw a loading progress bar
+		heart.graphics.rectangle("stroke", SCREEN_WIDTH/2 - w/2, SCREEN_HEIGHT/2,
+				w, h)
+		heart.graphics.rectangle("fill", SCREEN_WIDTH/2 - w/2 + 2, SCREEN_HEIGHT/2 + 2,
+				w2 - 4, h - 4)
+		return
+	}
 	heart.graphics.setColor(255, 255, 255)
 
 	var mousePos = heart.mouse.getPosition()
