@@ -537,10 +537,10 @@ function loadMap(mapName) {
 		b.art = "art/critters/hanpwraa"
 	}
 
-	for(var level = 0; level < gMap.length; level++) {
+	for(var level = 0; level < gMap.levels.length; level++) {
 		if(doLoadItemInfo !== false)
-			initObjects(gMap[level]["objects"])
-		initCritters(gMap[level]["objects"])
+			initObjects(gMap.levels[level]["objects"])
+		initCritters(gMap.levels[level]["objects"])
 	}
 
 	centerCamera(player.position)
@@ -603,7 +603,7 @@ heart.keydown = function(k) {
 	if(k == 'left') cameraX -= 15
 	if(k == 'up') cameraY -= 15
 	if(k == 'q') { if(currentElevation-1 >= 0) changeElevation(currentElevation-1) }
-	if(k == 'e') { if(currentElevation+1 < gMap.length) changeElevation(currentElevation+1) }
+	if(k == 'e') { if(currentElevation+1 < gMap.levels.length) changeElevation(currentElevation+1) }
 	if(k == 'r') { showRoof = !showRoof }
 	if(k == 'f') { showFloor = !showFloor }
 	if(k == 'o') { showObjects = !showObjects }
