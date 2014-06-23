@@ -196,7 +196,7 @@ function critterUpdateAnimation(obj) {
 			obj.position = h
 			obj.path.distance -= 1
 		}
-		else if(obj.frame === tilePerFrame /* *2 */) { // full walk, 2+ tiles
+		else if(obj.frame === tilePerFrame * 2) { // full walk, 2+ tiles
 			obj.frame = 0
 			var h = hexInDirection(obj.position, obj.orientation)
 			var h2 = hexInDirection(h, obj.orientation)

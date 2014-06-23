@@ -319,6 +319,7 @@ var scriptingEngine = (function() {
 		obj_is_locked: function(obj) { stub("obj_is_locked", arguments); return 0 },
 		obj_lock: function(obj) { stub("obj_lock", arguments) },
 		obj_unlock: function(obj) { stub("obj_unlock", arguments) },
+		obj_is_open: function(obj) { stub("obj_is_open", arguments); return 0 },
 		create_object_sid: function(pid, tile, elevation, sid) { // Create object of pid and possibly script
 			info("create_object_sid: " + pid + " / " + sid)
 
