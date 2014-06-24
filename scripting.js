@@ -20,10 +20,6 @@ var scriptingEngine = (function() {
 		345: 16, // GVAR_NEW_RENO_FLAG_2 (16 = know_mordino_bit)
 		357: 2, // GVAR_NEW_RENO_LIL_JESUS_REFERS (lil_jesus_refers_yes)
 	}
-	var mapIDs = { // map ID <-> map name
-		"GECKSETL": 31, 31: "GECKSETL",
-		"NewRSt": 60, 60: "NewRSt"
-	}
 	var currentMapID = null
 	var currentMapObject = null
 	var scriptMessages = {}
@@ -593,14 +589,8 @@ var scriptingEngine = (function() {
 			info("load_map: " + map)
 			if(typeof map === "string")
 				loadMap(map)
-			else {
-				if(mapIDs[map] === undefined) {
-					warn("load_map: no map name for map id " + map)
-					return
-				}
-
-				loadMap(mapIDs[map])
-			}			
+			else
+				loadMapID(map)
 		},
 
 		// party
@@ -661,8 +651,6 @@ var scriptingEngine = (function() {
 			if(obj.hasOwnProperty("node999"))
 				delete obj.node999
 
-			obj.cur_map_index = currentMapID
-
 			if(currentMapObject !== null)
 				obj._mapScript = currentMapObject
 			else currentMapObject = obj // this is likely our map script loaded first
@@ -687,6 +675,7 @@ var scriptingEngine = (function() {
 			return
 
 		script.game_time = gameTickTime
+		script.cur_map_index = currentMapID
 		script.critter_p_proc()
 	}
 
@@ -707,6 +696,7 @@ var scriptingEngine = (function() {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
 				script.game_time = Math.max(1, gameTickTime)
+				script.cur_map_index = currentMapID
 				script.map_update_p_proc()
 				updated++
 			}
@@ -715,9 +705,10 @@ var scriptingEngine = (function() {
 		// info("updated " + updated + " objects")
 	}
 
-	function enterMap(mapScript, objects, elevation) {
+	function enterMap(mapScript, objects, elevation, mapID) {
 		gameObjects = objects
 		gameElevation = elevation
+		currentMapID = mapID
 
 		if(mapScript.map_enter_p_proc !== undefined) {
 			info("calling map enter")
@@ -731,6 +722,7 @@ var scriptingEngine = (function() {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
 				script.game_time = Math.max(1, gameTickTime)
+				script.cur_map_index = currentMapID
 				script.map_enter_p_proc()
 				updated++
 			}
@@ -742,20 +734,15 @@ var scriptingEngine = (function() {
 		dialogueOptionProcs.length = 0
 		gameObjects = null
 		currentMapObject = null
-		currentMapID = -1
+		currentMapID = null
 
 		dudeObject = dude
 		ScriptProto.dude_obj = dudeObject
-
-		if(mapIDs[mapName] === undefined)
-			warn("No map ID for map " + mapName)
-		else
-			currentMapID = mapIDs[mapName]
 	}
 
-	function init(dude, mapName) {
+	function init(dude, mapName, mapID) {
 		seed(123)
-		reset(dude, mapName)
+		reset(dude, mapName, mapID)
 	}
 
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,

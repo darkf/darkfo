@@ -511,7 +511,7 @@ function loadMap(mapName, startingPosition) {
 	gMap = null
 	gObjects = null
 	gMapScript = null
-	scriptingEngine.reset()
+	scriptingEngine.reset(player, mapName)
 
 	console.log("loading map " + mapName)
 
