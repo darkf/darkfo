@@ -276,6 +276,9 @@ var scriptingEngine = (function() {
 			info("add_mult_objs_to_inven: " + count + " counts of " + item.toString(), "inventory")
 			objectAddItem(obj, item, count)
 		},
+		rm_mult_objs_from_inven: function(obj, item, count) { // Remove count copies of item from obj's inventory
+			stub("rm_mult_objs_from_inven", arguments)
+		},
 		obj_carrying_pid_obj: function(obj, pid) { stub("obj_carrying_pid_obj", arguments); return 0 },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
@@ -328,6 +331,12 @@ var scriptingEngine = (function() {
 		override_map_start: function(x, y, elevation, rotation) { stub("override_map_start", arguments) },
 		obj_pid: function(obj) { stub("obj_pid", arguments) },
 		obj_on_screen: function(obj) { stub("obj_on_screen", arguments); return 0 },
+		obj_type: function(obj) {
+			if(!isGameObject(obj)) { warn("obj_type: not game object: " + obj); return }
+			if(obj.pid === undefined) { warn("obj_type: no PID"); return }
+			return (obj.pid >> 24) & 0xff
+		},
+		destroy_object: function(obj) { stub("destroy_object", arguments) }, // destroy object from world
 
 		// tiles
 		tile_distance_objs: function(a, b) { stub("tile_distance_objs", arguments) },
