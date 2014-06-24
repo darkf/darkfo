@@ -12,6 +12,7 @@
 <script src="scripting.js"></script>
 <script src="combat.js"></script>
 <script src="critter.js"></script>
+<script src="util.js"></script>
 <script src="pathfinding-browser.js"></script>
 <script>
 "use strict";
@@ -68,6 +69,7 @@ var loadingImagesTotal = 0 // out of this total
 var proFiles = {}
 var lstFiles = {}
 var messageFiles = {}
+var mapNames = null
 
 function cloneStats(stats) { return $.extend({}, stats) }
 function addStats(a, b) {
@@ -584,7 +586,22 @@ function loadMap(mapName, startingPosition) {
 }
 
 function lookupMapName(mapID) {
-	return null
+	if(mapNames !== null)
+		return mapNames[mapID] || null
+
+	// load mapNames from data/data/MAPS.TXT
+	mapNames = {}
+	$.get("data/data/MAPS.TXT", function(text) {
+		var ini = parseIni(text)
+		for(var category in ini) {
+			var id = category.match(/Map (\d+)/)[1]
+			if(id === null) throw "MAPS.TXT: invalid category: " + category
+			id = parseInt(id)
+			mapNames[id] = ini[category].map_name
+		}
+	}, "text")
+
+	return mapNames[mapID] || null
 }
 
 function loadMapID(mapID, startingPosition) {
