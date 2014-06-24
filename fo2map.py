@@ -8,7 +8,7 @@ from collections import Counter
 
 OUT_DIR = "maps"
 
-mapScriptPIDs = {}
+mapScriptPIDs = [{} for _ in range(5)]
 
 def pidType(pid):
 	return (pid >> 24) & 0xff
@@ -43,13 +43,14 @@ class ScriptsIgnore(Construct):
         				UBInt32("id")
         			))._parse(stream, context).id
         			#print "script_id:", script_id
-        			pid_ = pid & 0xffff
-        			if pid_ > 16:
-        				print "ignoring script pid:", hex(pid), "(", pid_, ")"
-        			else:
-        				scriptName = stripExt(getProFile(scriptLst, script_id).split()[0])
-	        			print "PID", (pid_), "is", script_id, "(", scriptName, ")"
-	        			mapScriptPIDs[pid_] = scriptName
+        			pidID = pid & 0xffff
+        			#if pid_ > 16:
+        			#	print "ignoring script pid:", hex(pid), "(", pid_, ")"
+        			#else:
+        			if script_id > 0 and script_id < len(scriptLst):
+	    				scriptName = stripExt(getProFile(scriptLst, script_id).split()[0])
+	    				print "Map script PID %d type %d is %d (%s)" % (pidID, scriptType, script_id, scriptName)
+	        			mapScriptPIDs[scriptType][pidID] = scriptName
 
         			move = 15
         			if pid_type == 1:
@@ -500,7 +501,11 @@ def main():
 					elif object_.scriptID == -1 and object_.mapPID != 0xFFFFFFFF:
 						# this is some funky stuff... let's try to use the script IDs we got from
 						# the weird script ignore step
-						scriptName = mapScriptPIDs[object_.mapPID & 0xffff]
+						scriptType = (object_.mapPID >> 24) & 0xff
+						scriptPID = object_.mapPID & 0xffff
+						print "using map script for %s (script PID %d)" % (object_.extra.artPath, scriptPID)
+						scriptName = mapScriptPIDs[scriptType][scriptPID]
+						print "(map script %d type %d = %s)" %  (scriptPID, scriptType, scriptName)
 						obj["script"] = scriptName
 						scriptCounter[scriptName] += 1
 
@@ -529,10 +534,10 @@ def main():
 			json.dump(images, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".images.json"), "w"))
 			open(os.path.join(OUT_DIR,stripExt(MAP_NAME)+".images.txt"), "w").writelines(x+"\n" for x in images)
 
-		for tile in tileCounter:
-			print "art/tiles/" + tile
-		for obj in objectCounter:
-			print obj
+		#for tile in tileCounter:
+		#	print "art/tiles/" + tile
+		#for obj in objectCounter:
+		#	print obj
 		for script in scriptCounter:
 			print script
 
