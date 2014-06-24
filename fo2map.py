@@ -273,7 +273,9 @@ CritterInfo = Struct("",
 
 Ladder = Struct("",
 	IfThenElse("foo", lambda ctx: ctx._._._._.version == 20,
-		Padding(2*4), # fallout 2
+		Struct("", # fallout 2
+			SBInt32("1"),
+			SBInt32("2")),
 		Padding(4) # fallout 1
 	)
 )
@@ -522,6 +524,8 @@ def main():
 					m["objects"].append(getObject(object_))
 
 			theMap["levels"].append(m)
+
+		open("fuck.txt", "w").write(repr(theMap))
 
 		json.dump(theMap, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".json"), "w"))
 
