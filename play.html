@@ -329,8 +329,8 @@ function useObject(obj) {
 
 			console.log("stairs: tile: " + destTile.x + ", " + destTile.y + ", elev: " + destElev)
 
-			changeElevation(destElev)
 			player.position = destTile
+			changeElevation(destElev)
 		}
 	}
 }
@@ -405,8 +405,11 @@ function changeElevation(level, updateScripts) {
 
 	if(updateScripts !== false) {
 		loadObjectScripts(gObjects)
+		scriptingEngine.enterMap(gMapScript, gObjects, currentElevation, gMap.mapID) // ?
 		scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 	}
+
+	centerCamera(player.position)
 }
 
 // Initialize various objects, such as items.
@@ -537,13 +540,13 @@ function loadMap(mapName, startingPosition) {
 
 			changeElevation(0, false)
 			loadObjectScripts(gObjects)
-			scriptingEngine.enterMap(gMapScript, gObjects, 0)
+			scriptingEngine.enterMap(gMapScript, gObjects, 0, gMap.mapID)
 			scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 		}
 		else changeElevation(0, false)
 
 		// todo: is map_enter_p_proc called on elevation change?
-		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
+		console.log("loaded (" + map.levels.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 	}, "json")
 
 	// load some testing art
@@ -581,8 +584,6 @@ function loadMap(mapName, startingPosition) {
 			initObjects(gMap.levels[level]["objects"])
 		initCritters(gMap.levels[level]["objects"])
 	}
-
-	centerCamera(player.position)
 }
 
 function lookupMapName(mapID) {
@@ -678,8 +679,8 @@ heart.keydown = function(k) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
 				console.log("object at index " + i)
 				if(gObjects[i]._script && gObjects[i]._script.talk_p_proc !== undefined) {
-					console.log("calling talk proc")
-					gObjects[i]._script.talk_p_proc()
+					console.log("talking to " + gObjects[i].name)
+					scriptingEngine.talk(gObjects[i]._script, gObjects[i])
 				}
 				break
 			}

@@ -295,6 +295,7 @@ var scriptingEngine = (function() {
 			stub("critter_inven_obj", arguments)
 			return undefined
 		},
+		critter_attempt_placement: function(obj, tile, elevation) { stub("critter_attempt_placement", arguments) },
 
 		// objects
 		obj_is_locked: function(obj) { stub("obj_is_locked", arguments); return 0 },
@@ -585,6 +586,7 @@ var scriptingEngine = (function() {
 
 		// timing
 		add_timer_event: function(obj, ticks, userdata) {
+			if(!isGameObject(obj)) { warn("add_timer_event: not game object: " + obj); return }
 			info("timer event added in " + ticks + " ticks (userdata " + userdata + ")", "timer")
 			// trigger timedEvent in `ticks` game ticks
 			timeEventList.push({ticks: ticks, obj: obj, userdata: userdata, fn: function() {
@@ -688,6 +690,13 @@ var scriptingEngine = (function() {
 		script.timed_event_p_proc()
 	}
 
+	function talk(script, obj) {
+		script.self_obj = obj
+		script.game_time = Math.max(1, gameTickTime)
+		script.cur_map_index = currentMapID
+		script.talk_p_proc()
+	}
+
 	function updateCritter(script) {
 		// critter heartbeat (critter_p_proc)
 		if(script.critter_p_proc === undefined)
@@ -766,5 +775,5 @@ var scriptingEngine = (function() {
 
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
-		    timeEventList: timeEventList, info: info, reset: reset}
+		    timeEventList: timeEventList, info: info, reset: reset, talk: talk}
 })()
