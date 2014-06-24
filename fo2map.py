@@ -313,7 +313,14 @@ ExtraObjectInfo = \
 			Value("type", lambda _: "misc"),
 			Value("artPath", lambda ctx: "art/misc/" + stripExt(getProFile(miscLst, ctx._.frmPID & 0xffff))),
 			If(lambda ctx: (ctx._.protoPID & 0xffff) != 1 and (ctx._.protoPID & 0xffff) != 12,
-				Padding(4*4))
+				#Padding(4*4))
+				# exit grids
+				Struct("extra",
+					SBInt32("exitMapID"),
+					SBInt32("startingPosition"),
+					SBInt32("startingElevation"),
+					UBInt32("startingOrientation")
+			))
 		),
 		objtype_scenery: SceneryInfo,
 
@@ -432,7 +439,8 @@ def main():
 			"levels": [], # info for each elevation
 			"startPosition": tileNumToPos(map_.playerPos),
 			"startElevation": map_.elevation,
-			"startOrientation": map_.playerOrientation
+			"startOrientation": map_.playerOrientation,
+			"mapID": map_.mapID
 		}
 		lst = loadLst("art/tiles/tiles.lst")
 		#scriptLst = loadLst("scripts/scripts.lst")

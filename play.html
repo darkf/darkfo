@@ -490,7 +490,7 @@ function centerCamera(around) {
 	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2)
 }
 
-function loadMap(mapName) {
+function loadMap(mapName, startingPosition) {
 	function load(file, callback) {
 		if(images[file] !== undefined) return // don't load more than once
 		loadingImagesTotal++
@@ -530,7 +530,7 @@ function loadMap(mapName) {
 			gMapScript = scriptingEngine.loadScript(mapName)
 
 			// warp to the default position (may be overridden by map script)
-			player.position = gMap.startPosition
+			player.position = startingPosition || gMap.startPosition
 			player.orientation = gMap.startOrientation
 
 			changeElevation(0, false)
@@ -581,6 +581,18 @@ function loadMap(mapName) {
 	}
 
 	centerCamera(player.position)
+}
+
+function lookupMapName(mapID) {
+	return null
+}
+
+function loadMapID(mapID, startingPosition) {
+	var mapName = lookupMapName(mapID)
+	if(mapName !== null)
+		loadMap(mapName, startingPosition)
+	else
+		console.log("couldn't lookup map name for map ID " + mapID)
 }
 
 heart.load = function() {

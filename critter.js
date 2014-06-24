@@ -175,6 +175,35 @@ function critterUpdateStaticAnimation(obj) {
 	}
 }
 
+// This checks if a critter (such as the player) entered an exit grid
+// It could also check if a trap is ran into
+
+function critterWalkCallback(obj) {
+	if(obj.isPlayer !== true) return
+	var objs = objectsAtPosition(obj.position)
+	for(var i = 0; i < objs.length; i++) {
+		if(objs[i].type === "misc" && objs[i].extra && objs[i].extra.exitMapID !== undefined) {
+			// walking on an exit grid
+			// todo: exit grids are likely multi-hex (maybe have a set?)
+			var exitMapID = objs[i].extra.exitMapID
+			var startingPosition = objs[i].extra.startingPosition
+			critterStopWalking(obj)
+
+			if(startingPosition === -1) { // world map
+				console.log("exit grid -> worldmap")
+			}
+			else { // another map
+				console.log("exit grid -> map " + exitMapID)
+				loadMapID(exitMapID, fromTileNum(startingPosition))
+			}
+
+			return true
+		}
+	}
+
+	return false
+}
+
 function critterUpdateAnimation(obj) {
 	if(obj.anim === undefined || obj.anim === "idle") return
 	if(animInfo[obj.anim].type === "static") return critterUpdateStaticAnimation(obj)
@@ -195,6 +224,7 @@ function critterUpdateAnimation(obj) {
 			var h = hexInDirection(obj.position, obj.orientation)
 			obj.position = h
 			obj.path.distance -= 1
+			if(critterWalkCallback(obj)) return
 		}
 		else if(obj.frame === tilePerFrame * 2) { // full walk, 2+ tiles
 			obj.frame = 0
@@ -202,6 +232,7 @@ function critterUpdateAnimation(obj) {
 			var h2 = hexInDirection(h, obj.orientation)
 			obj.position = h2
 			obj.path.distance -= 2
+			if(critterWalkCallback(obj)) return
 		}
 
 		if(obj.position.x === obj.path.target.x && obj.position.y === obj.path.target.y) {
