@@ -574,8 +574,15 @@ var scriptingEngine = (function() {
 		reg_anim_func: function(_, _) { stub("reg_anim_func", arguments) },
 		reg_anim_animate_forever: function(obj, anim) {
 			stub("reg_anim_animate_forever", arguments)
-			if(!isGameObject(obj)) return
+			if(!isGameObject(obj)) {
+				warn("reg_anim_animate_forever: not a game object")
+				return
+			}
 			//console.log("ANIM FOREVER: " + obj.art + " / " + anim)
+			if(anim !== 0)
+				warn("reg_anim_animate_forever: anim = " + anim)
+			function anim() { objectSingleAnim(obj, false, anim) }
+			anim()
 		},
 		animate_move_obj_to_tile: function(obj, tile, speed) {
 			stub("animate_move_obj_to_tile", arguments)
