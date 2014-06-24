@@ -20,29 +20,6 @@ var scriptingEngine = (function() {
 		345: 16, // GVAR_NEW_RENO_FLAG_2 (16 = know_mordino_bit)
 		357: 2, // GVAR_NEW_RENO_LIL_JESUS_REFERS (lil_jesus_refers_yes)
 	}
-	var scriptIDs = {
-		800: "Raiders2",
-		14: "GENERIC",
-		825: "FCGUNMER",
-		145: "GCFOLK",
-		399: "GCHAROLD",
-		138: "GCWOOZ",
-		613: "HCCHAD",
-		139: "GCLENNY",
-		143: "GCRGUARD",
-		393: "GCRGHOUL",
-		142: "GCRGLOW",
-		133: "GCHANK",
-		131: "GCFESTUS",
-		516: "GSTERM",
-		1260: "GCPERCY",
-		451: "NCJULES",
-		337: "NCPROSTI",
-		452: "NCKITTY",
-		329: "NCPIMP",
-		456: "NCBIGJES",
-		430: "NCLILJES",
-	}
 	var mapIDs = { // map ID <-> map name
 		"GECKSETL": 31, 31: "GECKSETL",
 		"NewRSt": 60, 60: "NewRSt"
@@ -125,8 +102,13 @@ var scriptingEngine = (function() {
 		return false
 	}
 
+	function getScriptName(id) {
+		return getLstId("scripts/scripts", id - 1).split(".")[0]
+	}
+
 	function getScriptMessage(id, msg) {
-		if(scriptIDs[id] === undefined) {
+		var name = getScriptName(id)
+		if(name === null) {
 			warn("getScriptMessage: no script with ID " + id)
 			return null
 		}
@@ -134,14 +116,14 @@ var scriptingEngine = (function() {
 		if(typeof msg === "string") // passed in a string message
 			return msg
 
-		if(scriptMessages[scriptIDs[id]] === undefined)
-			loadMessageFile(scriptIDs[id])
-		if(scriptMessages[scriptIDs[id]] === undefined)
+		if(scriptMessages[name] === undefined)
+			loadMessageFile(name)
+		if(scriptMessages[name] === undefined)
 			throw "getScriptMessage: loadMessageFile failed?"
-		if(scriptMessages[scriptIDs[id]][msg] === undefined)
-			throw "getScriptMessage: no message " + msg + " for script " + id + " (" + scriptIDs[id] + ")"
+		if(scriptMessages[name][msg] === undefined)
+			throw "getScriptMessage: no message " + msg + " for script " + id + " (" + name + ")"
 
-		return scriptMessages[scriptIDs[id]][msg]
+		return scriptMessages[name][msg]
 	}
 
 	function dialogueReply(id) {
@@ -581,8 +563,8 @@ var scriptingEngine = (function() {
 			//console.log("ANIM FOREVER: " + obj.art + " / " + anim)
 			if(anim !== 0)
 				warn("reg_anim_animate_forever: anim = " + anim)
-			function anim() { objectSingleAnim(obj, false, anim) }
-			anim()
+			function animate() { objectSingleAnim(obj, false, animate) }
+			animate()
 		},
 		animate_move_obj_to_tile: function(obj, tile, speed) {
 			stub("animate_move_obj_to_tile", arguments)
