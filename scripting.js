@@ -350,6 +350,11 @@ var scriptingEngine = (function() {
 		tile_in_tile_rect: function(_, _, _, _, t) { stub("tile_in_tile_rect", arguments, "tiles"); return 0 },
 		tile_contains_obj_pid: function(tile, elevation, pid) { stub("tile_contains_obj_pid", arguments); return 0 },
 
+		// combat
+		node998: function() { // enter combat
+			console.log("[enter combat]")
+		},
+
 		// dialogue
 		node999: function() { // exit dialogue
 			info("DIALOGUE EXIT (Node999)")
@@ -659,6 +664,11 @@ var scriptingEngine = (function() {
 			// so we can take them over
 			if(obj.hasOwnProperty("node999"))
 				delete obj.node999
+
+			// same for node998 (combat); some scripts also use this
+			// so it would be a good idea to wrap it instead.
+			if(obj.hasOwnProperty("node998"))
+				delete obj.node998
 
 			if(currentMapObject !== null)
 				obj._mapScript = currentMapObject
