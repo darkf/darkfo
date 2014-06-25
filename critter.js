@@ -204,6 +204,37 @@ function critterWalkCallback(obj) {
 	return false
 }
 
+function getAnimPartialActions(art, anim) {
+	var partialActions = {movement: null, actions: []}
+	var numPartials = 1
+
+	if(anim === "walk" || anim === "run") {
+		numPartials = getAnimDistance(art)
+		partialActions.movement = numPartials
+	}
+
+	if(numPartials === 0)
+		numPartials = 1
+
+	var delta = Math.floor(imageInfo[art].numFrames / numPartials)
+	var startFrame = 0
+	var endFrame = delta
+	var nextActionId = 0
+	for(var i = 0; i < numPartials; i++) {
+		var nextNumber = (i+1) % numPartials
+		partialActions.actions.push({startFrame: startFrame,
+									 endFrame: endFrame,
+									 step: i})
+		startFrame += delta
+		endFrame += delta // ?
+	}
+
+	// extend last partial action to the last frame
+	partialActions.actions[partialActions.actions.length-1].endFrame = imageInfo[art].numFrames
+
+	return partialActions
+}
+
 function critterUpdateAnimation(obj) {
 	if(obj.anim === undefined || obj.anim === "idle") return
 	if(animInfo[obj.anim].type === "static") return critterUpdateStaticAnimation(obj)
@@ -214,12 +245,41 @@ function critterUpdateAnimation(obj) {
 	var moveDistance = getAnimDistance(obj.art)
 	var tilePerFrame = Math.floor(imageInfo[obj.art].numFrames / moveDistance)
 
+	var partials = getAnimPartialActions(obj.art, obj.anim)
+	if(obj.path.partial === undefined)
+		obj.path.partial = 0
+	//console.log("partial: " + obj.path.partial + " | distance: " + obj.path.distance +
+	//	" | frame: " + obj.frame)
+	var currentPartial = partials.actions[obj.path.partial]
+
 	if(time - obj.lastFrameTime >= 1000/fps) {
 		// advance frame
 		obj.frame++
 		obj.lastFrameTime = time
 
-		if(obj.frame === tilePerFrame && obj.path.distance === 1) { // half walk, one tile
+		if(obj.frame === currentPartial.endFrame) {
+			var partialsLeft = obj.path.distance - obj.path.partial - 1
+
+			if(partialsLeft > 0 && partials.actions[obj.path.partial+1] !== undefined) {
+				// proceed to next partial
+				obj.path.partial++
+				obj.frame = partials.actions[obj.path.partial].startFrame
+			} else {
+				// we're done animating this, loop
+				obj.path.partial = 0
+				obj.frame = partials.actions[obj.path.partial].startFrame
+
+				var distMoved = Math.min(moveDistance, obj.path.distance)
+				//console.log("end partial, moved " + distMoved + " hexes, " + (obj.path.distance-distMoved) + " hexes left")
+				var h = hexInDirection(obj.position, obj.orientation)
+				for(var i = 0; i < distMoved-1; i++)
+					h = hexInDirection(h, obj.orientation)
+				obj.position = h
+				obj.path.distance -= distMoved
+			}
+		}
+
+		/*if(obj.frame === tilePerFrame && obj.path.distance === 1) { // half walk, one tile
 			obj.frame = 0
 			var h = hexInDirection(obj.position, obj.orientation)
 			obj.position = h
@@ -233,7 +293,7 @@ function critterUpdateAnimation(obj) {
 			obj.position = h2
 			obj.path.distance -= 2
 			if(critterWalkCallback(obj)) return
-		}
+		}*/
 
 		if(obj.position.x === obj.path.target.x && obj.position.y === obj.path.target.y) {
 			// reached target
