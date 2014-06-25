@@ -206,15 +206,17 @@ function critterWalkCallback(obj) {
 			// walking on an exit grid
 			// todo: exit grids are likely multi-hex (maybe have a set?)
 			var exitMapID = objs[i].extra.exitMapID
-			var startingPosition = objs[i].extra.startingPosition
+			var startingPosition = fromTileNum(objs[i].extra.startingPosition)
+			var startingElevation = objs[i].extra.startingElevation
 			critterStopWalking(obj)
 
 			if(startingPosition === -1) { // world map
 				console.log("exit grid -> worldmap")
 			}
 			else { // another map
-				console.log("exit grid -> map " + exitMapID)
-				loadMapID(exitMapID, fromTileNum(startingPosition))
+				console.log("exit grid -> map " + exitMapID + " elevation " + startingElevation +
+					" @ " + startingPosition.x + ", " + startingPosition.y)
+				loadMapID(exitMapID, startingPosition, startingElevation)
 			}
 
 			return true

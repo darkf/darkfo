@@ -500,7 +500,7 @@ function centerCamera(around) {
 	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2)
 }
 
-function loadMap(mapName, startingPosition) {
+function loadMap(mapName, startingPosition, startingElevation) {
 	function load(file, callback) {
 		if(images[file] !== undefined) return // don't load more than once
 		loadingImagesTotal++
@@ -520,6 +520,11 @@ function loadMap(mapName, startingPosition) {
 	gObjects = null
 	gMapScript = null
 	scriptingEngine.reset(player, mapName)
+
+	// reset player animation status
+	player.path = null
+	player.frame = 0
+	player.anim = "idle"
 
 	console.log("loading map " + mapName)
 
@@ -542,13 +547,14 @@ function loadMap(mapName, startingPosition) {
 			// warp to the default position (may be overridden by map script)
 			player.position = startingPosition || gMap.startPosition
 			player.orientation = gMap.startOrientation
+			var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
-			changeElevation(0, false)
+			changeElevation(elevation, false)
 			loadObjectScripts(gObjects)
-			scriptingEngine.enterMap(gMapScript, gObjects, 0, gMap.mapID)
-			scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
+			scriptingEngine.enterMap(gMapScript, gObjects, elevation, gMap.mapID)
+			scriptingEngine.updateMap(gMapScript, gObjects, elevation)
 		}
-		else changeElevation(0, false)
+		else changeElevation(elevation, false)
 
 		// todo: is map_enter_p_proc called on elevation change?
 		console.log("loaded (" + map.levels.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
@@ -610,10 +616,10 @@ function lookupMapName(mapID) {
 	return mapNames[mapID] || null
 }
 
-function loadMapID(mapID, startingPosition) {
+function loadMapID(mapID, startingPosition, startingElevation) {
 	var mapName = lookupMapName(mapID)
 	if(mapName !== null)
-		loadMap(mapName, startingPosition)
+		loadMap(mapName, startingPosition, startingElevation)
 	else
 		console.log("couldn't lookup map name for map ID " + mapID)
 }
