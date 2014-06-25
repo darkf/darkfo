@@ -296,12 +296,18 @@ var scriptingEngine = (function() {
 			return undefined
 		},
 		critter_attempt_placement: function(obj, tile, elevation) { stub("critter_attempt_placement", arguments) },
+		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
+			info("[enter combat via attack_complex]")
+			stub("attack_complex", arguments)
+		},
 
 		// objects
 		obj_is_locked: function(obj) { stub("obj_is_locked", arguments); return 0 },
 		obj_lock: function(obj) { stub("obj_lock", arguments) },
 		obj_unlock: function(obj) { stub("obj_unlock", arguments) },
 		obj_is_open: function(obj) { stub("obj_is_open", arguments); return 0 },
+		obj_close: function(obj) { stub("obj_close", arguments) },
+		obj_open: function(obj) { stub("obj_open", arguments) },
 		create_object_sid: function(pid, tile, elevation, sid) { // Create object of pid and possibly script
 			info("create_object_sid: " + pid + " / " + sid)
 
@@ -326,6 +332,7 @@ var scriptingEngine = (function() {
 			return null
 		},
 		anim_busy: function(obj) { stub("anim_busy", arguments); return 0 },
+		obj_art_fid: function(obj) { stub("obj_art_fid", arguments); return 0 },
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
@@ -583,6 +590,9 @@ var scriptingEngine = (function() {
 			tile = fromTileNum(tile)
 			critterWalkTo(obj, tile)
 		},
+
+		gfade_out: function(time) { stub("gfade_out", arguments) },
+		gfade_in: function(time) { stub("gfade_in", arguments) },
 
 		// timing
 		add_timer_event: function(obj, ticks, userdata) {

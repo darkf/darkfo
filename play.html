@@ -426,6 +426,8 @@ function initObjects(objects) {
 			continue // critters are handled separately
 		}
 
+		initObjects(obj.inventory) // containers, etc
+
 		if(obj.type === "item") { // load item inventory art
 			obj.pro = loadPRO(obj.pid, obj.pidID)
 			if(obj.pro === null) continue
