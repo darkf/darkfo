@@ -55,6 +55,7 @@ var doTimedEvents = true // should we handle registered timed events?
 var doCombat = false // allow combat?
 var doUseWeaponModel = false // use weapon model for NPC models?
 var doLoadItemInfo = true // load item information (such as inventory images)?
+var doAlwaysRun = true // always run instead of walk?
 
 var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0 // real time of the last game tick
@@ -657,7 +658,7 @@ heart.mousepressed = function(x, y, btn) {
 
 	// todo: object highlights/usage
 	
-	critterWalkTo(player, mouseHex, true)
+	critterWalkTo(player, mouseHex, doAlwaysRun)
 }
 
 heart.keydown = function(k) {
