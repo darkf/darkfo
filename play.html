@@ -283,7 +283,7 @@ function objectSingleAnim(obj, reversed, callback) {
 
 function objectUpdateAnimation(obj) {
 	var time = heart.timer.getTime()
-	var fps = 8 // todo: get FPS from image info
+	var fps = imageInfo[obj.art].fps
 
 	if(time - obj.lastFrameTime >= 1000/fps) {
 		if(obj.anim === "reverse") obj.frame--
@@ -831,7 +831,8 @@ heart.update = function() {
 		if(mousePos[1] >= SCREEN_HEIGHT-SCROLL_PADDING) cameraY += 15
 	}
 
-	if(time - lastGameTick >= 1000/10) { // 10 Hz game tick
+	var didTick = (time - lastGameTick >= 1000/10) // 10 Hz game tick
+	if(didTick) {
 		lastGameTick = time
 		gameTickTime++
 
@@ -847,18 +848,18 @@ heart.update = function() {
 				}
 			}
 		}
+	}
 
-		critterUpdateAnimation(player)
+	critterUpdateAnimation(player)
 
-		for(var i = 0; i < gObjects.length; i++) {
-			if(gObjects[i].type === "critter") {
-				if(doUpdateCritters === true && inCombat !== true && gObjects[i]._script !== undefined)
-					scriptingEngine.updateCritter(gObjects[i]._script)
-				critterUpdateAnimation(gObjects[i])
-			}
-			else if(gObjects[i].anim === "single" || gObjects[i].anim === "reverse")
-				objectUpdateAnimation(gObjects[i])
+	for(var i = 0; i < gObjects.length; i++) {
+		if(gObjects[i].type === "critter") {
+			if(didTick && doUpdateCritters && inCombat !== true && gObjects[i]._script)
+				scriptingEngine.updateCritter(gObjects[i]._script)
+			critterUpdateAnimation(gObjects[i])
 		}
+		else if(gObjects[i].anim === "single" || gObjects[i].anim === "reverse")
+			objectUpdateAnimation(gObjects[i])
 	}
 }
 
