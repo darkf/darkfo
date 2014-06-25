@@ -37,15 +37,35 @@ var Weapon = function(weapon) {
 	}
 }
 
+Weapon.prototype.getSkin = function() {
+	if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
+		return null
+	var animCodeMap = {0: 'a',// None
+					   1: 'd', // Knife
+					   2: 'e', // Club
+					   3: 'f', // Sledgehammer
+					   4: 'g', // Spear
+					   5: 'h', // Pistol
+					   6: 'i', // SMG
+					   7: 'j', // Rifle
+					   8: 'k', // Big Gun
+					   9: 'l', // Minigun
+					   10: 'm'} // Rocket Launcher
+	return animCodeMap[this.weapon.pro.extra.animCode]
+}
+
 Weapon.prototype.getAnim = function(anim) {
 	if(weaponAnims[this.name] && weaponAnims[this.name][anim])
 		return weaponAnims[this.name][anim]
 
-	var wep = weaponSkins[this.name] || 'a'
+	var wep = this.getSkin() || 'a'
 	switch(anim) {
 		case 'idle': return wep + 'a'
 		case 'walk': return wep + 'b'
-		case 'attack': return wep + 'j' // assumes guns
+		case 'attack':
+			if(this.name === "spear")
+				return wep + 'f'
+			return wep + 'j' // assumes guns
 		default: return false // let something else handle it
 	}
 }

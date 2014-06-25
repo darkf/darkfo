@@ -197,10 +197,14 @@ function loadPRO(pid, pidID) {
 	if(proFiles[pid] !== undefined)
 		return proFiles[pid] // todo: clone?
 
-	// todo: use the proto/ .lst files to look up proto
+	// use the proto/ .lst files to look up proto
+	var type = getPROType(pid)
+	var lsts = {"items": "proto/items/items"}
+	var id = lsts[type] ? getLstId(lsts[type], pidID - 1) : pidID
+	var path = lsts[type] ? id : (pad(id, 8) + '.pro')
 
 	var r = null
-	$.get('proto/' + getPROType(pid) + '/' + pad(pidID, 8) + '.pro.json', function(pro) {
+	$.get('proto/' + type + '/' + path + '.json', function(pro) {
 		r = pro
 	}, 'json')
 
