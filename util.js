@@ -24,7 +24,6 @@ function parseIni(text) {
 
 			if(ini[category] === undefined) ini[category] = {}
 			ini[category][kv[1]] = kv[2]
-			console.log("[" + category + "]: " + kv[1] + " = " + kv[2])
 		}
 	}
 
