@@ -240,7 +240,7 @@ function critterUpdateAnimation(obj) {
 	if(animInfo[obj.anim].type === "static") return critterUpdateStaticAnimation(obj)
 
 	var time = heart.timer.getTime()
-	var fps = 10 // todo: get FPS from image info
+	var fps = imageInfo[obj.art].fps
 	var targetScreen = hexToScreen(obj.path.target.x, obj.path.target.y)
 	var moveDistance = getAnimDistance(obj.art)
 	var tilePerFrame = Math.floor(imageInfo[obj.art].numFrames / moveDistance)
@@ -278,22 +278,6 @@ function critterUpdateAnimation(obj) {
 				obj.path.distance -= distMoved
 			}
 		}
-
-		/*if(obj.frame === tilePerFrame && obj.path.distance === 1) { // half walk, one tile
-			obj.frame = 0
-			var h = hexInDirection(obj.position, obj.orientation)
-			obj.position = h
-			obj.path.distance -= 1
-			if(critterWalkCallback(obj)) return
-		}
-		else if(obj.frame === tilePerFrame * 2) { // full walk, 2+ tiles
-			obj.frame = 0
-			var h = hexInDirection(obj.position, obj.orientation)
-			var h2 = hexInDirection(h, obj.orientation)
-			obj.position = h2
-			obj.path.distance -= 2
-			if(critterWalkCallback(obj)) return
-		}*/
 
 		if(obj.position.x === obj.path.target.x && obj.position.y === obj.path.target.y) {
 			// reached target
