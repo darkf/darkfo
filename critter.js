@@ -14,6 +14,45 @@ var weaponSkins = {"uzi": 'i', "rifle": 'j'}
 
 var weaponAnims = {'punch': {'idle': 'aa', 'attack': 'aq'}}
 
+var attackMode = {'none': 0, 'punch': 1, 'kick': 2, 'swing': 3,
+				  'thrust': 4, 'throw': 5, 'fire single': 6,
+				  'fire burst': 7, 'flame': 8,
+				  0 : 'none', 1: 'punch', 2: 'kick', 3: 'swing',
+				  4: 'thrust', 5: 'throw', 6: 'fire single',
+				  7: 'fire burst', 8: 'flame'}
+				  
+var DamageType = {'normal': 0, 'laser': 1, 'fire': 2, 'plasma': 3,
+				  'electrical': 4, 'emp': 5, 'explosive': 6,
+				  0:'normal', 1: 'laser', 2: 'fire', 3: 'plasma',
+				  4: 'electrical', 5: 'emp', 6: 'explosive'}
+
+var modeNumber = {1: 0x00FF, 2: 0xFF00}
+
+
+			
+function ParseAttack(weapon)
+{
+	var attackModes = weapon.extra['attackMode']
+	var modeOne = attackModes & modeNumber[1]
+	var modeTwo = (attackModes & modeNumber[2]) >> 8
+	
+	var att1 = {}
+	att1['mode'] = modeOne
+	if(modeOne !== attackMode['none'])
+	{
+		att1['APCost'] = weapon.extra['APCost1']
+		att1['maxRange'] = weapon.extra['maxRange1']
+	}
+	var att2 = {}
+	att2['mode'] = modeTwo
+	if(modeOne !== attackMode['none'])
+	{
+		att2['APCost'] = weapon.extra['APCost2']
+		att2['maxRange'] = weapon.extra['maxRange2']
+	}
+	return {1:att1,2:att2}
+}
+			
 var Weapon = function(weapon) {
 	this.weapon = weapon
 
@@ -30,6 +69,10 @@ var Weapon = function(weapon) {
 		this.maxDmg = weapon.pro.extra.maxDmg
 		var s = weapon.art.split('/')
 		this.name = s[s.length-1]
+		
+		var tempAttacks = ParseAttack(weapon)
+		this.attackOne = tempAttacks[1]
+		this.attackTwo = tempAttacks[2]
 
 		this.weaponType = {'uzi': 'Small Guns'}[this.name]
 		if(this.weaponType === undefined)

@@ -2,6 +2,62 @@
 // Copyright (c) 2014 darkf
 // Licensed under the terms of the zlib license
 
+
+var ActionPoints = function(obj) {
+	var combat = 0;
+	var move = 0;
+	this.resetAP(obj);
+}
+
+ActionPoints.prototype.getMaxAP = function(obj) {
+	var bonusCombatAP = 0 //todo: replace with get function
+	var bonusMoveAP = 0 //todo: replace with get function
+	return {combat: 5 + Math.floor(obj.stats.AGI/2) + bonusCombatAP, move: bonusMoveAP}
+}
+
+ActionPoints.prototype.resetAP = function(obj) {
+	var AP = getMaxAP(obj);
+	this.combat = AP.combat;
+	this.move = AP.move;
+}
+
+ActionPoints.prototype.getAvailableMoveAP = function() {
+	return this.combat + this.move
+}
+
+ActionPoints.prototype.substractMoveAP = function(value) {
+	if(this.getAvailableMoveAP >= value)
+	{
+		this.move -= value
+		if(move < 0)
+		{
+			var combatSubstract = -move
+			if(this.substractCombatAP(combatSubstract))
+			{
+				move = 0
+				return true
+			}else{
+				return false
+			}
+		}else{
+			return true
+		}
+	}else{
+		return false
+	}
+}
+
+ActionPoints.prototype.substractCombatAP = function(value) {
+	if(this.combat >= value)
+	{
+		this.combat -= value
+		return true
+	}else{
+		return false
+	}
+}
+
+
 var Combat = function(objects, player) {
 	this.critters = []
 	for(var i = 0; i < objects.length; i++) {
@@ -14,24 +70,26 @@ var Combat = function(objects, player) {
 		}
 	}
 
+	//player is now just another critter
+	this.critters.push(player)
+	
+	
 	this.AP = new Array(this.critters.length)
-	this.player = player
+	
 	this.turnNum = 0
 	this.whoseTurn = -2
 	this.inPlayerTurn = false
 }
 
 Combat.prototype.fireDistance = function(obj) {
-	return 5 // todo: get some distance before firing
+	return obj.leftHand.attackOne['maxRange'] //todo: implement proper attack selection
 }
 
 Combat.prototype.getDefaultStats = function(obj) {
 	return {STR: 4, PER: 5, END: 5, CHR: 1, INT: 1, AGI: 1, LUK: 1, HP: 100}
 }
 
-Combat.prototype.getMaxAP = function(obj) {
-	return 5 + Math.floor(obj.stats.AGI/2)
-}
+
 
 Combat.prototype.getRandomInt = function(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min
@@ -68,7 +126,7 @@ Combat.prototype.attack = function(obj, target, callback) {
 	critterStaticAnim(obj, "attack", callback)
 
 	var damage = this.getDamageDone(obj, target)
-	var who = obj.isPlayer ? "You" : "An NPC"
+	var who = obj.isPlayer ? "You" : obj.name //Todo: change to NPC name
 	console.log(who + " hit the target for " + damage + " damage")
 	target.stats.HP -= damage
 
@@ -90,7 +148,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 	var distance = hexDistance(obj.position, this.player.position)
 	var AP = this.AP[idx]
 
-	if(AP <= 0) { // out of AP
+	if(this.getAvailableMoveAP(AP) <= 0) { // out of AP
 		this.nextTurn()
 		return
 	}
@@ -151,7 +209,7 @@ Combat.prototype.nextTurn = function() {
 		var critter = this.critters[this.whoseTurn]
 		if(critter.dead === true)
 			return this.nextTurn()
-		this.AP[this.whoseTurn] = this.getMaxAP(critter) // reset AP
+		this.AP[this.whoseTurn].resetAP() // reset AP
 		this.doAITurn(critter, this.whoseTurn)
 	}
 }
