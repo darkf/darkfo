@@ -20,7 +20,9 @@ def read32At(buf, idx):
 	return struct.unpack('!l', buf[idx:idx + 4])[0]
 
 def readFRMInfo(f, exportImage=True):
-	f.seek(8)
+	_version = read32(f)
+	fps = read16(f)
+	_actionFrame = read16(f)
 	numFrames = read16(f)
 	dOffsetX = [read16(f) for _ in range(6)]
 	dOffsetY = [read16(f) for _ in range(6)]
@@ -57,6 +59,7 @@ def readFRMInfo(f, exportImage=True):
 
 	# print "frameOffset:", frameOffset
 	return {'numFrames': numFrames,
+			'fps': fps,
 			'numDirections': nDirTotal,
 	        'directionOffsets': [{'x': x, 'y': y} for x,y in zip(dOffsetX, dOffsetY)],
 	        'frameOffsets': frameOffset,

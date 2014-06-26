@@ -5,6 +5,7 @@ import frmpixels
 def main():
 	if len(sys.argv) < 4:
 		print "USAGE: %s PALETTE DATA_DIR OUT_DIR [--no-map] [--only-map] [--update]" % sys.argv[0]
+		print "PALETTE is likely data/color.pal, and DATA_DIR is likely data/"
 		sys.exit(1)
 
 	PALETTE = sys.argv[1]
@@ -56,6 +57,8 @@ def main():
 			imageMap.update(imageInfo)
 			imageInfo = imageMap
 
+		print "writing image map..."
+		
 		# write new imageMap
 		json.dump(imageInfo, open('%s/imageMap.json' % OUT_DIR, "w"))
 

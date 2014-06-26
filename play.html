@@ -12,6 +12,7 @@
 <script src="scripting.js"></script>
 <script src="combat.js"></script>
 <script src="critter.js"></script>
+<script src="util.js"></script>
 <script src="pathfinding-browser.js"></script>
 <script>
 "use strict";
@@ -23,22 +24,23 @@ var gMapScript = null
 var floorMap = null
 var roofMap = null
 var images = {}
-var imageInfo = {}
+var imageInfo = null
 var gObjects = []
 var gMap = null
 var currentElevation = 0 // current map elevation
 var hexOverlay = null
 //var cursor = {x: 10, y: 10}
 
-// position of viewport camera
-var cameraX = 3970
-var cameraY = 1425
+// position of viewport camera (will be overriden by map starts or scripts)
+var cameraX = 3580
+var cameraY = 1020
 
 // geometry constants
 var TILE_WIDTH = 80
 var TILE_HEIGHT = 36
 var HEX_GRID_SIZE = 200 // hex grid is 200x200
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
+var SCROLL_PADDING = 20 // how far the mouse has to be from an edge to scroll
 
 var showHexOverlay = false // show hex grid?
 var showCoordinates = false // show coordinates on hex grid?
@@ -51,16 +53,24 @@ var doLoadScripts = true // should we load scripts?
 var doUpdateCritters = false // should we give critters heartbeats?
 var doTimedEvents = true // should we handle registered timed events?
 var doCombat = false // allow combat?
+var doUseWeaponModel = false // use weapon model for NPC models?
 var doLoadItemInfo = true // load item information (such as inventory images)?
+var doAlwaysRun = true // always run instead of walk?
 
 var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0 // real time of the last game tick
 var combat = null // combat object
 var inCombat = false // are we currently in combat?
+var gameHasFocus = false // do we have input focus?
+
+var isLoading = true // are we currently loading a map?
+var loadingImagesLoaded = 0 // how many images we've loaded
+var loadingImagesTotal = 0 // out of this total
 
 var proFiles = {}
 var lstFiles = {}
 var messageFiles = {}
+var mapNames = null
 
 function cloneStats(stats) { return $.extend({}, stats) }
 function addStats(a, b) {
@@ -83,10 +93,10 @@ function reprStats(stats) {
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null,
-          	  baseStats: {STR: 4, PER: 5, END: 5, CHR: 5, INT: 5, AGI: 6, LUK: 5, HP: 100},
+          	  baseStats: {STR: 8, PER: 5, END: 5, CHR: 6, INT: 5, AGI: 6, LUK: 5, HP: 100},
           	  bonusStats: {STR: 0, PER: 0, END: 0, CHR: 0, INT: 0, AGI: 0, LUK: 0, HP: 0},
           	  leftHand: null, rightHand: null, weapon: null, armor: null,
-          	  dead: false,
+          	  dead: false, name: "Player", gender: "male",
           	  skills: {"Repair": 25, "Big Guns": 25, "Outdoorsman": 25, "Traps": 25, "Barter": 25,
           	  		   "Melee": 25, "Throwing": 25, "Steal": 25, "Doctor": 25, "Sneak": 25,
           	  		   "Unarmed": 25, "Speech": 25, "First Aid": 25, "Lockpick": 25, "Science": 25,
@@ -185,10 +195,16 @@ function getPROType(pid) {
 
 function loadPRO(pid, pidID) {
 	if(proFiles[pid] !== undefined)
-		return proFiles[pid]
+		return proFiles[pid] // todo: clone?
+
+	// use the proto/ .lst files to look up proto
+	var type = getPROType(pid)
+	var lsts = {"items": "proto/items/items"}
+	var id = lsts[type] ? getLstId(lsts[type], pidID - 1) : pidID
+	var path = lsts[type] ? id : (pad(id, 8) + '.pro')
 
 	var r = null
-	$.get('proto/' + getPROType(pid) + '/' + pad(pidID, 8) + '.pro.json', function(pro) {
+	$.get('proto/' + type + '/' + path + '.json', function(pro) {
 		r = pro
 	}, 'json')
 
@@ -211,7 +227,7 @@ function makePID(type, pid) {
 	return (type << 24) | pid
 }
 
-function createObjectWithPID(objType, pid) {
+function createObjectWithPID(objType, pid, sid) {
 	var pidID = makePID(objType, pid)
 	var pro = loadPRO(pidID, pid)
 	var obj = {type: getPROTypeName(objType), pro: pro, pid: pidID, pidID: pid, amount: 1}
@@ -228,6 +244,10 @@ function createObjectWithPID(objType, pid) {
 	}
 
 	obj.art = "art/items/RESERVED" // todo: get art from pro
+
+	if(obj.pro !== undefined && sid !== undefined && obj.pro.extra.scriptID != sid)
+		console.log("!!! createObjectWithPID: need to change script ID (" + obj.pro.extra.scriptID +
+			" to " + sid + ")")
 
 	return obj
 }
@@ -255,6 +275,77 @@ function objectGetMoney(obj) {
 	}
 
 	return 0
+}
+
+function objectSingleAnim(obj, reversed, callback) {
+	if(reversed) obj.frame = imageInfo[obj.art].numFrames - 1
+	else obj.frame = 0
+	obj.lastFrameTime = 0
+	obj.anim = reversed ? "reverse" : "single"
+	obj.animCallback = (callback !== undefined) ? callback : (function() { obj.anim = null  })
+}
+
+function objectUpdateAnimation(obj) {
+	var time = heart.timer.getTime()
+	var fps = imageInfo[obj.art].fps
+
+	if(time - obj.lastFrameTime >= 1000/fps) {
+		if(obj.anim === "reverse") obj.frame--
+		else obj.frame++
+		obj.lastFrameTime = time
+
+		if(obj.frame === -1 || obj.frame === imageInfo[obj.art].numFrames) {
+			// animation is done
+			if(obj.anim === "reverse") obj.frame++
+			else obj.frame--
+			if(obj.animCallback)
+				obj.animCallback()
+		}
+	}
+}
+
+function useObject(obj) {
+	// todo: check if you can use it
+
+	if(obj._script && obj._script.use_p_proc !== undefined) {
+		obj._script.source_obj = player
+		obj._script.self_obj = obj
+		obj._script.use_p_proc()
+	}
+	else if(obj.script !== undefined && !obj._script)
+		console.log("object used has script but is not loaded: " + obj.script)
+
+	// todo: check script overrides
+	// also check object type
+	objectSingleAnim(obj)
+
+	if((obj.type === "scenery" && obj.subtype === "door") ||
+		obj.art.indexOf("door") !== -1 || obj.art.indexOf("locker") !== -1) {
+		// open/closable doors/containers
+		if(!obj.open) obj.open = true
+		else obj.open = false
+		objectSingleAnim(obj, !obj.open)
+	}
+	else if(obj.type === "scenery" && obj.subtype === "stairs") {
+		if(obj.extra.destinationMap === -1 && obj.extra.destination !== -1) {
+			// same map, new destination
+			var destTile = fromTileNum(obj.extra.destination & 0xffff)
+			var destElev = ((obj.extra.destination >> 28) & 0xf) >> 1
+
+			console.log("stairs: tile: " + destTile.x + ", " + destTile.y + ", elev: " + destElev)
+
+			player.position = destTile
+			changeElevation(destElev)
+		}
+	}
+}
+
+function objectBlocks(obj) {
+	if(obj.type === "misc") return false
+	if(!obj.pro) return true
+	if(obj.open !== undefined) return !obj.open
+
+	return !(obj.pro.flags & 0x00000010 /* NoBlock */)
 }
 
 // Draws a line between a and b, returning the first object hit
@@ -313,14 +404,17 @@ function loadObjectScripts(objects) {
 
 function changeElevation(level, updateScripts) {
 	currentElevation = level
-	floorMap = gMap[level]["tiles"]["floor"]
-	roofMap  = gMap[level]["tiles"]["roof"]
-	gObjects = gMap[level]["objects"]
+	floorMap = gMap.levels[level]["tiles"]["floor"]
+	roofMap  = gMap.levels[level]["tiles"]["roof"]
+	gObjects = gMap.levels[level]["objects"]
 
 	if(updateScripts !== false) {
 		loadObjectScripts(gObjects)
+		scriptingEngine.enterMap(gMapScript, gObjects, currentElevation, gMap.mapID) // ?
 		scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 	}
+
+	centerCamera(player.position)
 }
 
 // Initialize various objects, such as items.
@@ -332,6 +426,8 @@ function initObjects(objects) {
 			continue // critters are handled separately
 		}
 
+		initObjects(obj.inventory) // containers, etc
+
 		if(obj.type === "item") { // load item inventory art
 			obj.pro = loadPRO(obj.pid, obj.pidID)
 			if(obj.pro === null) continue
@@ -341,6 +437,18 @@ function initObjects(objects) {
 			var invPID = obj.pro.extra.invFRM & 0xffff
 			if(invPID !== 0xffff)
 				obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
+		}
+		else if(obj.type === "scenery") {
+			var proto = getLstId("proto/scenery/scenery", obj.pidID - 1)
+			obj.pro = null
+			$.get('proto/scenery/' + proto + '.json', function(pro) { obj.pro = pro }, 'json')
+			if(obj.pro === null) continue
+			var subtypeMap = {0: "door", 1: "stairs", 2: "elevator", 3: "ladder",
+							  4: "ladder", 5: "generic"}
+			obj.subtype = subtypeMap[obj.pro.extra.subType]
+
+			if(obj.subtype === "door")
+				obj.open = false
 		}
 	}
 }
@@ -388,28 +496,82 @@ function initCritters(objects) {
 	}
 }
 
-heart.preload = function() {
-	function load(file) {
-		heart.graphics.newImage(file+".png", function(r) { images[file] = r; })
+function centerCamera(around) {
+	var scr = hexToScreen(around.x, around.y)
+	cameraX = Math.max(0, scr.x - SCREEN_WIDTH/2)
+	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2)
+}
+
+function loadMap(mapName, startingPosition, startingElevation) {
+	function load(file, callback) {
+		if(images[file] !== undefined) return // don't load more than once
+		loadingImagesTotal++
+		heart.graphics.newImage(file+".png", function(r) {
+			images[file] = r
+			loadingImagesLoaded++
+			if(callback) callback(r)
+		})
 	}
 
-	$.ajaxSetup({async: false})
+	isLoading = true
+	loadingImagesTotal = 0
+	loadingImagesLoaded = 0
 
-	$.get("maps/" + MAP_NAME + ".images.json", function(images) {
+	// clear any previous objects/events
+	gMap = null
+	gObjects = null
+	gMapScript = null
+	scriptingEngine.reset(player, mapName)
+
+	// reset player animation status
+	player.path = null
+	player.frame = 0
+	player.anim = "idle"
+
+	console.log("loading map " + mapName)
+
+	$.get("maps/" + mapName + ".images.json", function(images) {
 		for(var i = 0; i < images.length; i++)
 			load(images[i])
 		console.log("loading " + images.length + " images")
 	}, "json")
 
-	$.get("art/imageMap.json", function(offsets) {
-		imageInfo = offsets
+	if(imageInfo === null)
+		$.get("art/imageMap.json", function(offsets) { imageInfo = offsets }, "json")
+
+	$.get("maps/"+mapName+".json", function(map) {
+		gMap = map
+
+		if(doLoadScripts === true) {
+			scriptingEngine.init(player, mapName)
+			gMapScript = scriptingEngine.loadScript(mapName)
+
+			// warp to the default position (may be overridden by map script)
+			player.position = startingPosition || gMap.startPosition
+			player.orientation = gMap.startOrientation
+			var elevation = (startingElevation !== undefined) ? startingElevation : 0
+
+			changeElevation(elevation, false)
+			loadObjectScripts(gObjects)
+			scriptingEngine.enterMap(gMapScript, gObjects, elevation, gMap.mapID)
+			scriptingEngine.updateMap(gMapScript, gObjects, elevation)
+		}
+		else changeElevation(elevation, false)
+
+		// todo: is map_enter_p_proc called on elevation change?
+		console.log("loaded (" + map.levels.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 	}, "json")
 
 	// load some testing art
+	load("art/critters/hmjmpsat")
+
 	load("art/critters/navgulij")
 	load("art/critters/navgulia")
 	load("art/critters/navgulab")
 	load("art/critters/naghulab")
+
+	load("art/critters/naghulja")
+	load("art/critters/naghuljb")
 
 	load("art/critters/hanpwraa")
 	load("art/critters/hanpwrab")
@@ -418,28 +580,7 @@ heart.preload = function() {
 	load("art/critters/hanpwrib")
 	load("art/critters/hanpwrij")
 
-	heart.graphics.newImage("hex_outline.png", function(r) { hexOverlay = r })
-}
-
-heart.load = function() {
-	heart.attach("cnv");
-	$.get("maps/"+MAP_NAME+".json", function(map) {
-		gMap = map
-
-		if(doLoadScripts === true) {
-			scriptingEngine.init(player, MAP_NAME)
-			gMapScript = scriptingEngine.loadScript(MAP_NAME)
-
-			changeElevation(0, false)
-			loadObjectScripts(gObjects)
-			scriptingEngine.enterMap(gMapScript, gObjects, 0)
-			scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
-		}
-		else changeElevation(0, false)
-
-		// todo: is map_enter_p_proc called on elevation change?
-		console.log("loaded (" + map.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
-	}, "json")
+	load("hex_outline", function(r) { hexOverlay = r })
 
 	if(doCombat === true && DEBUG === true) {
 		// for testing
@@ -451,11 +592,48 @@ heart.load = function() {
 		b.art = "art/critters/hanpwraa"
 	}
 
-	for(var level = 0; level < gMap.length; level++) {
+	for(var level = 0; level < gMap.levels.length; level++) {
 		if(doLoadItemInfo !== false)
-			initObjects(gMap[level]["objects"])
-		initCritters(gMap[level]["objects"])
+			initObjects(gMap.levels[level]["objects"])
+		initCritters(gMap.levels[level]["objects"])
 	}
+}
+
+function lookupMapName(mapID) {
+	if(mapNames !== null)
+		return mapNames[mapID] || null
+
+	// load mapNames from data/data/MAPS.TXT
+	mapNames = {}
+	$.get("data/data/MAPS.TXT", function(text) {
+		var ini = parseIni(text)
+		for(var category in ini) {
+			var id = category.match(/Map (\d+)/)[1]
+			if(id === null) throw "MAPS.TXT: invalid category: " + category
+			id = parseInt(id)
+			mapNames[id] = ini[category].map_name
+		}
+	}, "text")
+
+	return mapNames[mapID] || null
+}
+
+function loadMapID(mapID, startingPosition, startingElevation) {
+	var mapName = lookupMapName(mapID)
+	if(mapName !== null)
+		loadMap(mapName, startingPosition, startingElevation)
+	else
+		console.log("couldn't lookup map name for map ID " + mapID)
+}
+
+heart.load = function() {
+	heart.attach("cnv")
+	$.ajaxSetup({async: false})
+
+	loadMap(MAP_NAME) // load initial map
+
+	$("#cnv").mouseenter(function() { gameHasFocus = true }).
+	          mouseleave(function() { gameHasFocus = false })
 
 	drawInventory($("#playerInventory"), player)
 }
@@ -483,7 +661,20 @@ function drawInventory($el, obj, clickCallback) {
 	}
 }
 
+heart.mousepressed = function(x, y, btn) {
+	if(isLoading === true) return
+	if(btn !== "l") return
+
+	var mousePos = heart.mouse.getPosition()
+	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
+
+	// todo: object highlights/usage
+	
+	critterWalkTo(player, mouseHex, doAlwaysRun)
+}
+
 heart.keydown = function(k) {
+	if(isLoading === true) return
 	var mousePos = heart.mouse.getPosition()
 	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
@@ -492,7 +683,7 @@ heart.keydown = function(k) {
 	if(k == 'left') cameraX -= 15
 	if(k == 'up') cameraY -= 15
 	if(k == 'q') { if(currentElevation-1 >= 0) changeElevation(currentElevation-1) }
-	if(k == 'e') { if(currentElevation+1 < gMap.length) changeElevation(currentElevation+1) }
+	if(k == 'e') { if(currentElevation+1 < gMap.levels.length) changeElevation(currentElevation+1) }
 	if(k == 'r') { showRoof = !showRoof }
 	if(k == 'f') { showFloor = !showFloor }
 	if(k == 'o') { showObjects = !showObjects }
@@ -501,8 +692,8 @@ heart.keydown = function(k) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
 				console.log("object at index " + i)
 				if(gObjects[i]._script && gObjects[i]._script.talk_p_proc !== undefined) {
-					console.log("calling talk proc")
-					gObjects[i]._script.talk_p_proc()
+					console.log("talking to " + gObjects[i].name)
+					scriptingEngine.talk(gObjects[i]._script, gObjects[i])
 				}
 				break
 			}
@@ -512,7 +703,7 @@ heart.keydown = function(k) {
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
 				var hasScripts = (gObjects[i].script !== undefined ? ("yes (" + gObjects[i].script + ")") : "no") + " " + (gObjects[i]._script === undefined ? "and is NOT loaded" : "and is loaded")
-				console.log("object is at index " + i + ", has scripts? " + hasScripts)
+				console.log("object is at index " + i + ", of type " + gObjects[i].type + ", has art " + gObjects[i].art + ", and has scripts? " + hasScripts)
 			}
 		}
 	}
@@ -585,6 +776,12 @@ heart.keydown = function(k) {
 			drawInventory($("#inventory"), obj)
 		}
 	}
+
+	if(k == 'u') {
+		var obj = objectsAtPosition(mouseHex)[0]
+		if(obj !== undefined)
+			useObject(obj)
+	}
 }
 
 function recalcPath(start, goal) {
@@ -594,8 +791,9 @@ function recalcPath(start, goal) {
 		matrix[y] = new Array(HEX_GRID_SIZE)
 
 	for(var i = 0; i < gObjects.length; i++) {
+		// if there are multiple, any blocking one will block
 		var obj = gObjects[i]
-		matrix[obj.position.y][obj.position.x] = 1
+		matrix[obj.position.y][obj.position.x] |= objectBlocks(obj)
 	}
 
 	var grid = new PF.Grid(HEX_GRID_SIZE, HEX_GRID_SIZE, matrix)
@@ -630,9 +828,23 @@ function longestSequenceWithoutTurning(start, path, index) {
 }
 
 heart.update = function() {
+	if(isLoading === true) {
+		if(loadingImagesLoaded === loadingImagesTotal) isLoading = false
+		else return
+	}
 	var time = heart.timer.getTime()
 
-	if(time - lastGameTick >= 1000/10) { // 10 Hz game tick
+	if(gameHasFocus) {
+		var mousePos = heart.mouse.getPosition()
+		if(mousePos[0] <= SCROLL_PADDING) cameraX -= 15
+		if(mousePos[0] >= SCREEN_WIDTH-SCROLL_PADDING) cameraX += 15
+
+		if(mousePos[1] <= SCROLL_PADDING) cameraY -= 15
+		if(mousePos[1] >= SCREEN_HEIGHT-SCROLL_PADDING) cameraY += 15
+	}
+
+	var didTick = (time - lastGameTick >= 1000/10) // 10 Hz game tick
+	if(didTick) {
 		lastGameTick = time
 		gameTickTime++
 
@@ -648,16 +860,18 @@ heart.update = function() {
 				}
 			}
 		}
+	}
 
-		critterUpdateAnimation(player)
+	critterUpdateAnimation(player)
 
-		for(var i = 0; i < gObjects.length; i++) {
-			if(gObjects[i].type === "critter") {
-				if(doUpdateCritters === true && inCombat !== true && gObjects[i]._script !== undefined)
-					scriptingEngine.updateCritter(gObjects[i]._script)
-				critterUpdateAnimation(gObjects[i])
-			}
+	for(var i = 0; i < gObjects.length; i++) {
+		if(gObjects[i].type === "critter") {
+			if(didTick && doUpdateCritters && inCombat !== true && gObjects[i]._script)
+				scriptingEngine.updateCritter(gObjects[i]._script)
+			critterUpdateAnimation(gObjects[i])
 		}
+		else if(gObjects[i].anim === "single" || gObjects[i].anim === "reverse")
+			objectUpdateAnimation(gObjects[i])
 	}
 }
 
@@ -694,6 +908,8 @@ function drawObject(obj) {
 	if(obj.frame !== undefined)
 		frameIdx += obj.frame
 
+	if(!(obj.orientation in info.frameOffsets))
+		obj.orientation = 0 // ...
 	var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
 	var dirOffset = info.directionOffsets[obj.orientation]
 	var offsetX = Math.floor(frameInfo.w / 2) - dirOffset.x - frameInfo.ox
@@ -713,6 +929,17 @@ function drawObject(obj) {
 }
 
 heart.draw = function() {
+	if(isLoading === true) {
+		heart.graphics.setColor(0, 0, 0)
+		var w = 256, h = 40
+		var w2 = (loadingImagesLoaded / loadingImagesTotal) * w
+		// draw a loading progress bar
+		heart.graphics.rectangle("stroke", SCREEN_WIDTH/2 - w/2, SCREEN_HEIGHT/2,
+				w, h)
+		heart.graphics.rectangle("fill", SCREEN_WIDTH/2 - w/2 + 2, SCREEN_HEIGHT/2 + 2,
+				w2 - 4, h - 4)
+		return
+	}
 	heart.graphics.setColor(255, 255, 255)
 
 	var mousePos = heart.mouse.getPosition()

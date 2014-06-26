@@ -80,15 +80,35 @@ var Weapon = function(weapon) {
 	}
 }
 
+Weapon.prototype.getSkin = function() {
+	if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
+		return null
+	var animCodeMap = {0: 'a',// None
+					   1: 'd', // Knife
+					   2: 'e', // Club
+					   3: 'f', // Sledgehammer
+					   4: 'g', // Spear
+					   5: 'h', // Pistol
+					   6: 'i', // SMG
+					   7: 'j', // Rifle
+					   8: 'k', // Big Gun
+					   9: 'l', // Minigun
+					   10: 'm'} // Rocket Launcher
+	return animCodeMap[this.weapon.pro.extra.animCode]
+}
+
 Weapon.prototype.getAnim = function(anim) {
 	if(weaponAnims[this.name] && weaponAnims[this.name][anim])
 		return weaponAnims[this.name][anim]
 
-	var wep = weaponSkins[this.name] || 'a'
+	var wep = this.getSkin() || 'a'
 	switch(anim) {
 		case 'idle': return wep + 'a'
 		case 'walk': return wep + 'b'
-		case 'attack': return wep + 'j' // assumes guns
+		case 'attack':
+			if(this.name === "spear")
+				return wep + 'f'
+			return wep + 'j' // assumes guns
 		default: return false // let something else handle it
 	}
 }
@@ -110,7 +130,7 @@ function critterGetAnim(obj, anim) {
 
 	// try weapon animation first
 	var hand = obj.leftHand || obj.rightHand || null
-	if(hand) {
+	if(hand && doUseWeaponModel) {
 		var wepAnim = hand.getAnim(anim)
 		if(wepAnim !== false)
 			return base + wepAnim
@@ -212,11 +232,72 @@ function critterUpdateStaticAnimation(obj) {
 
 		if(obj.frame === imageInfo[obj.art].numFrames) {
 			// animation is done
-			// todo: some sort of callback or action when completed?
 			if(obj.animCallback)
 				obj.animCallback()
 		}
 	}
+}
+
+// This checks if a critter (such as the player) entered an exit grid
+// It could also check if a trap is ran into
+
+function critterWalkCallback(obj) {
+	if(obj.isPlayer !== true) return
+	var objs = objectsAtPosition(obj.position)
+	for(var i = 0; i < objs.length; i++) {
+		if(objs[i].type === "misc" && objs[i].extra && objs[i].extra.exitMapID !== undefined) {
+			// walking on an exit grid
+			// todo: exit grids are likely multi-hex (maybe have a set?)
+			var exitMapID = objs[i].extra.exitMapID
+			var startingPosition = fromTileNum(objs[i].extra.startingPosition)
+			var startingElevation = objs[i].extra.startingElevation
+			critterStopWalking(obj)
+
+			if(startingPosition === -1) { // world map
+				console.log("exit grid -> worldmap")
+			}
+			else { // another map
+				console.log("exit grid -> map " + exitMapID + " elevation " + startingElevation +
+					" @ " + startingPosition.x + ", " + startingPosition.y)
+				loadMapID(exitMapID, startingPosition, startingElevation)
+			}
+
+			return true
+		}
+	}
+
+	return false
+}
+
+function getAnimPartialActions(art, anim) {
+	var partialActions = {movement: null, actions: []}
+	var numPartials = 1
+
+	if(anim === "walk" || anim === "run") {
+		numPartials = getAnimDistance(art)
+		partialActions.movement = numPartials
+	}
+
+	if(numPartials === 0)
+		numPartials = 1
+
+	var delta = Math.floor(imageInfo[art].numFrames / numPartials)
+	var startFrame = 0
+	var endFrame = delta
+	var nextActionId = 0
+	for(var i = 0; i < numPartials; i++) {
+		var nextNumber = (i+1) % numPartials
+		partialActions.actions.push({startFrame: startFrame,
+									 endFrame: endFrame,
+									 step: i})
+		startFrame += delta
+		endFrame += delta // ?
+	}
+
+	// extend last partial action to the last frame
+	partialActions.actions[partialActions.actions.length-1].endFrame = imageInfo[art].numFrames
+
+	return partialActions
 }
 
 function critterUpdateAnimation(obj) {
@@ -224,28 +305,46 @@ function critterUpdateAnimation(obj) {
 	if(animInfo[obj.anim].type === "static") return critterUpdateStaticAnimation(obj)
 
 	var time = heart.timer.getTime()
-	var fps = 10 // todo: get FPS from image info
+	var fps = imageInfo[obj.art].fps
 	var targetScreen = hexToScreen(obj.path.target.x, obj.path.target.y)
 	var moveDistance = getAnimDistance(obj.art)
 	var tilePerFrame = Math.floor(imageInfo[obj.art].numFrames / moveDistance)
+
+	var partials = getAnimPartialActions(obj.art, obj.anim)
+	if(obj.path.partial === undefined)
+		obj.path.partial = 0
+	//console.log("partial: " + obj.path.partial + " | distance: " + obj.path.distance +
+	//	" | frame: " + obj.frame)
+	var currentPartial = partials.actions[obj.path.partial]
 
 	if(time - obj.lastFrameTime >= 1000/fps) {
 		// advance frame
 		obj.frame++
 		obj.lastFrameTime = time
 
-		if(obj.frame === tilePerFrame && obj.path.distance === 1) { // half walk, one tile
-			obj.frame = 0
-			var h = hexInDirection(obj.position, obj.orientation)
-			obj.position = h
-			obj.path.distance -= 1
-		}
-		else if(obj.frame === tilePerFrame /* *2 */) { // full walk, 2+ tiles
-			obj.frame = 0
-			var h = hexInDirection(obj.position, obj.orientation)
-			var h2 = hexInDirection(h, obj.orientation)
-			obj.position = h2
-			obj.path.distance -= 2
+		if(obj.frame === currentPartial.endFrame) {
+			var partialsLeft = obj.path.distance - obj.path.partial - 1
+
+			if(partialsLeft > 0 && partials.actions[obj.path.partial+1] !== undefined) {
+				// proceed to next partial
+				obj.path.partial++
+				obj.frame = partials.actions[obj.path.partial].startFrame
+			} else {
+				// we're done animating this, loop
+				obj.path.partial = 0
+				obj.frame = partials.actions[obj.path.partial].startFrame
+
+				var distMoved = Math.min(moveDistance, obj.path.distance)
+				//console.log("end partial, moved " + distMoved + " hexes, " + (obj.path.distance-distMoved) + " hexes left")
+				var h = hexInDirection(obj.position, obj.orientation)
+				if(critterWalkCallback(obj)) return
+				for(var i = 0; i < distMoved-1; i++) {
+					h = hexInDirection(h, obj.orientation)
+					if(critterWalkCallback(obj)) return
+				}
+				obj.position = h
+				obj.path.distance -= distMoved
+			}
 		}
 
 		if(obj.position.x === obj.path.target.x && obj.position.y === obj.path.target.y) {
@@ -256,4 +355,11 @@ function critterUpdateAnimation(obj) {
 					obj.animCallback()
 		}
 	}
+}
+
+function critterGetStat(obj, stat) {
+	console.log("STAT: " + stat + " IS: " + obj.stats[stat])
+	if(obj.stats[stat] !== undefined)
+		return obj.stats[stat]
+	return null
 }

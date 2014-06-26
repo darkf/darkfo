@@ -8,7 +8,7 @@ from collections import Counter
 
 OUT_DIR = "maps"
 
-mapScriptPIDs = {}
+mapScriptPIDs = [{} for _ in range(5)]
 
 def pidType(pid):
 	return (pid >> 24) & 0xff
@@ -43,13 +43,14 @@ class ScriptsIgnore(Construct):
         				UBInt32("id")
         			))._parse(stream, context).id
         			#print "script_id:", script_id
-        			pid_ = pid & 0xffff
-        			if pid_ > 16:
-        				print "ignoring script pid:", hex(pid), "(", pid_, ")"
-        			else:
-        				scriptName = stripExt(getProFile(scriptLst, script_id).split()[0])
-	        			print "PID", (pid_), "is", script_id, "(", scriptName, ")"
-	        			mapScriptPIDs[pid_] = scriptName
+        			pidID = pid & 0xffff
+        			#if pid_ > 16:
+        			#	print "ignoring script pid:", hex(pid), "(", pid_, ")"
+        			#else:
+        			if script_id > 0 and script_id < len(scriptLst):
+	    				scriptName = stripExt(getProFile(scriptLst, script_id).split()[0])
+	    				print "Map script PID %d type %d is %d (%s)" % (pidID, scriptType, script_id, scriptName)
+	        			mapScriptPIDs[scriptType][pidID] = scriptName
 
         			move = 15
         			if pid_type == 1:
@@ -174,10 +175,10 @@ def getCritterArtPath(frmPID):
 	elif (id2 == 0x25):
 		path += "cj"
 	elif (id2 >= 0x30):
-		raise Exception("0x30")
 		#tmpBuf[0] = 'r';
 		#tmpBuf[1] = char(id2) + 0x31;
 		#path.append(tmpBuf);
+		path += 'r' + chr(id2 + 0x31)
 	elif (id2 >= 0x14):
 		raise Exception("0x14")
 		#tmpBuf[0] = 'b';
@@ -205,13 +206,13 @@ def getCritterArtPath(frmPID):
 		#raise Exception("other")
 		if (id2 <= 1 and id1 > 0):
 			print "ID1:", id1
-			path += chr(id1 + ord('c')).upper()
+			path += chr(id1 + ord('c'))
 			#tmpBuf[0] = char(id1) + 'c';
 		else:
 			#tmpBuf[0] = 'a';
 			path += 'A'
 		#tmpBuf[1] = char(id2) + 'a';
-		path += chr(id2 + ord('a')).upper()
+		path += chr(id2 + ord('a'))
 		#path.append(tmpBuf);
 
 	path += ".fr"
@@ -272,7 +273,9 @@ CritterInfo = Struct("",
 
 Ladder = Struct("",
 	IfThenElse("foo", lambda ctx: ctx._._._._.version == 20,
-		Padding(2*4), # fallout 2
+		Struct("", # fallout 2
+			SBInt32("1"),
+			SBInt32("2")),
 		Padding(4) # fallout 1
 	)
 )
@@ -283,7 +286,7 @@ SceneryInfo = Struct("",
 	Value("subtype", lambda ctx: getProSubType("proto/scenery/" + getProFile(sceneryProtoLst, (ctx._.protoPID & 0xffff) - 1))),
 	Switch("extra", lambda ctx: ctx.subtype, {
 		scenerytype_portal: Struct("",
-			Value("subtype", lambda _: "portal"),
+			Value("subtype", lambda _: "door"),
 			Padding(4)
 		),
 		scenerytype_elevator: Struct("",
@@ -292,7 +295,8 @@ SceneryInfo = Struct("",
 		),
 		scenerytype_stairs: Struct("",
 			Value("subtype", lambda _: "stairs"),
-			Padding(4*2)
+			SBInt32("destination"),
+			SBInt32("destinationMap"),
 		),
 		scenerytype_ladderup: Ladder,
 		scenerytype_ladderdown: Ladder,
@@ -312,7 +316,14 @@ ExtraObjectInfo = \
 			Value("type", lambda _: "misc"),
 			Value("artPath", lambda ctx: "art/misc/" + stripExt(getProFile(miscLst, ctx._.frmPID & 0xffff))),
 			If(lambda ctx: (ctx._.protoPID & 0xffff) != 1 and (ctx._.protoPID & 0xffff) != 12,
-				Padding(4*4))
+				#Padding(4*4))
+				# exit grids
+				Struct("extra",
+					SBInt32("exitMapID"),
+					SBInt32("startingPosition"),
+					SBInt32("startingElevation"),
+					UBInt32("startingOrientation")
+			))
 		),
 		objtype_scenery: SceneryInfo,
 
@@ -400,6 +411,9 @@ fomap = Struct("map",
 	))
 )
 
+def tileNumToPos(t):
+	return {"x": t % 200, "y": t / 200}
+
 def main():
 	if len(sys.argv) != 2:
 		print "USAGE: %s MAP" % sys.argv[0]
@@ -424,7 +438,13 @@ def main():
 
 		#print map_.object[0]
 
-		elevm = [] # each elevation
+		theMap = {
+			"levels": [], # info for each elevation
+			"startPosition": tileNumToPos(map_.playerPos),
+			"startElevation": map_.elevation,
+			"startOrientation": map_.playerOrientation,
+			"mapID": map_.mapID
+		}
 		lst = loadLst("art/tiles/tiles.lst")
 		#scriptLst = loadLst("scripts/scripts.lst")
 		tileCounter = Counter()
@@ -460,17 +480,17 @@ def main():
 						object_ = object_._obj
 						object_.amount = amount
 
-					x = object_.position % 200
-					y = object_.position / 200
 					obj = {"type": object_.extra.type,
 						   "pid": object_.protoPID,
 						   "pidID": (object_.protoPID & 0xffff),
 						   "frmPID": object_.frmPID,
-						   "position": {"x": x, "y": y},
+						   "position": tileNumToPos(object_.position),
 						   "orientation": object_.orientation}
 					#if hasattr(object_.extra, "subtype"):
 					#	obj["subtype"] = object_.extra.subtype
 
+					if hasattr(object_.extra, "extra"):
+						obj["extra"] = object_.extra.extra
 					if hasattr(object_.extra, "info"):
 						obj["subtype"] = object_.extra.info.subtype
 					if hasattr(object_.extra, "artPath"):
@@ -483,7 +503,11 @@ def main():
 					elif object_.scriptID == -1 and object_.mapPID != 0xFFFFFFFF:
 						# this is some funky stuff... let's try to use the script IDs we got from
 						# the weird script ignore step
-						scriptName = mapScriptPIDs[object_.mapPID & 0xffff]
+						scriptType = (object_.mapPID >> 24) & 0xff
+						scriptPID = object_.mapPID & 0xffff
+						print "using map script for %s (script PID %d)" % (object_.extra.artPath, scriptPID)
+						scriptName = mapScriptPIDs[scriptType][scriptPID]
+						print "(map script %d type %d = %s)" %  (scriptPID, scriptType, scriptName)
 						obj["script"] = scriptName
 						scriptCounter[scriptName] += 1
 
@@ -499,9 +523,11 @@ def main():
 				for i,object_ in enumerate(map_.objects[elevation].object):
 					m["objects"].append(getObject(object_))
 
-			elevm.append(m)
+			theMap["levels"].append(m)
 
-		json.dump(elevm, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".json"), "w"))
+		open("fuck.txt", "w").write(repr(theMap))
+
+		json.dump(theMap, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".json"), "w"))
 
 		# player (Vault 13 Jumpsuit)
 		objectCounter["art/critters/hmjmpsaa"] += 1
@@ -512,10 +538,10 @@ def main():
 			json.dump(images, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".images.json"), "w"))
 			open(os.path.join(OUT_DIR,stripExt(MAP_NAME)+".images.txt"), "w").writelines(x+"\n" for x in images)
 
-		for tile in tileCounter:
-			print "art/tiles/" + tile
-		for obj in objectCounter:
-			print obj
+		#for tile in tileCounter:
+		#	print "art/tiles/" + tile
+		#for obj in objectCounter:
+		#	print obj
 		for script in scriptCounter:
 			print script
 

@@ -17,26 +17,8 @@ var scriptingEngine = (function() {
 		88: 0, // GVAR_VAULT_RAIDERS
 		83: 2, // GVAR_VAULT_PLANT_STATUS (9 = PLANT_REPAIRED, 2 = PLANT_ACCEPTED_QUEST)
 		616: 0, // GVAR_GECKO_FIND_WOODY (0 = WOODY_UNKNOWN)
-	}
-	var scriptIDs = {
-		800: "Raiders2",
-		14: "GENERIC",
-		825: "FCGUNMER",
-		145: "GCFOLK",
-		399: "GCHAROLD",
-		138: "GCWOOZ",
-		613: "HCCHAD",
-		139: "GCLENNY",
-		143: "GCRGUARD",
-		393: "GCRGHOUL",
-		142: "GCRGLOW",
-		133: "GCHANK",
-		131: "GCFESTUS",
-		516: "GSTERM",
-		1260: "GCPERCY",
-	}
-	var mapIDs = {
-		"GECKSETL": 31
+		345: 16, // GVAR_NEW_RENO_FLAG_2 (16 = know_mordino_bit)
+		357: 2, // GVAR_NEW_RENO_LIL_JESUS_REFERS (lil_jesus_refers_yes)
 	}
 	var currentMapID = null
 	var currentMapObject = null
@@ -55,6 +37,11 @@ var scriptingEngine = (function() {
 		lvars: true,
 		tiles: true,
 		inventory: true,
+	}
+
+	var statMap = {
+		0: "STR", 1: "PER", 2: "END", 3: "CHR", 4: "INT",
+		5: "AGI", 6: "LUK"
 	}
 
 	function stub(name, args) {
@@ -111,20 +98,28 @@ var scriptingEngine = (function() {
 		return false
 	}
 
+	function getScriptName(id) {
+		return getLstId("scripts/scripts", id - 1).split(".")[0]
+	}
+
 	function getScriptMessage(id, msg) {
-		if(scriptIDs[id] === undefined) {
+		var name = getScriptName(id)
+		if(name === null) {
 			warn("getScriptMessage: no script with ID " + id)
 			return null
 		}
 
-		if(scriptMessages[scriptIDs[id]] === undefined)
-			loadMessageFile(scriptIDs[id])
-		if(scriptMessages[scriptIDs[id]] === undefined)
-			throw "getScriptMessage: loadMessageFile failed?"
-		if(scriptMessages[scriptIDs[id]][msg] === undefined)
-			throw "getScriptMessage: no message " + msg + " for script " + id + " (" + scriptIDs[id] + ")"
+		if(typeof msg === "string") // passed in a string message
+			return msg
 
-		return scriptMessages[scriptIDs[id]][msg]
+		if(scriptMessages[name] === undefined)
+			loadMessageFile(name)
+		if(scriptMessages[name] === undefined)
+			throw "getScriptMessage: loadMessageFile failed?"
+		if(scriptMessages[name][msg] === undefined)
+			throw "getScriptMessage: no message " + msg + " for script " + id + " (" + name + ")"
+
+		return scriptMessages[name][msg]
 	}
 
 	function dialogueReply(id) {
@@ -194,15 +189,46 @@ var scriptingEngine = (function() {
 
 			if(id === 22) return 0 // is_game_loading
 		},
+		metarule3: function(id, obj, userdata, radius) {
+			if(id === 100) { // METARULE3_CLR_FIXED_TIMED_EVENTS
+				for(var i = 0; i < timeEventList.length; i++) {
+					if(timeEventList[i].obj === obj && 
+					   timeEventList[i].userdata === userdata) { // todo: game object equals
+					   	info("removing timed event (userdata " + userdata + ")", "timer")
+					   	timeEventList.splice(i, 1)
+					    return
+					}
+				}
+			}
+
+			stub("metarule3", arguments)
+		},
 
 		// player
 		give_exp_points: function(xp) { stub("give_exp_points", arguments) },
 
 		// critters
-		get_critter_stat: function(obj, stat) { stub("get_critter_stat", arguments); return 5 },
-		has_trait: function(traitType, obj, trait) { stub("has_trait", arguments); return 0 },
+		get_critter_stat: function(obj, stat) {
+			if(stat === 34) // STAT_gender
+				return obj.gender === "female" ? 1 : 0
+			var namedStat = statMap[stat]
+			if(namedStat !== undefined)
+				return critterGetStat(obj, namedStat)
+			stub("get_critter_stat", arguments)
+			return 5
+		},
+		has_trait: function(traitType, obj, trait) {
+			if(trait === 666) // OBJECT_VISIBILITY
+				return 1 // visible
+
+			stub("has_trait", arguments)
+			return 0
+		},
 		critter_add_trait: function(obj, traitType, trait, amount) { stub("critter_add_trait", arguments) },
-		item_caps_total: function(obj) { stub("item_caps_total", arguments) },
+		item_caps_total: function(obj) {
+			if(!isGameObject(obj)) throw "item_caps_total: not game object"
+			return objectGetMoney(obj)
+		},
 		item_caps_adjust: function(obj, amount) { stub("item_caps_adjust", arguments) },
 		move_obj_inven_to_obj: function(obj, other) {
 			if(obj === null || other === null) {
@@ -250,34 +276,75 @@ var scriptingEngine = (function() {
 			info("add_mult_objs_to_inven: " + count + " counts of " + item.toString(), "inventory")
 			objectAddItem(obj, item, count)
 		},
+		rm_mult_objs_from_inven: function(obj, item, count) { // Remove count copies of item from obj's inventory
+			stub("rm_mult_objs_from_inven", arguments)
+		},
 		obj_carrying_pid_obj: function(obj, pid) { stub("obj_carrying_pid_obj", arguments); return 0 },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
 		has_skill: function(obj, skill) { stub("has_skill", arguments); return 100 },
+		roll_vs_skill: function(obj, skill, bonus) { stub("roll_vs_skill", arguments); return 1 },
+		is_success: function(roll) { stub("is_success", arguments); return 0 },
+		critter_inven_obj: function(obj, where) {
+			if(!isGameObject(obj)) throw "critter_inven_obj: not game object"
+			if(where === 0) {} // INVEN_TYPE_WORN
+			else if(where === 1) {} // INVEN_TYPE_RIGHT_HAND
+			else if(where === 2) {} // INVEN_TYPE_LEFT_HAND
+			else if(where === -2) throw "INVEN_TYPE_INV_COUNT"
+			stub("critter_inven_obj", arguments)
+			return undefined
+		},
+		critter_attempt_placement: function(obj, tile, elevation) { stub("critter_attempt_placement", arguments) },
+		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
+			info("[enter combat via attack_complex]")
+			stub("attack_complex", arguments)
+		},
 
 		// objects
+		obj_is_locked: function(obj) { stub("obj_is_locked", arguments); return 0 },
 		obj_lock: function(obj) { stub("obj_lock", arguments) },
 		obj_unlock: function(obj) { stub("obj_unlock", arguments) },
+		obj_is_open: function(obj) { stub("obj_is_open", arguments); return 0 },
+		obj_close: function(obj) { stub("obj_close", arguments) },
+		obj_open: function(obj) { stub("obj_open", arguments) },
 		create_object_sid: function(pid, tile, elevation, sid) { // Create object of pid and possibly script
 			info("create_object_sid: " + pid + " / " + sid)
 
 			// TODO: Does this work on anything _but_ items?
-			var obj = createObjectWithPID(0 /* type item */, pid)
+			var obj = createObjectWithPID(0 /* type item */, pid, sid)
 			if(obj === null)
 				warn("create_object_sid: couldn't create object")
 			//info("OBJ: " + repr(obj))
-
-			if(obj.pro.extra.scriptID != sid)
-				throw "create_object_sid: need to change script ID (" + obj.pro.extra.scriptID +
-					" to " + sid + ")"
 			//stub("create_object_sid", arguments)
 			return obj
 		},
+		obj_name: function(obj) { return obj.name },
+		obj_item_subtype: function(obj) {
+			if(!isGameObject(obj)) {
+				warn("obj_item_subtype: not game object: " + obj)
+				return null
+			}
+
+			if(obj.type === "item" && obj.pro !== undefined)
+				return obj.pro.extra.subtype
+			stub("obj_item_subtype", arguments)
+			return null
+		},
+		anim_busy: function(obj) { stub("anim_busy", arguments); return 0 },
+		obj_art_fid: function(obj) { stub("obj_art_fid", arguments); return 0 },
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
 		override_map_start: function(x, y, elevation, rotation) { stub("override_map_start", arguments) },
+		obj_pid: function(obj) { stub("obj_pid", arguments) },
+		obj_on_screen: function(obj) { stub("obj_on_screen", arguments); return 0 },
+		obj_type: function(obj) {
+			if(!isGameObject(obj)) { warn("obj_type: not game object: " + obj); return }
+			if(obj.pid === undefined) { warn("obj_type: no PID"); return }
+			return (obj.pid >> 24) & 0xff
+		},
+		destroy_object: function(obj) { stub("destroy_object", arguments) }, // destroy object from world
 
 		// tiles
 		tile_distance_objs: function(a, b) { stub("tile_distance_objs", arguments) },
@@ -286,9 +353,15 @@ var scriptingEngine = (function() {
 			if(!isGameObject(obj)) { warn("tile_num: not game object"); return }
 			return toTileNum(obj.position)
 		},
-		tile_contains_pid_obj: function(tile, elevation, pid) { stub("tile_contains_pid_obj", arguments, "tiles") },
+		tile_contains_pid_obj: function(tile, elevation, pid) { stub("tile_contains_pid_obj", arguments, "tiles") ;},
 		tile_num_in_direction: function(tile, direction) { return toTileNum(hexInDirection(fromTileNum(tile), direction)) },
 		tile_in_tile_rect: function(_, _, _, _, t) { stub("tile_in_tile_rect", arguments, "tiles"); return 0 },
+		tile_contains_obj_pid: function(tile, elevation, pid) { stub("tile_contains_obj_pid", arguments); return 0 },
+
+		// combat
+		node998: function() { // enter combat
+			console.log("[enter combat]")
+		},
 
 		// dialogue
 		node999: function() { // exit dialogue
@@ -501,8 +574,15 @@ var scriptingEngine = (function() {
 		reg_anim_func: function(_, _) { stub("reg_anim_func", arguments) },
 		reg_anim_animate_forever: function(obj, anim) {
 			stub("reg_anim_animate_forever", arguments)
-			if(!isGameObject(obj)) return
+			if(!isGameObject(obj)) {
+				warn("reg_anim_animate_forever: not a game object")
+				return
+			}
 			//console.log("ANIM FOREVER: " + obj.art + " / " + anim)
+			if(anim !== 0)
+				warn("reg_anim_animate_forever: anim = " + anim)
+			function animate() { objectSingleAnim(obj, false, animate) }
+			animate()
 		},
 		animate_move_obj_to_tile: function(obj, tile, speed) {
 			stub("animate_move_obj_to_tile", arguments)
@@ -511,16 +591,33 @@ var scriptingEngine = (function() {
 			critterWalkTo(obj, tile)
 		},
 
+		gfade_out: function(time) { stub("gfade_out", arguments) },
+		gfade_in: function(time) { stub("gfade_in", arguments) },
+
 		// timing
 		add_timer_event: function(obj, ticks, userdata) {
+			if(!isGameObject(obj)) { warn("add_timer_event: not game object: " + obj); return }
 			info("timer event added in " + ticks + " ticks (userdata " + userdata + ")", "timer")
 			// trigger timedEvent in `ticks` game ticks
-			timeEventList.push({ticks: ticks, fn: function() {
+			timeEventList.push({ticks: ticks, obj: obj, userdata: userdata, fn: function() {
 				timedEvent(obj._script, userdata)
 			}.bind(this)})
-			stub("add_timer_event", arguments)
 		},
 		game_ticks: function(seconds) { return seconds*10 },
+		game_time_advance: function(ticks) {
+			info("advancing time " + ticks + " ticks " + "(" + ticks/10 + " seconds)")
+			gameTickTime += ticks
+		},
+
+		// game
+		load_map: function(map, startLocation) {
+			stub("load_map", arguments)
+			info("load_map: " + map)
+			if(typeof map === "string")
+				loadMap(map)
+			else
+				loadMapID(map)
+		},
 
 		// party
 		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 }
@@ -580,7 +677,10 @@ var scriptingEngine = (function() {
 			if(obj.hasOwnProperty("node999"))
 				delete obj.node999
 
-			obj.cur_map_index = currentMapID
+			// same for node998 (combat); some scripts also use this
+			// so it would be a good idea to wrap it instead.
+			if(obj.hasOwnProperty("node998"))
+				delete obj.node998
 
 			if(currentMapObject !== null)
 				obj._mapScript = currentMapObject
@@ -600,12 +700,20 @@ var scriptingEngine = (function() {
 		script.timed_event_p_proc()
 	}
 
+	function talk(script, obj) {
+		script.self_obj = obj
+		script.game_time = Math.max(1, gameTickTime)
+		script.cur_map_index = currentMapID
+		script.talk_p_proc()
+	}
+
 	function updateCritter(script) {
 		// critter heartbeat (critter_p_proc)
 		if(script.critter_p_proc === undefined)
 			return
 
 		script.game_time = gameTickTime
+		script.cur_map_index = currentMapID
 		script.critter_p_proc()
 	}
 
@@ -626,6 +734,7 @@ var scriptingEngine = (function() {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
 				script.game_time = Math.max(1, gameTickTime)
+				script.cur_map_index = currentMapID
 				script.map_update_p_proc()
 				updated++
 			}
@@ -634,9 +743,10 @@ var scriptingEngine = (function() {
 		// info("updated " + updated + " objects")
 	}
 
-	function enterMap(mapScript, objects, elevation) {
+	function enterMap(mapScript, objects, elevation, mapID) {
 		gameObjects = objects
 		gameElevation = elevation
+		currentMapID = mapID
 
 		if(mapScript.map_enter_p_proc !== undefined) {
 			info("calling map enter")
@@ -650,28 +760,30 @@ var scriptingEngine = (function() {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
 				script.game_time = Math.max(1, gameTickTime)
+				script.cur_map_index = currentMapID
 				script.map_enter_p_proc()
 				updated++
 			}
 		}
 	}
 
-	function init(dude, mapName) {
-		//console.log("hi")
-		seed(123)
+	function reset(dude, mapName) {
+		timeEventList.length = 0 // clear timed events
+		dialogueOptionProcs.length = 0
+		gameObjects = null
+		currentMapObject = null
+		currentMapID = null
+
 		dudeObject = dude
 		ScriptProto.dude_obj = dudeObject
+	}
 
-		if(mapIDs[mapName] === undefined)
-			warn("No map ID for map " + mapName)
-		else
-			currentMapID = mapIDs[mapName]
-		/*$.ajaxSetup({error: function(_, status, err) {
-			console.log("AJAX error: status: " + status + ", err: " + err)
-		}})*/
+	function init(dude, mapName, mapID) {
+		seed(123)
+		reset(dude, mapName, mapID)
 	}
 
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
-		    timeEventList: timeEventList, info: info}
+		    timeEventList: timeEventList, info: info, reset: reset, talk: talk}
 })()
