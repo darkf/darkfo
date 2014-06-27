@@ -366,6 +366,11 @@ var scriptingEngine = (function() {
 		// dialogue
 		node999: function() { // exit dialogue
 			info("DIALOGUE EXIT (Node999)")
+			if(this.yieldedFn !== undefined) {
+				info("[calling yielded fn]")
+				this.yieldedFn()
+				this.yieldedFn = undefined
+			}
 			dialogueExit()
 		},
 		gdialog_set_barter_mod: function(mod) { stub("gdialog_set_barter_mod", arguments) },
@@ -704,7 +709,15 @@ var scriptingEngine = (function() {
 		script.self_obj = obj
 		script.game_time = Math.max(1, gameTickTime)
 		script.cur_map_index = currentMapID
-		script.talk_p_proc()
+
+		var r = script.talk_p_proc()
+		if(r !== undefined && r._yield !== undefined) {
+			// procedure yielded
+			info("[procedure yielded]")
+			if(script.yieldedFn !== undefined)
+				throw "unused yielded fn already exists"
+			script.yieldedFn = r._yield
+		}
 	}
 
 	function updateCritter(script) {
