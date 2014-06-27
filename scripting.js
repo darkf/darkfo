@@ -24,6 +24,7 @@ var scriptingEngine = (function() {
 	var currentMapObject = null
 	var scriptMessages = {}
 	var dialogueOptionProcs = []
+	var currentDialogueObject = null
 	var timeEventList = []
 
 	var debugLogShowType = {
@@ -123,12 +124,28 @@ var scriptingEngine = (function() {
 	}
 
 	function dialogueReply(id) {
-		dialogueOptionProcs[id]()
+		var f = dialogueOptionProcs[id]
+		dialogueOptionProcs = []
+		f()
+		// by this point we may have already exited dialogue
+		if(currentDialogueObject !== null && dialogueOptionProcs.length === 0) {
+			// after running the option procedure we have no options...
+			// so close the dialogue
+			dialogueExit()
+		}
 	}
 
 	function dialogueExit() {
 		$("#dialogue").css("visibility", "hidden") // todo: some sort of transition
-		dialogueOptionProcs = []
+		info("[dialogue exit]")
+
+		if(currentDialogueObject !== null && currentDialogueObject._script.yieldedFn !== undefined) {
+			info("[calling yielded fn]")
+			currentDialogueObject._script.yieldedFn()
+			currentDialogueObject._script.yieldedFn = undefined
+		}
+
+		currentDialogueObject = null
 	}
 
 	function endBarter() {
@@ -366,11 +383,6 @@ var scriptingEngine = (function() {
 		// dialogue
 		node999: function() { // exit dialogue
 			info("DIALOGUE EXIT (Node999)")
-			if(this.yieldedFn !== undefined) {
-				info("[calling yielded fn]")
-				this.yieldedFn()
-				this.yieldedFn = undefined
-			}
 			dialogueExit()
 		},
 		gdialog_set_barter_mod: function(mod) { stub("gdialog_set_barter_mod", arguments) },
@@ -536,6 +548,8 @@ var scriptingEngine = (function() {
 			log("start_gdialog", arguments)
 			info("DIALOGUE START", "dialogue")
 			$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
+			if(!this.self_obj) throw "no self_obj for start_gdialog"
+			currentDialogueObject = this.self_obj
 			//stub("start_gdialog", arguments)
 		},
 		gsay_start: function() { stub("gSay_Start", arguments) },
@@ -625,7 +639,8 @@ var scriptingEngine = (function() {
 		},
 
 		// party
-		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 }
+		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 },
+		party_add: function(obj) { stub("party_add", arguments) }
 	}
 
 	function loadMessageFile(name) {
@@ -798,5 +813,5 @@ var scriptingEngine = (function() {
 
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
-		    timeEventList: timeEventList, info: info, reset: reset, talk: talk}
+		    timeEventList: timeEventList, info: info, reset: reset, talk: talk, globalVars: globalVars}
 })()
