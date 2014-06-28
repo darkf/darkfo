@@ -199,7 +199,7 @@ function loadPRO(pid, pidID) {
 
 	// use the proto/ .lst files to look up proto
 	var type = getPROType(pid)
-	var lsts = {"items": "proto/items/items"}
+	var lsts = {"items": "proto/items/items", "critters": "proto/critters/critters"}
 	var id = lsts[type] ? getLstId(lsts[type], pidID - 1) : pidID
 	var path = lsts[type] ? id : (pad(id, 8) + '.pro')
 
@@ -426,7 +426,8 @@ function initObjects(objects) {
 			continue // critters are handled separately
 		}
 
-		initObjects(obj.inventory) // containers, etc
+		if(obj.inventory !== undefined)
+			initObjects(obj.inventory) // containers, etc
 
 		if(obj.type === "item") { // load item inventory art
 			obj.pro = loadPRO(obj.pid, obj.pidID)
@@ -897,8 +898,11 @@ function drawTileMap(matrix, offsetY) {
 function drawObject(obj) {
 	var scr = hexToScreen(obj.position.x, obj.position.y)
 
-	if(images[obj.art] === undefined)
-		throw "No art for object: " + obj.art // skip images we don't have
+	if(images[obj.art] === undefined) {
+		console.log("No art for object: " + obj.art) // skip images we don't have
+		lazyLoadImage(obj.art) // try to load it in
+		return
+	}
 
 	var info = imageInfo[obj.art]
 	if(info === undefined)

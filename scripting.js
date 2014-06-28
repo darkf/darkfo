@@ -14,6 +14,10 @@ var scriptingEngine = (function() {
 		}
 	}
 	var globalVars = {
+		0: 50, // GVAR_PLAYER_REPUTATION
+		10: 1, // GVAR_START_ARROYO_TRIAL (1 = TRIAL_FIGHT)
+		531: 1, // GVAR_TALKED_TO_ELDER
+		452: 2, // GVAR_DEN_VIC_KNOWN
 		88: 0, // GVAR_VAULT_RAIDERS
 		83: 2, // GVAR_VAULT_PLANT_STATUS (9 = PLANT_REPAIRED, 2 = PLANT_ACCEPTED_QUEST)
 		616: 0, // GVAR_GECKO_FIND_WOODY (0 = WOODY_UNKNOWN)
@@ -292,6 +296,7 @@ var scriptingEngine = (function() {
 
 			info("add_mult_objs_to_inven: " + count + " counts of " + item.toString(), "inventory")
 			objectAddItem(obj, item, count)
+			drawInventory($("#playerInventory"), player)
 		},
 		rm_mult_objs_from_inven: function(obj, item, count) { // Remove count copies of item from obj's inventory
 			stub("rm_mult_objs_from_inven", arguments)
