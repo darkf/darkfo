@@ -15,8 +15,8 @@ var AI = function(combatant) {
 		}
 	}
 
-	this.aiInfo = AI.aiTxt[this.combatant.pro.extra.AI]
-	if(this.aiInfo === undefined)
+	this.info = AI.aiTxt[this.combatant.pro.extra.AI]
+	if(this.info === undefined)
 		throw "no AI packet for " + combatant.toString() +
 			  " (packet " + this.combatant.pro.extra.AI + ")"
 }
@@ -41,6 +41,11 @@ var Combat = function(objects, player) {
 	this.turnNum = 0
 	this.whoseTurn = -2
 	this.inPlayerTurn = false
+}
+
+Combat.prototype.log = function(msg) {
+	// Combat-related debug log
+	console.log(msg)
 }
 
 Combat.prototype.getMaxAP = function(obj) {
@@ -84,11 +89,11 @@ Combat.prototype.attack = function(obj, target, callback) {
 	var damage = this.getDamageDone(obj, target)
 	var who = obj.isPlayer ? "You" : critterGetName(obj)
 	var targetName = target.isPlayer ? "you" : critterGetName(target)
-	console.log(who + " hit " + targetName + " for " + damage + " damage")
+	this.log(who + " hit " + targetName + " for " + damage + " damage")
 	target.stats.HP -= damage
 
 	if(target.stats.HP <= 0) {
-		console.log("...And killed them.")
+		this.log("...And killed them.")
 		target.dead = true
 
 		if(critterHasAnim(target, "death"))
@@ -105,6 +110,17 @@ Combat.prototype.findTarget = function(obj) {
 	return this.player
 }
 
+Combat.prototype.walkUpTo = function(obj, idx, target, maxDistance, callback) {
+	// Walk up to `maxDistance` hexes, adjusting AP to fit
+	if(critterWalkTo(obj, target, false, callback, maxDistance) !== false) {
+		// OK
+		this.AP[idx] -= obj.path.path.length
+		return true
+	}
+
+	return false
+}
+
 Combat.prototype.doAITurn = function(obj, idx) {
 	var that = this
 	var target = this.findTarget(obj)
@@ -116,13 +132,24 @@ Combat.prototype.doAITurn = function(obj, idx) {
 
 	// behaviors
 
+	if(obj.stats.HP <= obj.ai.info.min_hp) { // hp <= min fleeing hp, so flee
+		this.log("[AI FLEES]")
+		// todo: pick the closest edge of the map
+		var targetPos = {x: 128, y: obj.position.y} // left edge
+		this.walkUpTo(obj, idx, targetPos, AP, function() {
+			critterStopWalking(obj)
+			that.doAITurn(obj, idx) // if we can, do another turn
+		})
+		return
+	}
+
 	var weapon = critterGetEquippedWeapon(obj)
 	var fireDistance = weapon.getMaximumRange(1)
 
 	// are we in firing distance?
 	if(distance > fireDistance) {
 		// todo: some sane direction, and also path checking
-		console.log("[AI CREEPS]")
+		this.log("[AI CREEPS]")
 		var neighbors = hexNeighbors(target.position)
 		var maxDistance = Math.min(AP, fireDistance)
 
@@ -138,11 +165,11 @@ Combat.prototype.doAITurn = function(obj, idx) {
 		}
 
 		// no path
-		console.log("[NO PATH]")
+		this.log("[NO PATH]")
 		that.doAITurn(obj, idx) // if we can, do another turn
 	}
 	else if(AP >= 4) { // if we are in range, do we have enough AP to attack?
-		console.log("[ATTACKING]")
+		this.log("[ATTACKING]")
 		this.AP[idx] -= 4
 
 		if(critterGetEquippedWeapon(obj) === null)
