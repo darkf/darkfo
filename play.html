@@ -577,31 +577,13 @@ function loadMap(mapName, startingPosition, startingElevation) {
 	// load some testing art
 	load("art/critters/hmjmpsat")
 
-	load("art/critters/navgulij")
-	load("art/critters/navgulia")
-	load("art/critters/navgulab")
-	load("art/critters/naghulab")
-
-	load("art/critters/naghulja")
-	load("art/critters/naghuljb")
-
-	load("art/critters/hanpwraa")
-	load("art/critters/hanpwrab")
-	load("art/critters/hanpwraq")
-	load("art/critters/hanpwria")
-	load("art/critters/hanpwrib")
-	load("art/critters/hanpwrij")
-
 	load("hex_outline", function(r) { hexOverlay = r })
 
 	if(doCombat === true && DEBUG === true) {
-		// for testing
+		// for testing on GECKSETL
 		var a = gObjects[1175]
 		var b = gObjects[1260]
 		gObjects = [a, b]
-
-		a.art = "art/critters/hanpwraa"
-		b.art = "art/critters/hanpwraa"
 	}
 
 	for(var level = 0; level < gMap.levels.length; level++) {
@@ -790,9 +772,10 @@ heart.keydown = function(k) {
 	}
 
 	if(k == 'u') {
-		var obj = objectsAtPosition(mouseHex)[0]
-		if(obj !== undefined)
-			useObject(obj)
+		var objs = objectsAtPosition(mouseHex)
+		for(var i = 0; i < objs.length; i++) {
+			useObject(objs[i])
+		}
 	}
 }
 
