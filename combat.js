@@ -4,7 +4,24 @@
 
 var AI = function(combatant) {
 	this.combatant = combatant
+
+	if(AI.aiTxt === null) { // load AI.TXT
+		AI.aiTxt = {}
+		var ini = parseIni(getFileText("data/data/AI.TXT"))
+		if(ini === null) throw "couldn't load AI.TXT"
+		for(var key in ini) {
+			ini[key].keyName = key
+			AI.aiTxt[ini[key].packet_num] = ini[key]
+		}
+	}
+
+	this.aiInfo = AI.aiTxt[this.combatant.pro.extra.AI]
+	if(this.aiInfo === undefined)
+		throw "no AI packet for " + combatant.toString() +
+			  " (packet " + this.combatant.pro.extra.AI + ")"
 }
+
+AI.aiTxt = null // AI.TXT: packet num -> key/value
 
 var Combat = function(objects, player) {
 	this.combatants = []
