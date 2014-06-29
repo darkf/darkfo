@@ -2,6 +2,8 @@
 // Copyright (c) 2014 darkf
 // Licensed under the terms of the zlib license
 
+// TODO: Critter should really be a class of its own
+
 var animInfo = {"idle": {type: "static"},
                 "attack": {type: "static"},
                 "weapon-reload": {type: "static"},
@@ -80,6 +82,15 @@ var Weapon = function(weapon) {
 	}
 }
 
+Weapon.prototype.getMaximumRange = function(attackType) {
+	if(this.name === "punch")
+		return 1
+
+	if(attackType === 1) return this.weapon.pro.extra.maxRange1
+	if(attackType === 2) return this.weapon.pro.extra.maxRange2
+	else throw "invalid attack type " + attackType
+}
+
 Weapon.prototype.getSkin = function() {
 	if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
 		return null
@@ -122,7 +133,7 @@ function critterGetBase(obj) {
 }
 
 function critterGetEquippedWeapon(obj) {
-	return obj.leftHand || obj.rightHand
+	return obj.leftHand || obj.rightHand || null
 }
 
 function critterGetAnim(obj, anim) {
@@ -154,6 +165,12 @@ function critterHasAnim(obj, anim) {
 	return imageInfo[critterGetAnim(obj, anim)] !== undefined
 }
 
+function critterGetName(obj) {
+	if(obj.name !== undefined)
+		return obj.name
+	return "<unnamed>"
+}
+
 function getAnimDistance(art) {
 	var info = imageInfo[art]
 	if(info === undefined)
@@ -173,6 +190,7 @@ function critterWalkTo(obj, target, running, callback, maxLength) {
 		console.log("not a valid path")
 		return false
 	}
+	maxLength++
 	if(maxLength !== undefined && path.length > maxLength) {
 		console.log("truncating path (to length " + maxLength + ")")
 		path = path.slice(0, maxLength)

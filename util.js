@@ -29,3 +29,11 @@ function parseIni(text) {
 
 	return ini
 }
+
+function getFileText(path) {
+	var r = null
+	$.get(path, function(text) { r = text }, "text").fail(function() {
+		throw "getFileText: getting path " + path + " failed"
+	})
+	return r
+}

@@ -206,7 +206,12 @@ def readCritter(f):
 	obj["bodyType"] = read32(f)
 	obj["XPValue"] = read32(f)
 	obj["killType"] = read32(f)
-	obj["damageType"] = read32(f)
+
+
+	if obj["killType"] in (5, 10): # Robots/Brahmin
+		obj["damageType"] = None
+	else:
+		obj["damageType"] = read32(f)
 
 	return obj
 

@@ -14,6 +14,10 @@ var scriptingEngine = (function() {
 		}
 	}
 	var globalVars = {
+		0: 50, // GVAR_PLAYER_REPUTATION
+		10: 1, // GVAR_START_ARROYO_TRIAL (1 = TRIAL_FIGHT)
+		531: 1, // GVAR_TALKED_TO_ELDER
+		452: 2, // GVAR_DEN_VIC_KNOWN
 		88: 0, // GVAR_VAULT_RAIDERS
 		83: 2, // GVAR_VAULT_PLANT_STATUS (9 = PLANT_REPAIRED, 2 = PLANT_ACCEPTED_QUEST)
 		616: 0, // GVAR_GECKO_FIND_WOODY (0 = WOODY_UNKNOWN)
@@ -24,6 +28,7 @@ var scriptingEngine = (function() {
 	var currentMapObject = null
 	var scriptMessages = {}
 	var dialogueOptionProcs = []
+	var currentDialogueObject = null
 	var timeEventList = []
 
 	var debugLogShowType = {
@@ -123,12 +128,28 @@ var scriptingEngine = (function() {
 	}
 
 	function dialogueReply(id) {
-		dialogueOptionProcs[id]()
+		var f = dialogueOptionProcs[id]
+		dialogueOptionProcs = []
+		f()
+		// by this point we may have already exited dialogue
+		if(currentDialogueObject !== null && dialogueOptionProcs.length === 0) {
+			// after running the option procedure we have no options...
+			// so close the dialogue
+			dialogueExit()
+		}
 	}
 
 	function dialogueExit() {
 		$("#dialogue").css("visibility", "hidden") // todo: some sort of transition
-		dialogueOptionProcs = []
+		info("[dialogue exit]")
+
+		if(currentDialogueObject !== null && currentDialogueObject._script.yieldedFn !== undefined) {
+			info("[calling yielded fn]")
+			currentDialogueObject._script.yieldedFn()
+			currentDialogueObject._script.yieldedFn = undefined
+		}
+
+		currentDialogueObject = null
 	}
 
 	function endBarter() {
@@ -275,6 +296,7 @@ var scriptingEngine = (function() {
 
 			info("add_mult_objs_to_inven: " + count + " counts of " + item.toString(), "inventory")
 			objectAddItem(obj, item, count)
+			drawInventory($("#playerInventory"), player)
 		},
 		rm_mult_objs_from_inven: function(obj, item, count) { // Remove count copies of item from obj's inventory
 			stub("rm_mult_objs_from_inven", arguments)
@@ -531,6 +553,8 @@ var scriptingEngine = (function() {
 			log("start_gdialog", arguments)
 			info("DIALOGUE START", "dialogue")
 			$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
+			if(!this.self_obj) throw "no self_obj for start_gdialog"
+			currentDialogueObject = this.self_obj
 			//stub("start_gdialog", arguments)
 		},
 		gsay_start: function() { stub("gSay_Start", arguments) },
@@ -620,7 +644,8 @@ var scriptingEngine = (function() {
 		},
 
 		// party
-		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 }
+		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 },
+		party_add: function(obj) { stub("party_add", arguments) }
 	}
 
 	function loadMessageFile(name) {
@@ -704,7 +729,15 @@ var scriptingEngine = (function() {
 		script.self_obj = obj
 		script.game_time = Math.max(1, gameTickTime)
 		script.cur_map_index = currentMapID
-		script.talk_p_proc()
+
+		var r = script.talk_p_proc()
+		if(r !== undefined && r._yield !== undefined) {
+			// procedure yielded
+			info("[procedure yielded]")
+			if(script.yieldedFn !== undefined)
+				throw "unused yielded fn already exists"
+			script.yieldedFn = r._yield
+		}
 	}
 
 	function updateCritter(script) {
@@ -785,5 +818,5 @@ var scriptingEngine = (function() {
 
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
-		    timeEventList: timeEventList, info: info, reset: reset, talk: talk}
+		    timeEventList: timeEventList, info: info, reset: reset, talk: talk, globalVars: globalVars}
 })()

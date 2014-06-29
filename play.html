@@ -90,12 +90,23 @@ function reprStats(stats) {
 }
 
 // the player object
+var playerWeapon = new Weapon({art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9,
+	subtype: "weapon", amount: 1, inventory: [], type: "item", pro: {
+    lightRadius: 0, frmPID: 44, extra: {
+      animCode: 6, weight: 5,  materialID: 1, subType: 3, flagsExt: "'\\x00\\x00\\x00'",
+      cost: 1000, APCost2: 6, APCost1: 5, rounds: 10, minDmg: 100, size: 3,
+      dmgType: 0, minST: 4, soundID: "D", maxAmmo: 30, attackMode: 118, maxRange2: 20,
+      maxRange1: 25, invFRM: 117440514, maxDmg: 12, ammoPID: 29, critFail: 2, scriptID: -1,
+      projPID: -1, caliber: 8},
+    textID: 900, pid: 9, frmType: 0, flags: 8, lightIntensity: 0, type: 0},
+  name: "10mm SMG",
+  invArt: "art/inven/uzi"})
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null,
           	  baseStats: {STR: 8, PER: 5, END: 5, CHR: 6, INT: 5, AGI: 6, LUK: 5, HP: 100},
           	  bonusStats: {STR: 0, PER: 0, END: 0, CHR: 0, INT: 0, AGI: 0, LUK: 0, HP: 0},
-          	  leftHand: null, rightHand: null, weapon: null, armor: null,
+          	  leftHand: playerWeapon, rightHand: null, weapon: null, armor: null,
           	  dead: false, name: "Player", gender: "male",
           	  skills: {"Repair": 25, "Big Guns": 25, "Outdoorsman": 25, "Traps": 25, "Barter": 25,
           	  		   "Melee": 25, "Throwing": 25, "Steal": 25, "Doctor": 25, "Sneak": 25,
@@ -199,7 +210,7 @@ function loadPRO(pid, pidID) {
 
 	// use the proto/ .lst files to look up proto
 	var type = getPROType(pid)
-	var lsts = {"items": "proto/items/items"}
+	var lsts = {"items": "proto/items/items", "critters": "proto/critters/critters"}
 	var id = lsts[type] ? getLstId(lsts[type], pidID - 1) : pidID
 	var path = lsts[type] ? id : (pad(id, 8) + '.pro')
 
@@ -426,7 +437,8 @@ function initObjects(objects) {
 			continue // critters are handled separately
 		}
 
-		initObjects(obj.inventory) // containers, etc
+		if(obj.inventory !== undefined)
+			initObjects(obj.inventory) // containers, etc
 
 		if(obj.type === "item") { // load item inventory art
 			obj.pro = loadPRO(obj.pid, obj.pidID)
@@ -541,6 +553,7 @@ function loadMap(mapName, startingPosition, startingElevation) {
 
 	$.get("maps/"+mapName+".json", function(map) {
 		gMap = map
+		var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
 		if(doLoadScripts === true) {
 			scriptingEngine.init(player, mapName)
@@ -549,7 +562,6 @@ function loadMap(mapName, startingPosition, startingElevation) {
 			// warp to the default position (may be overridden by map script)
 			player.position = startingPosition || gMap.startPosition
 			player.orientation = gMap.startOrientation
-			var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
 			changeElevation(elevation, false)
 			loadObjectScripts(gObjects)
@@ -565,31 +577,13 @@ function loadMap(mapName, startingPosition, startingElevation) {
 	// load some testing art
 	load("art/critters/hmjmpsat")
 
-	load("art/critters/navgulij")
-	load("art/critters/navgulia")
-	load("art/critters/navgulab")
-	load("art/critters/naghulab")
-
-	load("art/critters/naghulja")
-	load("art/critters/naghuljb")
-
-	load("art/critters/hanpwraa")
-	load("art/critters/hanpwrab")
-	load("art/critters/hanpwraq")
-	load("art/critters/hanpwria")
-	load("art/critters/hanpwrib")
-	load("art/critters/hanpwrij")
-
 	load("hex_outline", function(r) { hexOverlay = r })
 
 	if(doCombat === true && DEBUG === true) {
-		// for testing
+		// for testing on GECKSETL
 		var a = gObjects[1175]
 		var b = gObjects[1260]
 		gObjects = [a, b]
-
-		a.art = "art/critters/hanpwraa"
-		b.art = "art/critters/hanpwraa"
 	}
 
 	for(var level = 0; level < gMap.levels.length; level++) {
@@ -724,11 +718,11 @@ heart.keydown = function(k) {
 			return
 		}
 
-		for(var i = 0; i < combat.critters.length; i++) {
-			if(combat.critters[i].position.x === mouseHex.x && combat.critters[i].position.y === mouseHex.y) {
+		for(var i = 0; i < combat.combatants.length; i++) {
+			if(combat.combatants[i].position.x === mouseHex.x && combat.combatants[i].position.y === mouseHex.y) {
 				player.AP -= 4
 				console.log("Attacking...")
-				combat.attack(player, combat.critters[i])
+				combat.attack(player, combat.combatants[i])
 				break
 			}
 		}
@@ -778,9 +772,10 @@ heart.keydown = function(k) {
 	}
 
 	if(k == 'u') {
-		var obj = objectsAtPosition(mouseHex)[0]
-		if(obj !== undefined)
-			useObject(obj)
+		var objs = objectsAtPosition(mouseHex)
+		for(var i = 0; i < objs.length; i++) {
+			useObject(objs[i])
+		}
 	}
 }
 
@@ -897,8 +892,11 @@ function drawTileMap(matrix, offsetY) {
 function drawObject(obj) {
 	var scr = hexToScreen(obj.position.x, obj.position.y)
 
-	if(images[obj.art] === undefined)
-		throw "No art for object: " + obj.art // skip images we don't have
+	if(images[obj.art] === undefined) {
+		console.log("No art for object: " + obj.art) // skip images we don't have
+		lazyLoadImage(obj.art) // try to load it in
+		return
+	}
 
 	var info = imageInfo[obj.art]
 	if(info === undefined)
@@ -993,7 +991,7 @@ heart.draw = function() {
 	}
 
 	if(inCombat === true) {
-		var whose = combat.whoseTurn === -1 ? "player" : combat.critters[combat.whoseTurn].art
+		var whose = combat.whoseTurn === -1 ? "player" : combat.combatants[combat.whoseTurn].art
 		var AP = combat.whoseTurn === -1 ? player.AP : combat.AP[combat.whoseTurn]
 		heart.graphics.print("[turn " + combat.turnNum + " of " + whose + " AP: " + AP + "]", SCREEN_WIDTH - 200, 15)
 	}
