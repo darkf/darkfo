@@ -2,19 +2,24 @@
 // Copyright (c) 2014 darkf
 // Licensed under the terms of the zlib license
 
+var AI = function(combatant) {
+	this.combatant = combatant
+}
+
 var Combat = function(objects, player) {
-	this.critters = []
+	this.combatants = []
 	for(var i = 0; i < objects.length; i++) {
 		if(objects[i].type === "critter") {
-			this.critters.push(objects[i])
+			this.combatants.push(objects[i])
+			objects[i].ai = new AI(objects[i])
 
 			if(objects[i].stats === undefined)
-				throw "no stats"; //objects[i].stats = this.getDefaultStats(objects[i])
+				throw "no stats"
 			objects[i].dead = false
 		}
 	}
 
-	this.AP = new Array(this.critters.length)
+	this.AP = new Array(this.combatants.length)
 	this.player = player
 	this.turnNum = 0
 	this.whoseTurn = -2
@@ -23,10 +28,6 @@ var Combat = function(objects, player) {
 
 Combat.prototype.fireDistance = function(obj) {
 	return 5 // todo: get some distance before firing
-}
-
-Combat.prototype.getDefaultStats = function(obj) {
-	return {STR: 4, PER: 5, END: 5, CHR: 1, INT: 1, AGI: 1, LUK: 1, HP: 100}
 }
 
 Combat.prototype.getMaxAP = function(obj) {
@@ -134,9 +135,27 @@ Combat.prototype.doAITurn = function(obj, idx) {
 	else this.nextTurn()
 }
 
+Combat.prototype.numAlive = function() {
+	var count = 0
+	for(var i = 0; i < this.combatants.length; i++) {
+		if(this.combatants[i].dead !== true)
+			count++
+	}
+	return count
+}
+
+Combat.prototype.end = function() {
+	console.log("[end combat]")
+	combat = null // todo: invert control
+	inCombat = false
+}
+
 Combat.prototype.nextTurn = function() {
+	if(this.numAlive() === 0)
+		return this.end()
+
 	this.whoseTurn++
-	if(this.whoseTurn >= this.critters.length) {
+	if(this.whoseTurn >= this.combatants.length) {
 		// end of turn
 		this.whoseTurn = -1
 	}
@@ -148,7 +167,7 @@ Combat.prototype.nextTurn = function() {
 	}
 	else {
 		this.inPlayerTurn = false
-		var critter = this.critters[this.whoseTurn]
+		var critter = this.combatants[this.whoseTurn]
 		if(critter.dead === true)
 			return this.nextTurn()
 		this.AP[this.whoseTurn] = this.getMaxAP(critter) // reset AP
