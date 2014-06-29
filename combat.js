@@ -165,6 +165,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 		this.log("[AI CREEPS]")
 		var neighbors = hexNeighbors(target.position)
 		var maxDistance = Math.min(AP, fireDistance)
+		this.maybeTaunt(obj, "move", messageRoll)
 
 		for(var i = 0; i < neighbors.length; i++) {
 			if(critterWalkTo(obj, neighbors[i], false, function() {
@@ -231,6 +232,7 @@ Combat.prototype.nextTurn = function() {
 		var critter = this.combatants[this.whoseTurn]
 		if(critter.dead === true)
 			return this.nextTurn()
+		// todo: convert unused AP into AC
 		this.AP[this.whoseTurn] = this.getMaxAP(critter) // reset AP
 		this.doAITurn(critter, this.whoseTurn)
 	}

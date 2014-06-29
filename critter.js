@@ -43,8 +43,8 @@ Weapon.prototype.getMaximumRange = function(attackType) {
 	if(this.name === "punch")
 		return 1
 
-	if(attackType === 1) return this.weapon.pro.maxRange1
-	if(attackType === 2) return this.weapon.pro.maxRange2
+	if(attackType === 1) return this.weapon.pro.extra.maxRange1
+	if(attackType === 2) return this.weapon.pro.extra.maxRange2
 	else throw "invalid attack type " + attackType
 }
 
