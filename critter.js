@@ -2,6 +2,8 @@
 // Copyright (c) 2014 darkf
 // Licensed under the terms of the zlib license
 
+// TODO: Critter should really be a class of its own
+
 var animInfo = {"idle": {type: "static"},
                 "attack": {type: "static"},
                 "weapon-reload": {type: "static"},
@@ -118,6 +120,12 @@ function critterGetAnim(obj, anim) {
 
 function critterHasAnim(obj, anim) {
 	return imageInfo[critterGetAnim(obj, anim)] !== undefined
+}
+
+function critterGetName(obj) {
+	if(obj.name !== undefined)
+		return obj.name
+	return "<unnamed>"
 }
 
 function getAnimDistance(art) {

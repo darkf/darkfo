@@ -65,8 +65,9 @@ Combat.prototype.attack = function(obj, target, callback) {
 	critterStaticAnim(obj, "attack", callback)
 
 	var damage = this.getDamageDone(obj, target)
-	var who = obj.isPlayer ? "You" : "An NPC"
-	console.log(who + " hit the target for " + damage + " damage")
+	var who = obj.isPlayer ? "You" : critterGetName(obj)
+	var targetName = target.isPlayer ? "you" : critterGetName(target)
+	console.log(who + " hit " + targetName + " for " + damage + " damage")
 	target.stats.HP -= damage
 
 	if(target.stats.HP <= 0) {
