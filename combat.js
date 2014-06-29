@@ -26,10 +26,6 @@ var Combat = function(objects, player) {
 	this.inPlayerTurn = false
 }
 
-Combat.prototype.fireDistance = function(obj) {
-	return 5 // todo: get some distance before firing
-}
-
 Combat.prototype.getMaxAP = function(obj) {
 	return 5 + Math.floor(obj.stats.AGI/2)
 }
@@ -98,7 +94,8 @@ Combat.prototype.doAITurn = function(obj, idx) {
 
 	// behaviors
 
-	var fireDistance = this.fireDistance(obj)
+	var weapon = critterGetEquippedWeapon(obj)
+	var fireDistance = weapon.getMaximumRange(1)
 	if(distance > fireDistance) {
 		// todo: some sane direction, and also path checking
 		console.log("[AI CREEPS]")
