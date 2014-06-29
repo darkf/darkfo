@@ -100,30 +100,36 @@ Combat.prototype.attack = function(obj, target, callback) {
 	}
 }
 
+Combat.prototype.findTarget = function(obj) {
+	// todo: find target according to AI rules
+	return this.player
+}
+
 Combat.prototype.doAITurn = function(obj, idx) {
 	var that = this
-	var distance = hexDistance(obj.position, this.player.position)
+	var target = this.findTarget(obj)
+	var distance = hexDistance(obj.position, target.position)
 	var AP = this.AP[idx]
 
-	if(AP <= 0) { // out of AP
-		this.nextTurn()
-		return
-	}
+	if(AP <= 0) // out of AP
+		return this.nextTurn()
 
 	// behaviors
 
 	var weapon = critterGetEquippedWeapon(obj)
 	var fireDistance = weapon.getMaximumRange(1)
+
+	// are we in firing distance?
 	if(distance > fireDistance) {
 		// todo: some sane direction, and also path checking
 		console.log("[AI CREEPS]")
-		var neighbors = hexNeighbors(this.player.position)
-		var maxDistance = Math.min(this.AP[idx], fireDistance)
+		var neighbors = hexNeighbors(target.position)
+		var maxDistance = Math.min(AP, fireDistance)
 
 		for(var i = 0; i < neighbors.length; i++) {
 			if(critterWalkTo(obj, neighbors[i], false, function() {
 				critterStopWalking(obj)
-				that.doAITurn(obj, idx)
+				that.doAITurn(obj, idx) // if we can, do another turn
 			}, maxDistance) !== false) {
 				// OK
 				this.AP[idx] -= obj.path.path.length
@@ -133,18 +139,18 @@ Combat.prototype.doAITurn = function(obj, idx) {
 
 		// no path
 		console.log("[NO PATH]")
-		that.doAITurn(obj, idx)
+		that.doAITurn(obj, idx) // if we can, do another turn
 	}
-	else if(AP >= 4) {
+	else if(AP >= 4) { // if we are in range, do we have enough AP to attack?
 		console.log("[ATTACKING]")
 		this.AP[idx] -= 4
 
-		if(!obj.leftHand)
-			throw "combatant has no left handed item"
+		if(critterGetEquippedWeapon(obj) === null)
+			throw "combatant has no equipped weapon"
 
-		this.attack(obj, this.player, function() {
+		this.attack(obj, target, function() {
 			critterStopWalking(obj)
-			that.doAITurn(obj, idx)
+			that.doAITurn(obj, idx) // if we can, do another turn
 		})
 	}
 	else this.nextTurn()
