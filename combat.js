@@ -105,6 +105,17 @@ Combat.prototype.attack = function(obj, target, callback) {
 	}
 }
 
+Combat.prototype.getCombatAIMessage = function(id) {
+	return getMessage("combatai", id)
+}
+
+Combat.prototype.maybeTaunt = function(obj, type, roll) {
+	if(roll === false) return
+	var msgID = this.getRandomInt(parseInt(obj.ai.info[type+"_start"]),
+	                              parseInt(obj.ai.info[type+"_end"]))
+	this.log("[TAUNT " + critterGetName(obj) + ": " + this.getCombatAIMessage(msgID) + "]")
+}
+
 Combat.prototype.findTarget = function(obj) {
 	// todo: find target according to AI rules
 	return this.player
@@ -126,6 +137,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 	var target = this.findTarget(obj)
 	var distance = hexDistance(obj.position, target.position)
 	var AP = this.AP[idx]
+	var messageRoll = obj.ai.info.chance <= this.getRandomInt(0, 100)
 
 	if(AP <= 0) // out of AP
 		return this.nextTurn()
@@ -135,6 +147,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 	if(obj.stats.HP <= obj.ai.info.min_hp) { // hp <= min fleeing hp, so flee
 		this.log("[AI FLEES]")
 		// todo: pick the closest edge of the map
+		this.maybeTaunt(obj, "run", messageRoll)
 		var targetPos = {x: 128, y: obj.position.y} // left edge
 		this.walkUpTo(obj, idx, targetPos, AP, function() {
 			critterStopWalking(obj)
