@@ -119,10 +119,10 @@ var CriticalEffects = (function() {
 		return retCritLevel
 	}
 
-	function parseEffects(jsonEffects) {
-		var tempEffects = {}
-		for(var i = 0; i < jsonEffects.length; i++)
-			tempEffects[i] = critterEffects[jsonEffects[i]]
+	function parseEffects(effects) {
+		var tempEffects = []
+		for(var i = 0; i < effects.length; i++)
+			tempEffects[i] = critterEffects[effects[i]]
 		return new Effects(tempEffects)
 	}
 
