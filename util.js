@@ -37,3 +37,20 @@ function getFileText(path) {
 	})
 	return r
 }
+
+function rollSkillCheck(skill, modifier, isBounded)
+{
+	var tempskill = skill+modifier
+	if(isBounded === true)
+	{
+		if(tempskill < 0) tempskill = 0
+		if(tempskill > 95) tempskill = 95
+	}
+	var roll = combat.getRandomInt(0,100)
+	if(roll < skill)
+	{
+		return true
+	}else{
+		return false
+	}
+}
