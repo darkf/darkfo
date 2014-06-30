@@ -111,7 +111,6 @@ Combat.prototype.log = function(msg) {
 	console.log(msg)
 }
 
-
 Combat.prototype.getRandomInt = function(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min
 }
@@ -121,16 +120,13 @@ Combat.prototype.getHitAndCrit = function (obj, target, region) {
 	var AC = 0
 	var baseCrit = 50
 	var critModifer = 0
-	var hitChance = WeaponSkill-AC-regionHitChanceDecTable[region]
-	var critChance = baseCrit+regionHitChanceDecTable[region]
-	if(hitChance === NaN) throw "look. A normal language would throw automatically on that. Something went wrong with hit chance calculation."
-	this.getRandomInt(0,100)
+	var hitChance = WeaponSkill - AC - regionHitChanceDecTable[region]
+	var critChance = baseCrit + regionHitChanceDecTable[region]
+	if(isNaN(hitChance)) throw "something went wrong with hit chance calculation"
 	var returnThings = {}
-	if(rollSkillCheck(hitChance,0,true) === true) //js comparisons...
-	{
-		if(rollSkillCheck(critChance,0,true) === true) //see above
-		{
-			var critLevel = Math.floor(Math.max(0,this.getRandomInt(critModifer,100+critModifer)) / 20)
+	if(rollSkillCheck(hitChance, 0, true) === true) {
+		if(rollSkillCheck(critChance, 0, true) === true) {
+			var critLevel = Math.floor(Math.max(0, this.getRandomInt(critModifer,100+critModifer)) / 20)
 			this.log("Crit level is: "+critLevel)
 			//todo: find proper table
 			var temp = CritterTable[0][region][critLevel].DoEffectsOn(target)
@@ -182,19 +178,23 @@ Combat.prototype.attack = function(obj, target, callback) {
 	var who = obj.isPlayer ? "You" : critterGetName(obj)
 	var targetName = target.isPlayer ? "you" : critterGetName(target)
 	var hitCritAndMore = this.getHitAndCrit(obj,target,"torso")
-	if(hitCritAndMore.hit === true)
-	{
+
+	// todo: critical misses
+
+	if(hitCritAndMore.hit === true) {
 		var critModifier = hitCritAndMore.crit ? hitCritAndMore.DM : 2
 		var damage = this.getDamageDone(obj, target, critModifier)
 		this.log(who + " hit " + targetName + " for " + damage + " damage")
-		if(hitCritAndMore.crit === true) this.log(this.getCombatMsg(hitCritAndMore.msgID))
+
+		if(hitCritAndMore.crit === true)
+			this.log(this.getCombatMsg(hitCritAndMore.msgID))
+
 		target.stats.HP -= damage
-		if(target.stats.HP <= 0) {
+		if(target.stats.HP <= 0)
 			combat.perish(target)
-		}
-	}else{
-		this.log(who + " missed " + targetName + ". What a loser.")		
 	}
+	else
+		this.log(who + " missed " + targetName)		
 }
 
 Combat.prototype.perish = function(obj){
@@ -206,7 +206,7 @@ Combat.prototype.perish = function(obj){
 		obj.frame-- // go to last frame
 		obj.anim = undefined
 	})
-	this.combatants.pop(obj)
+	//this.combatants.pop(obj)
 }
 
 Combat.prototype.getCombatAIMessage = function(id) {
@@ -262,7 +262,8 @@ Combat.prototype.doAITurn = function(obj, idx) {
 
 	var weapon = critterGetEquippedWeapon(obj)
 	var fireDistance = weapon.getMaximumRange(1)
-	this.log("DEBUG: weapon: "+weapon+"fireDistance: "+fireDistance)
+	this.log("DEBUG: weapon: " + weapon + " fireDistance: " + fireDistance +
+		     " obj: " + obj.art + " distance: " + distance)
 	// are we in firing distance?
 	if(distance > fireDistance) {
 		// todo: some sane direction, and also path checking

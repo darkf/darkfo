@@ -193,7 +193,7 @@ function critterWalkTo(obj, target, running, callback, maxLength) {
 	}
 	if(maxLength !== undefined && path.length > maxLength) {
 		console.log("truncating path (to length " + maxLength + ")")
-		path = path.slice(0, maxLength)
+		path = path.slice(0, maxLength + 1)
 	}
 
 	obj.path = {path: path, index: 0, target: null, seqLength: null, distance: null}

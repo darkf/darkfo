@@ -158,10 +158,10 @@ function directionOfDelta(xa, ya, xb, yb) {
 	return null
 }
 
-function hexDistance(a, b) {
+function hexDistance(a, b) { // todo: fix for hexes!
 	var dx = a.x - b.x
 	var dy = a.y - b.y
-	return Math.sqrt(dx*dx + dy*dy)
+	return Math.ceil(Math.sqrt(dx*dx + dy*dy))
 }
 
 function hexOppositeDirection(direction) {

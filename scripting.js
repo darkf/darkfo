@@ -32,13 +32,13 @@ var scriptingEngine = (function() {
 	var timeEventList = []
 
 	var debugLogShowType = {
-		stub: false,
-		timer: true,
+		stub: true,
+		timer: false,
 		load: true,
 		debugMessage: true,
 		displayMessage: true,
 		floatMessage: true,
-		gvars: false,
+		gvars: true,
 		lvars: true,
 		tiles: true,
 		inventory: true,
