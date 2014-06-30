@@ -115,8 +115,8 @@ Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
 	var WeaponSkill = 70
 	var AC = 0
 	var baseCrit = 50
-	var hitChance = WeaponSkill - AC - regionHitChanceDecTable[region]
-	var critChance = baseCrit + regionHitChanceDecTable[region]
+	var hitChance = WeaponSkill - AC - CriticalEffects.regionHitChanceDecTable[region]
+	var critChance = baseCrit + CriticalEffects.regionHitChanceDecTable[region]
 	if(isNaN(hitChance)) throw "something went wrong with hit chance calculation"
 	return {hit: hitChance, crit: critChance}
 }
@@ -130,7 +130,7 @@ Combat.prototype.rollHit = function (obj, target, region) {
 			var critLevel = Math.floor(Math.max(0, getRandomInt(critModifer,100+critModifer)) / 20)
 			this.log("crit level: " + critLevel)
 			// todo: find proper table
-			var temp = CritterTable[0][region][critLevel].DoEffectsOn(target)
+			var temp = CriticalEffects.critterTable[0][region][critLevel].doEffectsOn(target)
 			return {hit: true, crit: true, DM: temp.DM, msgID: temp.msgID} // crit
 		}
 
