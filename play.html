@@ -743,8 +743,8 @@ heart.keydown = function(k) {
 		}
 
 		for(var i = 0; i < combat.combatants.length; i++) {
-			if(combat.combatants[i].position.x === mouseHex.x && combat.combatants[i].position.y === mouseHex.y) {
-				player.AP.substractCombatAP(4)
+			if(combat.combatants[i].position.x === mouseHex.x && combat.combatants[i].position.y === mouseHex.y && !combat.combatants[i].dead) {
+				player.AP.subtractCombatAP(4)
 				console.log("Attacking...")
 				combat.attack(player, combat.combatants[i])
 				break

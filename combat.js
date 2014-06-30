@@ -48,7 +48,7 @@ ActionPoints.prototype.subtractMoveAP = function(value) {
 ActionPoints.prototype.subtractCombatAP = function(value) {
 	if(this.combat < value)
 		return false
-	
+
 	this.combat -= value
 	return true
 }
@@ -78,6 +78,7 @@ var Combat = function(objects, player) {
 	this.combatants = []
 	for(var i = 0; i < objects.length; i++) {
 		if(objects[i].type === "critter") {
+			if(objects[i].dead === true) continue
 			this.combatants.push(objects[i])
 			objects[i].ai = new AI(objects[i])
 
@@ -87,6 +88,7 @@ var Combat = function(objects, player) {
 			objects[i].AP = new ActionPoints(objects[i])
 		}
 	}
+
 	this.player = player
 	if(this.player.stats === undefined)	
 		throw "no player stats"			
@@ -174,7 +176,7 @@ Combat.prototype.attack = function(obj, target, callback) {
 		var critModifier = hitRoll.crit ? hitRoll.DM : 2
 		var damage = this.getDamageDone(obj, target, critModifier)
 		var extraMsg = hitRoll.crit === true ? this.getCombatMsg(hitRoll.msgID) : ""
-		this.log(who + " hit " + targetName + " for " + damage + " damage " + extraMsg)
+		this.log(who + " hit " + targetName + " for " + damage + " damage" + extraMsg)
 
 		target.stats.HP -= damage
 		if(target.stats.HP <= 0)
@@ -215,7 +217,9 @@ Combat.prototype.walkUpTo = function(obj, idx, target, maxDistance, callback) {
 	// Walk up to `maxDistance` hexes, adjusting AP to fit
 	if(critterWalkTo(obj, target, false, callback, maxDistance) !== false) {
 		// OK
-		this.AP[idx] -= obj.path.path.length
+		if(obj.AP.subtractMoveAP(obj.path.path.length - 1) === false)
+			throw "subtraction issue: has AP: " + obj.AP.getAvailableMoveAP() +
+		           " needs AP:"+obj.path.path.length+" and maxDist was:"+maxDistance
 		return true
 	}
 
