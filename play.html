@@ -14,6 +14,7 @@
 <script src="critter.js"></script>
 <script src="util.js"></script>
 <script src="pathfinding-browser.js"></script>
+<script src="criticalEffects.js"></script>
 <script>
 "use strict";
 
@@ -52,7 +53,7 @@ var showObjects = true // show objects?
 var doLoadScripts = true // should we load scripts?
 var doUpdateCritters = false // should we give critters heartbeats?
 var doTimedEvents = true // should we handle registered timed events?
-var doCombat = false // allow combat?
+var doCombat = true // allow combat?
 var doUseWeaponModel = false // use weapon model for NPC models?
 var doLoadItemInfo = true // load item information (such as inventory images)?
 var doAlwaysRun = true // always run instead of walk?
@@ -71,6 +72,26 @@ var proFiles = {}
 var lstFiles = {}
 var messageFiles = {}
 var mapNames = null
+
+var cameraDownKey = "down"
+var cameraUpKey = "up"
+var cameraLeftKey = "left"
+var cameraRightKey = "right"
+var elevationDownKey = "q"
+var elevationUpKey = "e"
+var showRoofKey = "r"
+var showFloorKey = "f"
+var showObjectsKey = "o"
+var talkToKey = "t"
+var inspectKey = "i"
+var moveToKey = "m"
+var runToKey = "j"
+var attackKey = "g"
+var targetTimerTickKey = "w"
+var combatKey = "c"
+var playerToTargetRaycastKey = "y"
+var showTargetInventoryKey = "v"
+var useKey = "u"
 
 function cloneStats(stats) { return $.extend({}, stats) }
 function addStats(a, b) {
@@ -94,7 +115,7 @@ var playerWeapon = new Weapon({art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 
 	subtype: "weapon", amount: 1, inventory: [], type: "item", pro: {
     lightRadius: 0, frmPID: 44, extra: {
       animCode: 6, weight: 5,  materialID: 1, subType: 3, flagsExt: "'\\x00\\x00\\x00'",
-      cost: 1000, APCost2: 6, APCost1: 5, rounds: 10, minDmg: 100, size: 3,
+      cost: 1000, APCost2: 6, APCost1: 5, rounds: 10, minDmg: 1, size: 3,
       dmgType: 0, minST: 4, soundID: "D", maxAmmo: 30, attackMode: 118, maxRange2: 20,
       maxRange1: 25, invFRM: 117440514, maxDmg: 12, ammoPID: 29, critFail: 2, scriptID: -1,
       projPID: -1, caliber: 8},
@@ -672,16 +693,16 @@ heart.keydown = function(k) {
 	var mousePos = heart.mouse.getPosition()
 	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
-	if(k == 'down') cameraY += 15
-	if(k == 'right') cameraX += 15
-	if(k == 'left') cameraX -= 15
-	if(k == 'up') cameraY -= 15
-	if(k == 'q') { if(currentElevation-1 >= 0) changeElevation(currentElevation-1) }
-	if(k == 'e') { if(currentElevation+1 < gMap.levels.length) changeElevation(currentElevation+1) }
-	if(k == 'r') { showRoof = !showRoof }
-	if(k == 'f') { showFloor = !showFloor }
-	if(k == 'o') { showObjects = !showObjects }
-	if(k == 't') {
+	if(k == cameraDownKey) cameraY += 15
+	if(k == cameraRightKey) cameraX += 15
+	if(k == cameraLeftKey) cameraX -= 15
+	if(k == cameraUpKey) cameraY -= 15
+	if(k == elevationDownKey) { if(currentElevation-1 >= 0) changeElevation(currentElevation-1) }
+	if(k == elevationUpKey) { if(currentElevation+1 < gMap.levels.length) changeElevation(currentElevation+1) }
+	if(k == showRoofKey) { showRoof = !showRoof }
+	if(k == showFloorKey) { showFloor = !showFloor }
+	if(k == showObjectsKey) { showObjects = !showObjects }
+	if(k == talkToKey) {
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
 				console.log("object at index " + i)
@@ -693,7 +714,7 @@ heart.keydown = function(k) {
 			}
 		}
 	}
-	if(k == 'i') {
+	if(k == inspectKey) {
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
 				var hasScripts = (gObjects[i].script !== undefined ? ("yes (" + gObjects[i].script + ")") : "no") + " " + (gObjects[i]._script === undefined ? "and is NOT loaded" : "and is loaded")
@@ -701,26 +722,26 @@ heart.keydown = function(k) {
 			}
 		}
 	}
-	if(k == 'm') {
+	if(k == moveToKey) {
 		critterWalkTo(player, mouseHex)
 	}
-	if(k == 'j') {
+	if(k == runToKey) {
 		critterWalkTo(player, mouseHex, true)
 	}
-	if(k == 'g') {
+	if(k == attackKey) {
 		if(!inCombat || !combat.inPlayerTurn || player.anim !== "idle") {
 			console.log("You can't do that yet.")
 			return
 		}
 
-		if(player.AP < 4) {
+		if(player.AP.getAvailableCombatAP() < 4) {
 			console.log("You don't have enough AP for that.")
 			return
 		}
 
 		for(var i = 0; i < combat.combatants.length; i++) {
 			if(combat.combatants[i].position.x === mouseHex.x && combat.combatants[i].position.y === mouseHex.y) {
-				player.AP -= 4
+				player.AP.substractCombatAP(4)
 				console.log("Attacking...")
 				combat.attack(player, combat.combatants[i])
 				break
@@ -728,7 +749,7 @@ heart.keydown = function(k) {
 		}
 	}
 
-	if(k == 'w') {
+	if(k == targetTimerTickKey) {
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i]._script !== undefined && gObjects[i]._script.timed_event_p_proc !== undefined) {
 				console.log("calling timed_event_p_proc(1) on " + gObjects[i].script)
@@ -736,7 +757,7 @@ heart.keydown = function(k) {
 			}
 		}
 	}
-	if(k == 'c') {
+	if(k == combatKey) {
 		if(!doCombat) return
 		if(inCombat === true && combat.inPlayerTurn === true) {
 			console.log("[TURN]")
@@ -753,7 +774,7 @@ heart.keydown = function(k) {
 		}
 	}
 
-	if(k == 'y') {
+	if(k == playerToTargetRaycastKey) {
 		var obj = objectsAtPosition(mouseHex)[0]
 		if(obj !== undefined) {
 			var hit = hexLinecast(player.position, obj.position)
@@ -761,7 +782,7 @@ heart.keydown = function(k) {
 		}
 	}
 
-	if(k == 'v') {
+	if(k == showTargetInventoryKey) {
 		var obj = objectsAtPosition(mouseHex)[0]
 		if(obj !== undefined) {
 			console.log("PID: " + obj.pid)
@@ -771,7 +792,7 @@ heart.keydown = function(k) {
 		}
 	}
 
-	if(k == 'u') {
+	if(k == useKey) {
 		var objs = objectsAtPosition(mouseHex)
 		for(var i = 0; i < objs.length; i++) {
 			useObject(objs[i])
@@ -992,8 +1013,8 @@ heart.draw = function() {
 
 	if(inCombat === true) {
 		var whose = combat.whoseTurn === -1 ? "player" : combat.combatants[combat.whoseTurn].art
-		var AP = combat.whoseTurn === -1 ? player.AP : combat.AP[combat.whoseTurn]
-		heart.graphics.print("[turn " + combat.turnNum + " of " + whose + " AP: " + AP + "]", SCREEN_WIDTH - 200, 15)
+		var AP = combat.whoseTurn === -1 ? player.AP : combat.combatants[combat.whoseTurn].AP
+		heart.graphics.print("[turn " + combat.turnNum + " of " + whose + " AP: " + AP.getAvailableMoveAP() + "]", SCREEN_WIDTH - 200, 15)
 	}
 
 	if(player.dead === true) {

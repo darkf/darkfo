@@ -2,6 +2,67 @@
 // Copyright (c) 2014 darkf
 // Licensed under the terms of the zlib license
 
+
+
+var ActionPoints = function(obj) {
+	this.combat = 0;
+	this.move = 0;
+	this.attachedObject = obj
+	this.resetAP()
+}
+
+ActionPoints.prototype.getMaxAP = function() {
+	var bonusCombatAP = 0 //todo: replace with get function
+	var bonusMoveAP = 0 //todo: replace with get function
+	return {combat: 5 + Math.floor(this.attachedObject.stats.AGI/2) + bonusCombatAP, move: bonusMoveAP}
+}
+
+ActionPoints.prototype.resetAP = function() {
+	var AP = this.getMaxAP();
+	this.combat = AP.combat;
+	this.move = AP.move;
+}
+
+ActionPoints.prototype.getAvailableMoveAP = function() {
+	return this.combat + this.move
+}
+
+ActionPoints.prototype.getAvailableCombatAP = function() {
+	return this.combat
+}
+
+ActionPoints.prototype.substractMoveAP = function(value) {
+	if(this.getAvailableMoveAP() >= value)
+	{
+		this.move -= value
+		if(this.move < 0)
+		{
+			var combatSubstract = -this.move
+			if(this.substractCombatAP(combatSubstract))
+			{
+				this.move = 0
+				return true
+			}else{
+				return false
+			}
+		}else{
+			return true
+		}
+	}else{
+		return false
+	}
+}
+
+ActionPoints.prototype.substractCombatAP = function(value) {
+	if(this.combat >= value)
+	{
+		this.combat -= value
+		return true
+	}else{
+		return false
+	}
+}
+
 var AI = function(combatant) {
 	this.combatant = combatant
 
@@ -33,11 +94,13 @@ var Combat = function(objects, player) {
 			if(objects[i].stats === undefined)
 				throw "no stats"
 			objects[i].dead = false
+			objects[i].AP = new ActionPoints(objects[i])
 		}
 	}
-
-	this.AP = new Array(this.combatants.length)
 	this.player = player
+	if(this.player.stats === undefined)	
+		throw "no player stats"			
+	this.player.AP = new ActionPoints(player)
 	this.turnNum = 0
 	this.whoseTurn = -2
 	this.inPlayerTurn = false
@@ -48,20 +111,45 @@ Combat.prototype.log = function(msg) {
 	console.log(msg)
 }
 
-Combat.prototype.getMaxAP = function(obj) {
-	return 5 + Math.floor(obj.stats.AGI/2)
-}
 
 Combat.prototype.getRandomInt = function(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-Combat.prototype.getDamageDone = function(obj, target) {
+Combat.prototype.getHitAndCrit = function (obj, target, region) {
+	var WeaponSkill = 70
+	var AC = 0
+	var baseCrit = 50
+	var critModifer = 0
+	var hitChance = WeaponSkill-AC-regionHitChanceDecTable[region]
+	var critChance = baseCrit+regionHitChanceDecTable[region]
+	if(hitChance === NaN) throw "look. A normal language would throw automatically on that. Something went wrong with hit chance calculation."
+	this.getRandomInt(0,100)
+	var returnThings = {}
+	if(rollSkillCheck(hitChance,0,true) === true) //js comparisons...
+	{
+		if(rollSkillCheck(critChance,0,true) === true) //see above
+		{
+			var critLevel = Math.floor(Math.max(0,this.getRandomInt(critModifer,100+critModifer)) / 20)
+			this.log("Crit level is: "+critLevel)
+			//todo: find proper table
+			var temp = CritterTable[0][region][critLevel].DoEffectsOn(target)
+			returnThings = {hit:true, crit:true, DM: temp.DM, msgID: temp.msgID}
+		}else{
+			returnThings = {hit:true, crit:false}
+		}
+	}else{
+		returnThings = {hit:false}
+	}
+	return returnThings
+}
+
+Combat.prototype.getDamageDone = function(obj, target,critModifer) {
 	var wep = obj.leftHand
 
 	var RD = this.getRandomInt(wep.minDmg, wep.maxDmg) // rand damage min..max
 	var RB = 0 // ranged bonus (via perk)
-	var CM = 2 // critical hit damage multiplier
+	var CM = critModifer // critical hit damage multiplier
 	var ADR = 0 // damage resistance (TODO: armor)
 	var ADT = 0 // damage threshold (TODO: armor)
 	var X = 2 // ammo dividend
@@ -77,6 +165,11 @@ Combat.prototype.getDamageDone = function(obj, target) {
 	return Math.ceil(adjustedDamage * (1 - (ADR+RM)/100))
 }
 
+Combat.prototype.getCombatMsg = function(ID)
+{
+	return getMessage("combat",ID)
+}
+
 Combat.prototype.attack = function(obj, target, callback) {
 	// turn to face the target
 	var hex = hexNearestNeighbor(obj.position, target.position)
@@ -86,23 +179,34 @@ Combat.prototype.attack = function(obj, target, callback) {
 	// attack!
 	critterStaticAnim(obj, "attack", callback)
 
-	var damage = this.getDamageDone(obj, target)
 	var who = obj.isPlayer ? "You" : critterGetName(obj)
 	var targetName = target.isPlayer ? "you" : critterGetName(target)
-	this.log(who + " hit " + targetName + " for " + damage + " damage")
-	target.stats.HP -= damage
-
-	if(target.stats.HP <= 0) {
-		this.log("...And killed them.")
-		target.dead = true
-
-		if(critterHasAnim(target, "death"))
-			critterStaticAnim(target, "death", function() {
-				// todo: corpse-ify
-				target.frame-- // go to last frame
-				target.anim = undefined
-			})
+	var hitCritAndMore = this.getHitAndCrit(obj,target,"torso")
+	if(hitCritAndMore.hit === true)
+	{
+		var critModifier = hitCritAndMore.crit ? hitCritAndMore.DM : 2
+		var damage = this.getDamageDone(obj, target, critModifier)
+		this.log(who + " hit " + targetName + " for " + damage + " damage")
+		if(hitCritAndMore.crit === true) this.log(this.getCombatMsg(hitCritAndMore.msgID))
+		target.stats.HP -= damage
+		if(target.stats.HP <= 0) {
+			combat.perish(target)
+		}
+	}else{
+		this.log(who + " missed " + targetName + ". What a loser.")		
 	}
+}
+
+Combat.prototype.perish = function(obj){
+	this.log("...And killed them.")
+	obj.dead = true
+	if(critterHasAnim(obj, "death"))
+		critterStaticAnim(obj, "death", function() {
+		// todo: corpse-ify
+		obj.frame-- // go to last frame
+		obj.anim = undefined
+	})
+	this.combatants.pop(obj)
 }
 
 Combat.prototype.getCombatAIMessage = function(id) {
@@ -136,10 +240,10 @@ Combat.prototype.doAITurn = function(obj, idx) {
 	var that = this
 	var target = this.findTarget(obj)
 	var distance = hexDistance(obj.position, target.position)
-	var AP = this.AP[idx]
-	var messageRoll = obj.ai.info.chance <= this.getRandomInt(0, 100)
+	var AP = obj.AP
+	var messageRoll = rollSkillCheck(obj.ai.info.chance,0,false)
 
-	if(AP <= 0) // out of AP
+	if(AP.getAvailableMoveAP() <= 0) // out of AP
 		return this.nextTurn()
 
 	// behaviors
@@ -158,13 +262,13 @@ Combat.prototype.doAITurn = function(obj, idx) {
 
 	var weapon = critterGetEquippedWeapon(obj)
 	var fireDistance = weapon.getMaximumRange(1)
-
+	this.log("DEBUG: weapon: "+weapon+"fireDistance: "+fireDistance)
 	// are we in firing distance?
 	if(distance > fireDistance) {
 		// todo: some sane direction, and also path checking
 		this.log("[AI CREEPS]")
 		var neighbors = hexNeighbors(target.position)
-		var maxDistance = Math.min(AP, fireDistance)
+		var maxDistance = Math.min(AP.getAvailableMoveAP(), fireDistance)
 		this.maybeTaunt(obj, "move", messageRoll)
 
 		for(var i = 0; i < neighbors.length; i++) {
@@ -173,7 +277,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 				that.doAITurn(obj, idx) // if we can, do another turn
 			}, maxDistance) !== false) {
 				// OK
-				this.AP[idx] -= obj.path.path.length
+				if(AP.substractMoveAP(obj.path.path.length) === false) throw "substraction Issue: has AP:"+AP.getAvailableMoveAP()+" needs AP:"+obj.path.path.length+" and maxDist was:"+maxDistance
 				return
 			}
 		}
@@ -182,9 +286,9 @@ Combat.prototype.doAITurn = function(obj, idx) {
 		this.log("[NO PATH]")
 		that.doAITurn(obj, idx) // if we can, do another turn
 	}
-	else if(AP >= 4) { // if we are in range, do we have enough AP to attack?
+	else if(AP.getAvailableCombatAP() >= 4) { // if we are in range, do we have enough AP to attack?
 		this.log("[ATTACKING]")
-		this.AP[idx] -= 4
+		AP.substractCombatAP(4)
 
 		if(critterGetEquippedWeapon(obj) === null)
 			throw "combatant has no equipped weapon"
@@ -225,7 +329,7 @@ Combat.prototype.nextTurn = function() {
 	if(this.whoseTurn === -1) {
 		// player
 		this.inPlayerTurn = true
-		this.player.AP = this.getMaxAP(this.player)
+		this.player.AP.resetAP()
 	}
 	else {
 		this.inPlayerTurn = false
@@ -233,7 +337,7 @@ Combat.prototype.nextTurn = function() {
 		if(critter.dead === true)
 			return this.nextTurn()
 		// todo: convert unused AP into AC
-		this.AP[this.whoseTurn] = this.getMaxAP(critter) // reset AP
+		critter.AP.resetAP()
 		this.doAITurn(critter, this.whoseTurn)
 	}
 }

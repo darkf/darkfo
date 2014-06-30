@@ -1,7 +1,7 @@
 import os, glob, json
 import proto
 
-subdirs = ("items", "critters")
+subdirs = ("items", "critters","scenery")
 
 if not os.path.exists("proto"):
 	os.mkdir("proto")
@@ -16,5 +16,6 @@ for subdir in subdirs:
 		try:
 			pro = proto.readPRO(open(protofile, "rb"))
 			json.dump(pro, open("proto/" + subdir + "/" + baseFile + ".pro.json", "w"))
+			print "dumping: ", protofile
 		except Exception:
 			print "error reading", protofile
