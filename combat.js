@@ -2,11 +2,9 @@
 // Copyright (c) 2014 darkf
 // Licensed under the terms of the zlib license
 
-
-
 var ActionPoints = function(obj) {
-	this.combat = 0;
-	this.move = 0;
+	this.combat = 0
+	this.move = 0
 	this.attachedObject = obj
 	this.resetAP()
 }
@@ -18,9 +16,9 @@ ActionPoints.prototype.getMaxAP = function() {
 }
 
 ActionPoints.prototype.resetAP = function() {
-	var AP = this.getMaxAP();
-	this.combat = AP.combat;
-	this.move = AP.move;
+	var AP = this.getMaxAP()
+	this.combat = AP.combat
+	this.move = AP.move
 }
 
 ActionPoints.prototype.getAvailableMoveAP = function() {
@@ -31,36 +29,28 @@ ActionPoints.prototype.getAvailableCombatAP = function() {
 	return this.combat
 }
 
-ActionPoints.prototype.substractMoveAP = function(value) {
-	if(this.getAvailableMoveAP() >= value)
-	{
-		this.move -= value
-		if(this.move < 0)
-		{
-			var combatSubstract = -this.move
-			if(this.substractCombatAP(combatSubstract))
-			{
-				this.move = 0
-				return true
-			}else{
-				return false
-			}
-		}else{
+ActionPoints.prototype.subtractMoveAP = function(value) {
+	if(this.getAvailableMoveAP() < value)
+		return false
+
+	this.move -= value
+	if(this.move < 0) {
+		if(this.subtractCombatAP(-this.move)) {
+			this.move = 0
 			return true
 		}
-	}else{
 		return false
 	}
+
+	return true
 }
 
-ActionPoints.prototype.substractCombatAP = function(value) {
-	if(this.combat >= value)
-	{
-		this.combat -= value
-		return true
-	}else{
+ActionPoints.prototype.subtractCombatAP = function(value) {
+	if(this.combat < value)
 		return false
-	}
+	
+	this.combat -= value
+	return true
 }
 
 var AI = function(combatant) {
@@ -274,8 +264,8 @@ Combat.prototype.doAITurn = function(obj, idx) {
 				that.doAITurn(obj, idx) // if we can, do another turn
 			}, maxDistance) !== false) {
 				// OK
-				if(AP.substractMoveAP(obj.path.path.length - 1) === false)
-					throw "substraction issue: has AP: " + AP.getAvailableMoveAP() +
+				if(AP.subtractMoveAP(obj.path.path.length - 1) === false)
+					throw "subtraction issue: has AP: " + AP.getAvailableMoveAP() +
 				           " needs AP:"+obj.path.path.length+" and maxDist was:"+maxDistance
 				return
 			}
@@ -287,7 +277,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 	}
 	else if(AP.getAvailableCombatAP() >= 4) { // if we are in range, do we have enough AP to attack?
 		this.log("[ATTACKING]")
-		AP.substractCombatAP(4)
+		AP.subtractCombatAP(4)
 
 		if(critterGetEquippedWeapon(obj) === null)
 			throw "combatant has no equipped weapon"
