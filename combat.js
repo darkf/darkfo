@@ -111,32 +111,36 @@ Combat.prototype.log = function(msg) {
 	console.log(msg)
 }
 
-Combat.prototype.getHitAndCrit = function (obj, target, region) {
+Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
 	var WeaponSkill = 70
 	var AC = 0
 	var baseCrit = 50
-	var critModifer = 0
 	var hitChance = WeaponSkill - AC - regionHitChanceDecTable[region]
 	var critChance = baseCrit + regionHitChanceDecTable[region]
 	if(isNaN(hitChance)) throw "something went wrong with hit chance calculation"
-	var returnThings = {}
-	if(rollSkillCheck(hitChance, 0, true) === true) {
-		if(rollSkillCheck(critChance, 0, true) === true) {
-			var critLevel = Math.floor(Math.max(0, getRandomInt(critModifer,100+critModifer)) / 20)
-			this.log("Crit level is: "+critLevel)
-			//todo: find proper table
-			var temp = CritterTable[0][region][critLevel].DoEffectsOn(target)
-			returnThings = {hit:true, crit:true, DM: temp.DM, msgID: temp.msgID}
-		}else{
-			returnThings = {hit:true, crit:false}
-		}
-	}else{
-		returnThings = {hit:false}
-	}
-	return returnThings
+	return {hit: hitChance, crit: critChance}
 }
 
-Combat.prototype.getDamageDone = function(obj, target,critModifer) {
+Combat.prototype.rollHit = function (obj, target, region) {
+	var critModifer = 0
+	var hitChance = this.getHitChance(obj, target, region, critModifer)
+
+	if(rollSkillCheck(hitChance.hit, 0, true) === true) {
+		if(rollSkillCheck(hitChance.crit, 0, true) === true) {
+			var critLevel = Math.floor(Math.max(0, getRandomInt(critModifer,100+critModifer)) / 20)
+			this.log("crit level: " + critLevel)
+			// todo: find proper table
+			var temp = CritterTable[0][region][critLevel].DoEffectsOn(target)
+			return {hit: true, crit: true, DM: temp.DM, msgID: temp.msgID} // crit
+		}
+
+		return {hit: true, crit: false} // hit
+	}
+
+	return {hit: false, crit: false} // miss
+}
+
+Combat.prototype.getDamageDone = function(obj, target, critModifer) {
 	var wep = obj.leftHand
 
 	var RD = getRandomInt(wep.minDmg, wep.maxDmg) // rand damage min..max
@@ -173,17 +177,17 @@ Combat.prototype.attack = function(obj, target, callback) {
 
 	var who = obj.isPlayer ? "You" : critterGetName(obj)
 	var targetName = target.isPlayer ? "you" : critterGetName(target)
-	var hitCritAndMore = this.getHitAndCrit(obj,target,"torso")
+	var hitRoll = this.rollHit(obj,target,"torso")
 
 	// todo: critical misses
 
-	if(hitCritAndMore.hit === true) {
-		var critModifier = hitCritAndMore.crit ? hitCritAndMore.DM : 2
+	if(hitRoll.hit === true) {
+		var critModifier = hitRoll.crit ? hitRoll.DM : 2
 		var damage = this.getDamageDone(obj, target, critModifier)
 		this.log(who + " hit " + targetName + " for " + damage + " damage")
 
-		if(hitCritAndMore.crit === true)
-			this.log(this.getCombatMsg(hitCritAndMore.msgID))
+		if(hitRoll.crit === true)
+			this.log(this.getCombatMsg(hitRoll.msgID))
 
 		target.stats.HP -= damage
 		if(target.stats.HP <= 0)
