@@ -1,7 +1,7 @@
 var CriticalEffects = (function() {
 	var generalRegionName = {0: "head", 1: "leftArm",2: "rightArm",3: "torso",4: "rightLeg", 5: "leftLeg", 6: "eyes", 7: "groin",8: "uncalled"}
 	var regionHitChanceDecTable = {"head":40,"torso":0}
-	var critterTable = {}
+	var critterTable = []
 
 	var critterEffects = {
 		knockout: function(target) {
@@ -110,33 +110,12 @@ var CriticalEffects = (function() {
 		return {DM: this.DM, msgID: returnMsgID}
 	}
 
-	function getTable(number) {
-		// todo: other types than than 1
-		$.get("critTables/critterTable1.json", function(table) {
-			critterTable[number] = critTableJsonToJsObjectParser(table)
-		}, "json")
-	}
-
-	function critTableJsonToJsObjectParser(table) {	
-		var retTable = {}
-		for(var i = 0; i < 9; i++) {
-			var curGeneralRegionName = generalRegionName[i]
-			retTable[curGeneralRegionName] = parseRegion(table[curGeneralRegionName])
-		}
-		return retTable
-	}
-
-	function parseRegion(jsonRegion) {
-		var retRegion = {}
-		for(var i = 0; i < 6; i++)
-			retRegion[i] = parseCritLevel(jsonRegion["critLevel"+i])
-		return retRegion
-	}
-
-	function parseCritLevel(jsonCritLevel) {
-		var jsonStat = jsonCritLevel.statCheck
-		var tempStatCheck = new StatCheck(jsonStat.stat,jsonStat.checkModifier,parseEffects(jsonStat.failureEffect),jsonStat.fmsg)
-		var retCritLevel = new CritType(jsonCritLevel.dmgMultiplier,parseEffects(jsonCritLevel.critEffect),tempStatCheck,jsonCritLevel.msg)
+	function parseCritLevel(critLevel) {
+		var stat = critLevel.statCheck
+		var tempStatCheck = new StatCheck(stat.stat, stat.checkModifier,
+			parseEffects(stat.failureEffect), stat.failureMessage)
+		var retCritLevel = new CritType(critLevel.dmgMultiplier,
+			parseEffects(critLevel.critEffect), tempStatCheck, critLevel.msg)
 		return retCritLevel
 	}
 
@@ -147,12 +126,24 @@ var CriticalEffects = (function() {
 		return new Effects(tempEffects)
 	}
 
-
-	//todo: better than that. Probably with a lazy approach.
-	for(var i = 0; i < 20; i++)
-		getTable(i)
+	function loadTable() {
+		// read in the global table
+		console.log("loading critical table...")
+		$.get("criticalTables.json", function(table) {
+			for(var i = 0; i < table.length; i++) {
+				critterTable[i] = table[i]
+				for(var region in critterTable[i]) {
+					for(var critLevel = 0; critLevel < critterTable[i][region].length; critLevel++)
+						critterTable[i][region][critLevel] = parseCritLevel(critterTable[i][region][critLevel])
+				}
+			}
+			console.log("parsed critical table with " + critterTable.length + " entries")
+			//critterTable[number] = critTableJsonToJsObjectParser(table)
+		}, "json")
+	}
 
 	return {generalRegionName: generalRegionName,
 			regionHitChanceDecTable: regionHitChanceDecTable,
-			critterTable: critterTable}
+			critterTable: critterTable,
+			loadTable: loadTable}
 })()

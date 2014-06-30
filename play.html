@@ -647,6 +647,9 @@ heart.load = function() {
 
 	loadMap(MAP_NAME) // load initial map
 
+	if(doCombat === true)
+		CriticalEffects.loadTable()
+
 	$("#cnv").mouseenter(function() { gameHasFocus = true }).
 	          mouseleave(function() { gameHasFocus = false })
 
