@@ -111,10 +111,6 @@ Combat.prototype.log = function(msg) {
 	console.log(msg)
 }
 
-Combat.prototype.getRandomInt = function(min, max) {
-	return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
 Combat.prototype.getHitAndCrit = function (obj, target, region) {
 	var WeaponSkill = 70
 	var AC = 0
@@ -126,7 +122,7 @@ Combat.prototype.getHitAndCrit = function (obj, target, region) {
 	var returnThings = {}
 	if(rollSkillCheck(hitChance, 0, true) === true) {
 		if(rollSkillCheck(critChance, 0, true) === true) {
-			var critLevel = Math.floor(Math.max(0, this.getRandomInt(critModifer,100+critModifer)) / 20)
+			var critLevel = Math.floor(Math.max(0, getRandomInt(critModifer,100+critModifer)) / 20)
 			this.log("Crit level is: "+critLevel)
 			//todo: find proper table
 			var temp = CritterTable[0][region][critLevel].DoEffectsOn(target)
@@ -143,7 +139,7 @@ Combat.prototype.getHitAndCrit = function (obj, target, region) {
 Combat.prototype.getDamageDone = function(obj, target,critModifer) {
 	var wep = obj.leftHand
 
-	var RD = this.getRandomInt(wep.minDmg, wep.maxDmg) // rand damage min..max
+	var RD = getRandomInt(wep.minDmg, wep.maxDmg) // rand damage min..max
 	var RB = 0 // ranged bonus (via perk)
 	var CM = critModifer // critical hit damage multiplier
 	var ADR = 0 // damage resistance (TODO: armor)
@@ -215,8 +211,8 @@ Combat.prototype.getCombatAIMessage = function(id) {
 
 Combat.prototype.maybeTaunt = function(obj, type, roll) {
 	if(roll === false) return
-	var msgID = this.getRandomInt(parseInt(obj.ai.info[type+"_start"]),
-	                              parseInt(obj.ai.info[type+"_end"]))
+	var msgID = getRandomInt(parseInt(obj.ai.info[type+"_start"]),
+	                         parseInt(obj.ai.info[type+"_end"]))
 	this.log("[TAUNT " + critterGetName(obj) + ": " + this.getCombatAIMessage(msgID) + "]")
 }
 

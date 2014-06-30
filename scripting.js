@@ -83,10 +83,6 @@ var scriptingEngine = (function() {
 	    }
 	}
 
-	function getRandomInt(min, max) {
-		return Math.floor(Math.random() * (max - min + 1)) + min
-	}
-
 	function isGameObject(obj) {
 		if(obj === undefined || obj === null) return false
 		if(obj.isPlayer === true) return true
