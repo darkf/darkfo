@@ -161,9 +161,8 @@ Combat.prototype.getDamageDone = function(obj, target, critModifer) {
 	return Math.ceil(adjustedDamage * (1 - (ADR+RM)/100))
 }
 
-Combat.prototype.getCombatMsg = function(ID)
-{
-	return getMessage("combat",ID)
+Combat.prototype.getCombatMsg = function(id) {
+	return getMessage("combat", id)
 }
 
 Combat.prototype.attack = function(obj, target, callback) {
@@ -184,10 +183,8 @@ Combat.prototype.attack = function(obj, target, callback) {
 	if(hitRoll.hit === true) {
 		var critModifier = hitRoll.crit ? hitRoll.DM : 2
 		var damage = this.getDamageDone(obj, target, critModifier)
-		this.log(who + " hit " + targetName + " for " + damage + " damage")
-
-		if(hitRoll.crit === true)
-			this.log(this.getCombatMsg(hitRoll.msgID))
+		var extraMsg = hitRoll.crit === true ? this.getCombatMsg(hitRoll.msgID) : ""
+		this.log(who + " hit " + targetName + " for " + damage + " damage " + extraMsg)
 
 		target.stats.HP -= damage
 		if(target.stats.HP <= 0)
@@ -197,16 +194,15 @@ Combat.prototype.attack = function(obj, target, callback) {
 		this.log(who + " missed " + targetName)		
 }
 
-Combat.prototype.perish = function(obj){
+Combat.prototype.perish = function(obj) {
 	this.log("...And killed them.")
 	obj.dead = true
 	if(critterHasAnim(obj, "death"))
 		critterStaticAnim(obj, "death", function() {
-		// todo: corpse-ify
-		obj.frame-- // go to last frame
-		obj.anim = undefined
-	})
-	//this.combatants.pop(obj)
+			// todo: corpse-ify
+			obj.frame-- // go to last frame
+			obj.anim = undefined
+		})
 }
 
 Combat.prototype.getCombatAIMessage = function(id) {
@@ -269,7 +265,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 		// todo: some sane direction, and also path checking
 		this.log("[AI CREEPS]")
 		var neighbors = hexNeighbors(target.position)
-		var maxDistance = Math.min(AP.getAvailableMoveAP(), fireDistance)
+		var maxDistance = Math.min(AP.getAvailableMoveAP(), distance - fireDistance)
 		this.maybeTaunt(obj, "move", messageRoll)
 
 		for(var i = 0; i < neighbors.length; i++) {
@@ -278,7 +274,9 @@ Combat.prototype.doAITurn = function(obj, idx) {
 				that.doAITurn(obj, idx) // if we can, do another turn
 			}, maxDistance) !== false) {
 				// OK
-				if(AP.substractMoveAP(obj.path.path.length) === false) throw "substraction Issue: has AP:"+AP.getAvailableMoveAP()+" needs AP:"+obj.path.path.length+" and maxDist was:"+maxDistance
+				if(AP.substractMoveAP(obj.path.path.length - 1) === false)
+					throw "substraction issue: has AP: " + AP.getAvailableMoveAP() +
+				           " needs AP:"+obj.path.path.length+" and maxDist was:"+maxDistance
 				return
 			}
 		}
