@@ -141,7 +141,7 @@ Combat.prototype.rollHit = function (obj, target, region) {
 }
 
 Combat.prototype.getDamageDone = function(obj, target, critModifer) {
-	var wep = obj.leftHand
+	var wep = critterGetEquippedWeapon(obj)
 
 	var RD = getRandomInt(wep.minDmg, wep.maxDmg) // rand damage min..max
 	var RB = 0 // ranged bonus (via perk)
