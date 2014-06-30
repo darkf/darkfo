@@ -34,7 +34,7 @@ var modeNumber = {1: 0x00FF, 2: 0xFF00}
 			
 function ParseAttack(weapon)
 {
-	var attackModes = weapon.extra['attackMode']
+	var attackModes = weapon.pro.extra['attackMode']
 	var modeOne = attackModes & modeNumber[1]
 	var modeTwo = (attackModes & modeNumber[2]) >> 8
 	
@@ -42,15 +42,15 @@ function ParseAttack(weapon)
 	att1['mode'] = modeOne
 	if(modeOne !== attackMode['none'])
 	{
-		att1['APCost'] = weapon.extra['APCost1']
-		att1['maxRange'] = weapon.extra['maxRange1']
+		att1['APCost'] = weapon.pro.extra['APCost1']
+		att1['maxRange'] = weapon.pro.extra['maxRange1']
 	}
 	var att2 = {}
 	att2['mode'] = modeTwo
 	if(modeOne !== attackMode['none'])
 	{
-		att2['APCost'] = weapon.extra['APCost2']
-		att2['maxRange'] = weapon.extra['maxRange2']
+		att2['APCost'] = weapon.pro.extra['APCost2']
+		att2['maxRange'] = weapon.pro.extra['maxRange2']
 	}
 	return {1:att1,2:att2}
 }
@@ -149,6 +149,7 @@ function critterGetAnim(obj, anim) {
 
 	var wep = 'a'
 	switch(anim) {
+		case "attack": console.log("default attack animation instead of weapon animation.")
 		case "idle": return base + wep + 'a'
 		case "walk": return base + wep + 'b'
 		case "run":  return base + wep + 't'
@@ -190,7 +191,6 @@ function critterWalkTo(obj, target, running, callback, maxLength) {
 		console.log("not a valid path")
 		return false
 	}
-	maxLength++
 	if(maxLength !== undefined && path.length > maxLength) {
 		console.log("truncating path (to length " + maxLength + ")")
 		path = path.slice(0, maxLength)
