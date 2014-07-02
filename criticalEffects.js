@@ -1,3 +1,7 @@
+// DarkFO
+// Copyright (c) 2014 darkf, Stratege
+// Licensed under the terms of the zlib license
+
 var CriticalEffects = (function() {
 	var generalRegionName = {0: "head", 1: "leftArm",2: "rightArm",3: "torso",4: "rightLeg", 5: "leftLeg", 6: "eyes", 7: "groin",8: "uncalled"}
 	var regionHitChanceDecTable = {"head":40,"torso":0}
