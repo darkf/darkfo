@@ -186,6 +186,12 @@ function critterGetName(obj) {
 	return "<unnamed>"
 }
 
+function critterGetKillType(obj) {
+	if(obj.isPlayer) return 19 // last type
+	if(!obj.pro || !obj.pro.extra) return null
+	return obj.pro.extra.killType
+}
+
 function getAnimDistance(art) {
 	var info = imageInfo[art]
 	if(info === undefined)

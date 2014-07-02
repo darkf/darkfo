@@ -82,7 +82,7 @@ var CriticalEffects = (function() {
 		if(this.stat === -1)
 			return false
 		var statToRollAgainst = target.stats[this.stat]
-		statToRollAgainst += modifier
+		statToRollAgainst += this.modifier
 
 		//todo: rolling
 		var failedRoll = true
@@ -130,6 +130,10 @@ var CriticalEffects = (function() {
 		return new Effects(tempEffects)
 	}
 
+	function getCritical(critterType, region, critLevel) {
+		return critterTable[critterType][region][critLevel]
+	}
+
 	function loadTable() {
 		// read in the global table
 		console.log("loading critical table...")
@@ -149,5 +153,6 @@ var CriticalEffects = (function() {
 	return {generalRegionName: generalRegionName,
 			regionHitChanceDecTable: regionHitChanceDecTable,
 			critterTable: critterTable,
+			getCritical: getCritical,
 			loadTable: loadTable}
 })()

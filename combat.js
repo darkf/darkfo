@@ -122,8 +122,9 @@ Combat.prototype.rollHit = function (obj, target, region) {
 			var critLevel = Math.floor(Math.max(0, getRandomInt(critModifer,100+critModifer)) / 20)
 			this.log("crit level: " + critLevel)
 			// todo: find proper table
-			var temp = CriticalEffects.critterTable[0][region][critLevel].doEffectsOn(target)
-			return {hit: true, crit: true, DM: temp.DM, msgID: temp.msgID} // crit
+			var crit = CriticalEffects.getCritical(critterGetKillType(target), region, critLevel)
+			var critStatus = crit.doEffectsOn(target)
+			return {hit: true, crit: true, DM: critStatus.DM, msgID: critStatus.msgID} // crit
 		}
 
 		return {hit: true, crit: false} // hit
@@ -168,7 +169,7 @@ Combat.prototype.attack = function(obj, target, callback) {
 
 	var who = obj.isPlayer ? "You" : critterGetName(obj)
 	var targetName = target.isPlayer ? "you" : critterGetName(target)
-	var hitRoll = this.rollHit(obj,target,"torso")
+	var hitRoll = this.rollHit(obj, target, "torso")
 
 	// todo: critical misses
 
