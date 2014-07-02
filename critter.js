@@ -23,36 +23,29 @@ var attackMode = {'none': 0, 'punch': 1, 'kick': 2, 'swing': 3,
 				  4: 'thrust', 5: 'throw', 6: 'fire single',
 				  7: 'fire burst', 8: 'flame'}
 				  
-var DamageType = {'normal': 0, 'laser': 1, 'fire': 2, 'plasma': 3,
+var damageType = {'normal': 0, 'laser': 1, 'fire': 2, 'plasma': 3,
 				  'electrical': 4, 'emp': 5, 'explosive': 6,
 				  0:'normal', 1: 'laser', 2: 'fire', 3: 'plasma',
 				  4: 'electrical', 5: 'emp', 6: 'explosive'}
-
-var modeNumber = {1: 0x00FF, 2: 0xFF00}
-
-
 			
-function ParseAttack(weapon)
-{
+function parseAttack(weapon) {
 	var attackModes = weapon.pro.extra['attackMode']
-	var modeOne = attackModes & modeNumber[1]
-	var modeTwo = (attackModes & modeNumber[2]) >> 8
+	var modeOne = attackMode[attackModes & 0xf]
+	var modeTwo = attackMode[(attackModes >> 4) & 0xf]
+	var attackOne = {mode: modeOne}
+	var attackTwo = {mode: modeTwo}
 	
-	var att1 = {}
-	att1['mode'] = modeOne
-	if(modeOne !== attackMode['none'])
-	{
-		att1['APCost'] = weapon.pro.extra['APCost1']
-		att1['maxRange'] = weapon.pro.extra['maxRange1']
+	if(modeOne !== attackMode.none) {
+		attackOne.APCost = weapon.pro.extra.APCost1
+		attackOne.maxRange = weapon.pro.extra.maxRange1
 	}
-	var att2 = {}
-	att2['mode'] = modeTwo
-	if(modeOne !== attackMode['none'])
-	{
-		att2['APCost'] = weapon.pro.extra['APCost2']
-		att2['maxRange'] = weapon.pro.extra['maxRange2']
+
+	if(modeTwo !== attackMode.none) {
+		attackTwo.APCost = weapon.pro.extra.APCost2
+		attackTwo.maxRange = weapon.pro.extra.maxRange2
 	}
-	return {1:att1,2:att2}
+
+	return {first: attackOne, second: attackTwo}
 }
 			
 var Weapon = function(weapon) {
@@ -72,9 +65,9 @@ var Weapon = function(weapon) {
 		var s = weapon.art.split('/')
 		this.name = s[s.length-1]
 		
-		var tempAttacks = ParseAttack(weapon)
-		this.attackOne = tempAttacks[1]
-		this.attackTwo = tempAttacks[2]
+		var attacks = parseAttack(weapon)
+		this.attackOne = attacks.first
+		this.attackTwo = attacks.second
 
 		this.weaponType = {'uzi': 'Small Guns'}[this.name]
 		if(this.weaponType === undefined)
@@ -108,6 +101,28 @@ Weapon.prototype.getSkin = function() {
 	return animCodeMap[this.weapon.pro.extra.animCode]
 }
 
+Weapon.prototype.getAttackSkin = function() {
+	if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
+		return null
+	if(this.weapon === 'punch') return 'q'
+
+	var modeSkinMap = {
+		'punch': 'q',
+		'kick': 'r',
+		'swing': 'g',
+		'thrust': 'f',
+		'throw': 'm',
+		'fire single': 'j',
+		'fire burst': 'k',
+		'flame': 'l'
+	}
+
+	// todo: mode equipped
+	if(this.attackOne.mode !== 'none') {
+		return modeSkinMap[this.attackOne.mode]
+	}
+}
+
 Weapon.prototype.getAnim = function(anim) {
 	if(weaponAnims[this.name] && weaponAnims[this.name][anim])
 		return weaponAnims[this.name][anim]
@@ -117,9 +132,8 @@ Weapon.prototype.getAnim = function(anim) {
 		case 'idle': return wep + 'a'
 		case 'walk': return wep + 'b'
 		case 'attack':
-			if(this.name === "spear")
-				return wep + 'f'
-			return wep + 'j' // assumes guns
+			var attackSkin = this.getAttackSkin()
+			return wep + attackSkin
 		default: return false // let something else handle it
 	}
 }
