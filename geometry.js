@@ -158,20 +158,22 @@ function directionOfDelta(xa, ya, xb, yb) {
 	return null
 }
 
-
-function coordGridToCube(grid) {
+function hexGridToCube(grid) {
 	//even-q layout -> cube layout
-	x = grid.x
-	z = grid.y - (grid.x + (grid.x&1)) / 2
-	y = -x-z
-	return {x:x,y:y,z:z}
+	var z = grid.y - (grid.x + (grid.x & 1)) / 2
+	var y = -grid.x - z
+	return {x: grid.x, y: y, z: z}
 }
 
 function hexDistance(a, b) {
-	//we convert our hex coordinates into cube coordinates and then we only have to see which of the 3 axis is the longest
-    cubeA = coordGridToCube(a)
-    cubeB = coordGridToCube(b)
-	return Math.max(Math.abs(cubeA.x - cubeB.x), Math.abs(cubeA.y - cubeB.y),Math.abs(cubeA.z - cubeB.z))
+	// we convert our hex coordinates into cube coordinates and then
+	// we only have to see which of the 3 axes is the longest
+
+    var cubeA = hexGridToCube(a)
+    var cubeB = hexGridToCube(b)
+	return Math.max(Math.abs(cubeA.x - cubeB.x),
+	                Math.abs(cubeA.y - cubeB.y),
+	                Math.abs(cubeA.z - cubeB.z))
 }
 
 function hexOppositeDirection(direction) {
