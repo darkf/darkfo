@@ -317,6 +317,10 @@ function objectSingleAnim(obj, reversed, callback) {
 	obj.animCallback = (callback !== undefined) ? callback : (function() { obj.anim = null  })
 }
 
+function objectInAnim(obj) {
+	return !!(obj.path || obj.animCallback)
+}
+
 function objectUpdateAnimation(obj) {
 	var time = heart.timer.getTime()
 	var fps = imageInfo[obj.art].fps
@@ -336,11 +340,11 @@ function objectUpdateAnimation(obj) {
 	}
 }
 
-function useObject(obj) {
+function useObject(obj, source) {
 	// todo: check if you can use it
 
 	if(obj._script && obj._script.use_p_proc !== undefined) {
-		obj._script.source_obj = player
+		obj._script.source_obj = (source !== undefined) ? source : player
 		obj._script.self_obj = obj
 		obj._script.use_p_proc()
 	}
@@ -885,7 +889,8 @@ heart.update = function() {
 
 	for(var i = 0; i < gObjects.length; i++) {
 		if(gObjects[i].type === "critter") {
-			if(didTick && doUpdateCritters && inCombat !== true && gObjects[i]._script)
+			if(didTick && doUpdateCritters && inCombat !== true &&
+				objectInAnim(gObjects[i]) === false && gObjects[i]._script)
 				scriptingEngine.updateCritter(gObjects[i]._script)
 			critterUpdateAnimation(gObjects[i])
 		}

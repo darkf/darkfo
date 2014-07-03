@@ -46,7 +46,8 @@ var scriptingEngine = (function() {
 
 	var statMap = {
 		0: "STR", 1: "PER", 2: "END", 3: "CHR", 4: "INT",
-		5: "AGI", 6: "LUK"
+		5: "AGI", 6: "LUK",
+		35: "HP", 7: "MaxHP"
 	}
 
 	function stub(name, args) {
@@ -220,6 +221,10 @@ var scriptingEngine = (function() {
 
 			stub("metarule3", arguments)
 		},
+		script_overrides: function() {
+			warn("[SCRIPT OVERRIDES]")
+			stub("script_overrides", arguments)
+		},
 
 		// player
 		give_exp_points: function(xp) { stub("give_exp_points", arguments) },
@@ -365,6 +370,7 @@ var scriptingEngine = (function() {
 		anim_busy: function(obj) { stub("anim_busy", arguments); return 0 },
 		obj_art_fid: function(obj) { stub("obj_art_fid", arguments); return 0 },
 		set_obj_visibility: function(obj, visibility) { stub("set_obj_visibility", arguments) },
+		use_obj_on_obj: function(obj, who) { stub("use_obj_on_obj", arguments) },
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },

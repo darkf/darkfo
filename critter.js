@@ -399,5 +399,8 @@ function critterGetStat(obj, stat) {
 	console.log("STAT: " + stat + " IS: " + obj.stats[stat])
 	if(obj.stats[stat] !== undefined)
 		return obj.stats[stat]
+	if(stat === "MaxHP") // TODO: this
+		return 75
+	console.log("NO STAT: " + stat)
 	return null
 }
