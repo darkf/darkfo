@@ -274,6 +274,10 @@ Combat.prototype.doAITurn = function(obj, idx) {
 				           " needs AP:"+obj.path.path.length+" and maxDist was:"+maxDistance
 				return
 			}
+			else {
+				this.log("invalid path -- advancing")
+				return this.nextTurn()
+			}
 		}
 
 		// no path
@@ -308,6 +312,17 @@ Combat.prototype.end = function() {
 	console.log("[end combat]")
 	combat = null // todo: invert control
 	inCombat = false
+}
+
+Combat.prototype.forceTurn = function(obj) {
+	if(obj === player)
+		this.whoseTurn = -1 - 1
+	else {
+		var idx = this.combatants.indexOf(obj)
+		if(idx === -1) throw "forceTurn: no combatant " + critterGetName(obj)
+
+		this.whoseTurn = idx - 1
+	}
 }
 
 Combat.prototype.nextTurn = function() {

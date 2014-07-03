@@ -316,7 +316,14 @@ var scriptingEngine = (function() {
 		critter_attempt_placement: function(obj, tile, elevation) { stub("critter_attempt_placement", arguments) },
 		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
 			info("[enter combat via attack_complex]")
-			stub("attack_complex", arguments)
+			//stub("attack_complex", arguments)
+			// since this isn't actually used beyond its basic form, we're not going to bother
+			// implementing all of it
+
+			inCombat = true
+			combat = new Combat(gameObjects, dudeObject)
+			combat.forceTurn(this.self_obj)
+			combat.nextTurn()
 		},
 
 		// objects
@@ -351,6 +358,7 @@ var scriptingEngine = (function() {
 		},
 		anim_busy: function(obj) { stub("anim_busy", arguments); return 0 },
 		obj_art_fid: function(obj) { stub("obj_art_fid", arguments); return 0 },
+		set_obj_visibility: function(obj, visibility) { stub("set_obj_visibility", arguments) },
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
