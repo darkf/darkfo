@@ -81,13 +81,11 @@ var CriticalEffects = (function() {
 	{
 		if(this.stat === -1)
 			return false
+
 		var statToRollAgainst = target.stats[this.stat]
 		statToRollAgainst += this.modifier
 
-		//todo: rolling
-		var failedRoll = true
-
-		if(failedRoll === true) {
+		if(!rollSkillCheck(statToRollAgainst*10,0,false)) {
 			this.effects.doEffectsOn(target)
 			return {success: true, msgID: this.failEffectMessageID}
 		}

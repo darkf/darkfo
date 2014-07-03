@@ -104,9 +104,14 @@ Combat.prototype.log = function(msg) {
 }
 
 Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
-	var WeaponSkill = 70
-	var AC = 0
-	var baseCrit = 50
+	var weapon = critterGetEquippedWeapon(obj)
+	if(weapon === null)
+		return {hit: -1, crit: -1}
+	var WeaponSkill = obj.skills[weapon.weaponType]
+	var bonusAC = 0 //todo: armor bonus, ap at end of turn bonus
+	var AC = critterGetStat(target,"AGI") + bonusAC
+	var bonusCrit = 0 //todo: perk bonis, other crit influencing things
+	var baseCrit = critterGetStat(obj,"LUK") + bonusCrit
 	var hitChance = WeaponSkill - AC - CriticalEffects.regionHitChanceDecTable[region]
 	var critChance = baseCrit + CriticalEffects.regionHitChanceDecTable[region]
 	if(isNaN(hitChance)) throw "something went wrong with hit chance calculation"
