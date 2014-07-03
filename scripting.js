@@ -343,7 +343,11 @@ var scriptingEngine = (function() {
 		obj_unlock: function(obj) { stub("obj_unlock", arguments) },
 		obj_is_open: function(obj) { stub("obj_is_open", arguments); return 0 },
 		obj_close: function(obj) { stub("obj_close", arguments) },
-		obj_open: function(obj) { stub("obj_open", arguments) },
+		obj_open: function(obj) {
+			info("obj_open")
+			useObject(obj, this.self_obj)
+			stub("obj_open", arguments)
+		},
 		create_object_sid: function(pid, tile, elevation, sid) { // Create object of pid and possibly script
 			info("create_object_sid: " + pid + " / " + sid)
 
@@ -391,7 +395,19 @@ var scriptingEngine = (function() {
 			if(!isGameObject(obj)) { warn("tile_num: not game object"); return }
 			return toTileNum(obj.position)
 		},
-		tile_contains_pid_obj: function(tile, elevation, pid) { stub("tile_contains_pid_obj", arguments, "tiles") ;},
+		tile_contains_pid_obj: function(tile, elevation, pid) {
+			stub("tile_contains_pid_obj", arguments, "tiles")
+			var pos = fromTileNum(tile)
+			if(elevation !== currentElevation)
+				throw "tile_contains_pid_obj: not on current elevation"
+			for(var i = 0; i < gameObjects.length; i++) {
+				if(gameObjects[i].position.x === pos.x && gameObjects[i].position.y === pos.y &&
+				   gameObjects[i].pid === pid) {
+					return gameObjects[i]
+				}
+			}
+			return null
+		},
 		tile_num_in_direction: function(tile, direction) { return toTileNum(hexInDirection(fromTileNum(tile), direction)) },
 		tile_in_tile_rect: function(_, _, _, _, t) { stub("tile_in_tile_rect", arguments, "tiles"); return 0 },
 		tile_contains_obj_pid: function(tile, elevation, pid) { stub("tile_contains_obj_pid", arguments); return 0 },
@@ -626,9 +642,16 @@ var scriptingEngine = (function() {
 		},
 		animate_move_obj_to_tile: function(obj, tile, speed) {
 			stub("animate_move_obj_to_tile", arguments)
-			if(!isGameObject(obj)) return
+			if(!isGameObject(obj)) {
+				warn("animate_move_obj_to_tile: not a game object")
+				return
+			}
+
 			tile = fromTileNum(tile)
-			critterWalkTo(obj, tile)
+			if(critterWalkTo(obj, tile) === false) {
+				warn("animate_move_obj_to_tile: no path")
+				return
+			}
 		},
 
 		gfade_out: function(time) { stub("gfade_out", arguments) },
