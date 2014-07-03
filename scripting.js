@@ -314,6 +314,8 @@ var scriptingEngine = (function() {
 			return undefined
 		},
 		critter_attempt_placement: function(obj, tile, elevation) { stub("critter_attempt_placement", arguments) },
+
+		// combat
 		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
 			info("[enter combat via attack_complex]")
 			//stub("attack_complex", arguments)
@@ -321,9 +323,13 @@ var scriptingEngine = (function() {
 			// implementing all of it
 
 			inCombat = true
-			combat = new Combat(gameObjects, dudeObject)
+			combat = new Combat([this.self_obj], dudeObject) //gameObjects, dudeObject)
 			combat.forceTurn(this.self_obj)
 			combat.nextTurn()
+		},
+		terminate_combat: function() {
+			info("[terminate_combat]")
+			combat.end()
 		},
 
 		// objects
@@ -754,6 +760,38 @@ var scriptingEngine = (function() {
 		script.critter_p_proc()
 	}
 
+	function combatEvent(obj, event) {
+		var fixed_param = null
+		switch(event) {
+			case "turnBegin": fixed_param = 4; break // COMBAT_SUBTYPE_TURN
+			default: throw "combatEvent: unknown event " + event
+		}
+
+		if(obj._script.combat_p_proc === undefined)
+			return
+
+		info("[COMBAT EVENT " + event + "]")
+
+		obj._script.combat_is_initialized = 1
+		obj._script.fixed_param = fixed_param
+		obj._script.self_obj = obj
+		obj._script.game_time = Math.max(1, gameTickTime)
+		obj._script.cur_map_index = currentMapID
+
+		// hack so that the procedure is allowed to finish before
+		// we actually terminate combat
+		var doTerminate = false // did combat_p_proc terminate combat?
+		obj._script.terminate_combat = function() { doTerminate = true }
+		obj._script.combat_p_proc()
+
+		if(doTerminate === true) {
+			console.log("DUH DUH TERMINATE!")
+			ScriptProto.terminate_combat.call(obj._script) // call original
+		}
+
+		return doTerminate
+	}
+
 	function updateMap(mapScript, objects, elevation) {
 		gameObjects = objects
 		gameElevation = elevation
@@ -822,5 +860,6 @@ var scriptingEngine = (function() {
 
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
-		    timeEventList: timeEventList, info: info, reset: reset, talk: talk, globalVars: globalVars}
+		    timeEventList: timeEventList, info: info, reset: reset, talk: talk,
+		    globalVars: globalVars, combatEvent: combatEvent}
 })()
