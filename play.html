@@ -434,6 +434,7 @@ function loadObjectScripts(objects) {
 			continue
 		} else {
 			objects[i]._script = script
+			scriptingEngine.initScript(objects[i]._script, objects[i])
 		}
 	}
 }

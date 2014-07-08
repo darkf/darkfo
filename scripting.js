@@ -319,6 +319,7 @@ var scriptingEngine = (function() {
 			return undefined
 		},
 		critter_attempt_placement: function(obj, tile, elevation) { stub("critter_attempt_placement", arguments) },
+		critter_state: function(obj) { stub("critter_state", arguments); return 0 },
 
 		// combat
 		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
@@ -776,6 +777,13 @@ var scriptingEngine = (function() {
 		return scriptObject
 	}
 
+	function initScript(script, obj) {
+		obj._script.self_obj = obj
+		obj._script.cur_map_index = currentMapID
+		if(obj._script.start !== undefined)
+			obj._script.start()
+	}
+
 	function timedEvent(script, userdata) {
 		info("timedEvent: " + script.scriptName + ": " + userdata, "timer")
 		if(script.timed_event_p_proc === undefined)
@@ -911,5 +919,5 @@ var scriptingEngine = (function() {
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
 		    timeEventList: timeEventList, info: info, reset: reset, talk: talk,
-		    globalVars: globalVars, combatEvent: combatEvent}
+		    globalVars: globalVars, combatEvent: combatEvent, initScript: initScript}
 })()
