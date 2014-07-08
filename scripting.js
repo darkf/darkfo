@@ -26,6 +26,7 @@ var scriptingEngine = (function() {
 	}
 	var currentMapID = null
 	var currentMapObject = null
+	var mapFirstRun = true
 	var scriptMessages = {}
 	var dialogueOptionProcs = []
 	var currentDialogueObject = null
@@ -206,6 +207,7 @@ var scriptingEngine = (function() {
 			stub("metarule", arguments)
 
 			if(id === 22) return 0 // is_game_loading
+			else if(id === 14) return mapFirstRun // map_first_run
 		},
 		metarule3: function(id, obj, userdata, radius) {
 			if(id === 100) { // METARULE3_CLR_FIXED_TIMED_EVENTS
@@ -320,6 +322,7 @@ var scriptingEngine = (function() {
 		},
 		critter_attempt_placement: function(obj, tile, elevation) { stub("critter_attempt_placement", arguments) },
 		critter_state: function(obj) { stub("critter_state", arguments); return 0 },
+		kill_critter: function(obj, deathFrame) { stub("kill_critter", arguments) },
 
 		// combat
 		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
@@ -372,7 +375,14 @@ var scriptingEngine = (function() {
 			stub("obj_item_subtype", arguments)
 			return null
 		},
-		anim_busy: function(obj) { stub("anim_busy", arguments); return 0 },
+		anim_busy: function(obj) {
+			info("anim_busy", arguments)
+			if(!isGameObject(obj)) {
+				warn("anim_busy: not game object: " + obj)
+				return false
+			}
+			return objectInAnim(obj)
+		},
 		obj_art_fid: function(obj) { stub("obj_art_fid", arguments); return 0 },
 		set_obj_visibility: function(obj, visibility) {
 			if(!isGameObject(obj)) {
@@ -383,6 +393,7 @@ var scriptingEngine = (function() {
 			obj.visible = !visibility
 		},
 		use_obj_on_obj: function(obj, who) { stub("use_obj_on_obj", arguments) },
+		anim: function(obj, anim, direction) { stub("anim", arguments) },
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
@@ -425,6 +436,13 @@ var scriptingEngine = (function() {
 		tile_num_in_direction: function(tile, direction) { return toTileNum(hexInDirection(fromTileNum(tile), direction)) },
 		tile_in_tile_rect: function(_, _, _, _, t) { stub("tile_in_tile_rect", arguments, "tiles"); return 0 },
 		tile_contains_obj_pid: function(tile, elevation, pid) { stub("tile_contains_obj_pid", arguments); return 0 },
+		rotation_to_tile: function(srcTile, destTile) {
+			var src = fromTileNum(srcTile), dest = fromTileNum(destTile)
+			var hex = hexNearestNeighbor(src, dest)
+			if(hex !== null)
+				return hex.direction
+			warn("rotation_to_tile: invalid hex: " + srcTile + " / " + destTile)
+		},
 
 		// combat
 		node998: function() { // enter combat
@@ -876,10 +894,11 @@ var scriptingEngine = (function() {
 		// info("updated " + updated + " objects")
 	}
 
-	function enterMap(mapScript, objects, elevation, mapID) {
+	function enterMap(mapScript, objects, elevation, mapID, isFirstRun) {
 		gameObjects = objects
 		gameElevation = elevation
 		currentMapID = mapID
+		mapFirstRun = isFirstRun
 
 		if(mapScript.map_enter_p_proc !== undefined) {
 			info("calling map enter")
