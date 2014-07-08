@@ -373,7 +373,14 @@ var scriptingEngine = (function() {
 		},
 		anim_busy: function(obj) { stub("anim_busy", arguments); return 0 },
 		obj_art_fid: function(obj) { stub("obj_art_fid", arguments); return 0 },
-		set_obj_visibility: function(obj, visibility) { stub("set_obj_visibility", arguments) },
+		set_obj_visibility: function(obj, visibility) {
+			if(!isGameObject(obj)) {
+				warn("set_obj_visibility: not a game object: " + obj)
+				return
+			}
+
+			obj.visible = !visibility
+		},
 		use_obj_on_obj: function(obj, who) { stub("use_obj_on_obj", arguments) },
 
 		// environment
@@ -389,8 +396,14 @@ var scriptingEngine = (function() {
 		destroy_object: function(obj) { stub("destroy_object", arguments) }, // destroy object from world
 
 		// tiles
-		tile_distance_objs: function(a, b) { stub("tile_distance_objs", arguments) },
-		tile_distance: function(a, b) { return Math.round(hexDistance(fromTileNum(a), fromTileNum(b))) }, // TODO: should we use floor?
+		tile_distance_objs: function(a, b) {
+			if(!isGameObject(a) || !isGameObject(b)) {
+				warn("tile_distance_objs: " + a + " or " + b + " are not game objects")
+				return
+			}
+			return hexDistance(a.position, b.position)
+		},
+		tile_distance: function(a, b) { return hexDistance(fromTileNum(a), fromTileNum(b)) }, // TODO: should we use floor?
 		tile_num: function(obj) {
 			if(!isGameObject(obj)) { warn("tile_num: not game object"); return }
 			return toTileNum(obj.position)
@@ -640,7 +653,7 @@ var scriptingEngine = (function() {
 			function animate() { objectSingleAnim(obj, false, animate) }
 			animate()
 		},
-		animate_move_obj_to_tile: function(obj, tile, speed) {
+		animate_move_obj_to_tile: function(obj, tile, isRun) {
 			stub("animate_move_obj_to_tile", arguments)
 			if(!isGameObject(obj)) {
 				warn("animate_move_obj_to_tile: not a game object")
@@ -648,7 +661,7 @@ var scriptingEngine = (function() {
 			}
 
 			tile = fromTileNum(tile)
-			if(critterWalkTo(obj, tile) === false) {
+			if(critterWalkTo(obj, tile, !!isRun) === false) {
 				warn("animate_move_obj_to_tile: no path")
 				return
 			}

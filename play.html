@@ -1006,7 +1006,8 @@ heart.draw = function() {
 	// draw objects and player
 	if(showObjects === true) {
 		for(var i = 0; i < gObjects.length; i++)
-			drawObject(gObjects[i])
+			if(gObjects[i].visible !== false)
+				drawObject(gObjects[i])
 
 		drawObject(player)
 	}
