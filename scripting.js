@@ -242,8 +242,15 @@ var scriptingEngine = (function() {
 			return 5
 		},
 		has_trait: function(traitType, obj, trait) {
+			if(!isGameObject(obj)) {
+				warn("has_trait: not game object: " + obj)
+				return
+			}
+
 			if(trait === 666) // OBJECT_VISIBILITY
 				return 1 // visible
+			else if(trait === 10) // OBJECT_CUR_ROT
+				return obj.orientation
 
 			stub("has_trait", arguments)
 			return 0
@@ -668,6 +675,7 @@ var scriptingEngine = (function() {
 
 		// animation
 		reg_anim_func: function(_, _) { stub("reg_anim_func", arguments) },
+		reg_anim_animate: function(obj, anim, delay) { stub("reg_anim_animate", arguments) },
 		reg_anim_animate_forever: function(obj, anim) {
 			stub("reg_anim_animate_forever", arguments)
 			if(!isGameObject(obj)) {
@@ -681,7 +689,7 @@ var scriptingEngine = (function() {
 			animate()
 		},
 		animate_move_obj_to_tile: function(obj, tile, isRun) {
-			stub("animate_move_obj_to_tile", arguments)
+			info("animate_move_obj_to_tile", arguments)
 			if(!isGameObject(obj)) {
 				warn("animate_move_obj_to_tile: not a game object")
 				return
@@ -871,6 +879,7 @@ var scriptingEngine = (function() {
 	function updateMap(mapScript, objects, elevation) {
 		gameObjects = objects
 		gameElevation = elevation
+		mapFirstRun = false
 
 		mapScript.combat_is_initialized = 0
 		if(mapScript.map_update_p_proc !== undefined) {
