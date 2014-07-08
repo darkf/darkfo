@@ -635,6 +635,14 @@ var scriptingEngine = (function() {
 			$("#dialogue").append("<a href=\"javascript:dialogueReply(" + (dialogueOptionProcs.length-1) + ")\">" + msg + "</a><br>")
 			//stub("giQ_Option", arguments)
 		},
+		dialogue_system_enter: function() {
+			log("dialogue_system_enter", arguments)
+			if(!this.self_obj) {
+				warn("dialogue_system_enter: no self_obj")
+				return
+			}
+			talk(this.self_obj._script, this.self_obj)
+		},
 		float_msg: function(obj, msg, type) {			
 			info("FLOAT MSG: " + msg, "floatMessage")
 		},
