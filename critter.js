@@ -375,9 +375,11 @@ function critterUpdateAnimation(obj) {
 				var distMoved = Math.min(moveDistance, obj.path.distance)
 				//console.log("end partial, moved " + distMoved + " hexes, " + (obj.path.distance-distMoved) + " hexes left")
 				var h = hexInDirection(obj.position, obj.orientation)
+				obj.position = h
 				if(critterWalkCallback(obj)) return
 				for(var i = 0; i < distMoved-1; i++) {
 					h = hexInDirection(h, obj.orientation)
+					obj.position = h
 					if(critterWalkCallback(obj)) return
 				}
 				obj.position = h
