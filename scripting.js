@@ -34,6 +34,7 @@ var scriptingEngine = (function() {
 
 	var debugLogShowType = {
 		stub: true,
+		log: false,
 		timer: false,
 		load: true,
 		debugMessage: true,
@@ -42,6 +43,8 @@ var scriptingEngine = (function() {
 		gvars: true,
 		lvars: true,
 		tiles: true,
+		animation: false,
+		movement: true,
 		inventory: true,
 	}
 
@@ -51,8 +54,8 @@ var scriptingEngine = (function() {
 		35: "HP", 7: "MaxHP"
 	}
 
-	function stub(name, args) {
-		if(debugLogShowType.stub === false) return
+	function stub(name, args, type) {
+		if(debugLogShowType.stub === false || debugLogShowType[type] === false) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
 			if(i === args.length-1) a += args[i]
@@ -60,12 +63,13 @@ var scriptingEngine = (function() {
 		console.log("STUB: " + name + ": " + a)
 	}
 
-	function log(name, args) {
+	function log(name, args, type) {
+		if(debugLogShowType.log === false || debugLogShowType[type] === false) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
 			if(i === args.length-1) a += args[i]
 			else a += args[i] + ", "
-		//console.log("log: " + name + ": " + a)
+		console.log("log: " + name + ": " + a)
 	}
 
 	function warn(msg, type) {
@@ -169,6 +173,7 @@ var scriptingEngine = (function() {
 		set_global_var: function(gvar, value) {
 			globalVars[gvar] = value
 			info("set_global_var: " + gvar + " = " + value)
+			log("set_global_var", arguments, "gvars")
 		},
 		set_local_var: function(lvar, value) {
 			this.lvars[lvar] = value
@@ -194,8 +199,8 @@ var scriptingEngine = (function() {
 		},
 		global_var: function(gvar) {
 			if(globalVars[gvar] === undefined) {
-				warn("global_var: unknown gvar " + gvar, "gvars")
-				return null
+				warn("global_var: unknown gvar " + gvar + ", using default (0)", "gvars")
+				globalVars[gvar] = 0
 			}
 			return globalVars[gvar]
 		},
@@ -674,10 +679,10 @@ var scriptingEngine = (function() {
 		},
 
 		// animation
-		reg_anim_func: function(_, _) { stub("reg_anim_func", arguments) },
-		reg_anim_animate: function(obj, anim, delay) { stub("reg_anim_animate", arguments) },
+		reg_anim_func: function(_, _) { stub("reg_anim_func", arguments, "animation") },
+		reg_anim_animate: function(obj, anim, delay) { stub("reg_anim_animate", arguments, "animation") },
 		reg_anim_animate_forever: function(obj, anim) {
-			stub("reg_anim_animate_forever", arguments)
+			log("reg_anim_animate_forever", arguments, "animation")
 			if(!isGameObject(obj)) {
 				warn("reg_anim_animate_forever: not a game object")
 				return
@@ -689,7 +694,7 @@ var scriptingEngine = (function() {
 			animate()
 		},
 		animate_move_obj_to_tile: function(obj, tile, isRun) {
-			info("animate_move_obj_to_tile", arguments)
+			log("animate_move_obj_to_tile", arguments, "movement")
 			if(!isGameObject(obj)) {
 				warn("animate_move_obj_to_tile: not a game object")
 				return
@@ -729,6 +734,7 @@ var scriptingEngine = (function() {
 			else
 				loadMapID(map)
 		},
+		play_gmovie: function(movieID) { stub("play_gmovie", arguments) },
 
 		// party
 		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 },
