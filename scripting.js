@@ -188,9 +188,22 @@ var scriptingEngine = (function() {
 			}
 			return this.lvars[lvar] },
 		map_var: function(mvar) {
-			if(mapVars[this.scriptName] !== undefined && mapVars[this.scriptName][mvar] !== undefined)
-				return mapVars[this.scriptName][mvar]
-			warn("map_var: unknown mvar " + mvar + " on script " + this.scriptName, "gvars")
+			if(this._mapScript === undefined) {
+				warn("map_var: no map script")
+				return
+			}
+			var scriptName = this._mapScript.scriptName
+			if(scriptName === undefined) {
+				warn("map_var: map script has no name")
+				return
+			}
+			else if(mapVars[scriptName] === undefined)
+				mapVars[scriptName] = {}
+			else if(mapVars[scriptName][mvar] === undefined) {
+				warn("map_var: setting default value (0) for MVAR " + mvar)
+				mapVars[scriptName][mvar] = 0
+			}
+			return mapVars[scriptName][mvar]
 		},
 		set_map_var: function(mvar, value) {
 			if(mapVars[this.scriptName] === undefined)
