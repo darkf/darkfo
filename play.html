@@ -717,8 +717,8 @@ heart.keydown = function(k) {
 				if(gObjects[i]._script && gObjects[i]._script.talk_p_proc !== undefined) {
 					console.log("talking to " + gObjects[i].name)
 					scriptingEngine.talk(gObjects[i]._script, gObjects[i])
+					break
 				}
-				break
 			}
 		}
 	}

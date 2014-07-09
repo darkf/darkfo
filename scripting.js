@@ -335,6 +335,7 @@ var scriptingEngine = (function() {
 		critter_attempt_placement: function(obj, tile, elevation) { stub("critter_attempt_placement", arguments) },
 		critter_state: function(obj) { stub("critter_state", arguments); return 0 },
 		kill_critter: function(obj, deathFrame) { stub("kill_critter", arguments) },
+		get_poison: function(obj) { stub("get_poison", arguments); return 0 },
 
 		// combat
 		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
