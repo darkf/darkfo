@@ -46,6 +46,7 @@ var scriptingEngine = (function() {
 		animation: false,
 		movement: true,
 		inventory: true,
+		party: false,
 	}
 
 	var statMap = {
@@ -751,7 +752,7 @@ var scriptingEngine = (function() {
 		play_gmovie: function(movieID) { stub("play_gmovie", arguments) },
 
 		// party
-		party_member_obj: function(pid) { stub("party_member_obj", arguments); return 0 },
+		party_member_obj: function(pid) { stub("party_member_obj", arguments, "party"); return 0 },
 		party_add: function(obj) { stub("party_add", arguments) }
 	}
 

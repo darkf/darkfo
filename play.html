@@ -340,8 +340,55 @@ function objectUpdateAnimation(obj) {
 	}
 }
 
+function canUseObject(obj, source) {
+	if(obj.type === "item" || obj.type === "scenery")
+		return (obj.pro.extra.actionFlags & 8) != 0
+	return false
+}
+
+function objectIsDoor(obj) {
+	return (obj.type === "scenery" && obj.pro.extra.subType === 0) // SCENERY_DOOR
+}
+
+function objectIsStairs(obj) {
+	return (obj.type === "scenery" && obj.pro.extra.subType === 1) // SCENERY_STAIRS
+}
+
+function objectIsContainer(obj) {
+	return (obj.type === "item" && obj.pro.extra.subType === 1) // SUBTYPE_CONTAINER
+}
+
+function findItem(obj, item) {
+	for(var i = 0; i < obj.inventory.length; i++) {
+		if(obj.inventory[i].pid === item.pid)
+			return i
+	}
+	return -1
+}
+
+function swapItem(a, item, b, amount) {
+	// swap item from a -> b
+	if(amount === 0) return
+
+	var idx = findItem(a, item)
+	if(idx === -1)
+		throw "item (" + item + ") does not exist in a"
+	if(amount !== undefined && amount < item.amount) {
+		// just deduct amount from a and give amount to b
+		item.amount -= amount
+		objectAddItem(b, cloneItem(item), amount)
+	}
+	else { // just swap them
+		a.inventory.splice(idx, 1)
+		objectAddItem(b, item, amount || 1)
+	}
+}
+
 function useObject(obj, source) {
-	// todo: check if you can use it
+	if(canUseObject(obj, source) === false) {
+		console.log("can't use object")
+		return false
+	}
 
 	if(obj._script && obj._script.use_p_proc !== undefined) {
 		obj._script.source_obj = (source !== undefined) ? source : player
@@ -355,14 +402,26 @@ function useObject(obj, source) {
 	// also check object type
 	objectSingleAnim(obj)
 
-	if((obj.type === "scenery" && obj.subtype === "door") ||
-		obj.art.indexOf("door") !== -1 || obj.art.indexOf("locker") !== -1) {
+	if(objectIsDoor(obj) || objectIsContainer(obj)) {
 		// open/closable doors/containers
+		// todo: check lock status
 		if(!obj.open) obj.open = true
 		else obj.open = false
 		objectSingleAnim(obj, !obj.open)
+
+		if(objectIsContainer(obj) && obj.open === true) {
+			// show locker contents
+			var drawInv = function() {
+				drawInventory($("#inventory"), obj, function(selected) {
+					swapItem(obj, selected, player, 1)
+					drawInventory($("#playerInventory"), player)
+					drawInv()
+				})
+			}
+			drawInv()
+		}
 	}
-	else if(obj.type === "scenery" && obj.subtype === "stairs") {
+	else if(objectIsStairs(obj)) {
 		if(obj.extra.destinationMap === -1 && obj.extra.destination !== -1) {
 			// same map, new destination
 			var destTile = fromTileNum(obj.extra.destination & 0xffff)
@@ -372,6 +431,9 @@ function useObject(obj, source) {
 
 			player.position = destTile
 			changeElevation(destElev)
+		}
+		else {
+			console.log("stairs -> " + obj.extra.destinationMap)
 		}
 	}
 }

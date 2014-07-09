@@ -89,6 +89,9 @@ def readItem(f):
 	soundID = ord(f.read(1))
 
 	obj["flagsExt"] = flagsExt
+	obj["itemFlags"] = ord(flagsExt[0])
+	obj["actionFlags"] = ord(flagsExt[1])
+	obj["weaponFlags"] = ord(flagsExt[2])
 	obj["attackMode"] = attackMode
 	obj["scriptID"] = scriptID
 	obj["subType"] = objSubType
