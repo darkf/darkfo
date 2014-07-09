@@ -206,6 +206,11 @@ function getAnimDistance(art) {
 
 function critterWalkTo(obj, target, running, callback, maxLength) {
 	// pathfind and set walking to target
+	if(obj.position.x === target.x && obj.position.y === target.y) {
+		// can't walk to the same tile
+		return false
+	}
+
 	var path = recalcPath(obj.position, target)
 	if(path.length === 0) {
 		console.log("not a valid path")
@@ -223,6 +228,7 @@ function critterWalkTo(obj, target, running, callback, maxLength) {
 	obj.frame = 0
 	obj.lastFrameTime = 0
 	critterAdvancePath(obj)
+	return true
 }
 
 function critterStaticAnim(obj, anim, callback) {
