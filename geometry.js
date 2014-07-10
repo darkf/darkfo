@@ -211,3 +211,8 @@ function hexLine(a, b) {
 	}
 	throw "unreachable"
 }
+
+function pointInBoundingBox(point, bbox) {
+	return (bbox.x <= point.x && point.x <= bbox.x+bbox.w &&
+		    bbox.y <= point.y && point.y <= bbox.y+bbox.h)
+}

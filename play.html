@@ -64,6 +64,7 @@ var lastGameTick = 0 // real time of the last game tick
 var combat = null // combat object
 var inCombat = false // are we currently in combat?
 var gameHasFocus = false // do we have input focus?
+var lastMousePickTime = 0 // time when we last checked what's under the mouse cursor
 
 var isLoading = true // are we currently loading a map?
 var loadingImagesLoaded = 0 // how many images we've loaded
@@ -568,6 +569,10 @@ function drawInventory($el, obj, clickCallback) {
 	}
 }
 
+function isSelectableObject(obj) {
+	return canUseObject(obj) || obj.type === "critter"
+}
+
 heart.mousepressed = function(x, y, btn) {
 	if(isLoading === true) return
 	if(btn !== "l") return
@@ -575,9 +580,12 @@ heart.mousepressed = function(x, y, btn) {
 	var mousePos = heart.mouse.getPosition()
 	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
-	// todo: object highlights/usage
-	
-	critterWalkTo(player, mouseHex, doAlwaysRun)
+	// if there's an object under the cursor, use it
+	var obj = getObjectUnderCursor(isSelectableObject)
+	if(obj !== null)
+		useObject(obj)
+	else // otherwise walk to the destination
+		critterWalkTo(player, mouseHex, doAlwaysRun)
 }
 
 heart.keydown = function(k) {
@@ -710,6 +718,26 @@ function recalcPath(start, goal) {
 	return path
 }
 
+function changeCursor(image) {
+	$("#cnv").css("cursor", image)
+}
+
+function getObjectUnderCursor(p) {
+	var mouse = heart.mouse.getPosition()
+	mouse = {x: mouse[0] + cameraX, y: mouse[1] + cameraY}
+
+	// reverse z-ordered search
+	for(var i = gObjects.length - 1; i > 0; i--) {
+		var bbox = objectBoundingBox(gObjects[i])
+		if(bbox === null) continue
+		if(pointInBoundingBox(mouse, bbox))
+			if(p === undefined || p(gObjects[i]) === true)
+				return gObjects[i]
+	}
+
+	return null
+}
+
 heart.update = function() {
 	if(isLoading === true) {
 		if(loadingImagesLoaded === loadingImagesTotal) isLoading = false
@@ -724,6 +752,15 @@ heart.update = function() {
 
 		if(mousePos[1] <= SCROLL_PADDING) cameraY -= 15
 		if(mousePos[1] >= SCREEN_HEIGHT-SCROLL_PADDING) cameraY += 15
+
+		if(time >= lastMousePickTime + 750) { // every .75 seconds, check the object under the cursor
+			lastMousePickTime = time
+
+			var obj = getObjectUnderCursor(isSelectableObject)
+			if(obj !== null)
+				changeCursor("pointer")
+			else changeCursor("auto")
+		}
 	}
 
 	var didTick = (time - lastGameTick >= 1000/10) // 10 Hz game tick
@@ -776,6 +813,31 @@ function drawTileMap(matrix, offsetY) {
 			}
 		}
 	}
+}
+
+// get an object's bounding box in screen-space (note: not camera-space)
+function objectBoundingBox(obj) {
+	var scr = hexToScreen(obj.position.x, obj.position.y)
+
+	if(images[obj.art] === undefined) // no art
+		return null
+
+	var info = imageInfo[obj.art]
+	if(info === undefined)
+		throw "No image map info for: " + obj.art
+
+	var frameIdx = 0
+	if(obj.frame !== undefined)
+		frameIdx += obj.frame
+
+	if(!(obj.orientation in info.frameOffsets))
+		obj.orientation = 0 // ...
+	var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
+	var dirOffset = info.directionOffsets[obj.orientation]
+	var offsetX = Math.floor(frameInfo.w / 2) - dirOffset.x - frameInfo.ox
+	var offsetY = frameInfo.h - dirOffset.y - frameInfo.oy
+
+	return {x: scr.x - offsetX, y: scr.y - offsetY, w: frameInfo.w, h: frameInfo.h}
 }
 
 function drawObject(obj) {
