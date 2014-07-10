@@ -204,6 +204,31 @@ function getAnimDistance(art) {
 	return Math.floor((lastShift - firstShift + 16) / 32)
 }
 
+function longestSequenceWithoutTurning(start, path, index) {
+	// todo: make logic less complex
+	var firstDir = directionOfDelta(start.x, start.y, path[index][0], path[index][1])
+	if(index+1 >= path.length)
+		return {seq: 1, lastPosition: {x: path[index][0], y: path[index][1]}, firstDirection: firstDir}
+
+	var pos = path[index]
+	var dir = firstDir
+	var n = 1
+	for(var i = index+1; i < path.length; i++) {
+		//console.log("i " + i)
+		var deltaDir = directionOfDelta(pos[0], pos[1], path[i][0], path[i][1])
+		//console.log("deltaDir: " + deltaDir)
+			         
+		if(deltaDir !== dir) {
+			//console.log("bad deltaDir: " + deltaDir)
+			return {seq: n, lastPosition: {x: path[i-1][0], y: path[i-1][1]}, firstDirection: firstDir}
+		}
+		n++
+		pos = path[i]
+	}
+
+	return {seq: n, lastPosition: {x: pos[0], y: pos[1]}, firstDirection: firstDir}
+}
+
 function critterWalkTo(obj, target, running, callback, maxLength) {
 	// pathfind and set walking to target
 	if(obj.position.x === target.x && obj.position.y === target.y) {
@@ -401,6 +426,23 @@ function critterUpdateAnimation(obj) {
 					obj.animCallback()
 		}
 	}
+}
+
+function cloneStats(stats) { return $.extend({}, stats) }
+function addStats(a, b) {
+	var w = cloneStats(a)
+	for(var prop in b) {
+		w[prop] += b[prop]
+	}
+	return w
+}
+function calcStats(obj, pro) {
+	var stats = addStats(pro.extra.baseStats, pro.extra.bonusStats)
+	// todo: armor
+	return stats
+}
+function reprStats(stats) {
+	return JSON.stringify(stats) // todo
 }
 
 function critterGetStat(obj, stat) {
