@@ -92,6 +92,8 @@ function objectFindItemIndex(obj, item) {
 	return -1
 }
 
+function cloneItem(item) { return $.extend({}, item) }
+
 function objectSwapItem(a, item, b, amount) {
 	// swap item from a -> b
 	if(amount === 0) return
