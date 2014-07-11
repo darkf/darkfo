@@ -582,8 +582,17 @@ heart.mousepressed = function(x, y, btn) {
 
 	// if there's an object under the cursor, use it
 	var obj = getObjectUnderCursor(isSelectableObject)
-	if(obj !== null)
-		useObject(obj)
+	if(obj !== null) {
+		if(obj.type === "critter") {
+			if(obj._script && obj._script.talk_p_proc !== undefined) {
+				console.log("Talking to " + critterGetName(obj))
+				scriptingEngine.talk(obj._script, obj)
+			}
+			else console.log("Cannot talk to that critter")
+		}
+		else
+			useObject(obj)
+	}
 	else // otherwise walk to the destination
 		critterWalkTo(player, mouseHex, doAlwaysRun)
 }
