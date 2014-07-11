@@ -67,7 +67,9 @@ function objectBlocks(obj) {
 }
 
 function canUseObject(obj, source) {
-	if(obj.type === "item" || obj.type === "scenery")
+	if(obj._script !== undefined && obj._script.use_p_proc !== undefined)
+		return true
+	else if(obj.type === "item" || obj.type === "scenery")
 		return (obj.pro.extra.actionFlags & 8) != 0
 	return false
 }
