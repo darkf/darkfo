@@ -43,6 +43,7 @@ var TILE_HEIGHT = 36
 var HEX_GRID_SIZE = 200 // hex grid is 200x200
 var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
 var SCROLL_PADDING = 20 // how far the mouse has to be from an edge to scroll
+var FLOAT_MSG_DURATION = 3 // in seconds
 
 var showHexOverlay = false // show hex grid?
 var showCoordinates = false // show coordinates on hex grid?
@@ -74,6 +75,8 @@ var proFiles = {}
 var lstFiles = {}
 var messageFiles = {}
 var mapNames = null
+
+var floatMessages = []
 
 var cameraDownKey = "down"
 var cameraUpKey = "up"
@@ -770,6 +773,13 @@ heart.update = function() {
 				changeCursor("pointer")
 			else changeCursor("auto")
 		}
+
+		for(var i = 0; i < floatMessages.length; i++) {
+			if(time >= floatMessages[i].startTime + 1000*FLOAT_MSG_DURATION) {
+				floatMessages.splice(i--, 1)
+				continue
+			}
+		}
 	}
 
 	var didTick = (time - lastGameTick >= 1000/10) // 10 Hz game tick
@@ -949,6 +959,11 @@ heart.draw = function() {
 	if(floorMap[mouseTile.y] !== undefined) {
 		var tileImg = floorMap[mouseTile.y][mouseTile.x]
 		heart.graphics.print("tile: " + tileImg, 5, 60)
+	}
+
+	for(var i = 0; i < floatMessages.length; i++) {
+		var bbox = objectBoundingBox(floatMessages[i].obj)
+		heart.graphics.print(floatMessages[i].msg, bbox.x - cameraX, bbox.y - cameraY - 16)
 	}
 
 	if(inCombat === true) {

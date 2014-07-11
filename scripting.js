@@ -703,6 +703,7 @@ var scriptingEngine = (function() {
 		},
 		float_msg: function(obj, msg, type) {			
 			info("FLOAT MSG: " + msg, "floatMessage")
+			floatMessages.push({msg: msg, obj: this.self_obj, startTime: heart.timer.getTime()})
 		},
 
 		// animation
