@@ -703,7 +703,27 @@ var scriptingEngine = (function() {
 		},
 		float_msg: function(obj, msg, type) {			
 			info("FLOAT MSG: " + msg, "floatMessage")
-			floatMessages.push({msg: msg, obj: this.self_obj, startTime: heart.timer.getTime()})
+			var colorMap = {
+				// todo: take the exact values from some palette. also, yellow is ugly.
+				0: "white", //0: "yellow",
+				1: "black",
+				2: "red",
+				3: "green",
+				4: "blue",
+				5: "purple",
+				6: "white",
+				7: "red",
+				8: "white",//8: "yellow",
+				9: "white",
+				10: "dark gray",
+				11: "dark gray",
+				12: "light gray"
+			}
+			var color = colorMap[type]
+			if(type === -2 /* FLOAT_MSG_WARNING */ || type === -1 /* FLOAT_MSG_SEQUENTIAL */)
+				color = colorMap[9]
+			floatMessages.push({msg: msg, obj: this.self_obj, startTime: heart.timer.getTime(),
+			                    color: color})
 		},
 
 		// animation
