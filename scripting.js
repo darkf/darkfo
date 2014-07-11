@@ -222,11 +222,13 @@ var scriptingEngine = (function() {
 		debug_msg: function(msg) { log("debug_msg", arguments); info("DEBUG MSG: " + msg, "debugMessage") },
 		display_msg: function(msg) { log("display_msg", arguments); info("DISPLAY MSG: " + msg, "displayMessage") },
 		message_str: function(msgList, msgNum) { return getScriptMessage(msgList, msgNum) },
-		metarule: function(id, _) {
-			stub("metarule", arguments)
-
-			if(id === 22) return 0 // is_game_loading
-			else if(id === 14) return mapFirstRun // map_first_run
+		metarule: function(id, target) {
+			switch(id) {
+				case 22: return 0 // is_game_loading
+				case 14: return mapFirstRun // map_first_run
+				case 18: return 0 // is the critter under the influence of drugs? (TODO)
+				default: stub("metarule", arguments)
+			}
 		},
 		metarule3: function(id, obj, userdata, radius) {
 			if(id === 100) { // METARULE3_CLR_FIXED_TIMED_EVENTS
@@ -481,6 +483,15 @@ var scriptingEngine = (function() {
 			if(hex !== null)
 				return hex.direction
 			warn("rotation_to_tile: invalid hex: " + srcTile + " / " + destTile)
+		},
+		move_to: function(obj, tileNum, elevation) {
+			if(!isGameObject(obj)) {
+				warn("move_to: not a game object: " + obj)
+				return
+			}
+			if(elevation !== currentElevation)
+				throw "move_to: elevation != current"
+			obj.position = fromTileNum(tileNum)
 		},
 
 		// combat
