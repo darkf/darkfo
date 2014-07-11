@@ -350,6 +350,18 @@ var scriptingEngine = (function() {
 		critter_state: function(obj) { stub("critter_state", arguments); return 0 },
 		kill_critter: function(obj, deathFrame) { stub("kill_critter", arguments) },
 		get_poison: function(obj) { stub("get_poison", arguments); return 0 },
+		get_pc_stat: function(pcstat) {
+			switch(pcstat) {
+				case 0: // PCSTAT_unspent_skill_points
+				case 1: // PCSTAT_level
+				case 2: // PCSTAT_experience
+				case 3: // PCSTAT_reputation
+				case 4: // PCSTAT_karma
+				case 5: // PCSTAT_max_pc_stat
+					stub("get_pc_stat", arguments)
+					return 0
+			}
+		},
 
 		// combat
 		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
