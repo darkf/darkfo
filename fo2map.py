@@ -525,8 +525,6 @@ def main():
 
 			theMap["levels"].append(m)
 
-		open("fuck.txt", "w").write(repr(theMap))
-
 		json.dump(theMap, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".json"), "w"))
 
 		# player (Vault 13 Jumpsuit)

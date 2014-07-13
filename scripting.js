@@ -39,7 +39,7 @@ var scriptingEngine = (function() {
 		load: true,
 		debugMessage: true,
 		displayMessage: true,
-		floatMessage: true,
+		floatMessage: false,
 		gvars: true,
 		lvars: true,
 		tiles: true,
@@ -224,9 +224,10 @@ var scriptingEngine = (function() {
 		message_str: function(msgList, msgNum) { return getScriptMessage(msgList, msgNum) },
 		metarule: function(id, target) {
 			switch(id) {
-				case 22: return 0 // is_game_loading
 				case 14: return mapFirstRun // map_first_run
+				case 17: stub("metarule", arguments); return 0  // is area known? (TODO)
 				case 18: return 0 // is the critter under the influence of drugs? (TODO)
+				case 22: return 0 // is_game_loading
 				default: stub("metarule", arguments)
 			}
 		},

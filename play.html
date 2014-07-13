@@ -851,7 +851,7 @@ function drawObject(obj) {
 	var scr = hexToScreen(obj.position.x, obj.position.y)
 
 	if(images[obj.art] === undefined) {
-		console.log("No art for object: " + obj.art) // skip images we don't have
+		console.log("No art for object: " + obj.art + ", lazy loading...")
 		lazyLoadImage(obj.art) // try to load it in
 		return
 	}
