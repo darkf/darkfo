@@ -429,8 +429,6 @@ function loadMap(mapName, startingPosition, startingElevation) {
 		})
 	}
 
-	//$.ajaxSetup({async: true})
-
 	isLoading = true
 	loadingAssetsTotal = 1 // this will remain +1 until we load the map, preventing it from exiting early
 	loadingAssetsLoaded = 0
@@ -455,8 +453,6 @@ function loadMap(mapName, startingPosition, startingElevation) {
 
 	if(imageInfo === null)
 		imageInfo = getFileJSON("art/imageMap.json")
-
-	console.log("MALE: " + imageInfo["art/critters/hmjmpsaa"])
 
 	var map = getFileJSON("maps/"+mapName+".json")
 	gMap = map
@@ -499,7 +495,6 @@ function loadMap(mapName, startingPosition, startingElevation) {
 	}
 
 	loadingAssetsTotal-- // we should know all of the assets we need by now
-	//$.ajaxSetup({async: false})
 }
 
 function lookupMapName(mapID) {
@@ -530,7 +525,6 @@ function loadMapID(mapID, startingPosition, startingElevation) {
 
 heart.load = function() {
 	heart.attach("cnv")
-	//$.ajaxSetup({async: false})
 
 	loadMap(MAP_NAME) // load initial map
 
@@ -746,10 +740,7 @@ function getObjectUnderCursor(p) {
 
 heart.update = function() {
 	if(isLoading === true) {
-		if(loadingAssetsLoaded === loadingAssetsTotal) {
-			isLoading = false
-			console.log("STOPPING @ " + loadingAssetsLoaded + " / " + loadingAssetsTotal)
-		}
+		if(loadingAssetsLoaded === loadingAssetsTotal) isLoading = false
 		else return
 	}
 	var time = heart.timer.getTime()
