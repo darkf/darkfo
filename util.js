@@ -30,11 +30,21 @@ function parseIni(text) {
 	return ini
 }
 
-function getFileText(path) {
+function getFileText(path, err) {
 	var r = null
-	$.get(path, function(text) { r = text }, "text").fail(function() {
-		throw "getFileText: getting path " + path + " failed"
-	})
+	$.ajax(path, {async: false,
+		          success: function(text) { r = text },
+		          error: err || function() { throw "getFileText: error getting path " + path },
+		          dataType: "text"})
+	return r
+}
+
+function getFileJSON(path, err) {
+	var r = null
+	$.ajax(path, {async: false,
+		          success: function(text) { r = text },
+		          error: err || function() { throw "getFileText: error getting path " + path },
+		          dataType: "json"})
 	return r
 }
 

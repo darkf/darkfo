@@ -135,17 +135,16 @@ var CriticalEffects = (function() {
 	function loadTable() {
 		// read in the global table
 		console.log("loading critical table...")
-		$.get("criticalTables.json", function(table) {
-			for(var i = 0; i < table.length; i++) {
-				critterTable[i] = table[i]
-				for(var region in critterTable[i]) {
-					for(var critLevel = 0; critLevel < critterTable[i][region].length; critLevel++)
-						critterTable[i][region][critLevel] = parseCritLevel(critterTable[i][region][critLevel])
-				}
+		var table = getFileJSON("criticalTables.json")
+		for(var i = 0; i < table.length; i++) {
+			critterTable[i] = table[i]
+			for(var region in critterTable[i]) {
+				for(var critLevel = 0; critLevel < critterTable[i][region].length; critLevel++)
+					critterTable[i][region][critLevel] = parseCritLevel(critterTable[i][region][critLevel])
 			}
-			console.log("parsed critical table with " + critterTable.length + " entries")
-			//critterTable[number] = critTableJsonToJsObjectParser(table)
-		}, "json")
+		}
+		console.log("parsed critical table with " + critterTable.length + " entries")
+		//critterTable[number] = critTableJsonToJsObjectParser(table)
 	}
 
 	return {generalRegionName: generalRegionName,

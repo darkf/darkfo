@@ -802,68 +802,67 @@ var scriptingEngine = (function() {
 
 	function loadMessageFile(name) {
 		info("loading message file: " + name, "load")
-		$.get("data/text/english/dialog/" + name + ".MSG", function(msg) {
-			if(scriptMessages[name] === undefined)
-				scriptMessages[name] = {}
+		var msg = getFileText("data/text/english/dialog/" + name + ".MSG")
+		if(scriptMessages[name] === undefined)
+			scriptMessages[name] = {}
 
-			// parse message file
-			var lines = msg.split(/\r|\n/)
+		// parse message file
+		var lines = msg.split(/\r|\n/)
 
-			// preprocess and merge lines
-			for(var i = 0; i < lines.length; i++) {
-				// comments/blanks
-				if(lines[i][0] === '#' || lines[i].trim() === '') {
-					lines.splice(i--, 1)
-					continue
-				}
-
-				// probably a continuation -- merge it with the last line
-				if(lines[i][0] !== '{') {
-					lines[i-1] += lines[i]
-					lines.splice(i--, 1)
-					continue
-				}
+		// preprocess and merge lines
+		for(var i = 0; i < lines.length; i++) {
+			// comments/blanks
+			if(lines[i][0] === '#' || lines[i].trim() === '') {
+				lines.splice(i--, 1)
+				continue
 			}
 
-			for(var i = 0; i < lines.length; i++) {
-				// e.g. {100}{}{You have entered a dark cave in the side of a mountain.}
-				var m = lines[i].match(/\{(\d+)\}\{.*\}\{(.*)\}/)
-				if(m === null)
-					throw "message parsing: not a valid line: " + lines[i]
-				// HACK: replace unicode replacement character with an apostrophe (because the Web sucks at character encodings)
-				scriptMessages[name][m[1]] = m[2].replace(/\ufffd/g, "'")
+			// probably a continuation -- merge it with the last line
+			if(lines[i][0] !== '{') {
+				lines[i-1] += lines[i]
+				lines.splice(i--, 1)
+				continue
 			}
-		}, "text").fail(function(err) { console.log("message loading error: "  + err) })
+		}
+
+		for(var i = 0; i < lines.length; i++) {
+			// e.g. {100}{}{You have entered a dark cave in the side of a mountain.}
+			var m = lines[i].match(/\{(\d+)\}\{.*\}\{(.*)\}/)
+			if(m === null)
+				throw "message parsing: not a valid line: " + lines[i]
+			// HACK: replace unicode replacement character with an apostrophe (because the Web sucks at character encodings)
+			scriptMessages[name][m[1]] = m[2].replace(/\ufffd/g, "'")
+		}
 	}
 
 	function loadScript(name) {
 		// e.g. "Raiders2"
 		var scriptObject = null
 		info("loading script " + name, "load")
-		$.get("scripts/" + name + ".js", function(code) {
-			//console.log("code: " + code)
-			var f = new Function(code)
-			f.prototype = ScriptProto
-			var obj = new f()
-			obj.scriptName = name
-			obj.lvars = {}
-			scriptObject = obj
+		var code = getFileText("scripts/" + name + ".js",
+			function() { console.log("script loading error (" + name + ")") })
 
-			// remove any defined Node999 (exit dialogue) procedures
-			// so we can take them over
-			if(obj.hasOwnProperty("node999"))
-				delete obj.node999
+		//console.log("code: " + code)
+		var f = new Function(code)
+		f.prototype = ScriptProto
+		var obj = new f()
+		obj.scriptName = name
+		obj.lvars = {}
+		scriptObject = obj
 
-			// same for node998 (combat); some scripts also use this
-			// so it would be a good idea to wrap it instead.
-			if(obj.hasOwnProperty("node998"))
-				delete obj.node998
+		// remove any defined Node999 (exit dialogue) procedures
+		// so we can take them over
+		if(obj.hasOwnProperty("node999"))
+			delete obj.node999
 
-			if(currentMapObject !== null)
-				obj._mapScript = currentMapObject
-			else currentMapObject = obj // this is likely our map script loaded first
+		// same for node998 (combat); some scripts also use this
+		// so it would be a good idea to wrap it instead.
+		if(obj.hasOwnProperty("node998"))
+			delete obj.node998
 
-		}, "text").fail(function(err) { console.log("script loading error: "  + err) })
+		if(currentMapObject !== null)
+			obj._mapScript = currentMapObject
+		else currentMapObject = obj // this is likely our map script loaded first
 
 		return scriptObject
 	}

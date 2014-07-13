@@ -8,12 +8,12 @@
 <title>DarkFO: Play!</title>
 <script src="heart.js"></script>
 <script src="jquery-1.11.1.min.js"></script>
+<script src="util.js"></script>
 <script src="geometry.js"></script>
 <script src="scripting.js"></script>
 <script src="combat.js"></script>
 <script src="object.js"></script>
 <script src="critter.js"></script>
-<script src="util.js"></script>
 <script src="pathfinding-browser.js"></script>
 <script src="criticalEffects.js"></script>
 <script>
@@ -68,8 +68,8 @@ var gameHasFocus = false // do we have input focus?
 var lastMousePickTime = 0 // time when we last checked what's under the mouse cursor
 
 var isLoading = true // are we currently loading a map?
-var loadingImagesLoaded = 0 // how many images we've loaded
-var loadingImagesTotal = 0 // out of this total
+var loadingAssetsLoaded = 0 // how many images we've loaded
+var loadingAssetsTotal = 0 // out of this total
 
 var proFiles = {}
 var lstFiles = {}
@@ -130,38 +130,37 @@ player.toString = function() { return "The Dude" }
 function repr(obj) { return JSON.stringify(obj, null, 2) }
 
 function loadMessage(name) {
-	$.get("data/text/english/game/" + name + ".msg", function(msg) {
-		if(messageFiles[name] === undefined)
-			messageFiles[name] = {}
+	var msg = getFileText("data/text/english/game/" + name + ".msg")
+	if(messageFiles[name] === undefined)
+		messageFiles[name] = {}
 
-		// parse message file
-		var lines = msg.split(/\r|\n/)
+	// parse message file
+	var lines = msg.split(/\r|\n/)
 
-		// preprocess and merge lines
-		for(var i = 0; i < lines.length; i++) {
-			// comments/blanks
-			if(lines[i][0] === '#' || lines[i].trim() === '') {
-				lines.splice(i--, 1)
-				continue
-			}
-
-			// probably a continuation -- merge it with the last line
-			if(lines[i][0] !== '{') {
-				lines[i-1] += lines[i]
-				lines.splice(i--, 1)
-				continue
-			}
+	// preprocess and merge lines
+	for(var i = 0; i < lines.length; i++) {
+		// comments/blanks
+		if(lines[i][0] === '#' || lines[i].trim() === '') {
+			lines.splice(i--, 1)
+			continue
 		}
 
-		for(var i = 0; i < lines.length; i++) {
-			// e.g. {100}{}{You have entered a dark cave in the side of a mountain.}
-			var m = lines[i].match(/\{(\d+)\}\{.*\}\{(.*)\}/)
-			if(m === null)
-				throw "message parsing: not a valid line: " + lines[i]
-			// HACK: replace unicode replacement character with an apostrophe (because the Web sucks at character encodings)
-			messageFiles[name][m[1]] = m[2].replace(/\ufffd/g, "'")
+		// probably a continuation -- merge it with the last line
+		if(lines[i][0] !== '{') {
+			lines[i-1] += lines[i]
+			lines.splice(i--, 1)
+			continue
 		}
-	}, "text").fail(function(err) { console.log("message loading error: "  + err) })
+	}
+
+	for(var i = 0; i < lines.length; i++) {
+		// e.g. {100}{}{You have entered a dark cave in the side of a mountain.}
+		var m = lines[i].match(/\{(\d+)\}\{.*\}\{(.*)\}/)
+		if(m === null)
+			throw "message parsing: not a valid line: " + lines[i]
+		// HACK: replace unicode replacement character with an apostrophe (because the Web sucks at character encodings)
+		messageFiles[name][m[1]] = m[2].replace(/\ufffd/g, "'")
+	}
 }
 
 function getMessage(name, id) {
@@ -176,11 +175,7 @@ function getMessage(name, id) {
 }
 
 function loadLst(lst) {
-	var ret = null
-	$.get("data/" + lst + ".lst", function(lst) {
-		ret = lst.split('\n')
-	}, "text").fail(function(err) { console.log("lst loading error: "  + err) })
-	return ret
+	return getFileText("data/" + lst + ".lst").split('\n')
 }
 
 function getLstId(lst, id) {
@@ -219,17 +214,14 @@ function loadPRO(pid, pidID) {
 
 	// use the proto/ .lst files to look up proto
 	var type = getPROType(pid)
-	var lsts = {"items": "proto/items/items", "critters": "proto/critters/critters"}
+	var lsts = {"items": "proto/items/items", "critters": "proto/critters/critters",
+                "scenery": "proto/scenery/scenery"}
 	var id = lsts[type] ? getLstId(lsts[type], pidID - 1) : pidID
 	var path = lsts[type] ? id : (pad(id, 8) + '.pro')
 
-	var r = null
-	$.get('proto/' + type + '/' + path + '.json', function(pro) {
-		r = pro
-	}, 'json')
-
-	proFiles[pid] = r
-	return r
+	var pro = getFileJSON('proto/' + type + '/' + path + '.json')
+	proFiles[pid] = pro
+	return pro
 }
 
 function getPROTypeName(type) {
@@ -365,9 +357,7 @@ function initObjects(objects) {
 				obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
 		}
 		else if(obj.type === "scenery") {
-			var proto = getLstId("proto/scenery/scenery", obj.pidID - 1)
-			obj.pro = null
-			$.get('proto/scenery/' + proto + '.json', function(pro) { obj.pro = pro }, 'json')
+			obj.pro = loadPRO(obj.pid, obj.pidID)
 			if(obj.pro === null) continue
 			var subtypeMap = {0: "door", 1: "stairs", 2: "elevator", 3: "ladder",
 							  4: "ladder", 5: "generic"}
@@ -431,17 +421,19 @@ function centerCamera(around) {
 function loadMap(mapName, startingPosition, startingElevation) {
 	function load(file, callback) {
 		if(images[file] !== undefined) return // don't load more than once
-		loadingImagesTotal++
+		loadingAssetsTotal++
 		heart.graphics.newImage(file+".png", function(r) {
 			images[file] = r
-			loadingImagesLoaded++
+			loadingAssetsLoaded++
 			if(callback) callback(r)
 		})
 	}
 
+	//$.ajaxSetup({async: true})
+
 	isLoading = true
-	loadingImagesTotal = 0
-	loadingImagesLoaded = 0
+	loadingAssetsTotal = 1 // this will remain +1 until we load the map, preventing it from exiting early
+	loadingAssetsLoaded = 0
 
 	// clear any previous objects/events
 	gMap = null
@@ -456,37 +448,37 @@ function loadMap(mapName, startingPosition, startingElevation) {
 
 	console.log("loading map " + mapName)
 
-	$.get("maps/" + mapName + ".images.json", function(images) {
-		for(var i = 0; i < images.length; i++)
-			load(images[i])
-		console.log("loading " + images.length + " images")
-	}, "json")
+	var mapImages = getFileJSON("maps/" + mapName + ".images.json")
+	for(var i = 0; i < mapImages.length; i++)
+		load(mapImages[i])
+	console.log("loading " + mapImages.length + " images")
 
 	if(imageInfo === null)
-		$.get("art/imageMap.json", function(offsets) { imageInfo = offsets }, "json")
+		imageInfo = getFileJSON("art/imageMap.json")
 
-	$.get("maps/"+mapName+".json", function(map) {
-		gMap = map
-		var elevation = (startingElevation !== undefined) ? startingElevation : 0
+	console.log("MALE: " + imageInfo["art/critters/hmjmpsaa"])
 
-		if(doLoadScripts === true) {
-			scriptingEngine.init(player, mapName)
-			gMapScript = scriptingEngine.loadScript(mapName)
+	var map = getFileJSON("maps/"+mapName+".json")
+	gMap = map
+	var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
-			// warp to the default position (may be overridden by map script)
-			player.position = startingPosition || gMap.startPosition
-			player.orientation = gMap.startOrientation
+	if(doLoadScripts === true) {
+		scriptingEngine.init(player, mapName)
+		gMapScript = scriptingEngine.loadScript(mapName)
 
-			changeElevation(elevation, false)
-			loadObjectScripts(gObjects)
-			scriptingEngine.enterMap(gMapScript, gObjects, elevation, gMap.mapID, true)
-			scriptingEngine.updateMap(gMapScript, gObjects, elevation)
-		}
-		else changeElevation(elevation, false)
+		// warp to the default position (may be overridden by map script)
+		player.position = startingPosition || gMap.startPosition
+		player.orientation = gMap.startOrientation
 
-		// todo: is map_enter_p_proc called on elevation change?
-		console.log("loaded (" + map.levels.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
-	}, "json")
+		changeElevation(elevation, false)
+		loadObjectScripts(gObjects)
+		scriptingEngine.enterMap(gMapScript, gObjects, elevation, gMap.mapID, true)
+		scriptingEngine.updateMap(gMapScript, gObjects, elevation)
+	}
+	else changeElevation(elevation, false)
+
+	// todo: is map_enter_p_proc called on elevation change?
+	console.log("loaded (" + map.levels.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
 
 	// load some testing art
 	load("art/critters/hmjmpsat")
@@ -505,6 +497,9 @@ function loadMap(mapName, startingPosition, startingElevation) {
 			initObjects(gMap.levels[level]["objects"])
 		initCritters(gMap.levels[level]["objects"])
 	}
+
+	loadingAssetsTotal-- // we should know all of the assets we need by now
+	//$.ajaxSetup({async: false})
 }
 
 function lookupMapName(mapID) {
@@ -513,15 +508,14 @@ function lookupMapName(mapID) {
 
 	// load mapNames from data/data/MAPS.TXT
 	mapNames = {}
-	$.get("data/data/MAPS.TXT", function(text) {
-		var ini = parseIni(text)
-		for(var category in ini) {
-			var id = category.match(/Map (\d+)/)[1]
-			if(id === null) throw "MAPS.TXT: invalid category: " + category
-			id = parseInt(id)
-			mapNames[id] = ini[category].map_name
-		}
-	}, "text")
+	var text = getFileText("data/data/MAPS.TXT")
+	var ini = parseIni(text)
+	for(var category in ini) {
+		var id = category.match(/Map (\d+)/)[1]
+		if(id === null) throw "MAPS.TXT: invalid category: " + category
+		id = parseInt(id)
+		mapNames[id] = ini[category].map_name
+	}
 
 	return mapNames[mapID] || null
 }
@@ -536,7 +530,7 @@ function loadMapID(mapID, startingPosition, startingElevation) {
 
 heart.load = function() {
 	heart.attach("cnv")
-	$.ajaxSetup({async: false})
+	//$.ajaxSetup({async: false})
 
 	loadMap(MAP_NAME) // load initial map
 
@@ -752,7 +746,10 @@ function getObjectUnderCursor(p) {
 
 heart.update = function() {
 	if(isLoading === true) {
-		if(loadingImagesLoaded === loadingImagesTotal) isLoading = false
+		if(loadingAssetsLoaded === loadingAssetsTotal) {
+			isLoading = false
+			console.log("STOPPING @ " + loadingAssetsLoaded + " / " + loadingAssetsTotal)
+		}
 		else return
 	}
 	var time = heart.timer.getTime()
@@ -900,7 +897,7 @@ heart.draw = function() {
 	if(isLoading === true) {
 		heart.graphics.setColor(0, 0, 0)
 		var w = 256, h = 40
-		var w2 = (loadingImagesLoaded / loadingImagesTotal) * w
+		var w2 = (loadingAssetsLoaded / loadingAssetsTotal) * w
 		// draw a loading progress bar
 		heart.graphics.rectangle("stroke", SCREEN_WIDTH/2 - w/2, SCREEN_HEIGHT/2,
 				w, h)
