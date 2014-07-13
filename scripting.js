@@ -795,6 +795,24 @@ var scriptingEngine = (function() {
 				loadMapID(map)
 		},
 		play_gmovie: function(movieID) { stub("play_gmovie", arguments) },
+		mark_area_known: function(areaType, area, markState) {
+			if(areaType === 0) { // MARK_TYPE_TOWN
+				switch(markState) {
+					case 0: break // MARK_STATE_UNKNOWN
+					case 1: // MARK_STATE_KNOWN
+						info("TODO: Mark area " + area + " on map")
+						return
+					case 2: break // MARK_STATE_VISITED
+					case -66: break // MARK_STATE_INVISIBLE
+				}
+
+				stub("mark_area_known", arguments)
+			}
+			else if(areaType === 1) { // MARK_TYPE_MAP
+				stub("mark_area_known", arguments)
+			}
+			else throw "mark_area_known: invalid area type " + areaType
+		},
 
 		// party
 		party_member_obj: function(pid) { stub("party_member_obj", arguments, "party"); return 0 },
