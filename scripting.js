@@ -460,7 +460,10 @@ var scriptingEngine = (function() {
 			if(obj.pid === undefined) { warn("obj_type: no PID"); return }
 			return (obj.pid >> 24) & 0xff
 		},
-		destroy_object: function(obj) { stub("destroy_object", arguments) }, // destroy object from world
+		destroy_object: function(obj) { // destroy object from world
+			log("destroy_object", arguments)
+			objectDestroy(obj)
+		},
 
 		// tiles
 		tile_distance_objs: function(a, b) {

@@ -120,6 +120,25 @@ function objectSwapItem(a, item, b, amount) {
 	}
 }
 
+function objectDestroy(obj) {
+	// remove `obj` from the world
+	// it would be pretty hard to remove it anywhere else without either
+	// a walk of the object graph or a `parent` reference.
+	//
+	// so we're only going to remove it from the global object list, if present.
+
+	// TODO: better object equality testing
+	for(var i = 0; i < gObjects.length; i++) {
+		if(gObjects[i].pid === obj.pid && gObjects[i].amount === obj.amount) {
+			console.log("objectDestroy: destroying index " + i + " (" + obj.art + ")")
+			gObjects.splice(i, 1)
+			return
+		}
+	}
+
+	console.log("objectDestroy: couldn't find object in global list")
+}
+
 function objectGetDamageType(obj) {
 	if(obj.dmgType !== undefined)
 		return obj.dmgType
@@ -142,21 +161,21 @@ function objectExplode(obj, source, minDmg, maxDmg) {
 			objectSingleAnim(explosion, false, function() {
 				gObjects.splice(idx, 1) // remove the explosion after it's finished
 
-				// TODO: remove explosive
-			})
+				// damage critters in a radius
+				var hexes = hexesInRadius(obj.position, 8 /* explosion radius */) // TODO: radius
+				for(var i = 0; i < hexes.length; i++) {
+					var objs = objectsAtPosition(hexes[i])
+					for(var j = 0; j < objs.length; j++) {
+						if(objs[j].type === "critter")
+							console.log("todo: damage " + critterGetName(objs[j]))
 
-			// damage critters in a radius
-			var hexes = hexesInRadius(obj.position, 8 /* explosion radius */) // TODO: radius
-			for(var i = 0; i < hexes.length; i++) {
-				var objs = objectsAtPosition(hexes[i])
-				for(var j = 0; j < objs.length; j++) {
-					if(objs[j].type === "critter")
-						console.log("todo: damage " + critterGetName(objs[j]))
-
-					console.log("DAMAGING: " + objs[j].art + " (SCRIPT " + objs[j].script)
-					scriptingEngine.damage(objs[j], obj, source, damage)
+						console.log("DAMAGING: " + objs[j].art + " (SCRIPT " + objs[j].script)
+						scriptingEngine.damage(objs[j], obj, source, damage)
+					}
 				}
-			}
+
+				// TODO: remove explosive (obj)
+			})
 		})
 	}
 }
