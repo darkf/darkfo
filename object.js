@@ -243,7 +243,7 @@ function useObject(obj, source) {
 			var drawInv = function() {
 				drawInventory($("#inventory"), obj, function(selected) {
 					objectSwapItem(obj, selected, player, 1)
-					drawInventory($("#playerInventory"), player)
+					drawPlayerInventory()
 					drawInv()
 				})
 			}

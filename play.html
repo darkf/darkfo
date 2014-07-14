@@ -576,7 +576,7 @@ heart.load = function() {
 	$("#cnv").mouseenter(function() { gameHasFocus = true }).
 	          mouseleave(function() { gameHasFocus = false })
 
-	drawInventory($("#playerInventory"), player)
+	drawPlayerInventory()
 }
 
 function drawInventory($el, obj, clickCallback) {
@@ -596,10 +596,25 @@ function drawInventory($el, obj, clickCallback) {
 		img.attr("title", obj.inventory[i].name)
 		if(clickCallback !== undefined)
 			(function(invObj) {
-				img.click(function() { clickCallback(invObj, obj) })
+				img.click(function(e) { clickCallback(invObj, obj, e) })
 			})(obj.inventory[i])
 		$el.append(img).append("x" + obj.inventory[i].amount)
 	}
+}
+
+function drawPlayerInventory() {
+	// draw the player inventory with click handlers for
+	// using or dropping items
+
+	drawInventory($("#playerInventory"), player, function(item, _, event) {
+		if(event.shiftKey) { // shift+click -> drop item
+			dropObject(player, item)
+			drawPlayerInventory()
+		}
+		else { // click -> use item
+			useObject(item, player)
+		}
+	})
 }
 
 function isSelectableObject(obj) {
