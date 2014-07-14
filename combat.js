@@ -79,6 +79,7 @@ var Combat = function(objects, player) {
 	for(var i = 0; i < objects.length; i++) {
 		if(objects[i].type === "critter") {
 			if(objects[i].dead === true) continue
+			if(objects[i].visible === false) continue
 			this.combatants.push(objects[i])
 			objects[i].ai = new AI(objects[i])
 
@@ -319,6 +320,15 @@ Combat.prototype.numAlive = function() {
 	return count
 }
 
+Combat.prototype.numActive = function() { // number of combatants in range and not dead
+	var count = 0
+	for(var i = 0; i < this.combatants.length; i++) {
+		if(this.combatants[i].dead !== true && this.combatants[i].inRange === true)
+			count++
+	}
+	return count
+}
+
 Combat.prototype.end = function() {
 	console.log("[end combat]")
 	combat = null // todo: invert control
@@ -337,9 +347,21 @@ Combat.prototype.forceTurn = function(obj) {
 }
 
 Combat.prototype.nextTurn = function() {
-	if(this.numAlive() === 0)
+	// update range checks
+	var numActive = 0
+	for(var i = 0; i < this.combatants.length; i++) {
+		var obj = this.combatants[i]
+		if(obj.dead === true) continue
+		obj.inRange = hexDistance(obj.position, player.position) <= obj.ai.info.max_dist
+
+		if(obj.inRange === true)
+			numActive++
+	}
+
+	if(numActive === 0 && this.turnNum != 0)
 		return this.end()
 
+	this.turnNum++
 	this.whoseTurn++
 	if(this.whoseTurn >= this.combatants.length) {
 		// end of turn
@@ -354,7 +376,7 @@ Combat.prototype.nextTurn = function() {
 	else {
 		this.inPlayerTurn = false
 		var critter = this.combatants[this.whoseTurn]
-		if(critter.dead === true)
+		if(critter.dead === true || critter.inRange === false)
 			return this.nextTurn()
 		// todo: convert unused AP into AC
 		critter.AP.resetAP()

@@ -853,7 +853,7 @@ heart.update = function() {
 
 	for(var i = 0; i < gObjects.length; i++) {
 		if(gObjects[i].type === "critter") {
-			if(didTick && doUpdateCritters && inCombat !== true &&
+			if(didTick && doUpdateCritters && inCombat !== true && !gObjects[i].dead &&
 				objectInAnim(gObjects[i]) === false && gObjects[i]._script)
 				scriptingEngine.updateCritter(gObjects[i]._script)
 			critterUpdateAnimation(gObjects[i])
