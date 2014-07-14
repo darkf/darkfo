@@ -242,7 +242,7 @@ function makePID(type, pid) {
 function createObjectWithPID(objType, pid, sid) {
 	var pidID = makePID(objType, pid)
 	var pro = loadPRO(pidID, pid)
-	var obj = {type: getPROTypeName(objType), pro: pro, pid: pidID, pidID: pid, amount: 1}
+	var obj = {type: getPROTypeName(objType), pro: pro, pid: pidID, pidID: pid, amount: 1, position: {x: -1, y: -1}}
 	if(objType === 0) { // item
 		obj.subtype = getPROSubTypeName(pro.extra.subtype)
 		obj.name = getMessage("pro_item", pro.textID)
@@ -257,11 +257,29 @@ function createObjectWithPID(objType, pid, sid) {
 
 	obj.art = "art/items/RESERVED" // todo: get art from pro
 
-	if(obj.pro !== undefined && sid !== undefined && obj.pro.extra.scriptID != sid)
+	if(obj.pro !== undefined && obj.pro.extra !== undefined &&
+	   sid !== undefined && obj.pro.extra.scriptID != sid)
 		console.log("!!! createObjectWithPID: need to change script ID (" + obj.pro.extra.scriptID +
 			" to " + sid + ")")
 
 	return obj
+}
+
+function dropObject(source, obj) {
+	// drop inventory object obj from source
+	var idx = -1
+	for(var i = 0; i < source.inventory.length; i++) {
+		if(source.inventory[i].pid === obj.pid) {
+			idx = i
+			break
+		}
+	}
+	if(idx === -1) throw "dropObject: couldn't find object"
+
+	obj.position.x = source.position.x
+	obj.position.y = source.position.y
+	source.inventory.splice(idx, 1) // remove from source
+	gObjects.push(obj) // add to objects
 }
 
 // Draws a line between a and b, returning the first object hit
@@ -582,7 +600,7 @@ heart.mousepressed = function(x, y, btn) {
 			else console.log("Cannot talk to that critter")
 		}
 		else
-			useObject(obj)
+			useObject(obj, player)
 	}
 	else // otherwise walk to the destination
 		critterWalkTo(player, mouseHex, doAlwaysRun)
@@ -698,6 +716,9 @@ heart.keydown = function(k) {
 			useObject(objs[i])
 		}
 	}
+
+	if(k == 'h')
+		player.position = mouseHex
 }
 
 function recalcPath(start, goal) {

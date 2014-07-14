@@ -2,6 +2,8 @@
 // Copyright (c) 2014 darkf
 // Licensed under the terms of the zlib license
 
+"use strict";
+
 function objectAddItem(obj, item, count) {
 	for(var i = 0; i < obj.inventory.length; i++) {
 		if(obj.inventory[i].pidID === item.pidID) { // todo: pidID or pid?
@@ -42,6 +44,7 @@ function objectInAnim(obj) {
 function objectUpdateAnimation(obj) {
 	var time = heart.timer.getTime()
 	var fps = imageInfo[obj.art].fps
+	if(fps === 0) fps = 10 // ?
 
 	if(time - obj.lastFrameTime >= 1000/fps) {
 		if(obj.anim === "reverse") obj.frame--
@@ -117,6 +120,58 @@ function objectSwapItem(a, item, b, amount) {
 	}
 }
 
+function objectExplode(obj, minDmg, maxDmg) {
+	var explosion = createObjectWithPID(5 /* misc */, 14 /* Explosion */, -1)
+	explosion.position.x = obj.position.x
+	explosion.position.y = obj.position.y
+	explosion.art = "art/misc/expb" // TODO: fix this in createObjectWithPID
+	if(images[explosion.art] === undefined) {
+		lazyLoadImage(explosion.art, function() {
+			gObjects.push(explosion)
+			var idx = gObjects.length - 1
+
+			console.log("adding explosion")
+			objectSingleAnim(explosion, false, function() {
+				gObjects.splice(idx, 1) // remove the explosion after it's finished
+				
+				// TODO: remove explosive
+			})
+
+			// TODO: hook up to scripts
+		})
+	}
+}
+
+function useExplosive(obj, source) {
+	if(source.isPlayer !== true) return // ?
+	var mins, secs
+
+	while(true) {
+		var time = prompt("Time to detonate?", "1:00")
+		if(time === null) return // cancel
+		var s = time.split(':')
+		if(s.length !== 2) continue
+
+		mins = parseInt(s[0])
+		secs = parseInt(s[1])
+
+		if(isNaN(mins) || isNaN(secs)) continue
+		break
+	}
+
+	// TODO: skill rolls
+
+	var ticks = (mins*60*10) + secs*10 // game ticks until detonation
+
+	console.log("arming explosive for " + ticks + " ticks")
+
+	scriptingEngine.timeEventList.push({ticks: ticks, obj: null, userdata: null, fn: function() {
+		// explode!
+		// TODO: explosion damage calculations
+		objectExplode(obj, 10 /* min dmg */, 25 /* max dmg */)
+	}})
+}
+
 function useObject(obj, source) {
 	if(canUseObject(obj, source) === false) {
 		console.log("can't use object")
@@ -130,6 +185,9 @@ function useObject(obj, source) {
 	}
 	else if(obj.script !== undefined && !obj._script)
 		console.log("object used has script but is not loaded: " + obj.script)
+
+	if(obj.pid === 85 /* Plastic Explosives */ || obj.pid === 51 /* Dynamite */)
+		return useExplosive(obj, source)
 
 	// todo: check script overrides
 	// also check object type
