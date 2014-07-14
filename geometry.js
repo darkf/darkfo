@@ -212,6 +212,19 @@ function hexLine(a, b) {
 	throw "unreachable"
 }
 
+function hexesInRadius(center, radius) {
+	var hexes = []
+	for(var x = 0; x < 200; x++) {
+		for(var y = 0; y < 200; y++) {
+			if(x === center.x && y === center.y) continue
+			var pos = {x: x, y: y}
+			if(hexDistance(center, pos) <= radius)
+				hexes.push(pos)
+		}
+	}
+	return hexes
+}
+
 function pointInBoundingBox(point, bbox) {
 	return (bbox.x <= point.x && point.x <= bbox.x+bbox.w &&
 		    bbox.y <= point.y && point.y <= bbox.y+bbox.h)
