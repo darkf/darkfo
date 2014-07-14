@@ -120,11 +120,20 @@ function objectSwapItem(a, item, b, amount) {
 	}
 }
 
-function objectExplode(obj, minDmg, maxDmg) {
-	var explosion = createObjectWithPID(5 /* misc */, 14 /* Explosion */, -1)
+function objectGetDamageType(obj) {
+	if(obj.dmgType !== undefined)
+		return obj.dmgType
+	throw "no damage type for obj: " + obj
+}
+
+function objectExplode(obj, source, minDmg, maxDmg) {
+	var damage = maxDmg
+	var explosion = createObjectWithPID(makePID(5 /* misc */, 14 /* Explosion */), -1)
 	explosion.position.x = obj.position.x
 	explosion.position.y = obj.position.y
 	explosion.art = "art/misc/expb" // TODO: fix this in createObjectWithPID
+	obj.dmgType = "explosion"
+
 	if(images[explosion.art] === undefined) {
 		lazyLoadImage(explosion.art, function() {
 			gObjects.push(explosion)
@@ -133,11 +142,22 @@ function objectExplode(obj, minDmg, maxDmg) {
 			console.log("adding explosion")
 			objectSingleAnim(explosion, false, function() {
 				gObjects.splice(idx, 1) // remove the explosion after it's finished
-				
+
 				// TODO: remove explosive
 			})
 
-			// TODO: hook up to scripts
+			// damage critters in a radius
+			var hexes = hexesInRadius(obj.position, 8 /* explosion radius */) // TODO: radius
+			for(var i = 0; i < hexes.length; i++) {
+				var objs = objectsAtPosition(hexes[i])
+				for(var j = 0; j < objs.length; j++) {
+					if(objs[j].type === "critter")
+						console.log("todo: damage " + critterGetName(objs[j]))
+
+					console.log("DAMAGING: " + objs[j].art + " (SCRIPT " + objs[j].script)
+					scriptingEngine.damage(objs[j], obj, source, damage)
+				}
+			}
 		})
 	}
 }
@@ -168,7 +188,7 @@ function useExplosive(obj, source) {
 	scriptingEngine.timeEventList.push({ticks: ticks, obj: null, userdata: null, fn: function() {
 		// explode!
 		// TODO: explosion damage calculations
-		objectExplode(obj, 10 /* min dmg */, 25 /* max dmg */)
+		objectExplode(obj, source, 10 /* min dmg */, 25 /* max dmg */)
 	}})
 }
 

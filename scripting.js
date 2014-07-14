@@ -228,6 +228,11 @@ var scriptingEngine = (function() {
 				case 17: stub("metarule", arguments); return 0  // is area known? (TODO)
 				case 18: return 0 // is the critter under the influence of drugs? (TODO)
 				case 22: return 0 // is_game_loading
+				case 49: // METARULE_W_DAMAGE_TYPE
+					switch(objectGetDamageType(target)) {
+						case "explosion": return 6 // DMG_explosion
+						default: throw "unknown damage type"
+					}
 				default: stub("metarule", arguments)
 			}
 		},
@@ -395,14 +400,22 @@ var scriptingEngine = (function() {
 			stub("obj_open", arguments)
 		},
 		create_object_sid: function(pid, tile, elevation, sid) { // Create object of pid and possibly script
-			info("create_object_sid: " + pid + " / " + sid)
+			info("create_object_sid: " + pid + " / " + tile + " / " + sid)
 
-			// TODO: Does this work on anything _but_ items?
-			var obj = createObjectWithPID(0 /* type item */, pid, sid)
-			if(obj === null)
+			var obj = createObjectWithPID(pid, sid)
+			if(obj === null) {
 				warn("create_object_sid: couldn't create object")
+				return null
+			}
 			//info("OBJ: " + repr(obj))
 			//stub("create_object_sid", arguments)
+
+			// TODO: if tile is valid...
+			if(elevation !== currentElevation)
+				throw "create_object_sid: want to create object on another elevation"
+			obj.position = fromTileNum(tile)
+			gObjects.push(obj)
+
 			return obj
 		},
 		obj_name: function(obj) { return obj.name },
@@ -927,6 +940,17 @@ var scriptingEngine = (function() {
 		script.critter_p_proc()
 	}
 
+	function damage(obj, target, source, damage) {
+		if(!obj._script) return
+
+		obj._script.self_obj = obj
+		obj._script.target_obj = target
+		obj._script.source_obj = source
+		obj._script.game_time = Math.max(1, gameTickTime)
+		obj._script.cur_map_index = currentMapID
+		obj._script.damage_p_proc()
+	}
+
 	function combatEvent(obj, event) {
 		var fixed_param = null
 		switch(event) {
@@ -1029,6 +1053,6 @@ var scriptingEngine = (function() {
 
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
-		    timeEventList: timeEventList, info: info, reset: reset, talk: talk,
+		    timeEventList: timeEventList, info: info, reset: reset, talk: talk, damage: damage,
 		    globalVars: globalVars, combatEvent: combatEvent, initScript: initScript}
 })()

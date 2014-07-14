@@ -239,11 +239,12 @@ function makePID(type, pid) {
 	return (type << 24) | pid
 }
 
-function createObjectWithPID(objType, pid, sid) {
-	var pidID = makePID(objType, pid)
-	var pro = loadPRO(pidID, pid)
-	var obj = {type: getPROTypeName(objType), pro: pro, pid: pidID, pidID: pid, amount: 1, position: {x: -1, y: -1}}
-	if(objType === 0) { // item
+function createObjectWithPID(pid, sid) {
+	var pidType = (pid >> 24) & 0xff
+	var pidID = pid & 0xffff
+	var pro = loadPRO(pid, pidID)
+	var obj = {type: getPROTypeName(pidType), pro: pro, pid: pid, pidID: pidID, amount: 1, position: {x: -1, y: -1}}
+	if(pidType === 0) { // item
 		obj.subtype = getPROSubTypeName(pro.extra.subtype)
 		obj.name = getMessage("pro_item", pro.textID)
 
@@ -251,15 +252,21 @@ function createObjectWithPID(objType, pid, sid) {
 		console.log("invPID: " + invPID + ", also: " + pid)
 		if(invPID !== 0xffff)
 			obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
-	} else {
-		console.log("createObjectWithPID: not an item")
 	}
 
 	obj.art = "art/items/RESERVED" // todo: get art from pro
 
+	var objectScriptID = -1
+	if(obj.pro !== undefined) {
+		if(obj.pro.extra !== undefined && obj.pro.extra.scriptID !== undefined)
+			objectScriptID = obj.pro.extra.scriptID
+		else
+			objectScriptID = obj.pro.scriptID
+	}
+
 	if(obj.pro !== undefined && obj.pro.extra !== undefined &&
-	   sid !== undefined && obj.pro.extra.scriptID != sid)
-		console.log("!!! createObjectWithPID: need to change script ID (" + obj.pro.extra.scriptID +
+	   sid !== undefined && objectScriptID != sid)
+		console.log("!!! createObjectWithPID: need to change script ID (" + objectScriptID +
 			" to " + sid + ")")
 
 	return obj
