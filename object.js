@@ -131,7 +131,6 @@ function objectExplode(obj, source, minDmg, maxDmg) {
 	var explosion = createObjectWithPID(makePID(5 /* misc */, 14 /* Explosion */), -1)
 	explosion.position.x = obj.position.x
 	explosion.position.y = obj.position.y
-	explosion.art = "art/misc/expb" // TODO: fix this in createObjectWithPID
 	obj.dmgType = "explosion"
 
 	if(images[explosion.art] === undefined) {

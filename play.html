@@ -215,7 +215,7 @@ function loadPRO(pid, pidID) {
 	// use the proto/ .lst files to look up proto
 	var type = getPROType(pid)
 	var lsts = {"items": "proto/items/items", "critters": "proto/critters/critters",
-                "scenery": "proto/scenery/scenery"}
+                "scenery": "proto/scenery/scenery", "misc": "proto/misc/misc"}
 	var id = lsts[type] ? getLstId(lsts[type], pidID - 1) : pidID
 	var path = lsts[type] ? id : (pad(id, 8) + '.pro')
 
@@ -254,7 +254,10 @@ function createObjectWithPID(pid, sid) {
 			obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
 	}
 
-	obj.art = "art/items/RESERVED" // todo: get art from pro
+	if(obj.pro !== undefined)
+		obj.art = lookupArt(makePID(obj.pro.frmType, obj.pro.frmPID))
+	else
+		obj.art = "art/items/RESERVED"
 
 	var objectScriptID = -1
 	if(obj.pro !== undefined) {
@@ -270,6 +273,20 @@ function createObjectWithPID(pid, sid) {
 			" to " + sid + ")")
 
 	return obj
+}
+
+function lookupArt(frmPID) {
+	var type = getPROType(frmPID)
+	var pidID = frmPID & 0xffff
+
+	if(type === 1) throw "lookupArt: critters"
+
+	var lsts = {"items": "art/items/items", "critters": "art/critters/critters",
+                "scenery": "art/scenery/scenery", "misc": "art/misc/misc"}
+	var path = "art/" + type + "/" + getLstId(lsts[type], pidID).split('.')[0]
+
+	console.log("LOOKUP ART: " + path)
+	return path
 }
 
 function dropObject(source, obj) {
