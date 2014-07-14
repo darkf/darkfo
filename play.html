@@ -839,6 +839,13 @@ heart.update = function() {
 			// check and update timed events
 			var timedEvents = scriptingEngine.timeEventList
 			for(var i = 0; i < timedEvents.length; i++) {
+				if(timedEvents[i].obj &&
+				   timedEvents[i].obj.dead === true) { // remove events for dead objects
+				   	console.log("removing timed event for dead object")
+				   	timedEvents.splice(i--, 1)
+				    continue
+				}
+
 				timedEvents[i].ticks--
 				if(timedEvents[i].ticks <= 0) {
 					scriptingEngine.info("timed event triggered", "timer")
