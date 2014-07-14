@@ -169,12 +169,12 @@ function objectExplode(obj, source, minDmg, maxDmg) {
 						if(objs[j].type === "critter")
 							console.log("todo: damage " + critterGetName(objs[j]))
 
-						console.log("DAMAGING: " + objs[j].art + " (SCRIPT " + objs[j].script)
 						scriptingEngine.damage(objs[j], obj, source, damage)
 					}
 				}
 
-				// TODO: remove explosive (obj)
+				// remove explosive
+				objectDestroy(obj)
 			})
 		})
 	}
