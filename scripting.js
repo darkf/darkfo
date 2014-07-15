@@ -986,7 +986,8 @@ var scriptingEngine = (function() {
 	}
 
 	function damage(obj, target, source, damage) {
-		if(!obj._script) return
+		if(!obj._script || obj._script.damage_p_proc === undefined)
+			return null
 
 		obj._script.self_obj = obj
 		obj._script.target_obj = target
