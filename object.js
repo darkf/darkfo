@@ -210,13 +210,13 @@ function useExplosive(obj, source) {
 	}})
 }
 
-function useObject(obj, source) {
+function useObject(obj, source, useScript) {
 	if(canUseObject(obj, source) === false) {
 		console.log("can't use object")
 		return false
 	}
 
-	if(obj._script && obj._script.use_p_proc !== undefined) {
+	if(useScript !== false && obj._script && obj._script.use_p_proc !== undefined) {
 		obj._script.source_obj = (source !== undefined) ? source : player
 		obj._script.self_obj = obj
 		obj._script.use_p_proc()

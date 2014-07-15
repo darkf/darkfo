@@ -339,6 +339,9 @@ var scriptingEngine = (function() {
 		rm_mult_objs_from_inven: function(obj, item, count) { // Remove count copies of item from obj's inventory
 			stub("rm_mult_objs_from_inven", arguments)
 		},
+		add_obj_to_inven: function(obj, item) {
+			this.add_mult_objs_to_inven(obj, item, 1)
+		},
 		obj_carrying_pid_obj: function(obj, pid) { stub("obj_carrying_pid_obj", arguments); return 0 },
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
@@ -398,7 +401,7 @@ var scriptingEngine = (function() {
 		obj_close: function(obj) { stub("obj_close", arguments) },
 		obj_open: function(obj) {
 			info("obj_open")
-			useObject(obj, this.self_obj)
+			useObject(obj, this.self_obj, false)
 			stub("obj_open", arguments)
 		},
 		create_object_sid: function(pid, tile, elevation, sid) { // Create object of pid and possibly script
@@ -809,7 +812,7 @@ var scriptingEngine = (function() {
 			for(var i = 0; i < timeEventList.length; i++) {
 				if(timeEventList[i].obj.pid === obj.pid) { // TODO: better object equality
 					info("removing timed event for obj")
-				   	timedEvents.splice(i--, 1)
+				   	timeEventList.splice(i--, 1)
 				    break
 				}
 			}
