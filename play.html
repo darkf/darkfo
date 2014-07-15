@@ -51,6 +51,7 @@ var showPath = true // show player's path?
 var showFloor = true // show floor tiles?
 var showRoof = true // show roof tiles?
 var showObjects = true // show objects?
+var showWalls = true // show walls?
 
 var doLoadScripts = true // should we load scripts?
 var doUpdateCritters = false // should we give critters heartbeats?
@@ -87,12 +88,12 @@ var elevationUpKey = "e"
 var showRoofKey = "r"
 var showFloorKey = "f"
 var showObjectsKey = "o"
+var showWallsKey = "w"
 var talkToKey = "t"
 var inspectKey = "i"
 var moveToKey = "m"
 var runToKey = "j"
 var attackKey = "g"
-var targetTimerTickKey = "w"
 var combatKey = "c"
 var playerToTargetRaycastKey = "y"
 var showTargetInventoryKey = "v"
@@ -621,7 +622,7 @@ function drawPlayerInventory() {
 }
 
 function isSelectableObject(obj) {
-	return canUseObject(obj) || obj.type === "critter"
+	return obj.visible !== false && (canUseObject(obj) || obj.type === "critter")
 }
 
 heart.mousepressed = function(x, y, btn) {
@@ -662,6 +663,7 @@ heart.keydown = function(k) {
 	if(k == showRoofKey) { showRoof = !showRoof }
 	if(k == showFloorKey) { showFloor = !showFloor }
 	if(k == showObjectsKey) { showObjects = !showObjects }
+	if(k == showWallsKey) showWalls = !showWalls
 	if(k == talkToKey) {
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
@@ -709,14 +711,6 @@ heart.keydown = function(k) {
 		}
 	}
 
-	if(k == targetTimerTickKey) {
-		for(var i = 0; i < gObjects.length; i++) {
-			if(gObjects[i]._script !== undefined && gObjects[i]._script.timed_event_p_proc !== undefined) {
-				console.log("calling timed_event_p_proc(1) on " + gObjects[i].script)
-				scriptingEngine.timedEvent(gObjects[i]._script, 1)
-			}
-		}
-	}
 	if(k == combatKey) {
 		if(!doCombat) return
 		if(inCombat === true && combat.inPlayerTurn === true) {
@@ -1005,7 +999,7 @@ heart.draw = function() {
 	// draw objects and player
 	if(showObjects === true) {
 		for(var i = 0; i < gObjects.length; i++)
-			if(gObjects[i].visible !== false)
+			if(gObjects[i].visible !== false && (gObjects[i].type !== "wall" || showWalls))
 				drawObject(gObjects[i])
 
 		drawObject(player)

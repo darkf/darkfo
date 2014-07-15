@@ -1023,6 +1023,7 @@ var scriptingEngine = (function() {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
 				script.game_time = Math.max(1, gameTickTime)
+				script.game_time_hour = 1200 // hour of the day
 				script.cur_map_index = currentMapID
 				script.map_update_p_proc()
 				updated++
@@ -1050,6 +1051,7 @@ var scriptingEngine = (function() {
 				script.combat_is_initialized = 0
 				script.self_obj = gameObjects[i]
 				script.game_time = Math.max(1, gameTickTime)
+				script.game_time_hour = 1200 // hour of the day
 				script.cur_map_index = currentMapID
 				script.map_enter_p_proc()
 				updated++
