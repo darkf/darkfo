@@ -217,9 +217,12 @@ function useObject(obj, source, useScript) {
 	}
 
 	if(useScript !== false && obj._script && obj._script.use_p_proc !== undefined) {
-		obj._script.source_obj = (source !== undefined) ? source : player
-		obj._script.self_obj = obj
-		obj._script.use_p_proc()
+		if(source === undefined)
+			source = player
+		if(scriptingEngine.use(obj, source) === true) {
+			console.log("useObject: overriden")
+			return // script overrided us
+		}
 	}
 	else if(obj.script !== undefined && !obj._script)
 		console.log("object used has script but is not loaded: " + obj.script)

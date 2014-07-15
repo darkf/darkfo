@@ -168,6 +168,7 @@ var scriptingEngine = (function() {
 		dude_obj: "<Dude Object>",
 		'true': true,
 		'false': false,
+		_didOverride: false,
 
 		floor: function(x) { return Math.floor(x) }, // TODO: does the language have floats? Are we handling division incorrectly?
 
@@ -251,8 +252,9 @@ var scriptingEngine = (function() {
 			stub("metarule3", arguments)
 		},
 		script_overrides: function() {
-			warn("[SCRIPT OVERRIDES]")
-			stub("script_overrides", arguments)
+			log("script_overrides", arguments)
+			info("[SCRIPT OVERRIDES]")
+			this._didOverride = true
 		},
 
 		// player
@@ -937,13 +939,27 @@ var scriptingEngine = (function() {
 			throw "timedEvent called on script without a timed_event_p_proc!"
 
 		script.fixed_param = userdata
+		script._didOverride = false
 		script.timed_event_p_proc()
+		return script._didOverride
+	}
+
+	function use(obj, source) {
+		if(!obj._script || obj._script.use_p_proc === undefined)
+			return null
+
+		obj._script.source_obj = source
+		obj._script.self_obj = obj
+		obj._script._didOverride = false
+		obj._script.use_p_proc()
+		return obj._script._didOverride
 	}
 
 	function talk(script, obj) {
 		script.self_obj = obj
 		script.game_time = Math.max(1, gameTickTime)
 		script.cur_map_index = currentMapID
+		script._didOverride = false
 
 		var r = script.talk_p_proc()
 		if(r !== undefined && r._yield !== undefined) {
@@ -953,6 +969,8 @@ var scriptingEngine = (function() {
 				throw "unused yielded fn already exists"
 			script.yieldedFn = r._yield
 		}
+
+		return script._didOverride
 	}
 
 	function updateCritter(script) {
@@ -962,7 +980,9 @@ var scriptingEngine = (function() {
 
 		script.game_time = gameTickTime
 		script.cur_map_index = currentMapID
+		script._didOverride = false
 		script.critter_p_proc()
+		return script._didOverride
 	}
 
 	function damage(obj, target, source, damage) {
@@ -973,7 +993,9 @@ var scriptingEngine = (function() {
 		obj._script.source_obj = source
 		obj._script.game_time = Math.max(1, gameTickTime)
 		obj._script.cur_map_index = currentMapID
+		obj._script._didOverride = false
 		obj._script.damage_p_proc()
+		return obj._script._didOverride
 	}
 
 	function combatEvent(obj, event) {
@@ -993,6 +1015,9 @@ var scriptingEngine = (function() {
 		obj._script.self_obj = obj
 		obj._script.game_time = Math.max(1, gameTickTime)
 		obj._script.cur_map_index = currentMapID
+		obj._script._didOverride = false
+
+		// TODO: script_overrides
 
 		// hack so that the procedure is allowed to finish before
 		// we actually terminate combat
@@ -1081,5 +1106,5 @@ var scriptingEngine = (function() {
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
 		    timeEventList: timeEventList, info: info, reset: reset, talk: talk, damage: damage,
-		    globalVars: globalVars, combatEvent: combatEvent, initScript: initScript}
+		    globalVars: globalVars, combatEvent: combatEvent, initScript: initScript, use: use}
 })()
