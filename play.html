@@ -408,6 +408,9 @@ function initObjects(objects) {
 			if(obj.subtype === "door")
 				obj.open = false
 		}
+		else if(obj.type === "wall") {
+			obj.pro = loadPRO(obj.pid, obj.pidID)
+		}
 	}
 }
 

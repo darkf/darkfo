@@ -371,6 +371,7 @@ var scriptingEngine = (function() {
 					return 0
 			}
 		},
+		critter_injure: function(obj, how) { stub("critter_injure", arguments) },
 
 		// combat
 		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
@@ -453,7 +454,13 @@ var scriptingEngine = (function() {
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
-		override_map_start: function(x, y, elevation, rotation) { stub("override_map_start", arguments) },
+		override_map_start: function(x, y, elevation, rotation) {
+			if(elevation !== currentElevation)
+				throw "override_map_start: not on current elevation"
+			dudeObject.position = {x: x, y: y}
+			dudeObject.orientation = rotation
+			centerCamera(dudeObject.position)
+		},
 		obj_pid: function(obj) { stub("obj_pid", arguments) },
 		obj_on_screen: function(obj) { stub("obj_on_screen", arguments); return 0 },
 		obj_type: function(obj) {
@@ -795,6 +802,17 @@ var scriptingEngine = (function() {
 			timeEventList.push({ticks: ticks, obj: obj, userdata: userdata, fn: function() {
 				timedEvent(obj._script, userdata)
 			}.bind(this)})
+		},
+		rm_timer_event: function(obj) {
+		   	log("rm_timer_event", arguments)
+		   	info("rm_timer_event: " + obj + ", " + obj.pid)
+			for(var i = 0; i < timeEventList.length; i++) {
+				if(timeEventList[i].obj.pid === obj.pid) { // TODO: better object equality
+					info("removing timed event for obj")
+				   	timedEvents.splice(i--, 1)
+				    break
+				}
+			}
 		},
 		game_ticks: function(seconds) { return seconds*10 },
 		game_time_advance: function(ticks) {
