@@ -520,8 +520,11 @@ var scriptingEngine = (function() {
 				warn("move_to: not a game object: " + obj)
 				return
 			}
-			if(elevation !== currentElevation)
-				throw "move_to: elevation != current"
+			if(elevation !== currentElevation) {
+				info("move_to: moving to elevation " + elevation)
+				objectRemove(obj)
+				gMap.levels[elevation]["objects"].push(obj)
+			}
 			obj.position = fromTileNum(tileNum)
 		},
 
