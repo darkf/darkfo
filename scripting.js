@@ -42,6 +42,7 @@ var scriptingEngine = (function() {
 		floatMessage: false,
 		gvars: true,
 		lvars: true,
+		mvars: true,
 		tiles: true,
 		animation: false,
 		movement: true,
@@ -208,9 +209,15 @@ var scriptingEngine = (function() {
 			return mapVars[scriptName][mvar]
 		},
 		set_map_var: function(mvar, value) {
-			if(mapVars[this.scriptName] === undefined)
-				mapVars[this.scriptName] = {}
-			mapVars[this.scriptName][mvar] = value
+			var scriptName = this._mapScript.scriptName
+			if(scriptName === undefined) {
+				warn("map_var: map script has no name")
+				return
+			}
+			info("set_map_var: " + mvar + " = " + value, "mvars")
+			if(mapVars[scriptName] === undefined)
+				mapVars[scriptName] = {}
+			mapVars[scriptName][mvar] = value
 		},
 		global_var: function(gvar) {
 			if(globalVars[gvar] === undefined) {
