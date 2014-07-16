@@ -859,7 +859,7 @@ heart.update = function() {
 		if(gObjects[i].type === "critter") {
 			if(didTick && doUpdateCritters && inCombat !== true && !gObjects[i].dead &&
 				objectInAnim(gObjects[i]) === false && gObjects[i]._script)
-				scriptingEngine.updateCritter(gObjects[i]._script)
+				scriptingEngine.updateCritter(gObjects[i]._script, gObjects[i])
 			critterUpdateAnimation(gObjects[i])
 		}
 		else if(gObjects[i].anim === "single" || gObjects[i].anim === "reverse")
@@ -1024,6 +1024,7 @@ heart.draw = function() {
 
 	for(var i = 0; i < floatMessages.length; i++) {
 		var bbox = objectBoundingBox(floatMessages[i].obj)
+		if(bbox === null) continue
 		heart.ctx.fillStyle = floatMessages[i].color
 		var centerX = bbox.x - bbox.w/2 - cameraX
 		heart.graphics.print(floatMessages[i].msg, centerX, bbox.y - cameraY - 16)

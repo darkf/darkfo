@@ -377,6 +377,7 @@ var scriptingEngine = (function() {
 			}
 		},
 		critter_injure: function(obj, how) { stub("critter_injure", arguments) },
+		critter_is_fleeing: function(obj) { stub("critter_is_fleeing", arguments); return 0 },
 
 		// combat
 		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
@@ -747,6 +748,10 @@ var scriptingEngine = (function() {
 		},
 		float_msg: function(obj, msg, type) {			
 			info("FLOAT MSG: " + msg, "floatMessage")
+			if(!isGameObject(obj)) {
+				warn("float_msg: not game object: " + obj)
+				return
+			}
 			var colorMap = {
 				// todo: take the exact values from some palette. also, yellow is ugly.
 				0: "white", //0: "yellow",
@@ -990,7 +995,7 @@ var scriptingEngine = (function() {
 		return script._didOverride
 	}
 
-	function updateCritter(script) {
+	function updateCritter(script, obj) {
 		// critter heartbeat (critter_p_proc)
 		if(script.critter_p_proc === undefined)
 			return
@@ -998,6 +1003,8 @@ var scriptingEngine = (function() {
 		script.game_time = gameTickTime
 		script.cur_map_index = currentMapID
 		script._didOverride = false
+		script.self_obj = obj
+		script.self_tile = toTileNum(obj.position)
 		script.critter_p_proc()
 		return script._didOverride
 	}

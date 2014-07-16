@@ -73,7 +73,7 @@ function canUseObject(obj, source) {
 	if(obj._script !== undefined && obj._script.use_p_proc !== undefined)
 		return true
 	else if(obj.type === "item" || obj.type === "scenery")
-		if(objectIsDoor(obj))
+		if(objectIsDoor(obj) || objectIsStairs(obj))
 			return true
 		else
 			return (obj.pro.extra.actionFlags & 8) != 0
