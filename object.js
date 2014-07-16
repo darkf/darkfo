@@ -120,7 +120,7 @@ function objectSwapItem(a, item, b, amount) {
 	}
 }
 
-function objectDestroy(obj) {
+function objectRemove(obj) {
 	// remove `obj` from the world
 	// it would be pretty hard to remove it anywhere else without either
 	// a walk of the object graph or a `parent` reference.
@@ -130,13 +130,19 @@ function objectDestroy(obj) {
 	// TODO: better object equality testing
 	for(var i = 0; i < gObjects.length; i++) {
 		if(gObjects[i].pid === obj.pid && gObjects[i].amount === obj.amount) {
-			console.log("objectDestroy: destroying index " + i + " (" + obj.art + ")")
+			console.log("objectRemove: destroying index " + i + " (" + obj.art + ")")
 			gObjects.splice(i, 1)
 			return
 		}
 	}
 
-	console.log("objectDestroy: couldn't find object in global list")
+	console.log("objectRemove: couldn't find object in global list")
+}
+
+function objectDestroy(obj) {
+	objectRemove(obj)
+	
+	// TODO: notify scripts with destroy_p_proc
 }
 
 function objectGetDamageType(obj) {
