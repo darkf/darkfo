@@ -344,10 +344,26 @@ var scriptingEngine = (function() {
 		add_obj_to_inven: function(obj, item) {
 			this.add_mult_objs_to_inven(obj, item, 1)
 		},
-		obj_carrying_pid_obj: function(obj, pid) { stub("obj_carrying_pid_obj", arguments); return 0 },
+		rm_obj_from_inven: function(obj, item) {
+			this.rm_mult_objs_from_inven(obj, item, 1)
+		},
+		obj_carrying_pid_obj: function(obj, pid) {
+			log("obj_carrying_pid_obj", arguments)
+			if(!isGameObject(obj)) {
+				warn("obj_carrying_pid_obj: not a game object: " + obj)
+				return 0
+			}
+
+			for(var i = 0; i < obj.inventory.length; i++) {
+				if(obj.inventory[i].pid === pid)
+					return 1
+			}	
+			return 0
+		},
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
+		obj_can_hear_obj: function(a, b) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
 		has_skill: function(obj, skill) { stub("has_skill", arguments); return 100 },
 		roll_vs_skill: function(obj, skill, bonus) { stub("roll_vs_skill", arguments); return 1 },
 		is_success: function(roll) { stub("is_success", arguments); return 0 },
@@ -467,7 +483,13 @@ var scriptingEngine = (function() {
 			dudeObject.orientation = rotation
 			centerCamera(dudeObject.position)
 		},
-		obj_pid: function(obj) { stub("obj_pid", arguments) },
+		obj_pid: function(obj) {
+			if(!isGameObject(obj)) {
+				warn("obj_pid: not game object: " + obj)
+				return null
+			}
+			return obj.pid
+		},
 		obj_on_screen: function(obj) { stub("obj_on_screen", arguments); return 0 },
 		obj_type: function(obj) {
 			if(!isGameObject(obj)) { warn("obj_type: not game object: " + obj); return }
