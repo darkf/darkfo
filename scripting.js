@@ -791,6 +791,11 @@ var scriptingEngine = (function() {
 				warn("animate_move_obj_to_tile: not a game object")
 				return
 			}
+			// XXX: is this correct? FCMALPNK passes a procedure name
+			// but is it a call (wouldn't make sense for NOption) or
+			// a procedure reference that this should call?
+			if(typeof(tileNum) === "function")
+				tileNum = tileNum.call(this)
 			if(isNaN(tileNum)) {
 				warn("animate_move_obj_to_tile: invalid tile num")
 				return
