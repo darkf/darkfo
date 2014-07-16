@@ -260,18 +260,20 @@ function useObject(obj, source, useScript) {
 		}
 	}
 	else if(objectIsStairs(obj)) {
+		var destTile = fromTileNum(obj.extra.destination & 0xffff)
+		var destElev = ((obj.extra.destination >> 28) & 0xf) >> 1
+
 		if(obj.extra.destinationMap === -1 && obj.extra.destination !== -1) {
 			// same map, new destination
-			var destTile = fromTileNum(obj.extra.destination & 0xffff)
-			var destElev = ((obj.extra.destination >> 28) & 0xf) >> 1
-
 			console.log("stairs: tile: " + destTile.x + ", " + destTile.y + ", elev: " + destElev)
 
 			player.position = destTile
 			changeElevation(destElev)
 		}
 		else {
-			console.log("stairs -> " + obj.extra.destinationMap)
+			console.log("stairs -> " + obj.extra.destinationMap + " @ " + destTile.x +
+				        ", " + destTile.y  + ", elev: " + destElev)
+			loadMapID(obj.extra.destinationMap, destTile, destElev)
 		}
 	}
 }
