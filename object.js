@@ -65,6 +65,7 @@ function objectBlocks(obj) {
 	if(obj.type === "misc") return false
 	if(!obj.pro) return true
 	if(obj.open !== undefined) return !obj.open
+	if(obj.visible === false) return false
 
 	return !(obj.pro.flags & 0x00000010 /* NoBlock */)
 }
