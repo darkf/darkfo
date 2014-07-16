@@ -361,7 +361,7 @@ var scriptingEngine = (function() {
 			return undefined
 		},
 		critter_attempt_placement: function(obj, tile, elevation) { stub("critter_attempt_placement", arguments) },
-		critter_state: function(obj) { stub("critter_state", arguments); return 0 },
+		critter_state: function(obj) { /*stub("critter_state", arguments);*/ return 0 },
 		kill_critter: function(obj, deathFrame) { stub("kill_critter", arguments) },
 		get_poison: function(obj) { stub("get_poison", arguments); return 0 },
 		get_pc_stat: function(pcstat) {
@@ -438,7 +438,7 @@ var scriptingEngine = (function() {
 			return null
 		},
 		anim_busy: function(obj) {
-			info("anim_busy", arguments)
+			log("anim_busy", arguments)
 			if(!isGameObject(obj)) {
 				warn("anim_busy: not game object: " + obj)
 				return false
@@ -726,6 +726,9 @@ var scriptingEngine = (function() {
 		giq_option: function(iqTest, msgList, msgID, target, reaction) {
 			var msg = getScriptMessage(msgList, msgID)
 			console.log("DIALOGUE OPTION: " + msg + " [INT " + ((iqTest >= 0) ? (">="+iqTest) : ("<="+-iqTest)) + "]")
+			var INT = critterGetStat(dudeObject, 'INT')
+			if((iqTest >= 0 && INT < iqTest) || (iqTest <= 0 && INT > -iqTest))
+				return // not enough intelligence for this option				
 			var that = this
 			dialogueOptionProcs.push(function() {
 				$("#dialogue").append(msg + "<br>")
