@@ -785,14 +785,23 @@ var scriptingEngine = (function() {
 			function animate() { objectSingleAnim(obj, false, animate) }
 			animate()
 		},
-		animate_move_obj_to_tile: function(obj, tile, isRun) {
+		animate_move_obj_to_tile: function(obj, tileNum, isRun) {
 			log("animate_move_obj_to_tile", arguments, "movement")
 			if(!isGameObject(obj)) {
 				warn("animate_move_obj_to_tile: not a game object")
 				return
 			}
+			if(isNaN(tileNum)) {
+				warn("animate_move_obj_to_tile: invalid tile num")
+				return
+			}
 
-			tile = fromTileNum(tile)
+			var tile = fromTileNum(tileNum)
+			if(tile.x < 0 || tile.x >= 200 || tile.y < 0 || tile.y >= 200) {
+				warn("animate_move_obj_to_tile: invalid tile: " + tile.x +
+				      ", " + tile.y + " (" + tileNum + ")")
+				return
+			}
 			if(critterWalkTo(obj, tile, !!isRun) === false) {
 				warn("animate_move_obj_to_tile: no path")
 				return

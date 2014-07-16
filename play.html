@@ -592,7 +592,7 @@ function drawInventory($el, obj, clickCallback) {
 		} else
 			var inventoryImage = obj.inventory[i].invArt
 
-		console.log("inv img: " + inventoryImage)
+		//console.log("inv img: " + inventoryImage)
 		if(images[inventoryImage] === undefined)
 			lazyLoadImage(inventoryImage, null, false)
 		var img = $("<img>").attr("src", inventoryImage+'.png').
