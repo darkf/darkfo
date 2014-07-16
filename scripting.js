@@ -505,7 +505,13 @@ var scriptingEngine = (function() {
 			}
 			return null
 		},
-		tile_num_in_direction: function(tile, direction) { return toTileNum(hexInDirection(fromTileNum(tile), direction)) },
+		tile_num_in_direction: function(tile, direction, distance) {
+			if(distance < 1) throw "tile_num_in_direction: distance < 1"
+			tile = hexInDirection(fromTileNum(tile), direction)
+			for(var i = 0; i < distance-1; i++) // repeat for each further distance
+				tile = hexInDirection(tile, direction)
+			return toTileNum(tile)
+		},
 		tile_in_tile_rect: function(_, _, _, _, t) { stub("tile_in_tile_rect", arguments, "tiles"); return 0 },
 		tile_contains_obj_pid: function(tile, elevation, pid) { stub("tile_contains_obj_pid", arguments); return 0 },
 		rotation_to_tile: function(srcTile, destTile) {
