@@ -432,7 +432,7 @@ function critterKill(obj, source, useScript, useAnim, callback) {
 	obj.dead = true
 
 	if(useScript === undefined || useScript === true) {
-		// todo
+		scriptingEngine.destroy(obj, source)
 	}
 
 	if((useAnim === undefined || useAnim === true) && critterHasAnim(obj, "death")) {

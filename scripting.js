@@ -1047,6 +1047,19 @@ var scriptingEngine = (function() {
 		return script._didOverride
 	}
 
+	function destroy(obj, source) {
+		if(!obj._script || obj._script.destroy_p_proc === undefined)
+			return null
+
+		obj._script.self_obj = obj
+		obj._script.source_obj = source
+		obj._script.game_time = Math.max(1, gameTickTime)
+		obj._script.cur_map_index = currentMapID
+		obj._script._didOverride = false
+		obj._script.destroy_p_proc()
+		return obj._script._didOverride
+	}
+
 	function damage(obj, target, source, damage) {
 		if(!obj._script || obj._script.damage_p_proc === undefined)
 			return null
@@ -1169,5 +1182,6 @@ var scriptingEngine = (function() {
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
 		    timeEventList: timeEventList, info: info, reset: reset, talk: talk, damage: damage,
-		    globalVars: globalVars, combatEvent: combatEvent, initScript: initScript, use: use}
+		    globalVars: globalVars, combatEvent: combatEvent, initScript: initScript, use: use,
+			destroy: destroy}
 })()

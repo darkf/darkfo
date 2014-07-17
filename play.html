@@ -98,6 +98,7 @@ var combatKey = "c"
 var playerToTargetRaycastKey = "y"
 var showTargetInventoryKey = "v"
 var useKey = "u"
+var killKey = "k"
 
 // the player object
 var playerWeapon = new Weapon({art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9,
@@ -755,6 +756,16 @@ heart.keydown = function(k) {
 
 	if(k == 'h')
 		player.position = mouseHex
+
+	if(k == killKey) {
+		var objs = objectsAtPosition(mouseHex)
+		for(var i = 0; i < objs.length; i++) {
+			if(objs[i].type === "critter") {
+				critterKill(objs[i], player)
+				break
+			}
+		}
+	}
 }
 
 function recalcPath(start, goal) {
