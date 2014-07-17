@@ -105,15 +105,18 @@ Combat.prototype.log = function(msg) {
 }
 
 Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
+	// TODO: visibility and distance
 	var weapon = critterGetEquippedWeapon(obj)
 	if(weapon === null)
 		return {hit: -1, crit: -1}
-	var WeaponSkill = obj.skills[weapon.weaponType]
-	var bonusAC = 0 //todo: armor bonus, ap at end of turn bonus
-	var AC = critterGetStat(target,"AGI") + bonusAC
-	var bonusCrit = 0 //todo: perk bonis, other crit influencing things
-	var baseCrit = critterGetStat(obj,"LUK") + bonusCrit
-	var hitChance = WeaponSkill - AC - CriticalEffects.regionHitChanceDecTable[region]
+	if(weapon.weaponType === undefined)
+		this.log("weaponType is undefined")
+	var weaponSkill = (weapon.weaponType !== undefined) ? critterGetSkill(obj, weapon.weaponType) : 0
+	var bonusAC = 0 // TODO: armor bonus, AP at end of turn bonus
+	var AC = critterGetStat(target, "AGI") + bonusAC
+	var bonusCrit = 0 // TODO: perk bonuses, other crit influencing things
+	var baseCrit = critterGetStat(obj, "LUK") + bonusCrit
+	var hitChance = weaponSkill - AC - CriticalEffects.regionHitChanceDecTable[region]
 	var critChance = baseCrit + CriticalEffects.regionHitChanceDecTable[region]
 	if(isNaN(hitChance)) throw "something went wrong with hit chance calculation"
 	return {hit: hitChance, crit: critChance}
@@ -127,7 +130,6 @@ Combat.prototype.rollHit = function (obj, target, region) {
 		if(rollSkillCheck(hitChance.crit, 0, true) === true) {
 			var critLevel = Math.floor(Math.max(0, getRandomInt(critModifer,100+critModifer)) / 20)
 			this.log("crit level: " + critLevel)
-			// todo: find proper table
 			var crit = CriticalEffects.getCritical(critterGetKillType(target), region, critLevel)
 			var critStatus = crit.doEffectsOn(target)
 			return {hit: true, crit: true, DM: critStatus.DM, msgID: critStatus.msgID} // crit
@@ -195,13 +197,7 @@ Combat.prototype.attack = function(obj, target, callback) {
 
 Combat.prototype.perish = function(obj) {
 	this.log("...And killed them.")
-	obj.dead = true
-	if(critterHasAnim(obj, "death"))
-		critterStaticAnim(obj, "death", function() {
-			// todo: corpse-ify
-			obj.frame-- // go to last frame
-			obj.anim = undefined
-		})
+	critterKill(obj)
 }
 
 Combat.prototype.getCombatAIMessage = function(id) {

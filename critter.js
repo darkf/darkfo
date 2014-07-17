@@ -428,6 +428,23 @@ function critterUpdateAnimation(obj) {
 	}
 }
 
+function critterKill(obj, source, useScript, useAnim, callback) {
+	obj.dead = true
+
+	if(useScript === undefined || useScript === true) {
+		// todo
+	}
+
+	if((useAnim === undefined || useAnim === true) && critterHasAnim(obj, "death")) {
+		critterStaticAnim(obj, "death", function() {
+			// todo: corpse-ify
+			obj.frame-- // go to last frame
+			obj.anim = undefined
+			if(callback !== undefined) callback()
+		})
+	}
+}
+
 function cloneStats(stats) { return $.extend({}, stats) }
 function addStats(a, b) {
 	var w = cloneStats(a)
@@ -452,5 +469,13 @@ function critterGetStat(obj, stat) {
 	if(stat === "MaxHP") // TODO: this
 		return 75
 	console.log("NO STAT: " + stat)
+	return null
+}
+
+function critterGetSkill(obj, skill) {
+	console.log("SKILL: " + skill + " IS: " + obj.skills[skill])
+	if(obj.skills[skill] !== undefined)
+		return obj.skills[skill]
+	console.log("NO SKILL: " + skill)
 	return null
 }
