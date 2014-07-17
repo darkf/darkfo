@@ -509,7 +509,15 @@ var scriptingEngine = (function() {
 			obj.visible = !visibility
 		},
 		use_obj_on_obj: function(obj, who) { stub("use_obj_on_obj", arguments) },
-		anim: function(obj, anim, direction) { stub("anim", arguments) },
+		anim: function(obj, anim, direction) {
+			if(!isGameObject(obj)) {
+				warn("anim: not a game object: " + obj)
+				return
+			}
+			stub("anim", arguments)
+			if(anim === 1000) // set rotation
+				obj.orientation = direction
+		},
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },

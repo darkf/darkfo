@@ -9,6 +9,7 @@ var animInfo = {"idle": {type: "static"},
                 "weapon-reload": {type: "static"},
                 "walk": {type: "move"},
                 "static-idle": {type: "static"},
+                "static": {type: "static"},
                 "hitFront": {type: "static"},
                 "death": {type: "static"},
                 "run": {type: "move"}}
@@ -171,9 +172,15 @@ function critterGetAnim(obj, anim) {
 		case "shoot": return base + wep + 'j'
 		case "weapon-reload": return base + wep + 'a'
 		case "static-idle": return base + wep + 'a'
+		case "static": return obj.art
 		case "hitFront": return base + 'ao'
 		//case "punch": return base + 'aq'
-		case "death": return base + 'bo'
+		case "death":
+			if(obj.pro !== undefined && obj.pro.extra.killType === 18) { // Boss is special-cased
+				console.log("Boss death...")
+				return base + 'bl'
+			}
+			return base + 'bo' // TODO: choose death animation better
 		default: throw "Unknown animation: " + anim
 	}
 }
