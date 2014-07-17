@@ -236,6 +236,7 @@ var scriptingEngine = (function() {
 				case 17: stub("metarule", arguments); return 0  // is area known? (TODO)
 				case 18: return 0 // is the critter under the influence of drugs? (TODO)
 				case 22: return 0 // is_game_loading
+				case 48: return 2 // METARULE_VIOLENCE_FILTER (2 = VLNCLVL_NORMAL)
 				case 49: // METARULE_W_DAMAGE_TYPE
 					switch(objectGetDamageType(target)) {
 						case "explosion": return 6 // DMG_explosion
@@ -536,6 +537,17 @@ var scriptingEngine = (function() {
 			log("destroy_object", arguments)
 			objectDestroy(obj)
 		},
+		set_exit_grids: function(onElev, mapID, elevation, tileNum, rotation) {
+			stub("set_exit_grids", arguments)
+			for(var i = 0; i < gameObjects.length; i++) {
+				var obj = gameObjects[i]
+				if(obj.type === "misc" && obj.extra && obj.extra.exitMapID !== undefined) {
+					obj.extra.exitMapID = mapID
+					obj.extra.startingPosition = tileNum
+					obj.extra.startingElevation = elevation
+				}
+			}
+		},
 
 		// tiles
 		tile_distance_objs: function(a, b) {
@@ -564,6 +576,7 @@ var scriptingEngine = (function() {
 			return null
 		},
 		tile_num_in_direction: function(tile, direction, distance) {
+			if(distance === 0) return tile // QCFrank uses this but does not use its result
 			if(distance < 1) throw "tile_num_in_direction: distance < 1"
 			tile = hexInDirection(fromTileNum(tile), direction)
 			for(var i = 0; i < distance-1; i++) // repeat for each further distance
