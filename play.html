@@ -505,6 +505,12 @@ function loadMap(mapName, startingPosition, startingElevation) {
 	gMap = map
 	var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
+	for(var level = 0; level < gMap.levels.length; level++) {
+		if(doLoadItemInfo !== false)
+			initObjects(gMap.levels[level]["objects"])
+		initCritters(gMap.levels[level]["objects"])
+	}
+
 	if(doLoadScripts === true) {
 		scriptingEngine.init(player, mapName)
 		gMapScript = scriptingEngine.loadScript(mapName)
@@ -533,12 +539,6 @@ function loadMap(mapName, startingPosition, startingElevation) {
 		var a = gObjects[1175]
 		var b = gObjects[1260]
 		gObjects = [a, b]
-	}
-
-	for(var level = 0; level < gMap.levels.length; level++) {
-		if(doLoadItemInfo !== false)
-			initObjects(gMap.levels[level]["objects"])
-		initCritters(gMap.levels[level]["objects"])
 	}
 
 	loadingAssetsTotal-- // we should know all of the assets we need by now
