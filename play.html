@@ -637,11 +637,22 @@ heart.mousepressed = function(x, y, btn) {
 	var obj = getObjectUnderCursor(isSelectableObject)
 	if(obj !== null) {
 		if(obj.type === "critter") {
-			if(obj._script && obj._script.talk_p_proc !== undefined) {
+			if(obj.dead !== true && obj._script && obj._script.talk_p_proc !== undefined) {
 				console.log("Talking to " + critterGetName(obj))
 				scriptingEngine.talk(obj._script, obj)
 			}
-			else console.log("Cannot talk to that critter")
+			else if(obj.dead === true) {
+				// loot a dead body
+				var drawInv = function() {
+					drawInventory($("#inventory"), obj, function(selected) {
+						objectSwapItem(obj, selected, player, 1)
+						drawPlayerInventory()
+						drawInv()
+					})
+				}
+				drawInv()
+			}
+			else console.log("Cannot talk to/loot that critter")
 		}
 		else
 			useObject(obj, player)
