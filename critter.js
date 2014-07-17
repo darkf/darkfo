@@ -9,6 +9,7 @@ var animInfo = {"idle": {type: "static"},
                 "weapon-reload": {type: "static"},
                 "walk": {type: "move"},
                 "static-idle": {type: "static"},
+                "hitFront": {type: "static"},
                 "death": {type: "static"},
                 "run": {type: "move"}}
 
@@ -170,6 +171,7 @@ function critterGetAnim(obj, anim) {
 		case "shoot": return base + wep + 'j'
 		case "weapon-reload": return base + wep + 'a'
 		case "static-idle": return base + wep + 'a'
+		case "hitFront": return base + 'ao'
 		//case "punch": return base + 'aq'
 		case "death": return base + 'bo'
 		default: throw "Unknown animation: " + anim
@@ -440,6 +442,24 @@ function critterKill(obj, source, useScript, useAnim, callback) {
 			// todo: corpse-ify
 			obj.frame-- // go to last frame
 			obj.anim = undefined
+			if(callback !== undefined) callback()
+		})
+	}
+}
+
+function critterDamage(obj, damage, source, useScript, useAnim, damageType, callback) {
+	obj.stats.HP -= damage
+	if(obj.stats.HP <= 0)
+		return critterKill(obj, source, useScript)
+
+	if(useScript === undefined || useScript === true) {
+		// todo
+	}
+
+	// todo: other hit animations
+	if((useAnim === undefined || useAnim === true) && critterHasAnim(obj, "hitFront")) {
+		critterStaticAnim(obj, "hitFront", function() {
+			critterStopWalking(obj)
 			if(callback !== undefined) callback()
 		})
 	}

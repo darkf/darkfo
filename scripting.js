@@ -401,6 +401,14 @@ var scriptingEngine = (function() {
 		},
 		critter_injure: function(obj, how) { stub("critter_injure", arguments) },
 		critter_is_fleeing: function(obj) { stub("critter_is_fleeing", arguments); return 0 },
+		wield_obj_critter: function(obj, item) { stub("wield_obj_critter", arguments) },
+		critter_dmg: function(obj, damage, damageType) {
+			if(!isGameObject(obj)) {
+				warn("critter_dmg: not game object: " + obj)
+				return
+			}
+			critterDamage(obj, damage, this.self_obj, true, true, damageType)
+		},
 
 		// combat
 		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {

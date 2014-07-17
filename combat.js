@@ -187,8 +187,8 @@ Combat.prototype.attack = function(obj, target, callback) {
 		var extraMsg = hitRoll.crit === true ? this.getCombatMsg(hitRoll.msgID) : ""
 		this.log(who + " hit " + targetName + " for " + damage + " damage" + extraMsg)
 
-		target.stats.HP -= damage
-		if(target.stats.HP <= 0)
+		critterDamage(target, damage, obj)
+		if(target.dead === true)
 			combat.perish(target)
 	}
 	else
@@ -197,7 +197,6 @@ Combat.prototype.attack = function(obj, target, callback) {
 
 Combat.prototype.perish = function(obj) {
 	this.log("...And killed them.")
-	critterKill(obj)
 }
 
 Combat.prototype.getCombatAIMessage = function(id) {
