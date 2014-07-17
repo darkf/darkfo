@@ -368,7 +368,7 @@ var scriptingEngine = (function() {
 			return 0
 		},
 		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
-								   else { warn("elevation: not an object: " + obj.toString()); return -1 } },
+								   else { warn("elevation: not an object: " + obj); return -1 } },
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
 		obj_can_hear_obj: function(a, b) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
 		has_skill: function(obj, skill) { stub("has_skill", arguments); return 100 },
@@ -428,15 +428,36 @@ var scriptingEngine = (function() {
 		},
 
 		// objects
-		obj_is_locked: function(obj) { stub("obj_is_locked", arguments); return 0 },
-		obj_lock: function(obj) { stub("obj_lock", arguments) },
+		obj_is_locked: function(obj) { /*stub("obj_is_locked", arguments);*/ return 0 },
+		obj_lock: function(obj) { /*stub("obj_lock", arguments)*/ },
 		obj_unlock: function(obj) { stub("obj_unlock", arguments) },
-		obj_is_open: function(obj) { stub("obj_is_open", arguments); return 0 },
-		obj_close: function(obj) { stub("obj_close", arguments) },
-		obj_open: function(obj) {
-			info("obj_open")
+		obj_is_open: function(obj) {
+			info("obj_is_open")
+			if(!isGameObject(obj)) {
+				warn("obj_is_open: not game object: " + obj)
+				return 0
+			}
+			return (obj.open === true) ? 1 : 0
+		},
+		obj_close: function(obj) {
+			if(!isGameObject(obj)) {
+				warn("obj_close: not game object: " + obj)
+				return 0
+			}
+			info("obj_close")
+			if(obj.open !== true) return
 			useObject(obj, this.self_obj, false)
-			stub("obj_open", arguments)
+			//stub("obj_close", arguments)
+		},
+		obj_open: function(obj) {
+			if(!isGameObject(obj)) {
+				warn("obj_open: not game object: " + obj)
+				return 0
+			}
+			info("obj_open")
+			if(obj.open === true) return
+			useObject(obj, this.self_obj, false)
+			//stub("obj_open", arguments)
 		},
 		create_object_sid: function(pid, tile, elevation, sid) { // Create object of pid and possibly script
 			info("create_object_sid: " + pid + " / " + tile + " / " + sid)
@@ -549,8 +570,19 @@ var scriptingEngine = (function() {
 				tile = hexInDirection(tile, direction)
 			return toTileNum(tile)
 		},
-		tile_in_tile_rect: function(_, _, _, _, t) { stub("tile_in_tile_rect", arguments, "tiles"); return 0 },
-		tile_contains_obj_pid: function(tile, elevation, pid) { stub("tile_contains_obj_pid", arguments); return 0 },
+		tile_in_tile_rect: function(_, _, _, _, t) { stub("tile_in_tile_rect", arguments, "tiles"); return 1 },
+		tile_contains_obj_pid: function(tile, elevation, pid) {
+			if(elevation !== currentElevation) {
+				warn("tile_contains_obj_pid: not same elevation")
+				return 0
+			}
+			var objs = objectsAtPosition(fromTileNum(tile))
+			for(var i = 0; i < objs.length; i++) {
+				if(objs[i].pid === pid)
+					return 1
+			}
+			return 0
+		},
 		rotation_to_tile: function(srcTile, destTile) {
 			var src = fromTileNum(srcTile), dest = fromTileNum(destTile)
 			var hex = hexNearestNeighbor(src, dest)
