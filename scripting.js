@@ -143,6 +143,12 @@ var scriptingEngine = (function() {
 		}
 	}
 
+	function dialogueEnd() {
+		// dialogue exited from [Done] or the UI
+		console.log("[dialogue exit via dialogueExit]")
+		dialogueExit()
+	}
+
 	function dialogueExit() {
 		$("#dialogue").css("visibility", "hidden") // todo: some sort of transition
 		info("[dialogue exit]")
@@ -811,15 +817,10 @@ var scriptingEngine = (function() {
 		},
 		gsay_message: function(msgList, msgID, reaction) {
 			// message with [Done] option
-			if(typeof msgID === "string") { // TODO: is this _really_ allowed? GCPercy uses a string, docs say int
-				console.log("MSG: " + msgID + " [DONE] (s)")
-				$("#dialogue").append("&nbsp;&nbsp;\"" + msgID + "\"<br>[Done]<br>")
-			}
-			else {
-				var msg = getScriptMessage(msgList, msgID)
-				console.log("MSG: " + msg + " [DONE]")
-				$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>[Done]<br>")
-			}
+			var msg = msgID
+			if(typeof msgID !== "string")
+				msg = getScriptMessage(msgList, msgID)
+			$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br><a href=\"javascript:dialogueEnd()\">[Done]</a><br>")
 		},
 		gsay_end: function() { stub("gSay_End", arguments) },
 		end_dialogue: function() { stub("end_dialogue", arguments) },
@@ -1244,5 +1245,5 @@ var scriptingEngine = (function() {
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
 		    timeEventList: timeEventList, info: info, reset: reset, talk: talk, damage: damage,
 		    globalVars: globalVars, combatEvent: combatEvent, initScript: initScript, use: use,
-			destroy: destroy}
+			destroy: destroy, dialogueEnd: dialogueEnd}
 })()
