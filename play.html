@@ -245,7 +245,7 @@ function createObjectWithPID(pid, sid) {
 	var pidType = (pid >> 24) & 0xff
 	var pidID = pid & 0xffff
 	var pro = loadPRO(pid, pidID)
-	var obj = {type: getPROTypeName(pidType), pro: pro, pid: pid, pidID: pidID, amount: 1, position: {x: -1, y: -1}}
+	var obj = {type: getPROTypeName(pidType), pro: pro, pid: pid, pidID: pidID, amount: 1, position: {x: -1, y: -1}, inventory: []}
 	if(pidType === 0) { // item
 		obj.subtype = getPROSubTypeName(pro.extra.subtype)
 		obj.name = getMessage("pro_item", pro.textID)
@@ -261,18 +261,33 @@ function createObjectWithPID(pid, sid) {
 	else
 		obj.art = "art/items/RESERVED"
 
+	if(pidType === 1) // critter
+		initCritters([obj]) // initialize the critter
+
 	var objectScriptID = -1
 	if(obj.pro !== undefined) {
 		if(obj.pro.extra !== undefined && obj.pro.extra.scriptID !== undefined)
 			objectScriptID = obj.pro.extra.scriptID
-		else
+		else if(obj.pro.scriptID !== undefined)
 			objectScriptID = obj.pro.scriptID
 	}
 
 	if(obj.pro !== undefined && obj.pro.extra !== undefined &&
-	   sid !== undefined && objectScriptID != sid)
-		console.log("!!! createObjectWithPID: need to change script ID (" + objectScriptID +
-			" to " + sid + ")")
+	   sid !== undefined && objectScriptID != sid) {
+		//console.log("!!! createObjectWithPID: need to change script ID (" + objectScriptID +
+		//	" to " + sid + ")")
+		console.log("createObjectWithPID: sid = " + sid)
+		var scriptName = lookupScriptName(sid)
+		console.log("createObjectWithPID: loading " + scriptName + " (" + sid + ")")
+		var script = scriptingEngine.loadScript(scriptName)
+		if(script === null) {
+			console.log("createObjectWithPID: load script failed for " + scriptName + " ( " + sid + ")")
+		} else {
+			obj._script = script
+			scriptingEngine.initScript(obj._script, obj)
+			// TODO: do we enterMap/etc?
+		}
+	}
 
 	return obj
 }
@@ -343,6 +358,10 @@ function lookupArt(frmPID) {
 
 	console.log("LOOKUP ART: " + path)
 	return path.toLowerCase()
+}
+
+function lookupScriptName(scriptID) {
+	return getLstId("scripts/scripts", scriptID - 1).split('.')[0].toLowerCase()
 }
 
 function dropObject(source, obj) {
@@ -476,7 +495,8 @@ function initCritters(objects) {
 	for(var i = 0; i < objects.length; i++) {
 		var obj = objects[i]
 		if(obj.type !== "critter") continue
-		obj.pro = loadPRO(obj.pid, obj.pidID)
+		if(!obj.pro)
+			obj.pro = loadPRO(obj.pid, obj.pidID)
 		obj.stats = calcStats(obj, obj.pro)
 		obj.skills = obj.pro.extra.skills
 		obj.name = getMessage("pro_crit", obj.pro.textID)
