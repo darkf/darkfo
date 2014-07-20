@@ -323,3 +323,8 @@ function objectZOrder(obj, index) {
 function zsort(objects) {
 	objects.sort(objectZCompare)
 }
+
+function objectMove(obj, position) {
+	obj.position = position
+	objectZOrder(obj)
+}

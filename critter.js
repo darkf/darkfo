@@ -422,7 +422,7 @@ function critterUpdateAnimation(obj) {
 					obj.position = h
 					if(critterWalkCallback(obj)) return
 				}
-				obj.position = h
+				critterMove(obj, h)
 				obj.path.distance -= distMoved
 			}
 		}
@@ -435,6 +435,10 @@ function critterUpdateAnimation(obj) {
 					obj.animCallback()
 		}
 	}
+}
+
+function critterMove(obj, position) {
+	return objectMove(obj, position)
 }
 
 function critterKill(obj, source, useScript, useAnim, callback) {
