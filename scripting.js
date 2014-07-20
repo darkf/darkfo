@@ -425,7 +425,7 @@ var scriptingEngine = (function() {
 			// implementing all of it
 
 			inCombat = true
-			combat = new Combat([this.self_obj], dudeObject) //gameObjects, dudeObject)
+			combat = new Combat(gameObjects, dudeObject)
 			combat.forceTurn(this.self_obj)
 			combat.nextTurn()
 		},
@@ -478,8 +478,10 @@ var scriptingEngine = (function() {
 			//stub("create_object_sid", arguments)
 
 			// TODO: if tile is valid...
-			if(elevation !== currentElevation)
-				throw "create_object_sid: want to create object on another elevation"
+			if(elevation !== currentElevation) {
+				warn("create_object_sid: want to create object on another elevation")
+				return
+			}
 			obj.position = fromTileNum(tile)
 			gObjects.push(obj)
 

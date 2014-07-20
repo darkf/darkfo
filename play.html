@@ -114,7 +114,7 @@ var playerWeapon = new Weapon({art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 
   invArt: "art/inven/uzi"})
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
-              path: null, animCallback: null,
+              path: null, animCallback: null, type: "critter",
           	  baseStats: {STR: 8, PER: 5, END: 5, CHR: 6, INT: 5, AGI: 6, LUK: 5, HP: 100},
           	  bonusStats: {STR: 0, PER: 0, END: 0, CHR: 0, INT: 0, AGI: 0, LUK: 0, HP: 0},
           	  leftHand: playerWeapon, rightHand: null, weapon: null, armor: null,
@@ -648,6 +648,7 @@ heart.load = function() {
 	heart.attach("cnv")
 
 	loadMap(MAP_NAME) // load initial map
+  gObjects.push(player)
 
 	if(doCombat === true)
 		CriticalEffects.loadTable()
@@ -840,7 +841,7 @@ heart.keydown = function(k) {
 	}
 
 	if(k == 'h')
-		player.position = mouseHex
+		critterMove(player, mouseHex)
 
 	if(k == killKey) {
 		var objs = objectsAtPosition(mouseHex)
@@ -1097,8 +1098,6 @@ heart.draw = function() {
 		for(var i = 0; i < gObjects.length; i++)
 			if(gObjects[i].visible !== false && (gObjects[i].type !== "wall" || showWalls))
 				drawObject(gObjects[i])
-
-		drawObject(player)
 	}
 
 	if(showRoof === true && roofMap !== null)
@@ -1110,8 +1109,8 @@ heart.draw = function() {
 	}
 
 	if(inCombat === true) {
-		var whose = combat.whoseTurn === -1 ? "player" : combat.combatants[combat.whoseTurn].art
-		var AP = combat.whoseTurn === -1 ? player.AP : combat.combatants[combat.whoseTurn].AP
+		var whose = combat.inPlayerTurn ? "player" : critterGetName(combat.combatants[combat.whoseTurn])
+		var AP = combat.inPlayerTurn ? player.AP : combat.combatants[combat.whoseTurn].AP
 		heart.graphics.print("[turn " + combat.turnNum + " of " + whose + " AP: " + AP.getAvailableMoveAP() + "]", SCREEN_WIDTH - 200, 15)
 	}
 

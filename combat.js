@@ -76,12 +76,17 @@ AI.aiTxt = null // AI.TXT: packet num -> key/value
 
 var Combat = function(objects, player) {
 	this.combatants = []
+	this.playerIdx = -1
+
 	for(var i = 0; i < objects.length; i++) {
 		if(objects[i].type === "critter") {
 			if(objects[i].dead === true) continue
 			if(objects[i].visible === false) continue
 			this.combatants.push(objects[i])
-			objects[i].ai = new AI(objects[i])
+
+			if(!objects[i].isPlayer)
+				objects[i].ai = new AI(objects[i])
+			else this.playerIdx = this.combatants.length - 1
 
 			if(objects[i].stats === undefined)
 				throw "no stats"
@@ -91,12 +96,9 @@ var Combat = function(objects, player) {
 	}
 
 	this.player = player
-	if(this.player.stats === undefined)	
-		throw "no player stats"			
-	this.player.AP = new ActionPoints(player)
-	this.turnNum = 0
-	this.whoseTurn = -2
-	this.inPlayerTurn = false
+	this.turnNum = 1
+	this.whoseTurn = this.playerIdx - 1
+	this.inPlayerTurn = true
 }
 
 Combat.prototype.log = function(msg) {
@@ -306,24 +308,6 @@ Combat.prototype.doAITurn = function(obj, idx) {
 	else this.nextTurn()
 }
 
-Combat.prototype.numAlive = function() {
-	var count = 0
-	for(var i = 0; i < this.combatants.length; i++) {
-		if(this.combatants[i].dead !== true)
-			count++
-	}
-	return count
-}
-
-Combat.prototype.numActive = function() { // number of combatants in range and not dead
-	var count = 0
-	for(var i = 0; i < this.combatants.length; i++) {
-		if(this.combatants[i].dead !== true && this.combatants[i].inRange === true)
-			count++
-	}
-	return count
-}
-
 Combat.prototype.end = function() {
 	console.log("[end combat]")
 	combat = null // todo: invert control
@@ -332,7 +316,7 @@ Combat.prototype.end = function() {
 
 Combat.prototype.forceTurn = function(obj) {
 	if(obj === player)
-		this.whoseTurn = -1 - 1
+		this.whoseTurn = this.playerIdx - 1
 	else {
 		var idx = this.combatants.indexOf(obj)
 		if(idx === -1) throw "forceTurn: no combatant " + critterGetName(obj)
@@ -346,8 +330,8 @@ Combat.prototype.nextTurn = function() {
 	var numActive = 0
 	for(var i = 0; i < this.combatants.length; i++) {
 		var obj = this.combatants[i]
-		if(obj.dead === true) continue
-		obj.inRange = hexDistance(obj.position, player.position) <= obj.ai.info.max_dist
+		if(obj.dead === true || obj.isPlayer === true) continue
+		obj.inRange = hexDistance(obj.position, this.player.position) <= obj.ai.info.max_dist
 
 		if(obj.inRange === true)
 			numActive++
@@ -358,23 +342,24 @@ Combat.prototype.nextTurn = function() {
 
 	this.turnNum++
 	this.whoseTurn++
-	if(this.whoseTurn >= this.combatants.length) {
-		// end of turn
-		this.whoseTurn = -1
-	}
 
-	if(this.whoseTurn === -1) {
-		// player
+	if(this.whoseTurn >= this.combatants.length)
+		this.whoseTurn = 0
+
+	if(this.combatants[this.whoseTurn].isPlayer === true) {
+		// player turn
 		this.inPlayerTurn = true
 		this.player.AP.resetAP()
 	}
 	else {
 		this.inPlayerTurn = false
 		var critter = this.combatants[this.whoseTurn]
-		if(critter.dead === true || critter.inRange === false)
+		if(critter.dead === true || critter.inRange === false)		
 			return this.nextTurn()
+
 		// todo: convert unused AP into AC
 		critter.AP.resetAP()
 		this.doAITurn(critter, this.whoseTurn)
 	}
+	
 }
