@@ -108,12 +108,17 @@ Combat.prototype.log = function(msg) {
 
 Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
 	// TODO: visibility and distance
-	var weapon = critterGetEquippedWeapon(obj)
-	if(weapon === null)
+	var weaponObj = critterGetEquippedWeapon(obj)
+	if(weaponObj === null)
 		return {hit: -1, crit: -1}
-	if(weapon.weaponType === undefined)
+	var weapon = weaponObj.weapon
+
+	if(weapon.weaponType === undefined) {
 		this.log("weaponType is undefined")
-	var weaponSkill = (weapon.weaponType !== undefined) ? critterGetSkill(obj, weapon.weaponType) : 0
+		var weaponSkill = 0
+	}
+	else
+		var weaponSkill = critterGetSkill(obj, weapon.weaponType)
 	var bonusAC = 0 // TODO: armor bonus, AP at end of turn bonus
 	var AC = critterGetStat(target, "AGI") + bonusAC
 	var bonusCrit = 0 // TODO: perk bonuses, other crit influencing things
@@ -144,7 +149,7 @@ Combat.prototype.rollHit = function (obj, target, region) {
 }
 
 Combat.prototype.getDamageDone = function(obj, target, critModifer) {
-	var wep = critterGetEquippedWeapon(obj)
+	var wep = critterGetEquippedWeapon(obj).weapon
 
 	var RD = getRandomInt(wep.minDmg, wep.maxDmg) // rand damage min..max
 	var RB = 0 // ranged bonus (via perk)
@@ -260,7 +265,9 @@ Combat.prototype.doAITurn = function(obj, idx) {
 		return
 	}
 
-	var weapon = critterGetEquippedWeapon(obj)
+	var weaponObj = critterGetEquippedWeapon(obj)
+	if(weaponObj === null) throw "AI has no weapon"
+	var weapon = weaponObj.weapon
 	var fireDistance = weapon.getMaximumRange(1)
 	this.log("DEBUG: weapon: " + weapon + " fireDistance: " + fireDistance +
 		     " obj: " + obj.art + " distance: " + distance)

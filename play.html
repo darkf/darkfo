@@ -101,8 +101,9 @@ var useKey = "u"
 var killKey = "k"
 
 // the player object
-var playerWeapon = new Weapon({art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9,
-	subtype: "weapon", amount: 1, inventory: [], type: "item", pro: {
+// todo: just load this from the PRO or something
+var playerWeapon = {art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9,
+  subtype: "weapon", amount: 1, inventory: [], type: "item", pro: {
     lightRadius: 0, frmPID: 44, extra: {
       animCode: 6, weight: 5,  materialID: 1, subType: 3, flagsExt: "'\\x00\\x00\\x00'",
       cost: 1000, APCost2: 6, APCost1: 5, rounds: 10, minDmg: 1, size: 3,
@@ -111,7 +112,9 @@ var playerWeapon = new Weapon({art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 
       projPID: -1, caliber: 8},
     textID: 900, pid: 9, frmType: 0, flags: 8, lightIntensity: 0, type: 0},
   name: "10mm SMG",
-  invArt: "art/inven/uzi"})
+  invArt: "art/inven/uzi"}
+playerWeapon.weapon = new Weapon(playerWeapon)
+
 var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null, type: "critter",
@@ -509,14 +512,14 @@ function initCritters(objects) {
 
 			if(inv.subtype === "weapon") {
 				if(obj.leftHand === undefined) {
-					var wep = new Weapon(inv)
-					if(wep.canEquip(obj))
-						obj.leftHand = wep
+					inv.weapon = new Weapon(inv)
+					if(inv.weapon.canEquip(obj))
+						obj.leftHand = inv
 				}
 				else if(obj.rightHand === undefined) {
-					var wep = new Weapon(inv)
-					if(wep.canEquip(obj))
-						obj.rightHand = wep
+					inv.weapon = new Weapon(inv)
+					if(inv.weapon.canEquip(obj))
+						obj.rightHand = inv
 				}
 				//console.log("left: " + obj.leftHand + " | right: " + obj.rightHand)
 			}
@@ -524,9 +527,9 @@ function initCritters(objects) {
 
 		// default to punches
 		if(!obj.leftHand)
-			obj.leftHand = new Weapon("punch")
+			obj.leftHand = {type: "item", subtype: "weapon", weapon: new Weapon("punch")}
 		if(!obj.rightHand)
-			obj.rightHand = new Weapon("punch")
+			obj.rightHand = {type: "item", subtype: "weapon", weapon: new Weapon("punch")}
 
 		// set them in their proper idle state for the weapon
 		obj.art = critterGetAnim(obj, "idle")

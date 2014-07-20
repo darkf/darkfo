@@ -149,16 +149,18 @@ function critterGetBase(obj) {
 }
 
 function critterGetEquippedWeapon(obj) {
-	return obj.leftHand || obj.rightHand || null
+	if(objectIsWeapon(obj.leftHand)) return obj.leftHand
+	if(objectIsWeapon(obj.rightHand)) return obj.rightHand
+	return null
 }
 
 function critterGetAnim(obj, anim) {
 	var base = critterGetBase(obj)
 
 	// try weapon animation first
-	var hand = obj.leftHand || obj.rightHand || null
-	if(hand && doUseWeaponModel) {
-		var wepAnim = hand.getAnim(anim)
+	var weaponObj = critterGetEquippedWeapon(obj)
+	if(weaponObj !== null && doUseWeaponModel === true) {
+		var wepAnim = weaponObj.weapon.getAnim(anim)
 		if(wepAnim !== false)
 			return base + wepAnim
 	}
