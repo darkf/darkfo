@@ -278,3 +278,48 @@ function useObject(obj, source, useScript) {
 		}
 	}
 }
+
+function objectFindIndex(obj) {
+	for(var i = 0; i < gObjects.length; i++)
+		if(gObjects[i] === obj)
+			return i
+	return -1
+}
+
+function objectZCompare(a, b) {
+	var aY = a.position.y
+	var bY = b.position.y
+
+	var aX = a.position.x
+	var bX = b.position.x
+
+	if(aY === bY) {
+		if(aX < bX) return -1
+		else if(aX > bX) return 1
+		else if(aX === bX) {
+			if(a.type === "wall") return -1
+			else if(b.type === "wall") return 1
+			else return 0
+		}
+	}
+
+	if(aY < bY) return -1
+	else if(aY > bY) return 1
+}
+
+function objectZOrder(obj, index) {
+	var oldIdx = (index !== undefined) ? index : objectFindIndex(obj)
+	gObjects.splice(oldIdx, 1) // remove the object...
+
+	for(var i = 0; i < gObjects.length; i++) {
+		var zc = objectZCompare(obj, gObjects[i])
+		if(zc === -1) {
+			gObjects.splice(i, 0, obj) // insert at new index
+			break
+		}
+	}
+}
+
+function zsort(objects) {
+	objects.sort(objectZCompare)
+}
