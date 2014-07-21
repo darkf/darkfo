@@ -715,7 +715,27 @@ heart.mousepressed = function(x, y, btn) {
 	var obj = getObjectUnderCursor(isSelectableObject)
 	if(obj !== null) {
 		if(obj.type === "critter") {
-			if(obj.dead !== true && obj._script && obj._script.talk_p_proc !== undefined) {
+			if(obj === player) return
+
+			if(inCombat === true && obj.dead !== true) {
+				// attack a critter
+				if(!combat.inPlayerTurn || objectInAnim(player)) {
+					console.log("You can't do that yet.")
+					return
+				}
+
+				if(player.AP.getAvailableCombatAP() < 4) {
+					console.log("You don't have enough AP for that.")
+					return
+				}
+
+				player.AP.subtractCombatAP(4)
+				console.log("Attacking...")
+				combat.attack(player, obj)
+			}
+			else if(obj.dead !== true && inCombat !== true &&
+				obj._script && obj._script.talk_p_proc !== undefined) {
+				// talk to a critter
 				console.log("Talking to " + critterGetName(obj))
 				scriptingEngine.talk(obj._script, obj)
 			}
