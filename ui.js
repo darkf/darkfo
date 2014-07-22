@@ -72,6 +72,8 @@ function uiMoveSlot(data, target) {
 
 		player[target] = obj // move the object over
 	}
+
+	drawInventoryScreen()
 }
 
 function makeDropTarget($el, dropCallback) {
