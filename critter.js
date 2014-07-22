@@ -431,7 +431,7 @@ function critterUpdateAnimation(obj) {
 
 		if(obj.position.x === obj.path.target.x && obj.position.y === obj.path.target.y) {
 			// reached target
-			console.log("target reached")
+			if(DEBUG) console.log("target reached")
 			if(critterAdvancePath(obj) === false)
 				if(obj.animCallback)
 					obj.animCallback()

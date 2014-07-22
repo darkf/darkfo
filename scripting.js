@@ -150,7 +150,8 @@ var scriptingEngine = (function() {
 	}
 
 	function dialogueExit() {
-		$("#dialogue").css("visibility", "hidden") // todo: some sort of transition
+		//$("#dialogue").css("visibility", "hidden") // todo: some sort of transition
+		uiEndDialogue()
 		info("[dialogue exit]")
 
 		if(currentDialogueObject !== null && currentDialogueObject._script.yieldedFn !== undefined) {
@@ -646,167 +647,17 @@ var scriptingEngine = (function() {
 		gdialog_mod_barter: function(mod) { // switch to barter mode
 			console.log("--> barter mode")
 			if(!this.self_obj) throw "need self_obj"
-
-			// hide dialogue screen for now
-			$("#dialogue").css("visibility", "hidden")
-
-			// pop up the bartering areas
-			$("#barterLeft, #barterRight").css("visibility", "visible")
-
-			function findItem(obj, item) {
-				for(var i = 0; i < obj.inventory.length; i++) {
-					if(obj.inventory[i].pid === item.pid)
-						return i
-				}
-				return -1
-			}
-
-			function cloneItem(item) { return $.extend({}, item) }
-			function swapItem(a, item, b, amount) {
-				// swap item from a -> b
-				if(amount === 0) return
-
-				var idx = findItem(a, item)
-				if(idx === -1)
-					throw "item (" + item + ") does not exist in a"
-				if(amount !== undefined && amount < item.amount) {
-					// just deduct amount from a and give amount to b
-					item.amount -= amount
-					objectAddItem(b, cloneItem(item), amount)
-				}
-				else { // just swap them
-					a.inventory.splice(idx, 1)
-					objectAddItem(b, item, amount || 1)
-				}
-			}
-
-			var merchant = this.self_obj
-
-			// a copy of inventories for both parties
-			var workingPlayerInventory = {inventory: dudeObject.inventory.map(cloneItem)}
-			var workingMerchantInventory = {inventory: merchant.inventory.map(cloneItem)}
-
-			// and our working barter tables
-			var playerBarterTable = {inventory: []}
-			var merchantBarterTable = {inventory: []}
-
-			function totalAmount(obj) {
-				var total = 0
-				for(var i = 0; i < obj.inventory.length; i++) {
-					total += obj.inventory[i].pro.extra.cost * obj.inventory[i].amount
-				}
-				return total
-			}
-
-			function offer() {
-				info("[OFFER]")
-
-				var merchantOffered = totalAmount(merchantBarterTable)
-				var playerOffered = totalAmount(playerBarterTable)
-				var diffOffered = playerOffered - merchantOffered
-
-				if(diffOffered >= 0) {
-					// OK, player offered equal to more more than the value
-					info("[OFFER OK]")
-
-					// finalize and apply the deal
-
-					// swap to working inventories
-					merchant.inventory = workingMerchantInventory.inventory
-					player.inventory = workingPlayerInventory.inventory
-
-					// add in the table items
-					for(var i = 0; i < merchantBarterTable.inventory.length; i++)
-						objectAddItem(dudeObject, merchantBarterTable.inventory[i], merchantBarterTable.inventory[i].amount)
-					for(var i = 0; i < playerBarterTable.inventory.length; i++)
-						objectAddItem(merchant, playerBarterTable.inventory[i], playerBarterTable.inventory[i].amount)
-
-					// re-clone so we can continue bartering if necessary
-					workingPlayerInventory = {inventory: dudeObject.inventory.map(cloneItem)}
-					workingMerchantInventory = {inventory: merchant.inventory.map(cloneItem)}
-
-					playerBarterTable.inventory = []
-					merchantBarterTable.inventory = []
-
-					redrawBarterInventory()
-				}
-				else {
-					info("[OFFER REFUSED]")
-				}
-
-			}
-
-			function getAmount(item) {
-				while(true) {
-					var amount = prompt("How many?")
-					if(amount === null)
-						return 0
-					else if(amount === "")
-						return item.amount // all of it!
-					else amount = parseInt(amount)
-
-					if(isNaN(amount) || item.amount < amount)
-						alert("Invalid amount")
-					else return amount
-				}
-			}
-
-			function redrawBarterInventory() {
-				//  merchant -> table
-				drawInventory($("#inventory"), workingMerchantInventory, function(obj) {
-					// var money = objectGetMoney(merchant)
-					if(obj.amount > 1)
-						 swapItem(workingMerchantInventory, obj, merchantBarterTable, getAmount(obj))
-					else swapItem(workingMerchantInventory, obj, merchantBarterTable)
-					redrawBarterInventory()
-				})
-
-				// player -> table
-				drawInventory($("#playerInventory"), workingPlayerInventory, function(obj) {
-					if(obj.amount > 1)
-						swapItem(workingPlayerInventory, obj, playerBarterTable, getAmount(obj))
-					else swapItem(workingPlayerInventory, obj, playerBarterTable)
-					redrawBarterInventory()
-				})
-
-				// table -> merchant
-				drawInventory($("#barterLeft"), merchantBarterTable, function(obj) {
-					if(obj.amount > 1)
-						swapItem(merchantBarterTable, obj, workingMerchantInventory, getAmount(obj))
-					else swapItem(merchantBarterTable, obj, workingMerchantInventory)
-					redrawBarterInventory()
-				})
-				var moneyLeft = totalAmount(merchantBarterTable)
-				$("#barterLeft").append($("<span>").css(
-					{position: 'absolute', 'left':0, 'bottom': 0}).text(moneyLeft))
-
-				// table -> player
-				drawInventory($("#barterRight"), playerBarterTable, function(obj) {
-					if(obj.amount > 1)
-						swapItem(playerBarterTable, obj, workingPlayerInventory, getAmount(obj))
-					else swapItem(playerBarterTable, obj, workingPlayerInventory)
-					redrawBarterInventory()
-				})
-				var moneyRight = totalAmount(playerBarterTable)
-				$("#barterRight").append($("<span>").css(
-					{position: 'absolute', 'left':0, 'bottom': 0}).text(moneyRight))
-				$("#barterRight").append($("<button>").css(
-					{position: 'absolute', 'right':0, 'bottom': 0}).text("Offer").click(offer))
-				$("#barterRight").append($("<button>").css(
-					{position: 'absolute', 'right':0, 'bottom': 25}).text("Talk").click(endBarter))
-
-			}
-
-			redrawBarterInventory()
-
-			stub("gdialog_mod_barter", arguments)
+			uiBarterMode(this.self_obj)
+			//stub("gdialog_mod_barter", arguments)
 		},
 		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) {
 			log("start_gdialog", arguments)
 			info("DIALOGUE START", "dialogue")
-			$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
+			//$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
 			if(!this.self_obj) throw "no self_obj for start_gdialog"
 			currentDialogueObject = this.self_obj
+
+		    uiStartDialogue()
 			//stub("start_gdialog", arguments)
 		},
 		gsay_start: function() { stub("gSay_Start", arguments) },
@@ -814,7 +665,8 @@ var scriptingEngine = (function() {
 		gsay_reply: function(msgList, msgID) {
 			var msg = getScriptMessage(msgList, msgID)
 			info("REPLY: " + msg, "dialogue")
-			$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
+			//$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
+			uiSetDialogueReply(msg)
 			//stub("gSay_Reply", arguments)
 		},
 		gsay_message: function(msgList, msgID, reaction) {
@@ -837,7 +689,8 @@ var scriptingEngine = (function() {
 				$("#dialogue").append(msg + "<br>")
 				target.call(that)
 			})
-			$("#dialogue").append("<a href=\"javascript:dialogueReply(" + (dialogueOptionProcs.length-1) + ")\">" + msg + "</a><br>")
+			//$("#dialogue").append("<a href=\"javascript:dialogueReply(" + (dialogueOptionProcs.length-1) + ")\">" + msg + "</a><br>")
+			uiAddDialogueOption(msg, dialogueOptionProcs.length - 1)
 			//stub("giQ_Option", arguments)
 		},
 		dialogue_system_enter: function() {

@@ -14,6 +14,7 @@
 <script src="combat.js"></script>
 <script src="object.js"></script>
 <script src="critter.js"></script>
+<script src="ui.js"></script>
 <script src="pathfinding-browser.js"></script>
 <script src="criticalEffects.js"></script>
 <script>
@@ -67,6 +68,8 @@ var combat = null // combat object
 var inCombat = false // are we currently in combat?
 var gameHasFocus = false // do we have input focus?
 var lastMousePickTime = 0 // time when we last checked what's under the mouse cursor
+var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2
+var uiMode = UI_MODE_NONE
 
 var isLoading = true // are we currently loading a map?
 var loadingAssetsLoaded = 0 // how many images we've loaded
@@ -102,7 +105,7 @@ var killKey = "k"
 
 // the player object
 // todo: just load this from the PRO or something
-var playerWeapon = {art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9,
+var playerWeapon = {art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9, position: {x: -1, y: -1},
   subtype: "weapon", amount: 1, inventory: [], type: "item", pro: {
     lightRadius: 0, frmPID: 44, extra: {
       animCode: 6, weight: 5,  materialID: 1, subType: 3, flagsExt: "'\\x00\\x00\\x00'",
@@ -378,8 +381,7 @@ function dropObject(source, obj) {
 	}
 	if(idx === -1) throw "dropObject: couldn't find object"
 
-	obj.position.x = source.position.x
-	obj.position.y = source.position.y
+	objectMove(obj, {x: source.position.x, y: source.position.y})
 	source.inventory.splice(idx, 1) // remove from source
 	gObjects.push(obj) // add to objects
 }
@@ -659,45 +661,7 @@ heart.load = function() {
 	$("#cnv").mouseenter(function() { gameHasFocus = true }).
 	          mouseleave(function() { gameHasFocus = false })
 
-	drawPlayerInventory()
-}
-
-function drawInventory($el, obj, clickCallback) {
-	$el.html("")
-	for(var i = 0; i < obj.inventory.length; i++) {
-		if(obj.inventory[i].invArt === undefined) { // make a guess
-			var s = obj.inventory[i].art.split('/')
-			var inventoryImage = 'art/inven/' + s[s.length-1]
-		} else
-			var inventoryImage = obj.inventory[i].invArt
-
-		//console.log("inv img: " + inventoryImage)
-		if(images[inventoryImage] === undefined)
-			lazyLoadImage(inventoryImage, null, false)
-		var img = $("<img>").attr("src", inventoryImage+'.png').
-		          attr("width", 90).attr("height", 60) // 90x60 // 70x40
-		img.attr("title", obj.inventory[i].name)
-		if(clickCallback !== undefined)
-			(function(invObj) {
-				img.click(function(e) { clickCallback(invObj, obj, e) })
-			})(obj.inventory[i])
-		$el.append(img).append("x" + obj.inventory[i].amount)
-	}
-}
-
-function drawPlayerInventory() {
-	// draw the player inventory with click handlers for
-	// using or dropping items
-
-	drawInventory($("#playerInventory"), player, function(item, _, event) {
-		if(event.shiftKey) { // shift+click -> drop item
-			dropObject(player, item)
-			drawPlayerInventory()
-		}
-		else { // click -> use item
-			useObject(item, player)
-		}
-	})
+	initUI()
 }
 
 function isSelectableObject(obj) {
@@ -1158,68 +1122,57 @@ function dialogueReply(id) { scriptingEngine.dialogueReply(id) }
 function dialogueEnd() { scriptingEngine.dialogueEnd() }
 
 </script>
-<style>
-	body {
-		font-family: sans-serif;
-	}
-
-	#dialogue {
-		float: right;
-		width: 30%;
-		height: 60%;
-		border: 1px solid black;
-		visibility: hidden;
-		overflow: auto;
-	}
-
-	#inventory {
-		border: 1px solid black;
-		width: 800px;
-		height: 120px;
-		margin-top: 2px;
-	}
-
-	.verticalInventory {
-		border: 1px solid black;
-		width: 120px;
-		height: 600px;
-		margin-top: 2px;
-	}
-
-	#barterLeft {
-		float: left;
-	}
-
-	#barterLeft, #barterRight {
-		visibility: hidden;
-		display: inline-block;
-		position: relative;
-	}
-
-	#rightArea {
-		float: right;
-		width: 45%;
-	}
-
-	#playerInventory {
-		float: right;
-	}
-</style>
+<link rel="stylesheet" type="text/css" href="ui.css">
 </head>
 <body>
+<div id="game-container">
+  <canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
+  <div id="dialogueContainer">
+    <div id="dialogueBox">
+      <div id="dialogueBoxTextArea"></div>
+    </div>
+    <div id="barterBox">
+      <div id="barterBoxInventoryLeft"></div>
+      <div id="barterBoxInventoryRight"></div>
 
-<canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
+      <div id="barterBoxLeft"></div>
+      <div id="barterBoxRight"></div>
+      <div id="barterBoxLeftAmount"></div>
+      <div id="barterBoxRightAmount"></div>
 
-<div id="rightArea">
-	<div id="barterLeft" class="verticalInventory"></div>
-	<div id="barterRight" class="verticalInventory"></div>
+      <div id="barterTalkButton"></div>
+      <div id="barterOfferButton"></div>
+    </div>
+  </div>
+  <div id="itemContextMenu"></div>
+  <div id="inventoryBox">
+    <div id="inventoryBoxList"></div>
+    <div id="inventoryDoneButton"></div>
+    <div id="inventoryBoxInfo"></div>
 
-	<div id="playerInventory" class="verticalInventory"></div>
+    <!-- item1/item2/armor boxes -->
+    <div id="inventoryBoxItem1"></div>
+    <div id="inventoryBoxItem2"></div>
+    <div id="inventoryBoxArmor"></div>
+  </div>
+  <div id="bar">
+    <div id="attackButton"></div>
+    <div id="inventoryButton"></div>
+    <div id="chrButton"></div>
+    <div id="hpNumber">
+      <div id="hpDigit1" class="number"></div>
+      <div id="hpDigit2" class="number"></div>
+      <div id="hpDigit3" class="number"></div>
+      <div id="hpDigit4" class="number"></div>
+    </div>
 
-	<div id="dialogue"></div>
+    <div id="acNumber">
+      <div id="acDigit1" class="number"></div>
+      <div id="acDigit2" class="number"></div>
+      <div id="acDigit3" class="number"></div>
+      <div id="acDigit4" class="number"></div>
+    </div>
+  </div>
 </div>
-<div id="inventory"></div>
-
-
 </body>
 </html>

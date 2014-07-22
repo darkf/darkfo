@@ -1,0 +1,268 @@
+body {
+  font-family: sans-serif;
+}
+
+#game-container {
+  position: relative;
+}
+
+#bar {
+  position: absolute;
+  left: 4.5%; bottom: 0;
+  width: 640;
+  height: 99;
+  background-image: url("art/intrface/iface.png");
+}
+
+#attackButton {
+  position: absolute;
+  left: 265; top: 26;
+  width: 188;
+  height: 67;
+  background-image: url("art/intrface/sattkbup.png");
+}
+
+#attackButton:active {
+  background-image: url("art/intrface/sattkbdn.png");
+}
+
+#inventoryButton {
+  position: absolute;
+  left: 213; top: 40;
+  width: 32; height: 21;
+  background-image: url("art/intrface/invbutup.png");
+}
+
+#inventoryButton:active {
+  background-image: url("art/intrface/invbutdn.png");
+}
+
+#chrButton {
+  position: absolute;
+  left: 526; top: 59;
+  width: 41; height: 19;
+  background-image: url("art/intrface/chaup.png");
+}
+
+#chrButton:active {
+  background-image: url("art/intrface/chadn.png");
+}
+
+/* inventory box */
+#inventoryBox {
+  position: absolute;
+  left: 130; top: 50;
+  width: 499; height: 377;
+  visibility: hidden;
+  background-image: url("art/intrface/invbox.png");
+}
+
+#inventoryBoxList {
+  position: absolute;
+  left: 40; top: 40;
+  width: 70; height: 300;
+  /*background-color: gray;*/
+  overflow: hidden;
+}
+
+#inventoryDoneButton {
+  position: absolute;
+  left: 433; top: 325;
+  width: 26; height: 26;
+  background-image: url("art/intrface/menuup.png");
+}
+
+#inventoryDoneButton:hover {
+  cursor: pointer;
+}
+
+#inventoryDoneButton:active {
+  background-image: url("art/intrface/menudown.png");
+}
+
+#inventoryBoxItem1, #inventoryBoxItem2, #inventoryBoxArmor {
+  position: absolute;
+  width: 90; height: 64;
+}
+
+#inventoryBoxItem1 { left: 155; top: 285; }
+#inventoryBoxItem2 { left: 245; top: 285; }
+#inventoryBoxArmor { left: 155; top: 180; }
+
+#inventoryBoxInfo {
+  position: absolute;
+  left: 295; top: 45;
+  width: 150; height: 190;
+}
+
+.number {
+  position: absolute;
+  /* 0 1 2 3 4 5 6 7 8 9 turn1 turn2 - */
+  background-image: url("art/intrface/numbers.png");
+  width: 9; height: 17;
+}
+
+#hpNumber {
+  position: absolute;
+  left: 472; top: 40;
+}
+
+#acNumber {
+position: absolute;
+left: 472; top: 75;
+}
+
+#hpDigit1 { left: 0; }
+#hpDigit2 { left: 9; }
+#hpDigit3 { left: 18; }
+#hpDigit4 { left: 27; }
+
+#acDigit1 { left: 0; }
+#acDigit2 { left: 9; }
+#acDigit3 { left: 18; }
+#acDigit4 { left: 27; }
+
+#itemContextMenu {
+  position: absolute;
+  width: 40; height: 260; /* height? */
+  top: 0; /* this will be overriden by the UI script */
+  background-color: gray;
+  visibility: hidden;
+  z-index: 10;
+}
+
+.itemContextMenuButton {
+  /*position: absolute;*/
+  width: 40; height: 40;
+}
+
+#context_cancel { background-image: url("art/intrface/canceln.png"); }
+#context_cancel:hover { background-image: url("art/intrface/cancelh.png"); }
+
+#context_use { background-image: url("art/intrface/usegetn.png"); }
+#context_use:hover { background-image: url("art/intrface/usegeth.png"); }
+
+#context_drop { background-image: url("art/intrface/dropn.png"); }
+#context_drop:hover { background-image: url("art/intrface/droph.png"); }
+
+/* bar height is 99
+   bottom of screen then is 501 */
+
+#dialogueContainer {
+  position: absolute;
+  left: 80; top: 20;
+  width: 640; height: 480;
+
+  visibility: hidden;
+  background-image: url("art/intrface/alltlk.png");
+  overflow: hidden;
+}
+
+#dialogueBox {
+  position: absolute;
+  left: 0; top: 300;
+  width: 640; height: 190;
+
+  visibility: hidden;
+  background-image: url("art/intrface/di_talk.png");
+}
+
+#dialogueBoxTextArea {
+  position: absolute;
+  left: 130; top: 50;
+  width: 390; height: 112;
+  color: #00FF00;
+  font-size: .8em;
+}
+
+#dialogueBoxTextArea a {
+  color: #00FF00;
+  text-decoration: none;
+}
+
+#dialogueBoxTextArea a:hover {
+  color: white;
+}
+
+#barterBox {
+  position: absolute;
+  left: 0; top: 300;
+  width: 640; height: 190;
+
+  visibility: hidden;
+  background-image: url("art/intrface/barter.png");
+}
+
+/* barter screen "talk" button */
+#barterTalkButton {
+  position: absolute;
+  left: 580; top: 160;
+  width: 26; height: 26;
+  background-image: url("art/intrface/menuup.png");
+}
+
+#barterTalkButton:hover { cursor: pointer; }
+#barterTalkButton:active { background-image: url("art/intrface/menudown.png"); }
+
+/* barter screen "offer" button */
+#barterOfferButton {
+  position: absolute;
+  left: 36; top: 160;
+  width: 26; height: 26;
+  background-image: url("art/intrface/menuup.png");
+}
+
+#barterOfferButton:hover { cursor: pointer; }
+#barterOfferButton:active { background-image: url("art/intrface/menudown.png"); }
+
+/* left (player) inventory box */
+#barterBoxInventoryLeft {
+  position: absolute;
+  left: 110; top: 40;
+  width: 70; height: 130;
+  /*background-color: gray;*/
+  overflow: hidden;
+}
+
+/* right (merchant) inventory box */
+#barterBoxInventoryRight {
+  position: absolute;
+  left: 470; top: 40;
+  width: 70; height: 130;
+  /*background-color: gray;*/
+  overflow: hidden;
+}
+
+/* left (player) bartering table */
+#barterBoxLeft {
+  position: absolute;
+  left: 248; top: 12;
+  width: 55; height: 155;
+  /*background-color: gray;*/
+  overflow: hidden;
+}
+
+/* right (merchant) bartering table */
+#barterBoxRight {
+  position: absolute;
+  left: 330; top: 12;
+  width: 55; height: 155;
+  /*background-color: gray;*/
+  overflow: hidden;
+}
+
+/* monetary amount for right (merchant) bartering table */
+#barterBoxRightAmount {
+  position: absolute;
+  left: 340; top: 168;
+  color: white;
+  font-size: 0.75em;
+}
+
+/* monetary amount for left (player) bartering table */
+#barterBoxLeftAmount {
+  position: absolute;
+  left: 248; top: 168;
+  color: white;
+  font-size: 0.75em;
+}
