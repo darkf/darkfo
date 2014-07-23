@@ -82,7 +82,7 @@ var CriticalEffects = (function() {
 		if(this.stat === -1)
 			return false
 
-		var statToRollAgainst = target.stats[this.stat]
+		var statToRollAgainst = critterGetStat(target,this.stat)
 		statToRollAgainst += this.modifier
 
 		if(!rollSkillCheck(statToRollAgainst*10,0,false)) {
@@ -129,7 +129,8 @@ var CriticalEffects = (function() {
 	}
 
 	function getCritical(critterType, region, critLevel) {
-		return critterTable[critterType][region][critLevel]
+		var actualLevel = Math.min(critLevel, critterTable[critterType][region].length-1)
+		return critterTable[critterType][region][actualLevel]
 	}
 
 	function loadTable() {

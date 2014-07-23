@@ -93,7 +93,7 @@ statDependencies['Perk Rate'] = new Skill(1, 2^31-1, 0, [new Dependency('One', 3
 statDependencies['One'] = new Stat(1, 1, 1, [])
 
 //FO2 specific, in FO1 it's always 1
-function GetImprovementCost(obj, skill) {
+function getImprovementCost(obj, skill) {
 	var skillPoints = critterGetSkill(obj, skill)
 	if(skillPoints == null)
 		return null
