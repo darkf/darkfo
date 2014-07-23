@@ -135,7 +135,7 @@ function decreaseStat(obj, stat, amount, useTemp, costsPoints, allowOverBounds) 
 }
 
 function playerInit() {
-	var obj = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
+	var obj = {position: {x: 94, y: 109}, orientation: 2, frame: 0, type: "critter",
 			   art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
 			   path: null, animCallback: null,
 			   leftHand: playerWeapon, rightHand: null, weapon: null, armor: null,

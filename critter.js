@@ -431,7 +431,7 @@ function critterUpdateAnimation(obj) {
 
 		if(obj.position.x === obj.path.target.x && obj.position.y === obj.path.target.y) {
 			// reached target
-			console.log("target reached")
+			if(DEBUG) console.log("target reached")
 			if(critterAdvancePath(obj) === false)
 				if(obj.animCallback)
 					obj.animCallback()
@@ -501,14 +501,14 @@ function critterGetStat(obj, stat) {
 	var rawStat = critterGetRawStat(obj, stat)
 	if(rawStat !== undefined) {
 		var retval = clamp(statDependencies[stat].Min, statDependencies[stat].Max, rawStat + calculateStatValueAddition(obj, stat))
-		console.log("With derived bonuses " + stat + " is: " + retval)
+		//console.log("With derived bonuses " + stat + " is: " + retval)
 		return retval
 	}
 	return null
 }
 
 function critterGetRawStat(obj, stat) {
-	console.log("STAT: " + stat + " IS: " + obj.stats[stat])
+	//console.log("STAT: " + stat + " IS: " + obj.stats[stat])
 	if(obj.stats[stat] === undefined) {
 		console.log("NO STAT: " + stat + " - attempting to add it")
 		if(statDependencies[stat] !== undefined) {

@@ -95,6 +95,9 @@ var Combat = function(objects, player) {
 		}
 	}
 
+	if(this.playerIdx === -1)
+		throw "combat: couldn't find player?"
+
 	this.player = player
 	this.turnNum = 1
 	this.whoseTurn = this.playerIdx - 1
