@@ -117,7 +117,7 @@ var playerWeapon = {art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9,
   invArt: "art/inven/uzi"}
 playerWeapon.weapon = new Weapon(playerWeapon)
 
-var player = PlayerInit()
+var player = playerInit()
 			/*{position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null, type: "critter",
@@ -132,10 +132,6 @@ var player = PlayerInit()
           	  inventory: [
           	  	{type: "misc", name: "Money", pid: 41, pidID: 41, amount: 1337, pro: {textID: 4100, extra: {cost: 1}, invFRM: 117440552}, invArt: 'art/inven/cap2'}
           	  ]}*/
-player.inventory = [{type: "misc", name: "Money", pid: 41, pidID: 41, amount: 1337, pro: {textID: 4100,
-	 				extra: {cost: 1}, invFRM: 117440552}, invArt: 'art/inven/cap2'}]
-
-player.toString = function() { return "The Dude" }
 
 function repr(obj) { return JSON.stringify(obj, null, 2) }
 

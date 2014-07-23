@@ -461,7 +461,7 @@ function critterKill(obj, source, useScript, useAnim, callback) {
 }
 
 function critterDamage(obj, damage, source, useScript, useAnim, damageType, callback) {
-	DecreaseStat(obj, 'HP', damage, false, false, true)
+	decreaseStat(obj, 'HP', damage, false, false, true)
 	if(critterGetStat(obj, 'HP') <= 0)
 		return critterKill(obj, source, useScript)
 

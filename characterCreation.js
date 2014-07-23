@@ -85,10 +85,10 @@ function commitStats(obj) {
 		obj.stats[key] = getTempRawStat(obj, key)
 	obj.tempChanges.stats = {}
 //		alternative way:
-//		IncreaseStat(obj, key, obj.tempChanges.stats[key],false,false,true)
+//		increaseStat(obj, key, obj.tempChanges.stats[key],false,false,true)
 }
 
-function IncreaseStat(obj, stat, amount, useTemp, costsPoints, allowOverBounds) {
+function increaseStat(obj, stat, amount, useTemp, costsPoints, allowOverBounds) {
 	var statValue = critterGetStat(obj, stat)
 	var curTemp =  (useTemp && obj.tempChanges.stats[stat] !== undefined) ? obj.tempChanges.stats[stat] : 0
 	if(allowOverBounds === false && statValue !== null && curTemp + critterGetRawStat(obj, stat) + amount > statDependencies[stat].max) {
@@ -111,7 +111,7 @@ function IncreaseStat(obj, stat, amount, useTemp, costsPoints, allowOverBounds) 
 	return true
 }
 
-function DecreaseStat(obj, stat, amount, useTemp, costsPoints, allowOverBounds) {
+function decreaseStat(obj, stat, amount, useTemp, costsPoints, allowOverBounds) {
 	if(obj.stats[stat] === undefined || (useTemp && obj.tempChanges.stats[stat] === undefined))
 		return false
 	var statValue = critterGetStat(obj, stat)
@@ -134,7 +134,7 @@ function DecreaseStat(obj, stat, amount, useTemp, costsPoints, allowOverBounds) 
 	return true
 }
 
-function PlayerInit() {
+function playerInit() {
 	var obj = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
 			   art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
 			   path: null, animCallback: null,
@@ -142,6 +142,12 @@ function PlayerInit() {
 			   dead: false, name: "Player", gender: "male", inventory: [
           	   {type: "misc", name: "Money", pid: 41, pidID: 41, amount: 1337, pro: {textID: 4100, extra: {cost: 1}, invFRM: 117440552}, invArt: 'art/inven/cap2'}
           	   ]}
+
+	obj.inventory = [{type: "misc", name: "Money", pid: 41, pidID: 41, amount: 1337, pro: {textID: 4100,
+	 				extra: {cost: 1}, invFRM: 117440552}, invArt: 'art/inven/cap2'}]
+	obj.toString = function() { return "The Dude" }
+
+
     //skills and stats are implicitly generated once needed
     obj.stats = {}
     obj.skills = {}
@@ -154,5 +160,5 @@ function PlayerInit() {
 }
 
 var testObj = {stats: {}}
-IncreaseStat(testObj, 'STR', 2, false, false, false)
+increaseStat(testObj, 'STR', 2, false, false, false)
 console.log(testObj.stats.STR + ' ' + (testObj.stats.STR === 7))
