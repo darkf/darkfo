@@ -149,7 +149,7 @@ function playerInit() {
 
 
     //skills and stats are implicitly generated once needed
-    obj.stats = {}
+    obj.stats = {AGI: 8, INT: 8, STR: 8, HP: 100}
     obj.skills = {}
 
    	//todo: make it so this gets added whenever needed so that other things than just the player can use it

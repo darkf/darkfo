@@ -498,6 +498,8 @@ function reprStats(stats) {
 //todo: bring Unity to how stats and skills are calculated
 
 function critterGetStat(obj, stat) {
+	if(stat === "Max HP") return 75 // TODO: Max HP
+
 	var rawStat = critterGetRawStat(obj, stat)
 	if(rawStat !== undefined) {
 		var retval = clamp(statDependencies[stat].Min, statDependencies[stat].Max, rawStat + calculateStatValueAddition(obj, stat))

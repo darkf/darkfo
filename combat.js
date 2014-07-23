@@ -188,6 +188,7 @@ Combat.prototype.attack = function(obj, target, callback) {
 	var who = obj.isPlayer ? "You" : critterGetName(obj)
 	var targetName = target.isPlayer ? "you" : critterGetName(target)
 	var hitRoll = this.rollHit(obj, target, "torso")
+	this.log("hit% is " + this.getHitChance(obj, target, "torso", 2).hit)
 
 	// todo: critical misses
 
