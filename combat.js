@@ -12,7 +12,7 @@ var ActionPoints = function(obj) {
 ActionPoints.prototype.getMaxAP = function() {
 	var bonusCombatAP = 0 //todo: replace with get function
 	var bonusMoveAP = 0 //todo: replace with get function
-	return {combat: 5 + Math.floor(this.attachedObject.stats.AGI/2) + bonusCombatAP, move: bonusMoveAP}
+	return {combat: 5 + Math.floor(critterGetStat(this.attachedObject,'AGI')/2) + bonusCombatAP, move: bonusMoveAP}
 }
 
 ActionPoints.prototype.resetAP = function() {
@@ -95,6 +95,9 @@ var Combat = function(objects, player) {
 		}
 	}
 
+	if(this.playerIdx === -1)
+		throw "combat: couldn't find player?"
+
 	this.player = player
 	this.turnNum = 1
 	this.whoseTurn = this.playerIdx - 1
@@ -119,10 +122,10 @@ Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
 	}
 	else
 		var weaponSkill = critterGetSkill(obj, weapon.weaponType)
-	var bonusAC = 0 // TODO: armor bonus, AP at end of turn bonus
-	var AC = critterGetStat(target, "AGI") + bonusAC
+	var bonusAC = 0 // TODO: AP at end of turn bonus
+	var AC = critterGetStat(target, "AC") + bonusAC
 	var bonusCrit = 0 // TODO: perk bonuses, other crit influencing things
-	var baseCrit = critterGetStat(obj, "LUK") + bonusCrit
+	var baseCrit = critterGetStat(obj, "Critical Chance") + bonusCrit
 	var hitChance = weaponSkill - AC - CriticalEffects.regionHitChanceDecTable[region]
 	var critChance = baseCrit + CriticalEffects.regionHitChanceDecTable[region]
 	if(isNaN(hitChance)) throw "something went wrong with hit chance calculation"
@@ -130,7 +133,7 @@ Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
 }
 
 Combat.prototype.rollHit = function (obj, target, region) {
-	var critModifer = 0
+	var critModifer = critterGetStat(obj, "Better Criticals")
 	var hitChance = this.getHitChance(obj, target, region, critModifer)
 
 	if(rollSkillCheck(hitChance.hit, 0, true) === true) {
@@ -185,6 +188,7 @@ Combat.prototype.attack = function(obj, target, callback) {
 	var who = obj.isPlayer ? "You" : critterGetName(obj)
 	var targetName = target.isPlayer ? "you" : critterGetName(target)
 	var hitRoll = this.rollHit(obj, target, "torso")
+	this.log("hit% is " + this.getHitChance(obj, target, "torso", 2).hit)
 
 	// todo: critical misses
 
@@ -253,7 +257,7 @@ Combat.prototype.doAITurn = function(obj, idx) {
 
 	// behaviors
 
-	if(obj.stats.HP <= obj.ai.info.min_hp) { // hp <= min fleeing hp, so flee
+	if(critterGetStat(obj,'HP') <= obj.ai.info.min_hp) { // hp <= min fleeing hp, so flee
 		this.log("[AI FLEES]")
 		// todo: pick the closest edge of the map
 		this.maybeTaunt(obj, "run", messageRoll)

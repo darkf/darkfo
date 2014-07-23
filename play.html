@@ -17,11 +17,13 @@
 <script src="ui.js"></script>
 <script src="pathfinding-browser.js"></script>
 <script src="criticalEffects.js"></script>
+<script src="skillDependencies.js"></script>
+<script src="characterCreation.js"></script>
 <script>
 "use strict";
 
-var MAP_NAME = "GECKSETL" // name of the current map
-var DEBUG = true // debug mode
+var MAP_NAME = "ENCFITE" // name of the current map
+var DEBUG = false // debug mode
 
 var gMapScript = null
 var floorMap = null
@@ -118,7 +120,8 @@ var playerWeapon = {art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9, position
   invArt: "art/inven/uzi"}
 playerWeapon.weapon = new Weapon(playerWeapon)
 
-var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
+var player = playerInit()
+			/*{position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null, type: "critter",
           	  baseStats: {STR: 8, PER: 5, END: 5, CHR: 6, INT: 5, AGI: 6, LUK: 5, HP: 100},
@@ -131,9 +134,7 @@ var player = {position: {x: 94, y: 109}, orientation: 2, frame: 0,
           	  		   "Gambling": 25, "Small Guns": 50, "Energy Weapons": 50},
           	  inventory: [
           	  	{type: "misc", name: "Money", pid: 41, pidID: 41, amount: 1337, pro: {textID: 4100, extra: {cost: 1}, invFRM: 117440552}, invArt: 'art/inven/cap2'}
-          	  ]}
-player.stats = cloneStats(player.baseStats)
-player.toString = function() { return "The Dude" }
+          	  ]}*/
 
 function repr(obj) { return JSON.stringify(obj, null, 2) }
 

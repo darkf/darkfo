@@ -1,7 +1,7 @@
 import os, glob, json
 import proto
 
-subdirs = ("items", "critters","scenery")
+subdirs = ("items", "critters","scenery", "walls")
 
 if not os.path.exists("proto"):
 	os.mkdir("proto")

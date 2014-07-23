@@ -461,8 +461,8 @@ function critterKill(obj, source, useScript, useAnim, callback) {
 }
 
 function critterDamage(obj, damage, source, useScript, useAnim, damageType, callback) {
-	obj.stats.HP -= damage
-	if(obj.stats.HP <= 0)
+	decreaseStat(obj, 'HP', damage, false, false, true)
+	if(critterGetStat(obj, 'HP') <= 0)
 		return critterKill(obj, source, useScript)
 
 	if(useScript === undefined || useScript === true) {
@@ -495,20 +495,56 @@ function reprStats(stats) {
 	return JSON.stringify(stats) // todo
 }
 
+//todo: bring Unity to how stats and skills are calculated
+
 function critterGetStat(obj, stat) {
-	console.log("STAT: " + stat + " IS: " + obj.stats[stat])
-	if(obj.stats[stat] !== undefined)
-		return obj.stats[stat]
-	if(stat === "MaxHP") // TODO: this
-		return 75
-	console.log("NO STAT: " + stat)
+	if(stat === "Max HP") return 75 // TODO: Max HP
+
+	var rawStat = critterGetRawStat(obj, stat)
+	if(rawStat !== undefined) {
+		var retval = clamp(statDependencies[stat].Min, statDependencies[stat].Max, rawStat + calculateStatValueAddition(obj, stat))
+		//console.log("With derived bonuses " + stat + " is: " + retval)
+		return retval
+	}
 	return null
 }
 
+function critterGetRawStat(obj, stat) {
+	//console.log("STAT: " + stat + " IS: " + obj.stats[stat])
+	if(obj.stats[stat] === undefined) {
+		console.log("NO STAT: " + stat + " - attempting to add it")
+		if(statDependencies[stat] !== undefined) {
+			obj.stats[stat] = statDependencies[stat].Default
+		}else{
+			console.log('FAILED TO ADD STAT: '+ stat)
+		}
+	}
+	return obj.stats[stat]
+}
+
+function critterSetRawStat(obj, stat, amount) {
+	obj.stats[stat] = amount
+	console.log(stat + " changed to: " + obj.stats[stat])
+}
+
 function critterGetSkill(obj, skill) {
+	var rawSkill = critterGetRawSkill(obj,skill)
+	var skillDep = skillDependencies[skill]
+	if(skillDep !== undefined)
+		rawSkill += skillDep.calculateValue(obj)
+	return rawSkill
+}
+
+function critterGetRawSkill(obj, skill) {
 	console.log("SKILL: " + skill + " IS: " + obj.skills[skill])
-	if(obj.skills[skill] !== undefined)
-		return obj.skills[skill]
-	console.log("NO SKILL: " + skill)
-	return null
+	if(obj.skills[skill] === undefined) {
+		console.log("NO SKILL: " + skill + " - adding it")
+		obj.skills[skill] = 0
+	}
+	return obj.skills[skill]
+}
+
+function critterSetRawSkill(obj, skill, amount) {
+	obj.skills[skill] = amount
+	console.log(skill + " changed to: " + obj.skills[skill])
 }

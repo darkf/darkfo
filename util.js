@@ -55,10 +55,25 @@ function getRandomInt(min, max) {
 function rollSkillCheck(skill, modifier, isBounded) {
 	var tempSkill = skill + modifier
 	if(isBounded === true) {
-		if(tempSkill < 0) tempSkill = 0
-		if(tempSkill > 95) tempSkill = 95
+		clamp(0,95,tempSkill)
 	}
 
 	var roll = getRandomInt(0,100)
 	return roll < tempSkill
+}
+
+function arrayRemove(array, value)
+{
+	var index = array.indexOf(value)
+	if(index !== -1)
+	{
+		array.splice(index,1)
+		return true
+	}
+	return false
+}
+
+function clamp(min, max, value)
+{
+	return Math.max(min,Math.min(max,value))
 }

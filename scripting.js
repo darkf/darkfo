@@ -51,9 +51,9 @@ var scriptingEngine = (function() {
 	}
 
 	var statMap = {
-		0: "STR", 1: "PER", 2: "END", 3: "CHR", 4: "INT",
+		0: "STR", 1: "PER", 2: "END", 3: "CHA", 4: "INT",
 		5: "AGI", 6: "LUK",
-		35: "HP", 7: "MaxHP"
+		35: "HP", 7: "Max HP"
 	}
 
 	function stub(name, args, type) {
