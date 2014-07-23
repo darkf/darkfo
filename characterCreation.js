@@ -158,7 +158,3 @@ function playerInit() {
 
     return obj
 }
-
-var testObj = {stats: {}}
-increaseStat(testObj, 'STR', 2, false, false, false)
-console.log(testObj.stats.STR + ' ' + (testObj.stats.STR === 7))
