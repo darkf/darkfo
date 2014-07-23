@@ -255,15 +255,8 @@ function useObject(obj, source, useScript) {
 		objectSingleAnim(obj, !obj.open)
 
 		if(objectIsContainer(obj) && obj.open === true) {
-			// show locker contents
-			var drawInv = function() {
-				drawInventory($("#inventory"), obj, function(selected) {
-					objectSwapItem(obj, selected, player, 1)
-					drawPlayerInventory()
-					drawInv()
-				})
-			}
-			drawInv()
+			// loot a container
+			uiLoot(obj)
 		}
 	}
 	else if(objectIsStairs(obj)) {

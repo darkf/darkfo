@@ -70,7 +70,7 @@ var combat = null // combat object
 var inCombat = false // are we currently in combat?
 var gameHasFocus = false // do we have input focus?
 var lastMousePickTime = 0 // time when we last checked what's under the mouse cursor
-var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2
+var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3
 var uiMode = UI_MODE_NONE
 
 var isLoading = true // are we currently loading a map?
@@ -706,14 +706,7 @@ heart.mousepressed = function(x, y, btn) {
 			}
 			else if(obj.dead === true) {
 				// loot a dead body
-				var drawInv = function() {
-					drawInventory($("#inventory"), obj, function(selected) {
-						objectSwapItem(obj, selected, player, 1)
-						drawPlayerInventory()
-						drawInv()
-					})
-				}
-				drawInv()
+				uiLoot(obj)
 			}
 			else console.log("Cannot talk to/loot that critter")
 		}
@@ -816,8 +809,7 @@ heart.keydown = function(k) {
 		if(obj !== undefined) {
 			console.log("PID: " + obj.pid)
 			console.log("inventory: " + JSON.stringify(obj.inventory))
-
-			drawInventory($("#inventory"), obj)
+			uiLoot(obj)
 		}
 	}
 
@@ -1127,53 +1119,59 @@ function dialogueEnd() { scriptingEngine.dialogueEnd() }
 </head>
 <body>
 <div id="game-container">
-  <canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
-  <div id="dialogueContainer">
-    <div id="dialogueBox">
-      <div id="dialogueBoxTextArea"></div>
-    </div>
-    <div id="barterBox">
-      <div id="barterBoxInventoryLeft"></div>
-      <div id="barterBoxInventoryRight"></div>
+	<canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
+	<div id="lootBox">
+		<div id="lootBoxLeft"></div>
+		<div id="lootBoxRight"></div>
 
-      <div id="barterBoxLeft"></div>
-      <div id="barterBoxRight"></div>
-      <div id="barterBoxLeftAmount"></div>
-      <div id="barterBoxRightAmount"></div>
+		<div id="lootBoxDoneButton"></div>
+	</div>
+	<div id="dialogueContainer">
+		<div id="dialogueBox">
+	  		<div id="dialogueBoxTextArea"></div>
+		</div>
+		<div id="barterBox">
+	  		<div id="barterBoxInventoryLeft"></div>
+	  		<div id="barterBoxInventoryRight"></div>
 
-      <div id="barterTalkButton"></div>
-      <div id="barterOfferButton"></div>
-    </div>
-  </div>
-  <div id="itemContextMenu"></div>
-  <div id="inventoryBox">
-    <div id="inventoryBoxList"></div>
-    <div id="inventoryDoneButton"></div>
-    <div id="inventoryBoxInfo"></div>
+	  		<div id="barterBoxLeft"></div>
+	  		<div id="barterBoxRight"></div>
+	  		<div id="barterBoxLeftAmount"></div>
+	  		<div id="barterBoxRightAmount"></div>
 
-    <!-- item1/item2/armor boxes -->
-    <div id="inventoryBoxItem1"></div>
-    <div id="inventoryBoxItem2"></div>
-    <div id="inventoryBoxArmor"></div>
-  </div>
-  <div id="bar">
-    <div id="attackButton"></div>
-    <div id="inventoryButton"></div>
-    <div id="chrButton"></div>
-    <div id="hpNumber">
-      <div id="hpDigit1" class="number"></div>
-      <div id="hpDigit2" class="number"></div>
-      <div id="hpDigit3" class="number"></div>
-      <div id="hpDigit4" class="number"></div>
-    </div>
+	  		<div id="barterTalkButton"></div>
+	  		<div id="barterOfferButton"></div>
+		</div>
+	</div>
+	<div id="itemContextMenu"></div>
+	<div id="inventoryBox">
+		<div id="inventoryBoxList"></div>
+		<div id="inventoryDoneButton"></div>
+		<div id="inventoryBoxInfo"></div>
 
-    <div id="acNumber">
-      <div id="acDigit1" class="number"></div>
-      <div id="acDigit2" class="number"></div>
-      <div id="acDigit3" class="number"></div>
-      <div id="acDigit4" class="number"></div>
-    </div>
-  </div>
+		<!-- item1/item2/armor boxes -->
+		<div id="inventoryBoxItem1"></div>
+		<div id="inventoryBoxItem2"></div>
+		<div id="inventoryBoxArmor"></div>
+	</div>
+	<div id="bar">
+		<div id="attackButton"></div>
+		<div id="inventoryButton"></div>
+		<div id="chrButton"></div>
+		<div id="hpNumber">
+			<div id="hpDigit1" class="number"></div>
+			<div id="hpDigit2" class="number"></div>
+			<div id="hpDigit3" class="number"></div>
+			<div id="hpDigit4" class="number"></div>
+		</div>
+
+		<div id="acNumber">
+			<div id="acDigit1" class="number"></div>
+			<div id="acDigit2" class="number"></div>
+			<div id="acDigit3" class="number"></div>
+			<div id="acDigit4" class="number"></div>
+		</div>
+	</div>
 </div>
 </body>
 </html>

@@ -24,6 +24,8 @@ function initUI() {
 		$("#inventoryBox").css("visibility", "hidden")
 	})
 
+	$("#lootBoxDoneButton").click(uiEndLoot)
+
 	function makeScrollable($el) {
 		$el.bind("mousewheel DOMMouseScroll", function(e) {
 			var delta = (e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) ? -1 : 1
@@ -37,6 +39,8 @@ function initUI() {
 	makeScrollable($("#barterBoxInventoryRight"))
 	makeScrollable($("#barterBoxLeft"))
 	makeScrollable($("#barterBoxRight"))
+	makeScrollable($("#lootBoxLeft"))
+	makeScrollable($("#lootBoxRight"))
 
 	drawHP(critterGetStat(player, "HP"))
 }
@@ -282,6 +286,10 @@ function uiGetAmount(item) {
 	}
 }
 
+function uiSwapItem(a, item, b, amount) {
+	objectSwapItem({inventory: a}, item, {inventory: b}, amount)
+}
+
 function uiEndBarterMode() {
 	$("#barterBox").animate({top: 480}, 1000, function() {
 		$("#barterBox").css("visibility", "hidden")
@@ -318,10 +326,6 @@ function uiBarterMode(merchant) {
 	// and our working barter tables
 	var playerBarterTable = []
 	var merchantBarterTable = []
-
-	function swapItem(a, item, b, amount) {
-		objectSwapItem({inventory: a}, item, {inventory: b}, amount)
-	}
 
 	function totalAmount(objects) {
 		var total = 0
@@ -414,8 +418,8 @@ function uiBarterMode(merchant) {
 		else if(to === from) // table -> same table
 			return
 		else if(obj.amount > 1)
-			swapItem(from, obj, to, uiGetAmount(obj))
-		else swapItem(from, obj, to)
+			uiSwapItem(from, obj, to, uiGetAmount(obj))
+		else uiSwapItem(from, obj, to)
 
 		redrawBarterInventory()
 	}
@@ -443,4 +447,69 @@ function uiBarterMode(merchant) {
 	}
 
 	redrawBarterInventory()
+}
+
+function uiEndLoot() {
+	ui = UI_MODE_NONE
+	$("#lootBox").css("visibility", "hidden")
+	$("#lootBoxLeft").off("drop dragenter dragover")
+	$("#lootBoxRight").off("drop dragenter dragover")
+}
+
+function uiLoot(object) {
+	uiMode = UI_MODE_LOOT
+
+	function uiLootMove(data, where) {
+		console.log("loot: move " + data + " to " + where)
+
+		var from = {"l": player.inventory,
+	                "r": object.inventory}[data[0]]
+
+		if(from === undefined) throw "uiLootMove: wrong data: " + data
+
+		var idx = parseInt(data.slice(1))
+		var obj = from[idx]
+		if(obj === undefined) throw "uiLootMove: obj not found in list (" + idx + ")"
+
+		var to = {"left": player.inventory,
+		          "right": object.inventory}[where]
+
+		if(to === undefined)
+			throw "uiLootMove: invalid location: " + where
+		else if(to === from) // object -> same location
+			return
+		else if(obj.amount > 1)
+			uiSwapItem(from, obj, to, uiGetAmount(obj))
+		else uiSwapItem(from, obj, to)
+
+		drawLoot()
+	}
+
+	function drawInventory($el, who, objects) {
+		$el.html("")
+
+		for(var i = 0; i < objects.length; i++) {
+			var inventoryImage = objects[i].invArt
+			var img = $("<img>").attr("src", inventoryImage+'.png').
+			          attr("width", 72).attr("height", 60) // 90x60 // 70x40
+			img.attr("title", objects[i].name)
+			$el.append(img).append("x" + objects[i].amount)
+			makeDraggable(img, who + i)
+		}
+	}
+
+	console.log("looting...")
+
+	$("#lootBox").css("visibility", "visible")
+
+	// loot drop targets
+	makeDropTarget($("#lootBoxLeft"), function(data) { uiLootMove(data, "left") })
+	makeDropTarget($("#lootBoxRight"), function(data) { uiLootMove(data, "right") })
+
+	function drawLoot() {
+		drawInventory($("#lootBoxLeft"), "l", player.inventory)
+		drawInventory($("#lootBoxRight"), "r", object.inventory)
+	}
+
+	drawLoot()
 }
