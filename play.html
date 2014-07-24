@@ -54,6 +54,7 @@ var showFloor = true // show floor tiles?
 var showRoof = true // show roof tiles?
 var showObjects = true // show objects?
 var showWalls = true // show walls?
+var showBoundingBox = true // show bounding boxes around objects?
 
 var doLoadScripts = true // should we load scripts?
 var doUpdateCritters = false // should we give critters heartbeats?
@@ -1120,8 +1121,17 @@ heart.draw = function() {
 	// draw objects and player
 	if(showObjects === true) {
 		for(var i = 0; i < gObjects.length; i++)
-			if(gObjects[i].visible !== false && (gObjects[i].type !== "wall" || showWalls))
+			if(gObjects[i].visible !== false && (gObjects[i].type !== "wall" || showWalls)) {
 				drawObject(gObjects[i])
+
+				if(showBoundingBox === true) {
+					var bbox = objectBoundingBox(gObjects[i])
+					if(bbox === null) continue
+					heart.graphics.setColor(255, 0, 0)
+					heart.graphics.rectangle("stroke", bbox.x - cameraX, bbox.y - cameraY,
+						                     bbox.w, bbox.h)
+				}
+			}
 	}
 
 	if(showRoof === true && roofMap !== null)
@@ -1140,6 +1150,7 @@ heart.draw = function() {
 
 	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
 	heart.graphics.print("mt: " + mouseTile.x + "," + mouseTile.y, 100, 15)
+	heart.graphics.print("m: " + mousePos[0] + ", " + mousePos[1], 175, 15)
 
 	for(var i = 0; i < floatMessages.length; i++) {
 		var bbox = objectBoundingBox(floatMessages[i].obj)
