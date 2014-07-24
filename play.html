@@ -901,6 +901,20 @@ function changeCursor(image) {
 	$("#cnv").css("cursor", image)
 }
 
+function objectTransparentAt(obj, position, bbox) {
+	var frame = obj.frame !== undefined ? obj.frame : 0
+	var sx = imageInfo[obj.art].frameOffsets[obj.orientation][frame].sx
+
+	// todo: use main canvas for this?
+	var canvas = $("<canvas>")[0]
+	var ctx = canvas.getContext("2d")
+
+	ctx.drawImage(images[obj.art].img, sx+position.x, position.y, 1, 1, 0, 0, 1, 1)
+	var pixelAlpha = ctx.getImageData(0, 0, 1, 1).data[3]
+
+	return (pixelAlpha === 0)
+}
+
 function getObjectUnderCursor(p) {
 	var mouse = heart.mouse.getPosition()
 	mouse = {x: mouse[0] + cameraX, y: mouse[1] + cameraY}
@@ -910,8 +924,11 @@ function getObjectUnderCursor(p) {
 		var bbox = objectBoundingBox(gObjects[i])
 		if(bbox === null) continue
 		if(pointInBoundingBox(mouse, bbox))
-			if(p === undefined || p(gObjects[i]) === true)
-				return gObjects[i]
+			if(p === undefined || p(gObjects[i]) === true) {
+				var mouseRel = {x: mouse.x - bbox.x, y: mouse.y - bbox.y}
+				if(!objectTransparentAt(gObjects[i], mouseRel, bbox))
+					return gObjects[i]
+			}
 	}
 
 	return null
