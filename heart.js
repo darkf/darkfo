@@ -233,7 +233,7 @@ heart._init = function() {
 	};
 
 	heart.canvas.onmousemove = function(e) {
-		heart.mouse._pos = {x: e.pageX, y: e.pageY};
+		heart.mouse._pos = {x: e.pageX - heart.canvas.offsetLeft, y: e.pageY - heart.canvas.offsetTop};
 		if(heart.mousemoved)
 			heart.mousemoved(e.pageX, e.pageY);
 	};
