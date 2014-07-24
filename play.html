@@ -33,6 +33,8 @@ var gObjects = []
 var gMap = null
 var currentElevation = 0 // current map elevation
 var hexOverlay = null
+var tempCanvas = null // temporary canvas used for detecting single pixels
+var tempCanvasCtx = null // and the context for it
 //var cursor = {x: 10, y: 10}
 
 // position of viewport camera (will be overriden by map starts or scripts)
@@ -54,7 +56,7 @@ var showFloor = true // show floor tiles?
 var showRoof = true // show roof tiles?
 var showObjects = true // show objects?
 var showWalls = true // show walls?
-var showBoundingBox = true // show bounding boxes around objects?
+var showBoundingBox = false // show bounding boxes around objects?
 
 var doLoadScripts = true // should we load scripts?
 var doUpdateCritters = false // should we give critters heartbeats?
@@ -653,13 +655,16 @@ heart.load = function() {
 	heart.attach("cnv")
 
 	loadMap(MAP_NAME) // load initial map
-  gObjects.push(player)
+	gObjects.push(player)
 
 	if(doCombat === true)
 		CriticalEffects.loadTable()
 
 	$("#cnv").mouseenter(function() { gameHasFocus = true }).
 	          mouseleave(function() { gameHasFocus = false })
+
+	tempCanvas = $("<canvas>")[0]
+	tempCanvasCtx = tempCanvas.getContext("2d")
 
 	drawPlayerInventory()
 }
@@ -905,12 +910,9 @@ function objectTransparentAt(obj, position, bbox) {
 	var frame = obj.frame !== undefined ? obj.frame : 0
 	var sx = imageInfo[obj.art].frameOffsets[obj.orientation][frame].sx
 
-	// todo: use main canvas for this?
-	var canvas = $("<canvas>")[0]
-	var ctx = canvas.getContext("2d")
-
-	ctx.drawImage(images[obj.art].img, sx+position.x, position.y, 1, 1, 0, 0, 1, 1)
-	var pixelAlpha = ctx.getImageData(0, 0, 1, 1).data[3]
+	tempCanvasCtx.clearRect(0, 0, 1, 1) // clear previous color
+	tempCanvasCtx.drawImage(images[obj.art].img, sx+position.x, position.y, 1, 1, 0, 0, 1, 1)
+	var pixelAlpha = tempCanvasCtx.getImageData(0, 0, 1, 1).data[3]
 
 	return (pixelAlpha === 0)
 }
