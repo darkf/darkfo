@@ -454,6 +454,7 @@ function uiEndLoot() {
 	$("#lootBox").css("visibility", "hidden")
 	$("#lootBoxLeft").off("drop dragenter dragover")
 	$("#lootBoxRight").off("drop dragenter dragover")
+	$("#lootBoxTakeAllButton").off("click")
 }
 
 function uiLoot(object) {
@@ -505,6 +506,14 @@ function uiLoot(object) {
 	// loot drop targets
 	makeDropTarget($("#lootBoxLeft"), function(data) { uiLootMove(data, "left") })
 	makeDropTarget($("#lootBoxRight"), function(data) { uiLootMove(data, "right") })
+
+	$("#lootBoxTakeAllButton").click(function() {
+		console.log("take all...")
+		var inv = object.inventory.slice(0) // clone inventory
+		for(var i = 0; i < inv.length; i++)
+			uiSwapItem(object.inventory, inv[i], player.inventory, inv[i].amount)
+		drawLoot()
+	})
 
 	function drawLoot() {
 		drawInventory($("#lootBoxLeft"), "l", player.inventory)

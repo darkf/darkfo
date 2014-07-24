@@ -281,6 +281,7 @@ left: 472; top: 75;
   position: absolute;
   left: 180; top: 40;
   width: 64; height: 290;
+  overflow: hidden;
 }
 
 /* right loot inventory */
@@ -288,6 +289,7 @@ left: 472; top: 75;
   position: absolute;
   left: 300; top: 40;
   width: 64; height: 290;
+  overflow: hidden;
 }
 
 #lootBoxDoneButton {
@@ -299,3 +301,13 @@ left: 472; top: 75;
 
 #lootBoxDoneButton:hover { cursor: pointer; }
 #lootBoxDoneButton:active { background-image: url("art/intrface/menudown.png"); }
+
+#lootBoxTakeAllButton {
+  position: absolute;
+  left: 430; top: 205;
+  width: 39; height: 41;
+  background-image: url("art/intrface/invmaup.png");
+}
+
+#lootBoxTakeAllButton:hover { cursor: pointer; }
+#lootBoxTakeAllButton:active { background-image: url("art/intrface/invmadn.png"); }
