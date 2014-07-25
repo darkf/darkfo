@@ -522,3 +522,7 @@ function uiLoot(object) {
 
 	drawLoot()
 }
+
+function uiLog(msg) {
+	$("#displayLog").append(msg + "<br>")
+}

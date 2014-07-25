@@ -19,6 +19,15 @@ body {
   background-image: url("art/intrface/iface.png");
 }
 
+#displayLog {
+    position: absolute;
+    left: 26; top: 30;
+    width: 158; height: 54;
+    color: #00FF00;
+    font-size: 8pt;
+    overflow: auto;
+}
+
 #attackButton {
   position: absolute;
   left: 265; top: 26;

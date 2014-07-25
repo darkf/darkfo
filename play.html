@@ -669,6 +669,7 @@ heart.load = function() {
 	tempCanvasCtx = tempCanvas.getContext("2d")
 
 	initUI()
+	uiLog("Welcome to DarkFO")
 }
 
 function isSelectableObject(obj) {
@@ -1186,9 +1187,12 @@ function dialogueEnd() { scriptingEngine.dialogueEnd() }
 		<div id="inventoryBoxArmor"></div>
 	</div>
 	<div id="bar">
+		<div id="displayLog"></div>
+
 		<div id="attackButton"></div>
 		<div id="inventoryButton"></div>
 		<div id="chrButton"></div>
+
 		<div id="hpNumber">
 			<div id="hpDigit1" class="number"></div>
 			<div id="hpDigit2" class="number"></div>
