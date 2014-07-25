@@ -11,8 +11,10 @@ body {
 
 #bar {
   position: absolute;
-  left: 80; bottom: 0;
+  left: 80; /* (canvas width - 640) / 2 */
+  bottom: 0;
   width: 640;
+  transform: scaleX(1.25); /* (canvas width) / 640 */
   height: 99;
   background-image: url("art/intrface/iface.png");
 }
