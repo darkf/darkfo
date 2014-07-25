@@ -657,7 +657,7 @@ var scriptingEngine = (function() {
 			if(!this.self_obj) throw "no self_obj for start_gdialog"
 			currentDialogueObject = this.self_obj
 
-		    uiStartDialogue()
+		    uiStartDialogue(false, this.self_obj)
 			//stub("start_gdialog", arguments)
 		},
 		gsay_start: function() { stub("gSay_Start", arguments) },

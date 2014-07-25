@@ -252,11 +252,24 @@ function drawPlayerInventory() {
 	})
 }
 
-function uiStartDialogue(force) {
-	if(uiMode === UI_MODE_BARTER && force !== true) return
+function uiStartDialogue(force, target) {
+	if(uiMode === UI_MODE_BARTER && force !== true)
+		return
+
 	uiMode = UI_MODE_DIALOGUE
 	$("#dialogueContainer").css("visibility", "visible")
 	$("#dialogueBox").css("visibility", "visible").css("top", 480).animate({top: 290}, 1000)
+
+	// center around the dialogue target
+	var bbox = objectBoundingBox(target)
+	if(bbox !== null) {
+		var dc = $("#dialogueContainer")
+		// alternatively: dc.offset().left - $(heart.canvas).offset().left
+		var dx = dc.width() / 2 + dc[0].offsetLeft
+		var dy = dc.height() / 4 + dc[0].offsetTop - (bbox.h / 2)
+		cameraX = bbox.x - dx
+		cameraY = bbox.y - dy
+	}
 }
 
 function uiEndDialogue() {
