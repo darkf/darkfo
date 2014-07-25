@@ -260,15 +260,17 @@ function uiEndDialogue() {
 	uiMode = UI_MODE_NONE
 	$("#dialogueContainer").css("visibility", "hidden")
 	$("#dialogueBox").css("visibility", "hidden")
+	$("#dialogueBoxReply").html("")
 }
 
 function uiSetDialogueReply(reply) {
-	$("#dialogueBoxTextArea").html(reply + "<br><br>")
+	$("#dialogueBoxReply").html(reply)
+	$("#dialogueBoxTextArea").html("")
 }
 
 function uiAddDialogueOption(msg, optionID) {
 	$("#dialogueBoxTextArea").append(
-		"<a href=\"javascript:dialogueReply(" + optionID + ")\">" + msg + "</a><br>")
+		"<li><a href=\"javascript:dialogueReply(" + optionID + ")\">" + msg + "</a></li>")
 }
 
 function uiGetAmount(item) {

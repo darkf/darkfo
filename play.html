@@ -22,7 +22,7 @@
 <script>
 "use strict";
 
-var MAP_NAME = "ENCFITE" // name of the current map
+var MAP_NAME = "gecksetl" // name of the current map
 var DEBUG = false // debug mode
 
 var gMapScript = null
@@ -655,6 +655,8 @@ function loadMapID(mapID, startingPosition, startingElevation) {
 
 heart.load = function() {
 	heart.attach("cnv")
+	
+	uiLog("Welcome to DarkFO")
 
 	loadMap(MAP_NAME) // load initial map
 	gObjects.push(player)
@@ -669,7 +671,6 @@ heart.load = function() {
 	tempCanvasCtx = tempCanvas.getContext("2d")
 
 	initUI()
-	uiLog("Welcome to DarkFO")
 }
 
 function isSelectableObject(obj) {
@@ -1159,6 +1160,7 @@ function dialogueEnd() { scriptingEngine.dialogueEnd() }
 		<div id="lootBoxTakeAllButton"></div>
 	</div>
 	<div id="dialogueContainer">
+  		<div id="dialogueBoxReply"></div>
 		<div id="dialogueBox">
 	  		<div id="dialogueBoxTextArea"></div>
 		</div>

@@ -181,12 +181,22 @@ left: 472; top: 75;
   background-image: url("art/intrface/di_talk.png");
 }
 
+#dialogueBoxReply {
+  position: absolute;
+  left: 138; top: 232;
+  width: 375; height: 47;
+  color: #00FF00;
+  font-size: .75em;
+  overflow: auto;
+}
+
 #dialogueBoxTextArea {
   position: absolute;
   left: 130; top: 50;
   width: 390; height: 112;
   color: #00FF00;
-  font-size: .8em;
+  font-size: .75em;
+  overflow: auto;
 }
 
 #dialogueBoxTextArea a {
