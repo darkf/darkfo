@@ -655,7 +655,7 @@ function loadMapID(mapID, startingPosition, startingElevation) {
 
 heart.load = function() {
 	heart.attach("cnv")
-	
+
 	uiLog("Welcome to DarkFO")
 
 	loadMap(MAP_NAME) // load initial map
@@ -899,6 +899,8 @@ heart.update = function() {
 		if(loadingAssetsLoaded === loadingAssetsTotal) isLoading = false
 		else return
 	}
+	if(uiMode !== UI_MODE_NONE)
+		return
 	var time = heart.timer.getTime()
 
 	if(gameHasFocus) {
