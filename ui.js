@@ -19,8 +19,9 @@ function initUI() {
 	makeDropTarget($("#inventoryBoxItem1"), function(data) { uiMoveSlot(data, "leftHand") })
 	makeDropTarget($("#inventoryBoxItem2"), function(data) { uiMoveSlot(data, "rightHand") })
 
-	$("#inventoryButton").click(drawInventoryScreen)
+	$("#inventoryButton").click(uiInventoryScreen)
 	$("#inventoryDoneButton").click(function() {
+		uiMode = UI_MODE_NONE
 		$("#inventoryBox").css("visibility", "hidden")
 	})
 
@@ -77,7 +78,7 @@ function uiMoveSlot(data, target) {
 		player[target] = obj // move the object over
 	}
 
-	drawInventoryScreen()
+	uiInventoryScreen()
 }
 
 function makeDropTarget($el, dropCallback) {
@@ -102,7 +103,9 @@ function makeDraggable($el, data, endCallback) {
 	})
 }
 
-function drawInventoryScreen() {
+function uiInventoryScreen() {
+	uiMode = UI_MODE_INVENTORY
+
 	$("#inventoryBox").css("visibility", "visible")
 	drawInventory($("#inventoryBoxList"), player.inventory, function(obj, e) {
 		makeItemContextMenu(e, obj, "inventory")
@@ -123,7 +126,7 @@ function drawInventoryScreen() {
 					img.click(function(e) { clickCallback(invObj, e) })
 				})(objects[i])
 			$el.append(img).append("x" + objects[i].amount)
-			makeDraggable(img, "i" + i, function() { drawInventoryScreen() })
+			makeDraggable(img, "i" + i, function() { uiInventoryScreen() })
 		}
 	}
 
@@ -145,7 +148,7 @@ function drawInventoryScreen() {
 				}
 
 			    dropObject(player, obj)
-			    drawInventoryScreen()
+			    uiInventoryScreen()
 			    break
 		}
 	}
