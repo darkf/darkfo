@@ -4,11 +4,14 @@ body {
 
 #game-container {
   position: relative;
+  width: 800;
+  height: 699; /* 600 + 99 (size of bar) */
+  background-color: black;
 }
 
 #bar {
   position: absolute;
-  left: 4.5%; bottom: -99;
+  left: 80; bottom: 0;
   width: 640;
   height: 99;
   background-image: url("art/intrface/iface.png");
