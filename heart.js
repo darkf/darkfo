@@ -27,7 +27,8 @@ var heart = { _lastTick: new Date().getTime(), /* time of the last tick */
 			  _bg: {r: 127, g: 127, b: 127}, /* background color */
 			  _size: {w: 800, h: 600}, /* size of viewport */
 			  _imagesLoading: [], /* for synchronous image loading */
-			  _keysDown: {} /* which keys are down (char -> bool) */
+			  _keysDown: {}, /* which keys are down (char -> bool) */
+			  _canvasOffset: {x: 0, y: 0} /* offset of the canvas relative to the document */
 			};
 
 heart.HeartImage = function(img) {
@@ -217,6 +218,10 @@ heart._init = function() {
 	if(heart.canvas === undefined || heart.ctx === undefined)
 		alert("no canvas");
 
+	var rect = heart.canvas.getBoundingClientRect()
+	heart._canvasOffset.x = rect.left
+	heart._canvasOffset.y = rect.top
+
 	/* register for mouse-related events (pertaining to the canvas) */
 	heart.canvas.onmousedown = function(e) {
 		var btn = heart._mouseButtonName(e.which);
@@ -233,7 +238,7 @@ heart._init = function() {
 	};
 
 	heart.canvas.onmousemove = function(e) {
-		heart.mouse._pos = {x: e.pageX - heart.canvas.offsetLeft, y: e.pageY - heart.canvas.offsetTop};
+		heart.mouse._pos = {x: e.pageX - heart._canvasOffset.x, y: e.pageY - heart._canvasOffset.y};
 		if(heart.mousemoved)
 			heart.mousemoved(e.pageX, e.pageY);
 	};
