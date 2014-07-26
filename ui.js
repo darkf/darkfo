@@ -37,6 +37,18 @@ function initUI() {
 		}
 	})
 
+	$("#endTurnButton").click(function() {
+		if(inCombat === true && combat.inPlayerTurn === true) {
+			console.log("[TURN]")
+			combat.nextTurn()
+		}
+	})
+
+	$("#endCombatButton").click(function() {
+		if(inCombat === true)
+			combat.end()
+	})
+
 	function makeScrollable($el) {
 		$el.bind("mousewheel DOMMouseScroll", function(e) {
 			var delta = (e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) ? -1 : 1
@@ -55,6 +67,20 @@ function initUI() {
 
 	drawHP(critterGetStat(player, "HP"))
 	uiDrawWeapon()
+}
+
+function uiStartCombat() {
+	// TODO: animate end container
+
+	$("#endTurnButton").css("visibility", "visible")
+	$("#endCombatButton").css("visibility", "visible")
+}
+
+function uiEndCombat() {
+	// TODO: animate end container
+
+	$("#endTurnButton").css("visibility", "hidden")
+	$("#endCombatButton").css("visibility", "hidden")
 }
 
 function uiDrawWeapon() {

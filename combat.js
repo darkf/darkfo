@@ -102,6 +102,9 @@ var Combat = function(objects, player) {
 	this.turnNum = 1
 	this.whoseTurn = this.playerIdx - 1
 	this.inPlayerTurn = true
+
+	// TODO: Combat.start()?
+	uiStartCombat()
 }
 
 Combat.prototype.log = function(msg) {
@@ -320,9 +323,13 @@ Combat.prototype.doAITurn = function(obj, idx) {
 }
 
 Combat.prototype.end = function() {
+	// TODO: check number of active combatants to see if we can end
+
 	console.log("[end combat]")
 	combat = null // todo: invert control
 	inCombat = false
+
+	uiEndCombat()
 }
 
 Combat.prototype.forceTurn = function(obj) {

@@ -29,6 +29,39 @@ body {
   background-image: url("art/intrface/iface.png");
 }
 
+#endContainer {
+    position: absolute;
+    /*left: 578; top: 36;*/
+    bottom: 2; right: 2;
+    width: 57; height: 58;
+    background-image: url("art/intrface/endanim.png");
+    /*background-position: -228px;*/
+}
+
+#endTurnButton {
+    position: absolute;
+    top: 5; left: 9;
+    width: 38; height: 22;
+    visibility: hidden;
+    background-image: url("art/intrface/endturnu.png");
+}
+
+#endTurnButton:active {
+    background-image: url("art/intrface/endturnd.png");
+}
+
+#endCombatButton {
+    position: absolute;
+    top: 27; left: 9;
+    width: 38; height: 22;
+    visibility: hidden;
+    background-image: url("art/intrface/endcmbtu.png");
+}
+
+#endCombatButton:active {
+    background-image: url("art/intrface/endcmbtd.png");
+}
+
 #displayLog {
     position: absolute;
     left: 26; top: 30;
