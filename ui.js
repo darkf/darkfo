@@ -49,6 +49,9 @@ function initUI() {
 			combat.end()
 	})
 
+	$("#endContainer").bind("animationiteration", uiEndCombatAnimationDone)
+	$("#endContainer").bind("webkitAnimationIteration", uiEndCombatAnimationDone)
+
 	function makeScrollable($el) {
 		$el.bind("mousewheel DOMMouseScroll", function(e) {
 			var delta = (e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) ? -1 : 1
@@ -70,17 +73,27 @@ function initUI() {
 }
 
 function uiStartCombat() {
-	// TODO: animate end container
-
-	$("#endTurnButton").css("visibility", "visible")
-	$("#endCombatButton").css("visibility", "visible")
+	// play end container animation
+	$("#endContainer").css({animationPlayState: "running", webkitAnimationPlayState: "running"})
 }
 
 function uiEndCombat() {
-	// TODO: animate end container
+	// play end container animation
+	$("#endContainer").css({animationPlayState: "running", webkitAnimationPlayState: "running"})
 
+	// disable buttons
 	$("#endTurnButton").css("visibility", "hidden")
 	$("#endCombatButton").css("visibility", "hidden")
+}
+
+function uiEndCombatAnimationDone() {
+	$(this).css({animationPlayState: "paused", webkitAnimationPlayState: "paused"})
+
+	if(inCombat === true) {
+		// enable buttons
+		$("#endTurnButton").css("visibility", "visible")
+		$("#endCombatButton").css("visibility", "visible")
+	}
 }
 
 function uiDrawWeapon() {

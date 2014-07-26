@@ -36,11 +36,35 @@ body {
     width: 57; height: 58;
     background-image: url("art/intrface/endanim.png");
     /*background-position: -228px;*/
+
+    /* animation for the end turn/combat button */
+    /* 1 second long, 5 frames, alternates forward/reverse */
+    animation: endAnimation 1s steps(5) infinite;
+    animation-fill-mode: forwards;
+    animation-direction: alternate;
+
+    /* vendor prefixes because the Web sucks */
+    -webkit-animation: endAnimation 1s steps(5) infinite;
+    -webkit-animation-fill-mode: forwards;
+    -webkit-animation-direction: alternate;
+
+    animation-play-state: paused;
+    -webkit-animation-play-state: paused;
+}
+
+@keyframes endAnimation {
+   from { background-position: 0px; }
+     to { background-position: -285px; }
+}
+
+@-webkit-keyframes endAnimation {
+   from { background-position: 0px; }
+     to { background-position: -285px; }
 }
 
 #endTurnButton {
     position: absolute;
-    top: 5; left: 9;
+    top: 5; left: 10;
     width: 38; height: 22;
     visibility: hidden;
     background-image: url("art/intrface/endturnu.png");
@@ -52,7 +76,7 @@ body {
 
 #endCombatButton {
     position: absolute;
-    top: 27; left: 9;
+    top: 27; left: 10;
     width: 38; height: 22;
     visibility: hidden;
     background-image: url("art/intrface/endcmbtu.png");
