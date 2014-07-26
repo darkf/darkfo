@@ -59,6 +59,13 @@ function uiDrawWeapon() {
 			         left: $("#attackButton").width() / 2 - this.width / 2,
 			         maxHeight: $("#attackButton").height() - 10}).attr("draggable", "false")
 	}).attr("src", weapon.invArt + ".png")
+
+	// draw weapon AP
+	var CHAR_W = 10
+	var digit = weapon.weapon.getAPCost(1)
+	if(digit === undefined || digit > 9)
+		return // TODO: Weapon AP >9?
+	$("#attackButtonAPDigit").css("background-position", 0 - CHAR_W*digit)
 }
 
 function uiMoveSlot(data, target) {

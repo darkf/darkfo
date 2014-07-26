@@ -86,6 +86,13 @@ Weapon.prototype.getMaximumRange = function(attackType) {
 	else throw "invalid attack type " + attackType
 }
 
+Weapon.prototype.getAPCost = function(attackMode) {
+	if(this.type === "punch")
+		return 4 // TODO: is punch AP constant?
+
+	return this.weapon.pro.extra["APCost" + attackMode]
+}
+
 Weapon.prototype.getSkin = function() {
 	if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
 		return null
