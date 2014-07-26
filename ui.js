@@ -51,14 +51,16 @@ function uiDrawWeapon() {
 	if(weapon === null)
 		return
 
-	$("#attackButtonWeapon").off("load")
-	var $img = $("#attackButtonWeapon").load(function() {
-		if(!this.complete) return
-		$(this).css({position: "absolute",
-			         top: 5,
-			         left: $("#attackButton").width() / 2 - this.width / 2,
-			         maxHeight: $("#attackButton").height() - 10}).attr("draggable", "false")
-	}).attr("src", weapon.invArt + ".png")
+	if(weapon.type !== "melee") {
+		$("#attackButtonWeapon").off("load")
+		var $img = $("#attackButtonWeapon").load(function() {
+			if(!this.complete) return
+			$(this).css({position: "absolute",
+				         top: 5,
+				         left: $("#attackButton").width() / 2 - this.width / 2,
+				         maxHeight: $("#attackButton").height() - 10}).attr("draggable", "false")
+		}).attr("src", weapon.invArt + ".png")
+	}
 
 	// draw weapon AP
 	var CHAR_W = 10
@@ -66,6 +68,11 @@ function uiDrawWeapon() {
 	if(digit === undefined || digit > 9)
 		return // TODO: Weapon AP >9?
 	$("#attackButtonAPDigit").css("background-position", 0 - CHAR_W*digit)
+
+	// draw weapon type (single, burst, called, punch, ...)
+	// TODO: all melee weapons
+	var type = {"melee": "punch", "gun": "single"}[weapon.weapon.type]
+	$("#attackButtonType").attr("src", "art/intrface/" + type + ".png")
 }
 
 function uiMoveSlot(data, target) {

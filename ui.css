@@ -60,6 +60,12 @@ body {
     background-image: url("art/intrface/mvenum.png");
 }
 
+#attackButtonType {
+    position: absolute;
+    top: 5; right: 5;
+    width: 64; height: 12;
+}
+
 #attackButtonWeapon {
 }
 
@@ -79,7 +85,6 @@ body {
 #attackButtonContainer:active #attackButton {
   background-image: url("art/intrface/sattkbdn.png");
 }
-
 
 #inventoryButton {
   position: absolute;
