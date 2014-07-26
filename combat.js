@@ -348,7 +348,7 @@ Combat.prototype.nextTurn = function() {
 			numActive++
 	}
 
-	if(numActive === 0 && this.turnNum != 0)
+	if(numActive === 0 && this.turnNum != 1)
 		return this.end()
 
 	this.turnNum++
