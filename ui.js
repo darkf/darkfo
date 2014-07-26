@@ -4,14 +4,10 @@
 
 // TODO: reduce code duplication, circular references,
 //       and general badness/unmaintainability.
-// TODO: console UI on main bar
 // TODO: combat UI on main bar
 // TODO: stats/info view in inventory screen
 // TODO: fix inventory image size
 // TODO: fix style for inventory image amount
-// TODO: use the grid area for replies on dialogue screen
-// TODO: center the camera around the target while on the dialogue screen
-// TODO: loot UI
 // TODO: option for scaling the UI
 
 function initUI() {
@@ -23,6 +19,7 @@ function initUI() {
 	$("#inventoryDoneButton").click(function() {
 		uiMode = UI_MODE_NONE
 		$("#inventoryBox").css("visibility", "hidden")
+		uiDrawWeapon()
 	})
 
 	$("#lootBoxDoneButton").click(uiEndLoot)
@@ -44,6 +41,24 @@ function initUI() {
 	makeScrollable($("#lootBoxRight"))
 
 	drawHP(critterGetStat(player, "HP"))
+	uiDrawWeapon()
+}
+
+function uiDrawWeapon() {
+	// draw the active weapon in the interface bar
+	var weapon = critterGetEquippedWeapon(player)
+	$("#attackButton").html("")
+	if(weapon === null)
+		return
+
+	var $img = $("<img>").load(function() {
+		if(!this.complete) return
+		$(this).css({position: "absolute",
+			         top: 5,
+			         left: $("#attackButton").width() / 2 - this.width / 2,
+			         maxHeight: $("#attackButton").height() - 10})
+		$("#attackButton").append(this)
+	}).attr("src", weapon.invArt + ".png")
 }
 
 function uiMoveSlot(data, target) {
