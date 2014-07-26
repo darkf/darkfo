@@ -56,7 +56,7 @@ function uiDrawWeapon() {
 		$(this).css({position: "absolute",
 			         top: 5,
 			         left: $("#attackButton").width() / 2 - this.width / 2,
-			         maxHeight: $("#attackButton").height() - 10})
+			         maxHeight: $("#attackButton").height() - 10}).attr("draggable", "false")
 		$("#attackButton").append(this)
 	}).attr("src", weapon.invArt + ".png")
 }
