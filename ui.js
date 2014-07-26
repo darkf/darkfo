@@ -24,6 +24,19 @@ function initUI() {
 
 	$("#lootBoxDoneButton").click(uiEndLoot)
 
+	$("#attackButtonContainer").click(function() {
+		if(!doCombat) return
+		if(inCombat === true) {
+			// TODO: targeting reticle for attacks
+		}
+		else {
+			// begin combat
+			inCombat = true
+			combat = new Combat(gObjects, player)
+			combat.nextTurn()
+		}
+	})
+
 	function makeScrollable($el) {
 		$el.bind("mousewheel DOMMouseScroll", function(e) {
 			var delta = (e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) ? -1 : 1
