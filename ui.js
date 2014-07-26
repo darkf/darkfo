@@ -549,7 +549,8 @@ function uiBarterMode(merchant) {
 }
 
 function uiEndLoot() {
-	ui = UI_MODE_NONE
+	uiMode = UI_MODE_NONE
+	
 	$("#lootBox").css("visibility", "hidden")
 	$("#lootBoxLeft").off("drop dragenter dragover")
 	$("#lootBoxRight").off("drop dragenter dragover")

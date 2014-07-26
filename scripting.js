@@ -15,7 +15,7 @@ var scriptingEngine = (function() {
 	}
 	var globalVars = {
 		0: 50, // GVAR_PLAYER_REPUTATION
-		10: 1, // GVAR_START_ARROYO_TRIAL (1 = TRIAL_FIGHT)
+		//10: 1, // GVAR_START_ARROYO_TRIAL (1 = TRIAL_FIGHT)
 		531: 1, // GVAR_TALKED_TO_ELDER
 		452: 2, // GVAR_DEN_VIC_KNOWN
 		88: 0, // GVAR_VAULT_RAIDERS
