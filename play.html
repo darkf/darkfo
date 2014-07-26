@@ -452,6 +452,8 @@ function changeElevation(level, updateScripts) {
 	roofMap  = gMap.levels[level]["tiles"]["roof"]
 	gObjects = gMap.levels[level]["objects"]
 
+	gObjects.push(player)
+
 	if(updateScripts !== false) {
 		loadObjectScripts(gObjects)
 		scriptingEngine.enterMap(gMapScript, gObjects, currentElevation, gMap.mapID, false) // ?
@@ -575,6 +577,9 @@ function loadMap(mapName, startingPosition, startingElevation) {
 	player.frame = 0
 	player.anim = "idle"
 
+	if(doUseWeaponModel)
+		player.art = critterGetAnim(player, "idle")
+
 	console.log("loading map " + mapName)
 
 	var mapImages = getFileJSON("maps/" + mapName + ".images.json")
@@ -660,7 +665,6 @@ heart.load = function() {
 	uiLog("Welcome to DarkFO")
 
 	loadMap(MAP_NAME) // load initial map
-	gObjects.push(player)
 
 	if(doCombat === true)
 		CriticalEffects.loadTable()
