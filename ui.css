@@ -38,17 +38,35 @@ body {
     overflow: auto;
 }
 
+#attackButtonContainer {
+    position: absolute;
+    left: 265; top: 26;
+    width: 188;
+    height: 67;
+}
+
+/*mvepnt.png*/
+
+#attackButtonWeapon {
+}
+
+#attackButtonContainer:active #attackButtonWeapon {
+    /* move weapon image up */
+    transform: translateY(-2px);
+}
+
 #attackButton {
   position: absolute;
-  left: 265; top: 26;
+  left: 0; top: 0;
   width: 188;
   height: 67;
   background-image: url("art/intrface/sattkbup.png");
 }
 
-#attackButton:active {
+#attackButtonContainer:active #attackButton {
   background-image: url("art/intrface/sattkbdn.png");
 }
+
 
 #inventoryButton {
   position: absolute;

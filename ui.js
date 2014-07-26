@@ -51,13 +51,13 @@ function uiDrawWeapon() {
 	if(weapon === null)
 		return
 
-	var $img = $("<img>").load(function() {
+	$("#attackButtonWeapon").off("load")
+	var $img = $("#attackButtonWeapon").load(function() {
 		if(!this.complete) return
 		$(this).css({position: "absolute",
 			         top: 5,
 			         left: $("#attackButton").width() / 2 - this.width / 2,
 			         maxHeight: $("#attackButton").height() - 10}).attr("draggable", "false")
-		$("#attackButton").append(this)
 	}).attr("src", weapon.invArt + ".png")
 }
 
