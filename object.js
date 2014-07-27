@@ -96,7 +96,8 @@ function objectIsContainer(obj) {
 function objectIsWeapon(obj) {
 	if(obj === undefined || obj === null)
 		return false
-	return obj.type === "item" && obj.pro.extra.subType === 3 // weapon subtype
+	//return obj.type === "item" && obj.pro.extra.subType === 3 // weapon subtype
+	return obj.weapon !== undefined
 }
 
 function objectFindItemIndex(obj, item) {

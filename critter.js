@@ -29,6 +29,10 @@ var damageType = {'normal': 0, 'laser': 1, 'fire': 2, 'plasma': 3,
 				  'electrical': 4, 'emp': 5, 'explosive': 6,
 				  0:'normal', 1: 'laser', 2: 'fire', 3: 'plasma',
 				  4: 'electrical', 5: 'emp', 6: 'explosive'}
+
+var weaponSkillMap = {'uzi': 'Small Guns',
+                      'rifle': 'Small Guns',
+	                  'spear': 'Melee Weapons'}
 			
 function parseAttack(weapon) {
 	var attackModes = weapon.pro.extra['attackMode']
@@ -71,8 +75,7 @@ var Weapon = function(weapon) {
 		this.attackOne = attacks.first
 		this.attackTwo = attacks.second
 
-		this.weaponSkillType = {'uzi': 'Small Guns',
-	                            'spear': 'Melee Weapons'}[this.name]
+		this.weaponSkillType = weaponSkillMap[this.name]
 		if(this.weaponSkillType === undefined)
 			console.log("unknown weapon type for " + this.name)
 	}
@@ -532,7 +535,7 @@ function critterGetRawStat(obj, stat) {
 
 function critterSetRawStat(obj, stat, amount) {
 	obj.stats[stat] = amount
-	console.log(stat + " changed to: " + obj.stats[stat])
+	//console.log(stat + " changed to: " + obj.stats[stat])
 }
 
 function critterGetSkill(obj, skill) {
@@ -544,7 +547,7 @@ function critterGetSkill(obj, skill) {
 }
 
 function critterGetRawSkill(obj, skill) {
-	console.log("SKILL: " + skill + " IS: " + obj.skills[skill])
+	//console.log("SKILL: " + skill + " IS: " + obj.skills[skill])
 	if(obj.skills[skill] === undefined) {
 		console.log("NO SKILL: " + skill + " - adding it")
 		obj.skills[skill] = 0

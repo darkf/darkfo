@@ -260,15 +260,17 @@ Combat.prototype.doAITurn = function(obj, idx) {
 
 	// behaviors
 
-	if(critterGetStat(obj,'HP') <= obj.ai.info.min_hp) { // hp <= min fleeing hp, so flee
+	if(critterGetStat(obj, "HP") <= obj.ai.info.min_hp) { // hp <= min fleeing hp, so flee
 		this.log("[AI FLEES]")
 		// todo: pick the closest edge of the map
 		this.maybeTaunt(obj, "run", messageRoll)
 		var targetPos = {x: 128, y: obj.position.y} // left edge
-		this.walkUpTo(obj, idx, targetPos, AP, function() {
+		if(this.walkUpTo(obj, idx, targetPos, AP, function() {
 			critterStopWalking(obj)
 			that.doAITurn(obj, idx) // if we can, do another turn
-		})
+		}) === false)
+			return this.nextTurn() // not a valid path, just move on
+		
 		return
 	}
 
