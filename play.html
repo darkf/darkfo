@@ -77,6 +77,8 @@ var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3
     UI_MODE_INVENTORY = 4
 var uiMode = UI_MODE_NONE
 
+var mapAreas = null
+
 var isLoading = true // are we currently loading a map?
 var loadingAssetsLoaded = 0 // how many images we've loaded
 var loadingAssetsTotal = 0 // out of this total
@@ -141,6 +143,74 @@ var player = playerInit()
           	  ]}*/
 
 function repr(obj) { return JSON.stringify(obj, null, 2) }
+
+function loadAreas() {
+	var areas = parseIni(getFileText("data/data/CITY.TXT"))
+	var out = {}
+	console.log("areas: " + areas)
+
+	function lookupArtIdx(idx) {
+		return "art/intrface/" + getLstId("art/intrface/intrface", idx).split('.')[0]
+	}
+
+	for(var _area in areas) {
+		var area = areas[_area]
+		var areaID = _area.match(/Area (\d+)/)
+		if(areaID === null) throw "CITY.TXT: invalid area name: " + area.area_name
+		areaID = parseInt(areaID[1])
+
+		var newArea = {name: area.area_name,
+			           id: areaID}
+
+	    // map/label art
+		var mapArtIdx = parseInt(area.townmap_art_idx)
+		var labelArtIdx = parseInt(area.townmap_label_art_idx)
+
+		//console.log(mapArtIdx + " - " + labelArtIdx)
+
+		if(mapArtIdx !== -1)
+			newArea.mapArt = lookupArtIdx(mapArtIdx)
+		if(labelArtIdx !== -1)
+			newArea.labelArt = lookupArtIdx(labelArtIdx)
+
+		// entrances
+		newArea.entrances = []
+		for(var _key in area) {
+			// entrance_N
+			// e.g.: entrance_0=On,345,230,Destroyed Arroyo Bridge,-1,26719,0
+
+			var s = _key.split("_")
+			if(s[0] === "entrance") {
+				var entranceString = area[_key]
+				s = entranceString.split(",")
+
+				var entrance = {
+					startState: s[0],
+					x: parseInt(s[1]),
+					y: parseInt(s[2]),
+					mapLookupName: s[3],
+					elevation: parseInt(s[4]),
+					tileNum: parseInt(s[5]),
+					orientation: parseInt(s[6])
+				}
+				newArea.entrances.push(entrance)
+			}
+		}
+
+		out[areaID] = newArea
+	}
+
+	return out
+}
+
+function allAreas() {
+	if(mapAreas === null)
+		mapAreas = loadAreas()
+	var areas = []
+	for(var area in mapAreas)
+		areas.push(mapAreas[area].name)
+	return areas
+}
 
 function loadMessage(name) {
 	var msg = getFileText("data/text/english/game/" + name + ".msg")
