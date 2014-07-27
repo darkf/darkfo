@@ -622,14 +622,6 @@ function loadMap(mapName, startingPosition, startingElevation) {
 	load("art/critters/hmjmpsat")
 
 	load("hex_outline", function(r) { hexOverlay = r })
-
-	if(doCombat === true && DEBUG === true) {
-		// for testing on GECKSETL
-		var a = gObjects[1175]
-		var b = gObjects[1260]
-		gObjects = [a, b]
-	}
-
 	loadingAssetsTotal-- // we should know all of the assets we need by now
 }
 
