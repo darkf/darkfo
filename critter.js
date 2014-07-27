@@ -59,7 +59,7 @@ var Weapon = function(weapon) {
 		this.minDmg = 1
 		this.maxDmg = 2
 		this.name = 'punch'
-		this.weaponType = 'Unarmed'
+		this.weaponSkillType = 'Unarmed'
 	} else { // todo: spears, etc
 		this.type = 'gun'
 		this.minDmg = weapon.pro.extra.minDmg
@@ -71,8 +71,9 @@ var Weapon = function(weapon) {
 		this.attackOne = attacks.first
 		this.attackTwo = attacks.second
 
-		this.weaponType = {'uzi': 'Small Guns'}[this.name]
-		if(this.weaponType === undefined)
+		this.weaponSkillType = {'uzi': 'Small Guns',
+	                            'spear': 'Melee Weapons'}[this.name]
+		if(this.weaponSkillType === undefined)
 			console.log("unknown weapon type for " + this.name)
 	}
 }
