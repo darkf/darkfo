@@ -74,7 +74,7 @@ var inCombat = false // are we currently in combat?
 var gameHasFocus = false // do we have input focus?
 var lastMousePickTime = 0 // time when we last checked what's under the mouse cursor
 var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3,
-    UI_MODE_INVENTORY = 4
+    UI_MODE_INVENTORY = 4, UI_MODE_WORLDMAP = 5
 var uiMode = UI_MODE_NONE
 
 var mapAreas = null
@@ -1309,6 +1309,12 @@ function dialogueEnd() { scriptingEngine.dialogueEnd() }
 			<div id="endTurnButton"></div>
 			<div id="endCombatButton"></div>
 		</div>
+	</div>
+	<div id="worldMapContainer">
+		<div id="worldMapBox">
+			<div id="worldMapLabels"></div>
+		</div>
+		<div id="worldMapWorld"></div>
 	</div>
 </div>
 </body>

@@ -626,3 +626,67 @@ function uiLoot(object) {
 function uiLog(msg) {
 	$("#displayLog").append(msg + "<br>")
 }
+
+function uiCloseWorldMap() {
+	uiMode = UI_MODE_NONE
+
+	$("#worldMapContainer").css("visibility", "hidden")
+}
+
+function uiWorldMap() {
+	uiMode = UI_MODE_WORLDMAP
+
+	if(mapAreas === null)
+		mapAreas = loadAreas()
+	$("#worldMapLabels").html("<div id='worldMapLabelsBackground'></div>")
+	$("#worldMapWorld").html("")
+
+    var i = 0
+    for(var areaID in mapAreas) {
+        var area = mapAreas[areaID]
+        if(!area.labelArt) continue
+
+        var label = $("<img>").addClass("worldMapLabelImage").
+                               attr("src", area.labelArt + ".png")
+        var labelButton = $("<div>").addClass("worldMapLabelButton").
+              click((function(areaID) {
+              	return function() {
+            		$("#worldMapWorld").css({
+            			backgroundImage: "url('" + mapAreas[areaID].mapArt + ".png')"
+            		}).html("")
+
+            		var entrances = mapAreas[areaID].entrances
+            		for(var j = 0; j < entrances.length; j++) {
+            			console.log("entrance: " + entrances[j].mapLookupName)
+            			var $entranceEl = $("<div class='worldmapEntrance'>")
+            			var $hotspot = $("<div class='worldmapEntranceHotspot'>")
+
+            			$hotspot.click((function(entrance) {
+            				return function() {
+	            				// hotspot click -- travel to relevant map
+	            				var mapName = lookupMapNameFromLookup(entrance.mapLookupName)
+	            				console.log("hotspot -> " + mapName + " (via " +
+	            					        entrance.lookupName + ")")
+	            				loadMap(mapName)
+	            				uiCloseWorldMap()
+            				}
+            			})(entrances[j]))
+
+            			$entranceEl.append($hotspot)
+            			$entranceEl.append(entrances[j].mapLookupName)
+            			$entranceEl.css({
+            				left: entrances[j].x,
+            				top:  entrances[j].y
+            			})
+            			$("#worldMapWorld").append($entranceEl)
+            		}
+            	}
+        })(areaID))
+
+        var areaLabel = $("<div>").addClass("worldMapLabel").
+                                   css({top: 1 + i*(27)}).
+                                   append(label).append(labelButton)
+        $("#worldMapLabels").append(areaLabel)      
+        i++ 
+    }
+}
