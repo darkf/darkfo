@@ -84,7 +84,7 @@ var loadingAssetsTotal = 0 // out of this total
 var proFiles = {}
 var lstFiles = {}
 var messageFiles = {}
-var mapNames = null
+var mapInfo = null
 
 var floatMessages = []
 
@@ -628,22 +628,39 @@ function loadMap(mapName, startingPosition, startingElevation) {
 	loadingAssetsTotal-- // we should know all of the assets we need by now
 }
 
-function lookupMapName(mapID) {
-	if(mapNames !== null)
-		return mapNames[mapID] || null
-
-	// load mapNames from data/data/MAPS.TXT
-	mapNames = {}
+function parseMapInfo() {
+	if(mapInfo !== null)
+		return
+	
+	// parse map info from data/data/MAPS.TXT
+	mapInfo = {}
 	var text = getFileText("data/data/MAPS.TXT")
 	var ini = parseIni(text)
 	for(var category in ini) {
 		var id = category.match(/Map (\d+)/)[1]
 		if(id === null) throw "MAPS.TXT: invalid category: " + category
 		id = parseInt(id)
-		mapNames[id] = ini[category].map_name
+		mapInfo[id] = {name: ini[category].map_name,
+			           lookupName: ini[category].lookup_name}
 	}
+}
 
-	return mapNames[mapID] || null
+function lookupMapNameFromLookup(lookupName) {
+	if(mapInfo === null)
+		parseMapInfo()
+
+	for(var mapID in mapInfo) {
+		if(mapInfo[mapID].lookup_name === lookupName)
+			return mapInfo[mapID].name
+	}
+	return null
+}
+
+function lookupMapName(mapID) {
+	if(mapInfo === null)
+		parseMapInfo()
+
+	return mapInfo[mapID].name || null
 }
 
 function loadMapID(mapID, startingPosition, startingElevation) {
