@@ -150,7 +150,7 @@ function loadAreas() {
 	console.log("areas: " + areas)
 
 	function lookupArtIdx(idx) {
-		return "art/intrface/" + getLstId("art/intrface/intrface", idx).split('.')[0]
+		return "art/intrface/" + getLstId("art/intrface/intrface", idx).split('.')[0].toLowerCase()
 	}
 
 	for(var _area in areas) {
@@ -208,7 +208,7 @@ function allAreas() {
 		mapAreas = loadAreas()
 	var areas = []
 	for(var area in mapAreas)
-		areas.push(mapAreas[area].name)
+		areas.push(mapAreas[area])
 	return areas
 }
 
@@ -720,7 +720,7 @@ function lookupMapNameFromLookup(lookupName) {
 		parseMapInfo()
 
 	for(var mapID in mapInfo) {
-		if(mapInfo[mapID].lookup_name === lookupName)
+		if(mapInfo[mapID].lookupName === lookupName)
 			return mapInfo[mapID].name
 	}
 	return null
