@@ -636,6 +636,8 @@ function uiCloseWorldMap() {
 function uiWorldMap() {
 	uiMode = UI_MODE_WORLDMAP
 
+	$("#worldMapContainer").css("visibility", "visible")
+
 	if(mapAreas === null)
 		mapAreas = loadAreas()
 	$("#worldMapLabels").html("<div id='worldMapLabelsBackground'></div>")

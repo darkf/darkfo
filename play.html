@@ -110,6 +110,7 @@ var playerToTargetRaycastKey = "y"
 var showTargetInventoryKey = "v"
 var useKey = "u"
 var killKey = "k"
+var worldmapKey = "p"
 
 // the player object
 // todo: just load this from the PRO or something
@@ -927,6 +928,9 @@ heart.keydown = function(k) {
 			}
 		}
 	}
+
+	if(k == worldmapKey)
+		uiWorldMap()
 }
 
 function recalcPath(start, goal) {

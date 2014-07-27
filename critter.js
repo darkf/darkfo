@@ -344,8 +344,10 @@ function critterWalkCallback(obj) {
 			var startingElevation = objs[i].extra.startingElevation
 			critterStopWalking(obj)
 
-			if(startingPosition === -1) { // world map
+			if(startingPosition.x === -1 || startingPosition.y === -1 ||
+			   exitMapID < 0) { // world map
 				console.log("exit grid -> worldmap")
+				uiWorldMap()
 			}
 			else { // another map
 				console.log("exit grid -> map " + exitMapID + " elevation " + startingElevation +
