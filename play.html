@@ -274,6 +274,8 @@ function createObjectWithPID(pid, sid) {
 
 	if(pidType === 1) // critter
 		initCritters([obj]) // initialize the critter
+	else
+		initObjects([obj])
 
 	var objectScriptID = -1
 	if(obj.pro !== undefined) {
@@ -484,6 +486,9 @@ function initObjects(objects) {
 			var invPID = obj.pro.extra.invFRM & 0xffff
 			if(invPID !== 0xffff)
 				obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
+
+			if(obj.pro.extra.subType === 3 /* weapon */)
+				obj.weapon = new Weapon(obj)
 		}
 		else if(obj.type === "scenery") {
 			obj.pro = loadPRO(obj.pid, obj.pidID)
@@ -521,12 +526,10 @@ function initCritters(objects) {
 
 			if(inv.subtype === "weapon") {
 				if(obj.leftHand === undefined) {
-					inv.weapon = new Weapon(inv)
 					if(inv.weapon.canEquip(obj))
 						obj.leftHand = inv
 				}
 				else if(obj.rightHand === undefined) {
-					inv.weapon = new Weapon(inv)
 					if(inv.weapon.canEquip(obj))
 						obj.rightHand = inv
 				}
