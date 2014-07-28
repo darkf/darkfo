@@ -17,13 +17,13 @@ limitations under the License.
 // Skill Dependencies system
 
 var Skill = function(_startvalue, _dependencies){
-	this.Startvalue = _startvalue
-	this.Dependencies = _dependencies
+	this.startvalue = _startvalue
+	this.dependencies = _dependencies
 }
 
 var Dependency = function(_statType, _multiplicator){
-	this.StatType = _statType
-	this.Multiplicator = _multiplicator
+	this.statType = _statType
+	this.multiplicator = _multiplicator
 }
 
 //FO2 specific, FO1 uses its own, possibly extracting this to an outside file that is loaded in would thus make sense
@@ -49,10 +49,10 @@ skillDependencies['Outdoorsman'] = new Skill(0, [new Dependency('END',2), new De
 
 
 var Stat = function(_min, _max, _default, _dependencies) {
-	this.Min = _min
-	this.Max = _max
-	this.Default = _default
-	this.Dependencies = _dependencies
+	this.min = _min
+	this.max = _max
+	this.defaultVal = _default
+	this.dependencies = _dependencies
 }
 
 var statDependencies = {};
@@ -135,13 +135,15 @@ function getImprovementCost(obj, skill) {
 Skill.prototype.calculateValue = function(obj)
 {
 	var addedValue = 0
-	for(var i = 0; i < this.Dependencies.length; i++)
+	console.log(this)
+	console.log(this.dependencies)
+	for(var i = 0; i < this.dependencies.length; i++)
 	{
-		var stat = critterGetStat(obj,this.Dependencies[i].StatType)
+		var stat = critterGetStat(obj,this.dependencies[i].statType)
 		if(stat !== undefined)
-			addedValue += Math.floor(stat * this.Dependencies[i].Multiplicator)
+			addedValue += Math.floor(stat * this.dependencies[i].multiplicator)
 	}
-	return (this.Startvalue + addedValue)
+	return (this.startvalue + addedValue)
 } 
 
 
@@ -154,11 +156,11 @@ function calculateStatValueAddition(obj, stat)
 		console.log('Stat dependency not found: ' + stat)
 		return 0
 	}
-	for(var i = 0; i < statDependency.Dependencies.length; i++)
+	for(var i = 0; i < statDependency.dependencies.length; i++)
 	{
-		var stat = critterGetStat(obj,statDependency.Dependencies[i].StatType)
+		var stat = critterGetStat(obj,statDependency.dependencies[i].statType)
 		if(stat !== undefined)
-			addedValue += Math.floor(stat * statDependency.Dependencies[i].Multiplicator)
+			addedValue += Math.floor(stat * statDependency.dependencies[i].multiplicator)
 	}
 	return addedValue
 }

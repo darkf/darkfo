@@ -515,6 +515,10 @@ function critterDamage(obj, damage, source, useScript, useAnim, damageType, call
 function cloneStats(stats) { return $.extend({}, stats) }
 function addStats(a, b) {
 	var w = cloneStats(a)
+	if(w["HP"] !== undefined)
+	{
+		w["Max HP"] = w["HP"]
+	}
 	for(var prop in b) {
 		w[prop] += b[prop]
 	}
@@ -522,7 +526,7 @@ function addStats(a, b) {
 }
 function calcStats(obj, pro) {
 	var stats = addStats(pro.extra.baseStats, pro.extra.bonusStats)
-	// todo: armor
+	// todo: armor, appears to be hardwired into the proto?
 	return stats
 }
 function reprStats(stats) {
@@ -532,11 +536,10 @@ function reprStats(stats) {
 //todo: bring Unity to how stats and skills are calculated
 
 function critterGetStat(obj, stat) {
-	if(stat === "Max HP") return 75 // TODO: Max HP
 
 	var rawStat = critterGetRawStat(obj, stat)
 	if(rawStat !== undefined) {
-		var retval = clamp(statDependencies[stat].Min, statDependencies[stat].Max, rawStat + calculateStatValueAddition(obj, stat))
+		var retval = clamp(statDependencies[stat].min, statDependencies[stat].max, rawStat + calculateStatValueAddition(obj, stat))
 		//console.log("With derived bonuses " + stat + " is: " + retval)
 		return retval
 	}
@@ -552,6 +555,10 @@ function critterGetRawStat(obj, stat) {
 		}else{
 			console.log('FAILED TO ADD STAT: '+ stat)
 		}
+		//specialcase for HP
+		if(stat === "HP") {
+			obj.stats[stat] = critterGetStat(obj, "Max HP")
+		}		
 	}
 	return obj.stats[stat]
 }

@@ -132,13 +132,13 @@ Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
 	if(weaponObj === null)
 		return {hit: -1, crit: -1}
 	var weapon = weaponObj.weapon
-
+	var weaponSkill
 	if(weapon.weaponSkillType === undefined) {
 		this.log("weaponSkillType is undefined")
-		var weaponSkill = 0
+		weaponSkill = 0
 	}
 	else
-		var weaponSkill = critterGetSkill(obj, weapon.weaponSkillType)
+		weaponSkill = critterGetSkill(obj, weapon.weaponSkillType)
 	var bonusAC = 0 // TODO: AP at end of turn bonus
 	var AC = critterGetStat(target, "AC") + bonusAC
 	var bonusCrit = 0 // TODO: perk bonuses, other crit influencing things
