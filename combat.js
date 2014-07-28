@@ -367,8 +367,10 @@ Combat.prototype.nextTurn = function() {
 		if(obj.dead === true || obj.isPlayer === true) continue
 		obj.inRange = hexDistance(obj.position, this.player.position) <= obj.ai.info.max_dist
 
-		if(obj.inRange === true)
+		if(obj.inRange === true || obj.hostile === true) {
+			obj.hostile = true
 			numActive++
+		}
 	}
 
 	if(numActive === 0 && this.turnNum != 1)
@@ -388,7 +390,7 @@ Combat.prototype.nextTurn = function() {
 	else {
 		this.inPlayerTurn = false
 		var critter = this.combatants[this.whoseTurn]
-		if(critter.dead === true || critter.inRange === false)		
+		if(critter.dead === true || critter.hostile !== true)
 			return this.nextTurn()
 
 		// todo: convert unused AP into AC
