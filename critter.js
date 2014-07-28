@@ -39,21 +39,15 @@ var attackMode = {'none': 0, 'punch': 1, 'kick': 2, 'swing': 3,
 				  4: 'thrust', 5: 'throw', 6: 'fire single',
 				  7: 'fire burst', 8: 'flame'}
 				  
-<<<<<<< HEAD
+
 var damageType = {'Normal': 0, 'Laser': 1, 'Fire': 2, 'Plasma': 3,
 				  'Electrical': 4, 'EMP': 5, 'Explosive': 6,
 				  0:'Normal', 1: 'Laser', 2: 'Fire', 3: 'Plasma',
 				  4: 'Electrical', 5: 'EMP', 6: 'Explosive'}
-=======
-var damageType = {'normal': 0, 'laser': 1, 'fire': 2, 'plasma': 3,
-				  'electrical': 4, 'emp': 5, 'explosive': 6,
-				  0:'normal', 1: 'laser', 2: 'fire', 3: 'plasma',
-				  4: 'electrical', 5: 'emp', 6: 'explosive'}
 
 var weaponSkillMap = {'uzi': 'Small Guns',
                       'rifle': 'Small Guns',
                       'spear': 'Melee Weapons'}
->>>>>>> 733eee59c2bc3ddc0159b44b2a525a22ce1b7d8d
 			
 function parseAttack(weapon) {
 	var attackModes = weapon.pro.extra['attackMode']
@@ -86,7 +80,7 @@ var Weapon = function(weapon) {
 		this.minDmg = 1
 		this.maxDmg = 2
 		this.name = 'punch'
-		this.weaponType = 'Unarmed'
+		this.weaponSkillType = 'Unarmed'
 		this.weapon.pro = {extra: {}}
 		this.weapon.pro.extra.maxRange1 = 1;
 		this.weapon.pro.extra.maxRange2 = 1;
