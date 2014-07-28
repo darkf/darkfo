@@ -111,7 +111,7 @@ function getImprovementCost(obj, skill) {
 	else if(skillPoints<301)
 		return 6
 	else
-		return 2^31
+		return 999999999
 }
 
 Skill.prototype.calculateValue = function(obj)

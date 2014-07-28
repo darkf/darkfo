@@ -25,10 +25,10 @@ var attackMode = {'none': 0, 'punch': 1, 'kick': 2, 'swing': 3,
 				  4: 'thrust', 5: 'throw', 6: 'fire single',
 				  7: 'fire burst', 8: 'flame'}
 				  
-var damageType = {'normal': 0, 'laser': 1, 'fire': 2, 'plasma': 3,
-				  'electrical': 4, 'emp': 5, 'explosive': 6,
-				  0:'normal', 1: 'laser', 2: 'fire', 3: 'plasma',
-				  4: 'electrical', 5: 'emp', 6: 'explosive'}
+var damageType = {'Normal': 0, 'Laser': 1, 'Fire': 2, 'Plasma': 3,
+				  'Electrical': 4, 'EMP': 5, 'Explosive': 6,
+				  0:'Normal', 1: 'Laser', 2: 'Fire', 3: 'Plasma',
+				  4: 'Electrical', 5: 'EMP', 6: 'Explosive'}
 			
 function parseAttack(weapon) {
 	var attackModes = weapon.pro.extra['attackMode']
@@ -55,11 +55,19 @@ var Weapon = function(weapon) {
 
 	if(weapon === 'punch') { // default punch
 		// todo: use character stats...
+		// todo: fully turn this into a real weapon
+		this.weapon = {}
 		this.type = 'melee'
 		this.minDmg = 1
 		this.maxDmg = 2
 		this.name = 'punch'
 		this.weaponType = 'Unarmed'
+		console.log(this)
+		this.weapon.pro = {extra: {}}
+		this.weapon.pro.extra.maxRange1 = 1;
+		this.weapon.pro.extra.maxRange2 = 1;
+		this.weapon.pro.extra.APCost1 = 4;
+		this.weapon.pro.extra.APCost2 = 4;
 	} else { // todo: spears, etc
 		this.type = 'gun'
 		this.minDmg = weapon.pro.extra.minDmg
@@ -78,18 +86,12 @@ var Weapon = function(weapon) {
 }
 
 Weapon.prototype.getMaximumRange = function(attackType) {
-	if(this.name === "punch")
-		return 1
-
 	if(attackType === 1) return this.weapon.pro.extra.maxRange1
 	if(attackType === 2) return this.weapon.pro.extra.maxRange2
 	else throw "invalid attack type " + attackType
 }
 
 Weapon.prototype.getAPCost = function(attackMode) {
-	if(this.type === "punch")
-		return 4 // TODO: is punch AP constant?
-
 	return this.weapon.pro.extra["APCost" + attackMode]
 }
 
@@ -151,11 +153,16 @@ Weapon.prototype.canEquip = function(obj) {
 	return imageInfo[critterGetBase(obj) + this.getAnim('attack')] !== undefined
 }
 
+Weapon.prototype.getDamageType = function() {
+	return this.weapon.pro.extra.dmgType
+}
+
 function critterGetBase(obj) {
 	return obj.art.slice(0, -2)
 }
 
 function critterGetEquippedWeapon(obj) {
+	//todo: get actual selection
 	if(objectIsWeapon(obj.leftHand)) return obj.leftHand
 	if(objectIsWeapon(obj.rightHand)) return obj.rightHand
 	return null
