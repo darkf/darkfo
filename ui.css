@@ -1,3 +1,21 @@
+/*
+Copyright 2014 darkf
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/* Main stylesheet for the DarkFO UI */
+
 body {
   font-family: sans-serif;
 }
@@ -438,3 +456,78 @@ left: 472; top: 75;
 
 #lootBoxTakeAllButton:hover { cursor: pointer; }
 #lootBoxTakeAllButton:active { background-image: url("art/intrface/invmadn.png"); }
+
+#worldMapContainer {
+    position: absolute;
+    left: 0; top: 0;
+    width: 800; height: 600;
+    background-color: black;
+    visibility: hidden;
+}
+
+#worldMapBox {    
+    position: absolute;
+    left: 80; top: 60;
+    width: 640; height: 480;
+    background-image: url("art/intrface/wmapbox.png");
+}
+
+#worldMapWorld {
+    position: absolute;
+    left: 105; top: 85;
+    width: 445; height: 438;
+}
+
+#worldMapLabels {
+    position: absolute;
+    left: 503; top: 133;
+    width: 120; height: 182;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+#worldMapLabelsBackground {
+    position: absolute;
+    left: -13; top: -27;
+    width: 145; height: 480;
+    background-image: url("art/intrface/wmtabs.png");
+}
+
+.worldMapLabel {
+    position: absolute;
+    left: 3;
+    width: 110; height: 24;
+}
+
+.worldMapLabelImage {
+    position: absolute;
+    left: 21; top: 2;
+    width: 82; height: 18;
+}
+
+.worldMapLabelButton {
+    position: absolute;
+    left: 0; top: 2;
+    width: 15; height: 16;
+    background-image: url("art/intrface/lilredup.png");
+}
+
+.worldMapLabelButton:active {
+    background-image: url("art/intrface/lilreddn.png");
+}
+
+.worldmapEntrance {
+    position: absolute;
+    width: 100;
+    height: 32;
+    color: #00FF00;
+}
+
+.worldmapEntranceHotspot {
+    width: 25; height: 13;
+    background-image: url("art/intrface/hotspot1.png");
+}
+
+.worldmapEntranceHotspot:active {
+    background-image: url("art/intrface/hotspot2.png");
+}

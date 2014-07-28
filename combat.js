@@ -1,6 +1,20 @@
-// DarkFO
-// Copyright (c) 2014 darkf
-// Licensed under the terms of the zlib license
+/*
+Copyright 2014 darkf, Stratege
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// Turn-based combat system
 
 var ActionPoints = function(obj) {
 	this.combat = 0
@@ -119,12 +133,12 @@ Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
 		return {hit: -1, crit: -1}
 	var weapon = weaponObj.weapon
 
-	if(weapon.weaponType === undefined) {
-		this.log("weaponType is undefined")
+	if(weapon.weaponSkillType === undefined) {
+		this.log("weaponSkillType is undefined")
 		var weaponSkill = 0
 	}
 	else
-		var weaponSkill = critterGetSkill(obj, weapon.weaponType)
+		var weaponSkill = critterGetSkill(obj, weapon.weaponSkillType)
 	var bonusAC = 0 // TODO: AP at end of turn bonus
 	var AC = critterGetStat(target, "AC") + bonusAC
 	var bonusCrit = 0 // TODO: perk bonuses, other crit influencing things
@@ -250,12 +264,12 @@ Combat.prototype.doAITurn = function(obj, idx) {
 	var target = this.findTarget(obj)
 	var distance = hexDistance(obj.position, target.position)
 	var AP = obj.AP
-	var messageRoll = rollSkillCheck(obj.ai.info.chance,0,false)
+	var messageRoll = rollSkillCheck(obj.ai.info.chance, 0, false)
 
 	if(doLoadScripts === true && obj._script !== undefined) {
 		// notify the critter script of a combat event
 		if(scriptingEngine.combatEvent(obj, "turnBegin") === true)
-			return // end of combat
+			return // end of combat (script override)
 	}
 
 	if(AP.getAvailableMoveAP() <= 0) // out of AP
@@ -263,15 +277,18 @@ Combat.prototype.doAITurn = function(obj, idx) {
 
 	// behaviors
 
-	if(critterGetStat(obj,'HP') <= obj.ai.info.min_hp) { // hp <= min fleeing hp, so flee
+	if(critterGetStat(obj, "HP") <= obj.ai.info.min_hp) { // hp <= min fleeing hp, so flee
 		this.log("[AI FLEES]")
+
 		// todo: pick the closest edge of the map
 		this.maybeTaunt(obj, "run", messageRoll)
 		var targetPos = {x: 128, y: obj.position.y} // left edge
-		this.walkUpTo(obj, idx, targetPos, AP, function() {
+		if(this.walkUpTo(obj, idx, targetPos, AP, function() {
 			critterStopWalking(obj)
 			that.doAITurn(obj, idx) // if we can, do another turn
-		})
+		}) === false)
+			return this.nextTurn() // not a valid path, just move on
+		
 		return
 	}
 
@@ -281,34 +298,35 @@ Combat.prototype.doAITurn = function(obj, idx) {
 	var fireDistance = weapon.getMaximumRange(1)
 	this.log("DEBUG: weapon: " + weapon + " fireDistance: " + fireDistance +
 		     " obj: " + obj.art + " distance: " + distance)
+
 	// are we in firing distance?
 	if(distance > fireDistance) {
-		// todo: some sane direction, and also path checking
 		this.log("[AI CREEPS]")
 		var neighbors = hexNeighbors(target.position)
 		var maxDistance = Math.min(AP.getAvailableMoveAP(), distance - fireDistance)
 		this.maybeTaunt(obj, "move", messageRoll)
 
+		// todo: check nearest direction first
+		var didCreep = false
 		for(var i = 0; i < neighbors.length; i++) {
 			if(critterWalkTo(obj, neighbors[i], false, function() {
 				critterStopWalking(obj)
 				that.doAITurn(obj, idx) // if we can, do another turn
 			}, maxDistance) !== false) {
 				// OK
+				didCreep = true
 				if(AP.subtractMoveAP(obj.path.path.length - 1) === false)
 					throw "subtraction issue: has AP: " + AP.getAvailableMoveAP() +
 				           " needs AP:"+obj.path.path.length+" and maxDist was:"+maxDistance
-				return
-			}
-			else {
-				this.log("invalid path -- advancing")
-				return this.nextTurn()
+				break
 			}
 		}
 
-		// no path
-		this.log("[NO PATH]")
-		that.doAITurn(obj, idx) // if we can, do another turn
+		if(!didCreep) {
+			// no path
+			this.log("[NO PATH]")
+			that.doAITurn(obj, idx) // if we can, do another turn
+		}
 	}
 	else if(AP.getAvailableCombatAP() >= 4) { // if we are in range, do we have enough AP to attack?
 		this.log("[ATTACKING]")
@@ -354,8 +372,10 @@ Combat.prototype.nextTurn = function() {
 		if(obj.dead === true || obj.isPlayer === true) continue
 		obj.inRange = hexDistance(obj.position, this.player.position) <= obj.ai.info.max_dist
 
-		if(obj.inRange === true)
+		if(obj.inRange === true || obj.hostile === true) {
+			obj.hostile = true
 			numActive++
+		}
 	}
 
 	if(numActive === 0 && this.turnNum != 1)
@@ -375,7 +395,7 @@ Combat.prototype.nextTurn = function() {
 	else {
 		this.inPlayerTurn = false
 		var critter = this.combatants[this.whoseTurn]
-		if(critter.dead === true || critter.inRange === false)		
+		if(critter.dead === true || critter.hostile !== true)
 			return this.nextTurn()
 
 		// todo: convert unused AP into AC

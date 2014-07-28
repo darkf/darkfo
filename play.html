@@ -1,6 +1,17 @@
-<!-- DarkFO
-     Copyright (c) 2014 darkf
-     Licensed under the terms of the zlib license
+<!--
+Copyright 2014 darkf, Stratege
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
  -->
 
 <html>
@@ -74,8 +85,10 @@ var inCombat = false // are we currently in combat?
 var gameHasFocus = false // do we have input focus?
 var lastMousePickTime = 0 // time when we last checked what's under the mouse cursor
 var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3,
-    UI_MODE_INVENTORY = 4
+    UI_MODE_INVENTORY = 4, UI_MODE_WORLDMAP = 5
 var uiMode = UI_MODE_NONE
+
+var mapAreas = null
 
 var isLoading = true // are we currently loading a map?
 var loadingAssetsLoaded = 0 // how many images we've loaded
@@ -84,7 +97,7 @@ var loadingAssetsTotal = 0 // out of this total
 var proFiles = {}
 var lstFiles = {}
 var messageFiles = {}
-var mapNames = null
+var mapInfo = null
 
 var floatMessages = []
 
@@ -108,6 +121,7 @@ var playerToTargetRaycastKey = "y"
 var showTargetInventoryKey = "v"
 var useKey = "u"
 var killKey = "k"
+var worldmapKey = "p"
 
 // the player object
 // todo: just load this from the PRO or something
@@ -141,6 +155,74 @@ var player = playerInit()
           	  ]}*/
 
 function repr(obj) { return JSON.stringify(obj, null, 2) }
+
+function loadAreas() {
+	var areas = parseIni(getFileText("data/data/CITY.TXT"))
+	var out = {}
+	console.log("areas: " + areas)
+
+	function lookupArtIdx(idx) {
+		return "art/intrface/" + getLstId("art/intrface/intrface", idx).split('.')[0].toLowerCase()
+	}
+
+	for(var _area in areas) {
+		var area = areas[_area]
+		var areaID = _area.match(/Area (\d+)/)
+		if(areaID === null) throw "CITY.TXT: invalid area name: " + area.area_name
+		areaID = parseInt(areaID[1])
+
+		var newArea = {name: area.area_name,
+			           id: areaID}
+
+	    // map/label art
+		var mapArtIdx = parseInt(area.townmap_art_idx)
+		var labelArtIdx = parseInt(area.townmap_label_art_idx)
+
+		//console.log(mapArtIdx + " - " + labelArtIdx)
+
+		if(mapArtIdx !== -1)
+			newArea.mapArt = lookupArtIdx(mapArtIdx)
+		if(labelArtIdx !== -1)
+			newArea.labelArt = lookupArtIdx(labelArtIdx)
+
+		// entrances
+		newArea.entrances = []
+		for(var _key in area) {
+			// entrance_N
+			// e.g.: entrance_0=On,345,230,Destroyed Arroyo Bridge,-1,26719,0
+
+			var s = _key.split("_")
+			if(s[0] === "entrance") {
+				var entranceString = area[_key]
+				s = entranceString.split(",")
+
+				var entrance = {
+					startState: s[0],
+					x: parseInt(s[1]),
+					y: parseInt(s[2]),
+					mapLookupName: s[3],
+					elevation: parseInt(s[4]),
+					tileNum: parseInt(s[5]),
+					orientation: parseInt(s[6])
+				}
+				newArea.entrances.push(entrance)
+			}
+		}
+
+		out[areaID] = newArea
+	}
+
+	return out
+}
+
+function allAreas() {
+	if(mapAreas === null)
+		mapAreas = loadAreas()
+	var areas = []
+	for(var area in mapAreas)
+		areas.push(mapAreas[area])
+	return areas
+}
 
 function loadMessage(name) {
 	var msg = getFileText("data/text/english/game/" + name + ".msg")
@@ -274,6 +356,8 @@ function createObjectWithPID(pid, sid) {
 
 	if(pidType === 1) // critter
 		initCritters([obj]) // initialize the critter
+	else
+		initObjects([obj])
 
 	var objectScriptID = -1
 	if(obj.pro !== undefined) {
@@ -484,6 +568,9 @@ function initObjects(objects) {
 			var invPID = obj.pro.extra.invFRM & 0xffff
 			if(invPID !== 0xffff)
 				obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
+
+			if(obj.pro.extra.subType === 3 /* weapon */)
+				obj.weapon = new Weapon(obj)
 		}
 		else if(obj.type === "scenery") {
 			obj.pro = loadPRO(obj.pid, obj.pidID)
@@ -521,12 +608,10 @@ function initCritters(objects) {
 
 			if(inv.subtype === "weapon") {
 				if(obj.leftHand === undefined) {
-					inv.weapon = new Weapon(inv)
 					if(inv.weapon.canEquip(obj))
 						obj.leftHand = inv
 				}
 				else if(obj.rightHand === undefined) {
-					inv.weapon = new Weapon(inv)
 					if(inv.weapon.canEquip(obj))
 						obj.rightHand = inv
 				}
@@ -622,33 +707,42 @@ function loadMap(mapName, startingPosition, startingElevation) {
 	load("art/critters/hmjmpsat")
 
 	load("hex_outline", function(r) { hexOverlay = r })
-
-	if(doCombat === true && DEBUG === true) {
-		// for testing on GECKSETL
-		var a = gObjects[1175]
-		var b = gObjects[1260]
-		gObjects = [a, b]
-	}
-
 	loadingAssetsTotal-- // we should know all of the assets we need by now
 }
 
-function lookupMapName(mapID) {
-	if(mapNames !== null)
-		return mapNames[mapID] || null
-
-	// load mapNames from data/data/MAPS.TXT
-	mapNames = {}
+function parseMapInfo() {
+	if(mapInfo !== null)
+		return
+	
+	// parse map info from data/data/MAPS.TXT
+	mapInfo = {}
 	var text = getFileText("data/data/MAPS.TXT")
 	var ini = parseIni(text)
 	for(var category in ini) {
 		var id = category.match(/Map (\d+)/)[1]
 		if(id === null) throw "MAPS.TXT: invalid category: " + category
 		id = parseInt(id)
-		mapNames[id] = ini[category].map_name
+		mapInfo[id] = {name: ini[category].map_name,
+			           lookupName: ini[category].lookup_name}
 	}
+}
 
-	return mapNames[mapID] || null
+function lookupMapNameFromLookup(lookupName) {
+	if(mapInfo === null)
+		parseMapInfo()
+
+	for(var mapID in mapInfo) {
+		if(mapInfo[mapID].lookupName === lookupName)
+			return mapInfo[mapID].name
+	}
+	return null
+}
+
+function lookupMapName(mapID) {
+	if(mapInfo === null)
+		parseMapInfo()
+
+	return mapInfo[mapID].name || null
 }
 
 function loadMapID(mapID, startingPosition, startingElevation) {
@@ -845,6 +939,9 @@ heart.keydown = function(k) {
 			}
 		}
 	}
+
+	if(k == worldmapKey)
+		uiWorldMap()
 }
 
 function recalcPath(start, goal) {
@@ -1227,6 +1324,12 @@ function dialogueEnd() { scriptingEngine.dialogueEnd() }
 			<div id="endTurnButton"></div>
 			<div id="endCombatButton"></div>
 		</div>
+	</div>
+	<div id="worldMapContainer">
+		<div id="worldMapBox">
+			<div id="worldMapLabels"></div>
+		</div>
+		<div id="worldMapWorld"></div>
 	</div>
 </div>
 </body>

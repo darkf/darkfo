@@ -1,6 +1,20 @@
-// DarkFO
-// Copyright (c) 2014 darkf
-// Licensed under the terms of the zlib license
+/*
+Copyright 2014 darkf, Stratege
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// Collection of functions for dealing with critters
 
 // TODO: Critter should really be a class of its own
 
@@ -25,10 +39,21 @@ var attackMode = {'none': 0, 'punch': 1, 'kick': 2, 'swing': 3,
 				  4: 'thrust', 5: 'throw', 6: 'fire single',
 				  7: 'fire burst', 8: 'flame'}
 				  
+<<<<<<< HEAD
 var damageType = {'Normal': 0, 'Laser': 1, 'Fire': 2, 'Plasma': 3,
 				  'Electrical': 4, 'EMP': 5, 'Explosive': 6,
 				  0:'Normal', 1: 'Laser', 2: 'Fire', 3: 'Plasma',
 				  4: 'Electrical', 5: 'EMP', 6: 'Explosive'}
+=======
+var damageType = {'normal': 0, 'laser': 1, 'fire': 2, 'plasma': 3,
+				  'electrical': 4, 'emp': 5, 'explosive': 6,
+				  0:'normal', 1: 'laser', 2: 'fire', 3: 'plasma',
+				  4: 'electrical', 5: 'emp', 6: 'explosive'}
+
+var weaponSkillMap = {'uzi': 'Small Guns',
+                      'rifle': 'Small Guns',
+                      'spear': 'Melee Weapons'}
+>>>>>>> 733eee59c2bc3ddc0159b44b2a525a22ce1b7d8d
 			
 function parseAttack(weapon) {
 	var attackModes = weapon.pro.extra['attackMode']
@@ -62,7 +87,6 @@ var Weapon = function(weapon) {
 		this.maxDmg = 2
 		this.name = 'punch'
 		this.weaponType = 'Unarmed'
-		console.log(this)
 		this.weapon.pro = {extra: {}}
 		this.weapon.pro.extra.maxRange1 = 1;
 		this.weapon.pro.extra.maxRange2 = 1;
@@ -79,8 +103,8 @@ var Weapon = function(weapon) {
 		this.attackOne = attacks.first
 		this.attackTwo = attacks.second
 
-		this.weaponType = {'uzi': 'Small Guns'}[this.name]
-		if(this.weaponType === undefined)
+		this.weaponSkillType = weaponSkillMap[this.name]
+		if(this.weaponSkillType === undefined)
 			console.log("unknown weapon type for " + this.name)
 	}
 }
@@ -347,8 +371,10 @@ function critterWalkCallback(obj) {
 			var startingElevation = objs[i].extra.startingElevation
 			critterStopWalking(obj)
 
-			if(startingPosition === -1) { // world map
+			if(startingPosition.x === -1 || startingPosition.y === -1 ||
+			   exitMapID < 0) { // world map
 				console.log("exit grid -> worldmap")
+				uiWorldMap()
 			}
 			else { // another map
 				console.log("exit grid -> map " + exitMapID + " elevation " + startingElevation +
@@ -538,7 +564,7 @@ function critterGetRawStat(obj, stat) {
 
 function critterSetRawStat(obj, stat, amount) {
 	obj.stats[stat] = amount
-	console.log(stat + " changed to: " + obj.stats[stat])
+	//console.log(stat + " changed to: " + obj.stats[stat])
 }
 
 function critterGetSkill(obj, skill) {
@@ -550,7 +576,7 @@ function critterGetSkill(obj, skill) {
 }
 
 function critterGetRawSkill(obj, skill) {
-	console.log("SKILL: " + skill + " IS: " + obj.skills[skill])
+	//console.log("SKILL: " + skill + " IS: " + obj.skills[skill])
 	if(obj.skills[skill] === undefined) {
 		console.log("NO SKILL: " + skill + " - adding it")
 		obj.skills[skill] = 0
