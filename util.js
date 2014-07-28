@@ -91,3 +91,18 @@ function clamp(min, max, value)
 {
 	return Math.max(min,Math.min(max,value))
 }
+
+function getMessage(name, id) {
+	if(messageFiles[name] !== undefined && messageFiles[name][id] !== undefined)
+		return messageFiles[name][id]
+	else {
+		loadMessage(name)
+		if(messageFiles[name] !== undefined && messageFiles[name][id] !== undefined)
+			return messageFiles[name][id]
+		else null
+	}
+}
+
+function getProtoMsg(id) {
+	return getMessage("proto", id)
+}

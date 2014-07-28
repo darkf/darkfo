@@ -258,16 +258,6 @@ function loadMessage(name) {
 	}
 }
 
-function getMessage(name, id) {
-	if(messageFiles[name] !== undefined && messageFiles[name][id] !== undefined)
-		return messageFiles[name][id]
-	else {
-		loadMessage(name)
-		if(messageFiles[name] !== undefined && messageFiles[name][id] !== undefined)
-			return messageFiles[name][id]
-		else null
-	}
-}
 
 function loadLst(lst) {
 	return getFileText("data/" + lst + ".lst").split('\n')
@@ -797,7 +787,7 @@ heart.mousepressed = function(x, y, btn) {
 				}
 
 				if(player.AP.getAvailableCombatAP() < 4) {
-					console.log("You don't have enough AP for that.")
+					uiLog(getProtoMsg(700))
 					return
 				}
 
@@ -872,7 +862,7 @@ heart.keydown = function(k) {
 		}
 
 		if(player.AP.getAvailableCombatAP() < 4) {
-			console.log("You don't have enough AP for that.")
+			uiLog(getProtoMsg(700))
 			return
 		}
 
