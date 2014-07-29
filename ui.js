@@ -683,7 +683,7 @@ function uiWorldMap() {
 	            				// hotspot click -- travel to relevant map
 	            				var mapName = lookupMapNameFromLookup(entrance.mapLookupName)
 	            				console.log("hotspot -> " + mapName + " (via " +
-	            					        entrance.lookupName + ")")
+	            					        entrance.mapLookupName + ")")
 	            				loadMap(mapName)
 	            				uiCloseWorldMap()
             				}

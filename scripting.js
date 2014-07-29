@@ -532,6 +532,7 @@ var scriptingEngine = (function() {
 			obj.visible = !visibility
 		},
 		use_obj_on_obj: function(obj, who) { stub("use_obj_on_obj", arguments) },
+		use_obj: function(obj) { stub("use_obj", arguments) },
 		anim: function(obj, anim, direction) {
 			if(!isGameObject(obj)) {
 				warn("anim: not a game object: " + obj)
@@ -544,6 +545,7 @@ var scriptingEngine = (function() {
 
 		// environment
 		set_light_level: function(level) { stub("set_light_level", arguments) },
+		obj_set_light_level: function(obj, intensity, distance) { stub("obj_set_light_level", arguments) },
 		override_map_start: function(x, y, elevation, rotation) {
 			if(elevation !== currentElevation)
 				throw "override_map_start: not on current elevation"
@@ -844,6 +846,9 @@ var scriptingEngine = (function() {
 			}
 			else throw "mark_area_known: invalid area type " + areaType
 		},
+
+		// sound
+		play_sfx: function(sfx) { stub("play_sfx", arguments) },
 
 		// party
 		party_member_obj: function(pid) { stub("party_member_obj", arguments, "party"); return 0 },
