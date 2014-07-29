@@ -20,8 +20,6 @@ import sys, math, struct, os, json
 from construct import *
 from collections import Counter
 
-OUT_DIR = "maps"
-
 mapScriptPIDs = [{} for _ in range(5)]
 
 def pidType(pid):
@@ -33,7 +31,7 @@ class ScriptsIgnore(Construct):
 
         for scriptType in range(5):
         	scriptCount = SBInt32("")._parse(stream, context)
-        	print "script type", scriptType, "count:", scriptCount
+        	#print "script type", scriptType, "count:", scriptCount
 
         	totalScriptCount += scriptCount
 
@@ -63,7 +61,7 @@ class ScriptsIgnore(Construct):
         			#else:
         			if script_id > 0 and script_id < len(scriptLst):
 	    				scriptName = stripExt(getProFile(scriptLst, script_id).split()[0])
-	    				print "Map script PID %d type %d is %d (%s)" % (pidID, scriptType, script_id, scriptName)
+	    				#print "Map script PID %d type %d is %d (%s)" % (pidID, scriptType, script_id, scriptName)
 	        			mapScriptPIDs[scriptType][pidID] = scriptName
 
         			move = 15
@@ -219,7 +217,7 @@ def getCritterArtPath(frmPID):
 	else:
 		#raise Exception("other")
 		if (id2 <= 1 and id1 > 0):
-			print "ID1:", id1
+			#print "ID1:", id1
 			path += chr(id1 + ord('c'))
 			#tmpBuf[0] = char(id1) + 'c';
 		else:
@@ -428,6 +426,128 @@ fomap = Struct("map",
 def tileNumToPos(t):
 	return {"x": t % 200, "y": t / 200}
 
+def convertMap(data, mapName, outDir, verbose=True):
+	map_ = fomap.parse(data)
+	if map_.version != 20:
+		raise Exception("not a FO2 map")
+	if verbose:
+		print "elevation:", map_.numLevels
+		print sum(len(level) for level in map_.tiles), "tiles"
+		print map_.totalObjects, "objects"
+		print map_.objects[0].totalObjectsLevel, "objects on level 1"
+
+	sumObjects = sum(level.totalObjectsLevel for level in map_.objects)
+	if map_.totalObjects != sumObjects:
+		raise Exception("totalObjects != sum of objects in each level? (totalObjects=%s, sumObjects=%d)" % (map_.totalObjects, sumObjects))
+
+	#print map_.object[0]
+
+	theMap = {
+		"levels": [], # info for each elevation
+		"startPosition": tileNumToPos(map_.playerPos),
+		"startElevation": map_.elevation,
+		"startOrientation": map_.playerOrientation,
+		"mapID": map_.mapID
+	}
+	lst = loadLst("art/tiles/tiles.lst")
+	#scriptLst = loadLst("scripts/scripts.lst")
+	tileCounter = Counter()
+	objectCounter = Counter()
+	scriptCounter = Counter()
+	writeTiles = True
+	writeObjects = True
+	writeImageList = True
+
+	for elevation in range(map_.numLevels):
+		# break down list of 1000 tiles into a 100x100 2d list
+		floorTiles = [tile.floor for tile in map_.tiles[elevation]]
+		roofTiles = [tile.roof for tile in map_.tiles[elevation]]
+
+		floorMap = [floorTiles[i*100:i*100+100] for i in range(100)]
+		roofMap = [roofTiles[i*100:i*100+100] for i in range(100)]
+
+		m = {"tiles": {"floor": [], "roof": []}, "objects": []}
+		if writeTiles:
+			for i in range(100):
+				floorRow = [stripExt(getProFile(lst, t).rstrip()).lower() for t in floorMap[i]]
+				roofRow = [stripExt(getProFile(lst, t).rstrip()).lower() for t in roofMap[i]]
+				for tile in floorRow: tileCounter[tile] += 1
+				for tile in roofRow: tileCounter[tile] += 1
+				# reverse because FO's maps are reversed in the X axis
+				m["tiles"]["floor"].append(list(reversed(floorRow)))
+				m["tiles"]["roof"].append(list(reversed(roofRow)))
+
+		if writeObjects:
+			def getObject(object_):
+				if hasattr(object_, "_obj"): # subobjects
+					amount = object_.amount
+					object_ = object_._obj
+					object_.amount = amount
+
+				obj = {"type": object_.extra.type,
+					   "pid": object_.protoPID,
+					   "pidID": (object_.protoPID & 0xffff),
+					   "frmPID": object_.frmPID,
+					   "position": tileNumToPos(object_.position),
+					   "orientation": object_.orientation}
+				#if hasattr(object_.extra, "subtype"):
+				#	obj["subtype"] = object_.extra.subtype
+
+				if hasattr(object_.extra, "extra"):
+					obj["extra"] = object_.extra.extra
+				if hasattr(object_.extra, "info"):
+					obj["subtype"] = object_.extra.info.subtype
+				if hasattr(object_.extra, "artPath"):
+					obj["art"] = object_.extra.artPath.lower()
+					objectCounter[object_.extra.artPath.lower()] += 1
+				if object_.scriptID != -1:
+					scriptName = stripExt(getProFile(scriptLst, object_.scriptID).split()[0])
+					obj["script"] = scriptName
+					scriptCounter[scriptName] += 1
+				elif object_.scriptID == -1 and object_.mapPID != 0xFFFFFFFF:
+					# this is some funky stuff... let's try to use the script IDs we got from
+					# the weird script ignore step
+					scriptType = (object_.mapPID >> 24) & 0xff
+					scriptPID = object_.mapPID & 0xffff
+					if verbose: print "using map script for %s (script PID %d)" % (object_.extra.artPath, scriptPID)
+					scriptName = mapScriptPIDs[scriptType][scriptPID]
+					if verbose: print "(map script %d type %d = %s)" %  (scriptPID, scriptType, scriptName)
+					obj["script"] = scriptName
+					scriptCounter[scriptName] += 1
+
+				if hasattr(object_, "amount"):
+					obj["amount"] = object_.amount
+
+				# inventory
+				obj["inventory"] = [getObject(inv) for inv in object_.inventory]
+
+				return obj
+
+
+			for i,object_ in enumerate(map_.objects[elevation].object):
+				m["objects"].append(getObject(object_))
+
+		theMap["levels"].append(m)
+
+	json.dump(theMap, open(os.path.join(outDir, stripExt(mapName) + ".json"), "w"))
+
+	# player (Vault 13 Jumpsuit)
+	#objectCounter["art/critters/hmjmpsaa"] += 1
+	#objectCounter["art/critters/hmjmpsab"] += 1
+
+	if writeImageList:
+		images = list("art/tiles/" + x for x in tileCounter) + list(objectCounter)
+		json.dump(images, open(os.path.join(outDir, stripExt(mapName) + ".images.json"), "w"))
+		#open(os.path.join(outDir, stripExt(mapName)+".images.txt"), "w").writelines(x+"\n" for x in images)
+
+	#for tile in tileCounter:
+	#	print "art/tiles/" + tile
+	#for obj in objectCounter:
+	#	print obj
+	if verbose:
+		for script in scriptCounter:
+			print script
+
 def main():
 	if len(sys.argv) != 2:
 		print "USAGE: %s MAP" % sys.argv[0]
@@ -437,125 +557,7 @@ def main():
 	MAP_NAME = os.path.basename(MAP_FILE)
 
 	with open(MAP_FILE, "rb") as f:
-		data = f.read()
-		map_ = fomap.parse(data)
-		if map_.version != 20:
-			print "not a FO2 map"
-			sys.exit(1)
-		print "elevation:", map_.numLevels
-		print sum(len(level) for level in map_.tiles), "tiles"
-		print map_.totalObjects, "objects"
-		print map_.objects[0].totalObjectsLevel, "objects on level 1"
-
-		if map_.totalObjects != sum(level.totalObjectsLevel for level in map_.objects):
-			raise Exception("totalObjects != sum of objects in each level?")
-
-		#print map_.object[0]
-
-		theMap = {
-			"levels": [], # info for each elevation
-			"startPosition": tileNumToPos(map_.playerPos),
-			"startElevation": map_.elevation,
-			"startOrientation": map_.playerOrientation,
-			"mapID": map_.mapID
-		}
-		lst = loadLst("art/tiles/tiles.lst")
-		#scriptLst = loadLst("scripts/scripts.lst")
-		tileCounter = Counter()
-		objectCounter = Counter()
-		scriptCounter = Counter()
-		writeTiles = True
-		writeObjects = True
-		writeImageList = True
-
-		for elevation in range(map_.numLevels):
-			# break down list of 1000 tiles into a 100x100 2d list
-			floorTiles = [tile.floor for tile in map_.tiles[elevation]]
-			roofTiles = [tile.roof for tile in map_.tiles[elevation]]
-
-			floorMap = [floorTiles[i*100:i*100+100] for i in range(100)]
-			roofMap = [roofTiles[i*100:i*100+100] for i in range(100)]
-
-			m = {"tiles": {"floor": [], "roof": []}, "objects": []}
-			if writeTiles:
-				for i in range(100):
-					floorRow = [stripExt(getProFile(lst, t).rstrip()).lower() for t in floorMap[i]]
-					roofRow = [stripExt(getProFile(lst, t).rstrip()).lower() for t in roofMap[i]]
-					for tile in floorRow: tileCounter[tile] += 1
-					for tile in roofRow: tileCounter[tile] += 1
-					# reverse because FO's maps are reversed in the X axis
-					m["tiles"]["floor"].append(list(reversed(floorRow)))
-					m["tiles"]["roof"].append(list(reversed(roofRow)))
-
-			if writeObjects:
-				def getObject(object_):
-					if hasattr(object_, "_obj"): # subobjects
-						amount = object_.amount
-						object_ = object_._obj
-						object_.amount = amount
-
-					obj = {"type": object_.extra.type,
-						   "pid": object_.protoPID,
-						   "pidID": (object_.protoPID & 0xffff),
-						   "frmPID": object_.frmPID,
-						   "position": tileNumToPos(object_.position),
-						   "orientation": object_.orientation}
-					#if hasattr(object_.extra, "subtype"):
-					#	obj["subtype"] = object_.extra.subtype
-
-					if hasattr(object_.extra, "extra"):
-						obj["extra"] = object_.extra.extra
-					if hasattr(object_.extra, "info"):
-						obj["subtype"] = object_.extra.info.subtype
-					if hasattr(object_.extra, "artPath"):
-						obj["art"] = object_.extra.artPath.lower()
-						objectCounter[object_.extra.artPath.lower()] += 1
-					if object_.scriptID != -1:
-						scriptName = stripExt(getProFile(scriptLst, object_.scriptID).split()[0])
-						obj["script"] = scriptName
-						scriptCounter[scriptName] += 1
-					elif object_.scriptID == -1 and object_.mapPID != 0xFFFFFFFF:
-						# this is some funky stuff... let's try to use the script IDs we got from
-						# the weird script ignore step
-						scriptType = (object_.mapPID >> 24) & 0xff
-						scriptPID = object_.mapPID & 0xffff
-						print "using map script for %s (script PID %d)" % (object_.extra.artPath, scriptPID)
-						scriptName = mapScriptPIDs[scriptType][scriptPID]
-						print "(map script %d type %d = %s)" %  (scriptPID, scriptType, scriptName)
-						obj["script"] = scriptName
-						scriptCounter[scriptName] += 1
-
-					if hasattr(object_, "amount"):
-						obj["amount"] = object_.amount
-
-					# inventory
-					obj["inventory"] = [getObject(inv) for inv in object_.inventory]
-
-					return obj
-
-
-				for i,object_ in enumerate(map_.objects[elevation].object):
-					m["objects"].append(getObject(object_))
-
-			theMap["levels"].append(m)
-
-		json.dump(theMap, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".json"), "w"))
-
-		# player (Vault 13 Jumpsuit)
-		objectCounter["art/critters/hmjmpsaa"] += 1
-		objectCounter["art/critters/hmjmpsab"] += 1
-
-		if writeImageList:
-			images = list("art/tiles/" + x for x in tileCounter) + list(objectCounter)
-			json.dump(images, open(os.path.join(OUT_DIR,stripExt(MAP_NAME) + ".images.json"), "w"))
-			open(os.path.join(OUT_DIR,stripExt(MAP_NAME)+".images.txt"), "w").writelines(x+"\n" for x in images)
-
-		#for tile in tileCounter:
-		#	print "art/tiles/" + tile
-		#for obj in objectCounter:
-		#	print obj
-		for script in scriptCounter:
-			print script
+		convertMap(f.read(), MAP_NAME, outDir="maps")
 
 if __name__ == '__main__':
 	main()
