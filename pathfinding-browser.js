@@ -542,85 +542,21 @@ Grid.prototype.getNeighbors = function(node, allowDiagonal, dontCrossCorners) {
         y = node.y,
         neighbors = [],
         nodes = this.nodes;
- /*       s0 = false, d0 = false,
-        s1 = false, d1 = false,
-        s2 = false, d2 = false,
-        s3 = false, d3 = false,
-        nodes = this.nodes;
 
-    // ↑
-    if (this.isWalkableAt(x, y - 1)) {
-        neighbors.push(nodes[y - 1][x]);
-        s0 = true;
-    }
-    // →
-    if (this.isWalkableAt(x + 1, y)) {
-        neighbors.push(nodes[y][x + 1]);
-        s1 = true;
-    }
-    // ↓
-    if (this.isWalkableAt(x, y + 1)) {
-        neighbors.push(nodes[y + 1][x]);
-        s2 = true;
-    }
-    // ←
-    if (this.isWalkableAt(x - 1, y)) {
-        neighbors.push(nodes[y][x - 1]);
-        s3 = true;
-    }
-
-    if (!allowDiagonal) {
-        return neighbors;
-    }
-
-    if (dontCrossCorners) {
-        d0 = s3 && s0;
-        d1 = s0 && s1;
-        d2 = s1 && s2;
-        d3 = s2 && s3;
+    if(x % 2 === 0) {
+        if(this.isWalkableAt(x-1, y)) neighbors.push(nodes[y][x-1])
+        if(this.isWalkableAt(x-1, y+1)) neighbors.push(nodes[y+1][x-1])
+        if(this.isWalkableAt(x, y+1)) neighbors.push(nodes[y+1][x])
+        if(this.isWalkableAt(x+1, y+1)) neighbors.push(nodes[y+1][x+1])
+        if(this.isWalkableAt(x+1, y)) neighbors.push(nodes[y][x+1])
+        if(this.isWalkableAt(x, y-1)) neighbors.push(nodes[y-1][x])
     } else {
-        d0 = s3 || s0;
-        d1 = s0 || s1;
-        d2 = s1 || s2;
-        d3 = s2 || s3;
-    }
-
-    // ↖
-    if (d0 && this.isWalkableAt(x - 1, y - 1)) {
-        neighbors.push(nodes[y - 1][x - 1]);
-    }
-    // ↗
-    if (d1 && this.isWalkableAt(x + 1, y - 1)) {
-        neighbors.push(nodes[y - 1][x + 1]);
-    }
-    // ↘
-    if (d2 && this.isWalkableAt(x + 1, y + 1)) {
-        neighbors.push(nodes[y + 1][x + 1]);
-    }
-    // ↙
-    if (d3 && this.isWalkableAt(x - 1, y + 1)) {
-        neighbors.push(nodes[y + 1][x - 1]);
-    }*/
-
-    var n = (function(x, y) {
-        if(this.isWalkableAt(x, y))
-            neighbors.push(nodes[y][x])
-    }).bind(this);
-
-    if(x % 2 == 0) {
-      n(x-1,y)
-      n(x-1,y+1)
-      n(x,y+1)
-      n(x+1,y+1)
-      n(x+1,y)
-      n(x,y-1)
-    } else{
-      n(x-1,y-1)
-      n(x-1,y)
-      n(x,y+1)
-      n(x+1,y)
-      n(x+1,y-1)
-      n(x,y-1)
+        if(this.isWalkableAt(x-1, y-1)) neighbors.push(nodes[y-1][x-1])
+        if(this.isWalkableAt(x-1, y)) neighbors.push(nodes[y][x-1])
+        if(this.isWalkableAt(x, y+1)) neighbors.push(nodes[y+1][x])
+        if(this.isWalkableAt(x+1, y)) neighbors.push(nodes[y][x+1])
+        if(this.isWalkableAt(x+1, y-1)) neighbors.push(nodes[y-1][x+1])
+        if(this.isWalkableAt(x, y-1)) neighbors.push(nodes[y-1][x])
     }
 
     return neighbors
