@@ -33,7 +33,7 @@ limitations under the License.
 <script>
 "use strict";
 
-var MAP_NAME = "ENCFITE" // name of the current map
+var MAP_NAME = "arcaves" // name of the current map
 var DEBUG = false // debug mode
 
 var gMapScript = null
@@ -811,7 +811,8 @@ heart.mousepressed = function(x, y, btn) {
 			useObject(obj, player)
 	}
 	else // otherwise walk to the destination
-		critterWalkTo(player, mouseHex, doAlwaysRun)
+		if(critterWalkTo(player, mouseHex, doAlwaysRun) === false)
+			console.log("Cannot walk there")
 }
 
 heart.keydown = function(k) {

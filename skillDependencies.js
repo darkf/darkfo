@@ -135,8 +135,8 @@ function getImprovementCost(obj, skill) {
 Skill.prototype.calculateValue = function(obj)
 {
 	var addedValue = 0
-	console.log(this)
-	console.log(this.dependencies)
+	//console.log(this)
+	//console.log(this.dependencies)
 	for(var i = 0; i < this.dependencies.length; i++)
 	{
 		var stat = critterGetStat(obj,this.dependencies[i].statType)

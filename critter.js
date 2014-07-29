@@ -75,17 +75,17 @@ var Weapon = function(weapon) {
 	if(weapon === 'punch') { // default punch
 		// todo: use character stats...
 		// todo: fully turn this into a real weapon
-		this.weapon = {}
 		this.type = 'melee'
 		this.minDmg = 1
 		this.maxDmg = 2
 		this.name = 'punch'
 		this.weaponSkillType = 'Unarmed'
+		this.weapon = {}
 		this.weapon.pro = {extra: {}}
-		this.weapon.pro.extra.maxRange1 = 1;
-		this.weapon.pro.extra.maxRange2 = 1;
-		this.weapon.pro.extra.APCost1 = 4;
-		this.weapon.pro.extra.APCost2 = 4;
+		this.weapon.pro.extra.maxRange1 = 1
+		this.weapon.pro.extra.maxRange2 = 1
+		this.weapon.pro.extra.APCost1 = 4
+		this.weapon.pro.extra.APCost2 = 4
 	} else { // todo: spears, etc
 		this.type = 'gun'
 		this.minDmg = weapon.pro.extra.minDmg
@@ -281,7 +281,8 @@ function critterWalkTo(obj, target, running, callback, maxLength) {
 
 	var path = recalcPath(obj.position, target)
 	if(path.length === 0) {
-		console.log("not a valid path")
+		// no path
+		//console.log("not a valid path")
 		return false
 	}
 	if(maxLength !== undefined && path.length > maxLength) {
@@ -549,7 +550,7 @@ function critterGetStat(obj, stat) {
 function critterGetRawStat(obj, stat) {
 	//console.log("STAT: " + stat + " IS: " + obj.stats[stat])
 	if(obj.stats[stat] === undefined) {
-		console.log("NO STAT: " + stat + " - attempting to add it")
+		//console.log("NO STAT: " + stat + " - attempting to add it")
 		if(statDependencies[stat] !== undefined) {
 			obj.stats[stat] = statDependencies[stat].Default
 		}else{
