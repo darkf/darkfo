@@ -482,8 +482,7 @@ left: 472; top: 75;
     position: absolute;
     left: 503; top: 133;
     width: 120; height: 182;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 #worldMapLabelsBackground {

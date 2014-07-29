@@ -81,6 +81,7 @@ function initUI() {
 	makeScrollable($("#barterBoxRight"))
 	makeScrollable($("#lootBoxLeft"))
 	makeScrollable($("#lootBoxRight"))
+	makeScrollable($("#worldMapLabels"))
 
 	drawHP(critterGetStat(player, "HP"))
 	uiDrawWeapon()
