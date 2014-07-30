@@ -308,7 +308,7 @@ left: 472; top: 75;
   width: 375; height: 47;
   color: #00FF00;
   font-size: .75em;
-  overflow: auto;
+  overflow: hidden;
 }
 
 #dialogueBoxTextArea {

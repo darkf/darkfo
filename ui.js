@@ -66,10 +66,10 @@ function initUI() {
 	$("#endContainer").bind("animationiteration", uiEndCombatAnimationDone)
 	$("#endContainer").bind("webkitAnimationIteration", uiEndCombatAnimationDone)
 
-	function makeScrollable($el) {
+	function makeScrollable($el, scroll) {
 		$el.bind("mousewheel DOMMouseScroll", function(e) {
 			var delta = (e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) ? -1 : 1
-	        $el.scrollTop($el.scrollTop() + 60*delta)
+	        $el.scrollTop($el.scrollTop() + (scroll || 60)*delta)
 		})
 	}
 
@@ -83,6 +83,7 @@ function initUI() {
 	makeScrollable($("#lootBoxRight"))
 	makeScrollable($("#worldMapLabels"))
 	makeScrollable($("#displayLog"))
+	makeScrollable($("#dialogueBoxReply"), 30)
 
 	drawHP(critterGetStat(player, "HP"))
 	uiDrawWeapon()
@@ -377,7 +378,7 @@ function uiEndDialogue() {
 }
 
 function uiSetDialogueReply(reply) {
-	$("#dialogueBoxReply").html(reply)
+	$("#dialogueBoxReply").html(reply).scrollTop(0)
 	$("#dialogueBoxTextArea").html("")
 }
 

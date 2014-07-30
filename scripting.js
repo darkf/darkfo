@@ -153,6 +153,7 @@ var scriptingEngine = (function() {
 		if(currentDialogueObject !== null && dialogueOptionProcs.length === 0) {
 			// after running the option procedure we have no options...
 			// so close the dialogue
+			console.log("[dialogue exit via dialogueReply (no replies)]")
 			dialogueExit()
 		}
 	}
@@ -697,15 +698,12 @@ var scriptingEngine = (function() {
 		giq_option: function(iqTest, msgList, msgID, target, reaction) {
 			var msg = getScriptMessage(msgList, msgID)
 			console.log("DIALOGUE OPTION: " + msg + " [INT " + ((iqTest >= 0) ? (">="+iqTest) : ("<="+-iqTest)) + "]")
-			var INT = critterGetStat(dudeObject, 'INT')
-			if((iqTest >= 0 && INT < iqTest) || (iqTest <= 0 && INT > -iqTest))
-				return // not enough intelligence for this option				
-			var that = this
-			dialogueOptionProcs.push(function() {
-				$("#dialogue").append(msg + "<br>")
-				target.call(that)
-			})
-			//$("#dialogue").append("<a href=\"javascript:dialogueReply(" + (dialogueOptionProcs.length-1) + ")\">" + msg + "</a><br>")
+
+			var INT = critterGetStat(dudeObject, "INT")
+			if((iqTest > 0 && INT < iqTest) || (iqTest < 0 && INT > -iqTest))
+				return // not enough intelligence for this option
+
+			dialogueOptionProcs.push(target.bind(this))
 			uiAddDialogueOption(msg, dialogueOptionProcs.length - 1)
 			//stub("giQ_Option", arguments)
 		},
