@@ -110,7 +110,7 @@ body {
     width: 158; height: 54;
     color: #00FF00;
     font-size: 8pt;
-    overflow: auto;
+    overflow: hidden;
 }
 
 #attackButtonContainer {

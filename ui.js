@@ -82,6 +82,7 @@ function initUI() {
 	makeScrollable($("#lootBoxLeft"))
 	makeScrollable($("#lootBoxRight"))
 	makeScrollable($("#worldMapLabels"))
+	makeScrollable($("#displayLog"))
 
 	drawHP(critterGetStat(player, "HP"))
 	uiDrawWeapon()
@@ -639,7 +640,8 @@ function uiLoot(object) {
 }
 
 function uiLog(msg) {
-	$("#displayLog").append(msg + "<br>")
+	var $log = $("#displayLog")
+	$log.append("<li>" + msg + "</li>").scrollTop($log[0].scrollHeight)
 }
 
 function uiCloseWorldMap() {
