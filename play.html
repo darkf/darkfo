@@ -273,6 +273,12 @@ function getLstId(lst, id) {
 }
 
 function lazyLoadImage(art, callback, isHeartImg) {
+	if(images[art] !== undefined) {
+		if(callback)
+			callback(isHeartImg ? images[art] : images[art].img)
+		return
+	}
+	
 	var img = new Image()
 	img.src = art + '.png'
 	img.onload = function() {

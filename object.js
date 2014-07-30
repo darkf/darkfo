@@ -149,10 +149,15 @@ function objectRemove(obj) {
 	//
 	// so we're only going to remove it from the global object list, if present.
 
+	// TODO: use a removal queue instead of removing directory (indexing problems)
+
 	// TODO: better object equality testing
 	for(var i = 0; i < gObjects.length; i++) {
-		if(gObjects[i].pid === obj.pid && gObjects[i].amount === obj.amount) {
-			console.log("objectRemove: destroying index " + i + " (" + obj.art + ")")
+		//if(gObjects[i].pid === obj.pid && gObjects[i].amount === obj.amount) {
+		if(gObjects[i] === obj) {
+			console.log("objectRemove: destroying index " + i + " (" + obj.art + ") @ " +
+				        gObjects[i].position.x + ", " + gObjects[i].position.y + " vs " +
+				        obj.position.x + ", " + obj.position.y)
 			gObjects.splice(i, 1)
 			return
 		}
@@ -180,32 +185,29 @@ function objectExplode(obj, source, minDmg, maxDmg) {
 	explosion.position.y = obj.position.y
 	obj.dmgType = "explosion"
 
-	if(images[explosion.art] === undefined) {
-		lazyLoadImage(explosion.art, function() {
-			gObjects.push(explosion)
-			var idx = gObjects.length - 1
+	lazyLoadImage(explosion.art, function() {
+		gObjects.push(explosion)
 
-			console.log("adding explosion")
-			objectSingleAnim(explosion, false, function() {
-				gObjects.splice(idx, 1) // remove the explosion after it's finished
+		console.log("adding explosion")
+		objectSingleAnim(explosion, false, function() {
+			objectDestroy(explosion)
 
-				// damage critters in a radius
-				var hexes = hexesInRadius(obj.position, 8 /* explosion radius */) // TODO: radius
-				for(var i = 0; i < hexes.length; i++) {
-					var objs = objectsAtPosition(hexes[i])
-					for(var j = 0; j < objs.length; j++) {
-						if(objs[j].type === "critter")
-							console.log("todo: damage " + critterGetName(objs[j]))
+			// damage critters in a radius
+			var hexes = hexesInRadius(obj.position, 8 /* explosion radius */) // TODO: radius
+			for(var i = 0; i < hexes.length; i++) {
+				var objs = objectsAtPosition(hexes[i])
+				for(var j = 0; j < objs.length; j++) {
+					if(objs[j].type === "critter")
+						console.log("todo: damage " + critterGetName(objs[j]))
 
-						scriptingEngine.damage(objs[j], obj, source, damage)
-					}
+					scriptingEngine.damage(objs[j], obj, obj /*source*/, damage)
 				}
+			}
 
-				// remove explosive
-				objectDestroy(obj)
-			})
+			// remove explosive
+			objectDestroy(obj)
 		})
-	}
+	})
 }
 
 function useExplosive(obj, source) {
