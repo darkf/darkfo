@@ -457,18 +457,19 @@ function lookupScriptName(scriptID) {
 
 function dropObject(source, obj) {
 	// drop inventory object obj from source
-	var idx = -1
+	var removed = false
 	for(var i = 0; i < source.inventory.length; i++) {
 		if(source.inventory[i].pid === obj.pid) {
-			idx = i
+			removed = true
+			source.inventory.splice(i, 1) // remove from source
 			break
 		}
 	}
-	if(idx === -1) throw "dropObject: couldn't find object"
+	if(!removed) throw "dropObject: couldn't find object"
 
-	objectMove(obj, {x: source.position.x, y: source.position.y})
-	source.inventory.splice(idx, 1) // remove from source
 	gObjects.push(obj) // add to objects
+	var idx = gObjects.length - 1 // our new index
+	objectMove(obj, {x: source.position.x, y: source.position.y}, idx)
 }
 
 // Draws a line between a and b, returning the first object hit

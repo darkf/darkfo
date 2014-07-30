@@ -325,6 +325,11 @@ function objectZCompare(a, b) {
 
 function objectZOrder(obj, index) {
 	var oldIdx = (index !== undefined) ? index : objectFindIndex(obj)
+	if(oldIdx === -1) {
+		console.log("objectZOrder: no such object...")
+		return
+	}
+
 	gObjects.splice(oldIdx, 1) // remove the object...
 
 	for(var i = 0; i < gObjects.length; i++) {
@@ -340,7 +345,7 @@ function zsort(objects) {
 	objects.sort(objectZCompare)
 }
 
-function objectMove(obj, position) {
+function objectMove(obj, position, curIdx) {
 	obj.position = position
-	objectZOrder(obj)
+	objectZOrder(obj, curIdx)
 }
