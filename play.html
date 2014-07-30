@@ -948,7 +948,7 @@ function recalcPath(start, goal) {
 	}
 
 	var grid = new PF.Grid(HEX_GRID_SIZE, HEX_GRID_SIZE, matrix)
-	var finder = new PF.AStarFinder()
+	var finder = new PF.BestFirstFinder()
 	var path = finder.findPath(start.x, start.y, goal.x, goal.y, grid)
 	return path
 }
