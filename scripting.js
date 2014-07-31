@@ -432,6 +432,8 @@ var scriptingEngine = (function() {
 			}
 			critterDamage(obj, damage, this.self_obj, true, true, damageType)
 		},
+		poison: function(obj, amount) { stub("poison", arguments) },
+		radiation_dec: function(obj, amount) { stub("radiation_dec", arguments) },
 
 		// combat
 		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
@@ -449,6 +451,7 @@ var scriptingEngine = (function() {
 			info("[terminate_combat]")
 			combat.end()
 		},
+		critter_set_flee_state: function(obj, isFleeing) { stub("critter_set_flee_state", arguments) },
 
 		// objects
 		obj_is_locked: function(obj) { /*stub("obj_is_locked", arguments);*/ return 0 },
