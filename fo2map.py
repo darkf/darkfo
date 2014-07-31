@@ -283,13 +283,11 @@ CritterInfo = Struct("",
 	Padding(4*2)
 )
 
-Ladder = Struct("",
-	IfThenElse("foo", lambda ctx: ctx._._._._.version == 20,
+Ladder = IfThenElse("", lambda ctx: ctx._._._.version == 20,
 		Struct("", # fallout 2
-			SBInt32("1"),
-			SBInt32("2")),
-		Padding(4) # fallout 1
-	)
+			SBInt32("unknown1"),
+			SBInt32("destination")),
+		Padding(4) # fallout 1 (probably destination?)
 )
 
 SceneryInfo = Struct("",
@@ -303,7 +301,9 @@ SceneryInfo = Struct("",
 		),
 		scenerytype_elevator: Struct("",
 			Value("subtype", lambda _: "elevator"),
-			Padding(4*2)
+			UBInt32("unknown1"),
+			UBInt32("unknown2")
+			#Padding(4*2)
 		),
 		scenerytype_stairs: Struct("",
 			Value("subtype", lambda _: "stairs"),

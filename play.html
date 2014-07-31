@@ -673,6 +673,7 @@ function loadMap(mapName, startingPosition, startingElevation) {
 		imageInfo = getFileJSON("art/imageMap.json")
 
 	var map = getFileJSON("maps/"+mapName+".json")
+	MAP_NAME = mapName
 	gMap = map
 	var elevation = (startingElevation !== undefined) ? startingElevation : 0
 

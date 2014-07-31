@@ -88,7 +88,7 @@ function canUseObject(obj, source) {
 	if(obj._script !== undefined && obj._script.use_p_proc !== undefined)
 		return true
 	else if(obj.type === "item" || obj.type === "scenery")
-		if(objectIsDoor(obj) || objectIsStairs(obj))
+		if(objectIsDoor(obj) || objectIsStairs(obj) || objectIsLadder(obj))
 			return true
 		else
 			return (obj.pro.extra.actionFlags & 8) != 0
@@ -101,6 +101,12 @@ function objectIsDoor(obj) {
 
 function objectIsStairs(obj) {
 	return (obj.type === "scenery" && obj.pro.extra.subType === 1) // SCENERY_STAIRS
+}
+
+function objectIsLadder(obj) {
+	return (obj.type === "scenery" &&
+	       (obj.pro.extra.subType === 3 || // SCENERY_LADDER_BOTTOM
+	       	obj.pro.extra.subType === 4)) // SCENERY_LADDER_TOP
 }
 
 function objectIsContainer(obj) {
@@ -292,6 +298,15 @@ function useObject(obj, source, useScript) {
 				        ", " + destTile.y  + ", elev: " + destElev)
 			loadMapID(obj.extra.destinationMap, destTile, destElev)
 		}
+	}
+	else if(objectIsLadder(obj)) {
+		var isTop = (obj.pro.extra.subType === 4)
+		var level = isTop ? currentElevation + 1 : currentElevation - 1
+		var destTile = fromTileNum(obj.extra.destination & 0xffff)
+		// TODO: destination also supposedly contains elevation and map
+		console.log("ladder (" + (isTop ? "top" : "bottom") + " -> level " + level + ")")
+		player.position = destTile
+		changeElevation(level)
 	}
 }
 
