@@ -533,11 +533,11 @@ function changeElevation(level, updateScripts) {
 	roofMap  = gMap.levels[level]["tiles"]["roof"]
 	gObjects = gMap.levels[level]["objects"]
 
+	// TODO: remove this from the old gObjects if necessary
 	gObjects.push(player)
 
 	if(updateScripts !== false) {
 		loadObjectScripts(gObjects)
-		scriptingEngine.enterMap(gMapScript, gObjects, currentElevation, gMap.mapID, false) // ?
 		scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
 	}
 

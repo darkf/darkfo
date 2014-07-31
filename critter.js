@@ -374,7 +374,13 @@ function critterWalkCallback(obj) {
 			else { // another map
 				console.log("exit grid -> map " + exitMapID + " elevation " + startingElevation +
 					" @ " + startingPosition.x + ", " + startingPosition.y)
-				loadMapID(exitMapID, startingPosition, startingElevation)
+				if(exitMapID === gMap.mapID) {
+					// same map, different elevation
+					critterMove(player, startingPosition)
+					changeElevation(startingElevation, true)
+				}
+				else
+					loadMapID(exitMapID, startingPosition, startingElevation)
 			}
 
 			return true

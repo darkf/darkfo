@@ -548,8 +548,9 @@ var scriptingEngine = (function() {
 		set_light_level: function(level) { stub("set_light_level", arguments) },
 		obj_set_light_level: function(obj, intensity, distance) { stub("obj_set_light_level", arguments) },
 		override_map_start: function(x, y, elevation, rotation) {
+			stub("override_map_start", arguments)
 			if(elevation !== currentElevation)
-				throw "override_map_start: not on current elevation"
+				changeElevation(elevation, true)
 			dudeObject.position = {x: x, y: y}
 			dudeObject.orientation = rotation
 			centerCamera(dudeObject.position)
@@ -599,12 +600,11 @@ var scriptingEngine = (function() {
 		tile_contains_pid_obj: function(tile, elevation, pid) {
 			stub("tile_contains_pid_obj", arguments, "tiles")
 			var pos = fromTileNum(tile)
-			if(elevation !== currentElevation)
-				throw "tile_contains_pid_obj: not on current elevation"
-			for(var i = 0; i < gameObjects.length; i++) {
-				if(gameObjects[i].position.x === pos.x && gameObjects[i].position.y === pos.y &&
-				   gameObjects[i].pid === pid) {
-					return gameObjects[i]
+			var objects = gMap.levels[elevation]["objects"]
+			for(var i = 0; i < objects.length; i++) {
+				if(objects[i].position.x === pos.x && objects[i].position.y === pos.y &&
+				   objects[i].pid === pid) {
+					return objects[i]
 				}
 			}
 			return null
@@ -821,7 +821,7 @@ var scriptingEngine = (function() {
 			stub("load_map", arguments)
 			info("load_map: " + map)
 			if(typeof map === "string")
-				loadMap(map)
+				loadMap(map.split(".")[0].toLowerCase())
 			else
 				loadMapID(map)
 		},
