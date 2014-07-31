@@ -534,7 +534,7 @@ function reprStats(stats) {
 	return JSON.stringify(stats) // todo
 }
 
-//todo: bring Unity to how stats and skills are calculated
+// todo: bring Unity to how stats and skills are calculated
 
 function critterGetStat(obj, stat) {
 
@@ -551,15 +551,14 @@ function critterGetRawStat(obj, stat) {
 	//console.log("STAT: " + stat + " IS: " + obj.stats[stat])
 	if(obj.stats[stat] === undefined) {
 		//console.log("NO STAT: " + stat + " - attempting to add it")
-		if(statDependencies[stat] !== undefined) {
-			obj.stats[stat] = statDependencies[stat].Default
-		}else{
-			console.log('FAILED TO ADD STAT: '+ stat)
-		}
-		//specialcase for HP
-		if(stat === "HP") {
+		if(statDependencies[stat] !== undefined)
+			obj.stats[stat] = statDependencies[stat].defaultVal
+		else
+			console.log('FAILED TO ADD STAT: ' + stat)
+
+		// special case for HP
+		if(stat === "HP")
 			obj.stats[stat] = critterGetStat(obj, "Max HP")
-		}		
 	}
 	return obj.stats[stat]
 }
