@@ -28,6 +28,8 @@ def pidType(pid):
 class ScriptsIgnore(Construct):
     def _parse(self, stream, context):
         totalScriptCount = 0
+        spatials = []
+        #scripts = []
 
         for scriptType in range(5):
         	scriptCount = SBInt32("")._parse(stream, context)
@@ -47,15 +49,45 @@ class ScriptsIgnore(Construct):
 
         			# TODO: find out more about this
         			#print "!!! PID:", hex(pid & 0xffff)
-        			script_id = Peek(Struct("",
-        				Padding(4),
-        				Padding(0 if pid_type not in (1, 2) else 4),
-        				Padding(0 if pid_type != 2 else 4),
-        				Padding(4),
-        				UBInt32("id")
-        			))._parse(stream, context).id
+        			script = Peek(Struct("",
+        				UBInt32("unk1"),
+        				#Padding(0 if pid_type not in (1, 2) else 4),
+        				IfThenElse("tileNum", lambda _: pid_type in (1, 2),
+        					UBInt32(""),
+        					Padding(0)),
+        				IfThenElse("unk3", lambda _: pid_type == 2,
+        					UBInt32("unk3_value"),
+        					Padding(0)),
+        				UBInt32("range"),
+        				UBInt32("id"),
+        				IfThenElse("spatialScriptID", lambda _: pid_type == 1,
+        					UBInt32(""),
+        					Padding(0))
+        			))._parse(stream, context)
+
+        			script_id = script.id
         			#print "script_id:", script_id
         			pidID = pid & 0xffff
+
+        			if pid_type == 1: # spatial scripts
+	        			if script.range > 50:
+	        				# this is a hack because, presumably due to this entire
+	        				# procedure being undocumented hacks that need better
+	        				# reverse engineering, we get garbage that is not
+	        				# actually a valid script.
+	        				# filter them out here.
+
+	        				print "invalid spatial script range:", script.range
+	        			else:
+		        			#print "script id:", script.spatialScriptID, "or", (script.spatialScriptID & 0xffff)
+		        			scriptName = stripExt(getProFile(scriptLst, script.spatialScriptID).split()[0])
+	        				spatials.append({"tileNum": script.tileNum & 0xffff,
+	        					             "elevation": ((script.tileNum >> 28) & 0xf) >> 1,
+	        					             "range": script.range,
+	        					             "scriptID": script.spatialScriptID,
+	        					             "script": scriptName})
+
+        			#scripts.append({"type": pid_type, "pidID": pidID, "script": script})
         			#if pid_ > 16:
         			#	print "ignoring script pid:", hex(pid), "(", pid_, ")"
         			#else:
@@ -63,6 +95,7 @@ class ScriptsIgnore(Construct):
 	    				scriptName = stripExt(getProFile(scriptLst, script_id).split()[0])
 	    				#print "Map script PID %d type %d is %d (%s)" % (pidID, scriptType, script_id, scriptName)
 	        			mapScriptPIDs[scriptType][pidID] = scriptName
+	        			#print "name:", scriptName
 
         			move = 15
         			if pid_type == 1:
@@ -81,7 +114,7 @@ class ScriptsIgnore(Construct):
         				if checkCount < check:
         					raise Exception("script check failed")
 
-        return totalScriptCount
+        return {"count": totalScriptCount, "spatials": spatials}
 
     def _build(self, obj, stream, context):
         # write obj to the stream (usually not directly)
@@ -435,6 +468,7 @@ def convertMap(data, mapName, outDir, verbose=True):
 		print sum(len(level) for level in map_.tiles), "tiles"
 		print map_.totalObjects, "objects"
 		print map_.objects[0].totalObjectsLevel, "objects on level 1"
+		print len(map_.scripts['spatials']), "spatial scripts"
 
 	sumObjects = sum(level.totalObjectsLevel for level in map_.objects)
 	if map_.totalObjects != sumObjects:
@@ -457,6 +491,20 @@ def convertMap(data, mapName, outDir, verbose=True):
 	writeTiles = True
 	writeObjects = True
 	writeImageList = True
+	writeSpatials = True
+
+	"""
+	del map_.tiles
+	for spatial in map_.scripts['spatials']:
+		del spatial['_script']
+		print "spatial:", spatial
+	scripts = map_.scripts['scripts']
+	for script in scripts:
+		print "type:", script['type']
+		print "PID:", script['pidID']
+		print "script:", script['script']
+	return
+	"""
 
 	for elevation in range(map_.numLevels):
 		# break down list of 1000 tiles into a 100x100 2d list
@@ -493,6 +541,9 @@ def convertMap(data, mapName, outDir, verbose=True):
 				#if hasattr(object_.extra, "subtype"):
 				#	obj["subtype"] = object_.extra.subtype
 
+				#if (object_.protoPID & 0xffff) == 1293:
+				#	print "elevator stub:", repr(object_)
+
 				if hasattr(object_.extra, "extra"):
 					obj["extra"] = object_.extra.extra
 				if hasattr(object_.extra, "info"):
@@ -500,6 +551,7 @@ def convertMap(data, mapName, outDir, verbose=True):
 				if hasattr(object_.extra, "artPath"):
 					obj["art"] = object_.extra.artPath.lower()
 					objectCounter[object_.extra.artPath.lower()] += 1
+
 				if object_.scriptID != -1:
 					scriptName = stripExt(getProFile(scriptLst, object_.scriptID).split()[0])
 					obj["script"] = scriptName
@@ -523,6 +575,8 @@ def convertMap(data, mapName, outDir, verbose=True):
 
 				return obj
 
+			if writeSpatials:
+				m["spatials"] = [x for x in map_.scripts['spatials'] if x['elevation'] == elevation]
 
 			for i,object_ in enumerate(map_.objects[elevation].object):
 				m["objects"].append(getObject(object_))
