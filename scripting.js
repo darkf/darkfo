@@ -390,12 +390,13 @@ var scriptingEngine = (function() {
 			}	
 			return 0
 		},
-		elevation: function(obj) { if(isGameObject(obj)) return currentElevation
+		elevation: function(obj) { if(isGameObject(obj) || obj.isSpatial) return currentElevation
 								   else { warn("elevation: not an object: " + obj); return -1 } },
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
 		obj_can_hear_obj: function(a, b) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
 		has_skill: function(obj, skill) { stub("has_skill", arguments); return 100 },
 		roll_vs_skill: function(obj, skill, bonus) { stub("roll_vs_skill", arguments); return 1 },
+		do_check: function(obj, check, modifier) { stub("do_check", arguments); return 1 },
 		is_success: function(roll) { stub("is_success", arguments); return 0 },
 		critter_inven_obj: function(obj, where) {
 			if(!isGameObject(obj)) throw "critter_inven_obj: not game object"
@@ -568,7 +569,8 @@ var scriptingEngine = (function() {
 		obj_on_screen: function(obj) { stub("obj_on_screen", arguments); return 0 },
 		obj_type: function(obj) {
 			if(!isGameObject(obj)) { warn("obj_type: not game object: " + obj); return }
-			if(obj.pid === undefined) { warn("obj_type: no PID"); return }
+			else if(obj.isPlayer) return 1 // critter
+			else if(obj.pid === undefined) { warn("obj_type: no PID"); return }
 			return (obj.pid >> 24) & 0xff
 		},
 		destroy_object: function(obj) { // destroy object from world
@@ -589,7 +591,7 @@ var scriptingEngine = (function() {
 
 		// tiles
 		tile_distance_objs: function(a, b) {
-			if(!isGameObject(a) || !isGameObject(b)) {
+			if((!isGameObject(a) || !isGameObject(b)) && (!a.isSpatial && !b.isSpatial)) {
 				warn("tile_distance_objs: " + a + " or " + b + " are not game objects")
 				return
 			}
@@ -597,7 +599,7 @@ var scriptingEngine = (function() {
 		},
 		tile_distance: function(a, b) { return hexDistance(fromTileNum(a), fromTileNum(b)) }, // TODO: should we use floor?
 		tile_num: function(obj) {
-			if(!isGameObject(obj)) { warn("tile_num: not game object"); return }
+			if(!isGameObject(obj) && !obj.isSpatial) { warn("tile_num: not game object"); return }
 			return toTileNum(obj.position)
 		},
 		tile_contains_pid_obj: function(tile, elevation, pid) {
@@ -984,6 +986,18 @@ var scriptingEngine = (function() {
 		return script._didOverride
 	}
 
+	function spatial(spatialObj, source) {
+		var script = spatialObj._script
+		if(script.spatial_p_proc === undefined)
+			throw "spatial script without a spatial_p_proc triggered"
+
+		script.game_time = gameTickTime
+		script.cur_map_index = currentMapID
+		script.source_obj = source
+		script.self_obj = spatialObj
+		script.spatial_p_proc()
+	}
+
 	function destroy(obj, source) {
 		if(!obj._script || obj._script.destroy_p_proc === undefined)
 			return null
@@ -1120,5 +1134,5 @@ var scriptingEngine = (function() {
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
 		    timeEventList: timeEventList, info: info, reset: reset, talk: talk, damage: damage,
 		    globalVars: globalVars, combatEvent: combatEvent, initScript: initScript, use: use,
-			destroy: destroy, dialogueEnd: dialogueEnd}
+			destroy: destroy, dialogueEnd: dialogueEnd, spatial: spatial}
 })()

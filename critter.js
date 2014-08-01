@@ -480,8 +480,27 @@ function critterUpdateAnimation(obj) {
 	}
 }
 
+function hitSpatialTrigger(position) {
+	if(gSpatials === null) return null
+	var hit = []
+	for(var i = 0; i < gSpatials.length; i++) {
+		var spatial = gSpatials[i]
+		if(hexDistance(position, spatial.position) <= spatial.range)
+			hit.push(spatial)
+	}
+	return hit
+}
+
 function critterMove(obj, position) {
-	return objectMove(obj, position)
+	objectMove(obj, position)
+
+	var hitSpatials = hitSpatialTrigger(position)
+	for(var i = 0; i < hitSpatials.length; i++) {
+		var spatial = hitSpatials[i]
+		console.log("triggered spatial " + spatial.script + " (" + spatial.range + ") @ " +
+			        spatial.position.x + ", " + spatial.position.y)
+		scriptingEngine.spatial(spatial, obj)
+	}
 }
 
 function critterKill(obj, source, useScript, useAnim, callback) {

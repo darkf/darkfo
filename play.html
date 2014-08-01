@@ -43,6 +43,7 @@ var images = {}
 var imageInfo = null
 var gObjects = []
 var gMap = null
+var gSpatials = null
 var currentElevation = 0 // current map elevation
 var hexOverlay = null
 var tempCanvas = null // temporary canvas used for detecting single pixels
@@ -69,6 +70,7 @@ var showRoof = true // show roof tiles?
 var showObjects = true // show objects?
 var showWalls = true // show walls?
 var showBoundingBox = false // show bounding boxes around objects?
+var showSpatials = true // show spatial script triggers?
 
 var doLoadScripts = true // should we load scripts?
 var doUpdateCritters = true // should we give critters heartbeats?
@@ -532,6 +534,7 @@ function changeElevation(level, updateScripts) {
 	floorMap = gMap.levels[level]["tiles"]["floor"]
 	roofMap  = gMap.levels[level]["tiles"]["roof"]
 	gObjects = gMap.levels[level]["objects"]
+	gSpatials = gMap.levels[level]["spatials"]
 
 	// TODO: remove this from the old gObjects if necessary
 	gObjects.push(player)
@@ -695,6 +698,24 @@ function loadMap(mapName, startingPosition, startingElevation) {
 		loadObjectScripts(gObjects)
 		scriptingEngine.enterMap(gMapScript, gObjects, elevation, gMap.mapID, true)
 		scriptingEngine.updateMap(gMapScript, gObjects, elevation)
+
+		// load spatial scripts
+		for(var level = 0; level < gMap.levels.length; level++) {
+			var spatials = gMap.levels[level]["spatials"]
+			for(var i = 0; i < spatials.length; i++) {
+				var spatial = spatials[i]
+				var script = scriptingEngine.loadScript(spatial.script)
+				if(script === null)
+					console.log("load script failed for spatial " + spatial.script)
+				else {
+					spatial._script = script
+					// no need to initialize here because spatials only use spatial_p_proc
+				}
+
+				spatial.isSpatial = true
+				spatial.position = fromTileNum(spatial.tileNum)
+			}
+		}
 	}
 	else changeElevation(elevation, false)
 
@@ -1226,6 +1247,15 @@ heart.draw = function() {
 		var whose = combat.inPlayerTurn ? "player" : critterGetName(combat.combatants[combat.whoseTurn])
 		var AP = combat.inPlayerTurn ? player.AP : combat.combatants[combat.whoseTurn].AP
 		heart.graphics.print("[turn " + combat.turnNum + " of " + whose + " AP: " + AP.getAvailableMoveAP() + "]", SCREEN_WIDTH - 200, 15)
+	}
+
+	if(showSpatials === true) {
+		for(var i = 0; i < gSpatials.length; i++) {
+			var spatial = gSpatials[i]
+			var scr = hexToScreen(spatial.position.x, spatial.position.y)
+			heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
+			heart.graphics.print(spatial.script, scr.x - 10 - cameraX, scr.y - 3 - cameraY)
+		}
 	}
 
 	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
