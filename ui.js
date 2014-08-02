@@ -712,7 +712,11 @@ function uiWorldMap() {
 }
 
 function uiElevator(elevator) {
+	uiMode = UI_MODE_ELEVATOR
 	var art = lookupInterfaceArt(elevator.type)
 	console.log("elevator art: " + art)
 	console.log("buttons: " + elevator.buttonCount)
+
+	$("#elevatorBox").css({visibility: "visible",
+		                   backgroundImage: "url('" + art + ".png')"})
 }

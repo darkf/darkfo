@@ -530,3 +530,36 @@ left: 472; top: 75;
 .worldmapEntranceHotspot:active {
     background-image: url("art/intrface/hotspot2.png");
 }
+
+#elevatorBox {
+    position: absolute;
+    width: 230; height: 284;
+    left: 285; top: 158; /* center */
+    visibility: hidden;
+
+    /* background-image varies per elevator type */
+}
+
+#elevatorPositioner {
+    /**/
+}
+
+.elevatorButton {
+    /**/
+}
+
+#elevatorButton1 {
+    /**/
+}
+
+#elevatorButton2 {
+    /**/
+}
+
+#elevatorButton3 {
+    /**/
+}
+
+#elevatorButton4 {
+    /**/
+}
