@@ -796,6 +796,7 @@ var scriptingEngine = (function() {
 				return
 			}
 		},
+		explosion: function(tile, elevation, damage) { stub("explosion", arguments) },
 
 		gfade_out: function(time) { stub("gfade_out", arguments) },
 		gfade_in: function(time) { stub("gfade_in", arguments) },
@@ -854,6 +855,7 @@ var scriptingEngine = (function() {
 			}
 			else throw "mark_area_known: invalid area type " + areaType
 		},
+		game_ui_disable: function() { stub("game_ui_disable", arguments) },
 
 		// sound
 		play_sfx: function(sfx) { stub("play_sfx", arguments) },
@@ -925,7 +927,11 @@ var scriptingEngine = (function() {
 
 		if(currentMapObject !== null)
 			obj._mapScript = currentMapObject
-		else currentMapObject = obj // this is likely our map script loaded first
+		else {
+			// this is likely our map script loaded first
+			currentMapObject = obj
+			obj._mapScript = obj
+		}
 
 		return scriptObject
 	}
