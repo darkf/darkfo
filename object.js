@@ -120,6 +120,10 @@ function objectIsWeapon(obj) {
 	return obj.weapon !== undefined
 }
 
+function objectIsExplosive(obj) {
+	return (obj.pid === 85 /* Plastic Explosives */ || obj.pid === 51 /* Dynamite */)
+}
+
 function objectFindItemIndex(obj, item) {
 	for(var i = 0; i < obj.inventory.length; i++) {
 		if(obj.inventory[i].pid === item.pid)
@@ -263,24 +267,21 @@ function useObject(obj, source, useScript) {
 	else if(obj.script !== undefined && !obj._script)
 		console.log("object used has script but is not loaded: " + obj.script)
 
-	if(obj.pid === 85 /* Plastic Explosives */ || obj.pid === 51 /* Dynamite */)
+	if(objectIsExplosive(obj))
 		return useExplosive(obj, source)
-
-	// todo: check script overrides
-	// also check object type
-	objectSingleAnim(obj)
 
 	if(objectIsDoor(obj) || objectIsContainer(obj)) {
 		// open/closable doors/containers
 		// todo: check lock status
 		if(!obj.open) obj.open = true
 		else obj.open = false
-		objectSingleAnim(obj, !obj.open)
-
-		if(objectIsContainer(obj) && obj.open === true) {
-			// loot a container
-			uiLoot(obj)
-		}
+		objectSingleAnim(obj, !obj.open, function() {
+			obj.anim = null
+			if(objectIsContainer(obj) && obj.open === true) {
+				// loot a container
+				uiLoot(obj)
+			}
+		})
 	}
 	else if(objectIsStairs(obj)) {
 		var destTile = fromTileNum(obj.extra.destination & 0xffff)
@@ -308,6 +309,8 @@ function useObject(obj, source, useScript) {
 		player.position = destTile
 		changeElevation(level)
 	}
+	else
+		objectSingleAnim(obj)
 }
 
 function objectFindIndex(obj) {
