@@ -364,3 +364,30 @@ function objectMove(obj, position, curIdx) {
 	obj.position = position
 	objectZOrder(obj, curIdx)
 }
+
+function useElevator() {
+	// Player walked into an elevator
+	//
+	// We search for the Elevator Stub (Scenery PID 1293)
+	// in the range of 11. The original engine uses a square
+	// of size 11x11, but we don't do that.
+
+	console.log("[elevator]")
+
+	var center = player.position
+	var hexes = hexesInRadius(center, 11)
+	for(var i = 0; i < hexes.length; i++) {
+		var objs = objectsAtPosition(hexes[i])
+		for(var j = 0; j < objs.length; j++) {
+			var obj = objs[j]
+			if(obj.type === "scenery" && obj.pidID === 1293) {
+				console.log("elevator stub @ " + hexes[i].x +
+					        ", " + hexes[i].y)
+
+				//console.log("props: " + repr(obj.extra))
+				console.log("elevator type: " + obj.extra.type + ", " +
+					        "level: " + obj.extra.level)
+			}
+		}
+	}
+}

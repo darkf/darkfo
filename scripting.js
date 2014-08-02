@@ -255,6 +255,11 @@ var scriptingEngine = (function() {
 		metarule: function(id, target) {
 			switch(id) {
 				case 14: return mapFirstRun // map_first_run
+				case 15: // elevator
+					if(target !== -1)
+						throw "elevator given explicit type"
+					useElevator()
+					break
 				case 17: stub("metarule", arguments); return 0  // is area known? (TODO)
 				case 18: return 0 // is the critter under the influence of drugs? (TODO)
 				case 22: return 0 // is_game_loading

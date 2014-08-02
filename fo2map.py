@@ -334,8 +334,8 @@ SceneryInfo = Struct("",
 		),
 		scenerytype_elevator: Struct("",
 			Value("subtype", lambda _: "elevator"),
-			UBInt32("unknown1"),
-			UBInt32("unknown2")
+			UBInt32("type"),
+			UBInt32("level")
 			#Padding(4*2)
 		),
 		scenerytype_stairs: Struct("",
