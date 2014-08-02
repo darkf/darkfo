@@ -545,21 +545,18 @@ left: 472; top: 75;
 }
 
 .elevatorButton {
-    /**/
+    position: absolute;
+    width: 48; height: 50;
+    left: 16; /* left/x constant for all elevator buttons, top/y changes */
+    visibility: hidden;
+    background-image: url("art/intrface/ebut_in.png");
 }
 
-#elevatorButton1 {
-    /**/
+.elevatorButton:active {
+    background-image: url("art/intrface/ebut_out.png");
 }
 
-#elevatorButton2 {
-    /**/
-}
-
-#elevatorButton3 {
-    /**/
-}
-
-#elevatorButton4 {
-    /**/
-}
+#elevatorButton1 { top: 42; }
+#elevatorButton2 { top: 102; }
+#elevatorButton3 { top: 162; }
+#elevatorButton4 { top: 222; }

@@ -711,6 +711,14 @@ function uiWorldMap() {
     }
 }
 
+function uiElevatorDone() {
+	uiMode = UI_MODE_NONE
+	$("#elevatorBox").css("visibility", "hidden")
+
+	// flip all buttons to hidden
+	$(".elevatorButton").css("visibility", "hidden").off("click")
+}
+
 function uiElevator(elevator) {
 	uiMode = UI_MODE_ELEVATOR
 	var art = lookupInterfaceArt(elevator.type)
@@ -719,4 +727,35 @@ function uiElevator(elevator) {
 
 	$("#elevatorBox").css({visibility: "visible",
 		                   backgroundImage: "url('" + art + ".png')"})
+
+	// flip the buttons we need visible
+	for(var i = 1; i <= elevator.buttonCount; i++) {
+		$("#elevatorButton" + i).css("visibility", "visible").click(function(i) {
+			return function() {
+				// button i pushed
+				// todo: animate positioner/spinner (and come up with a better name for that)
+
+				var mapID = elevator.buttons[i-1].mapID
+				var level = elevator.buttons[i-1].level
+				var position = fromTileNum(elevator.buttons[i-1].tileNum)
+
+				if(mapID !== gMap.mapID) {
+					// different map
+					console.log("elevator -> map " + mapID + ", level " + level + " @ " +
+						        position.x + ", " + position.y)
+					loadMapID(mapID, position, level)
+				}
+				else if(level !== currentElevation) {
+					// same map, different elevation
+					console.log("elevator -> level " + level + " @ " + 
+						        position.x + ", " + position.y)
+					critterMove(player, position)
+					changeElevation(level, true)
+				}
+
+				// else, same elevation, do nothing
+				uiElevatorDone()
+			}
+		}(i))
+	}
 }
