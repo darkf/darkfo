@@ -710,3 +710,9 @@ function uiWorldMap() {
         i++ 
     }
 }
+
+function uiElevator(elevator) {
+	var art = lookupInterfaceArt(elevator.type)
+	console.log("elevator art: " + art)
+	console.log("buttons: " + elevator.buttonCount)
+}

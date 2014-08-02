@@ -376,6 +376,7 @@ function useElevator() {
 
 	var center = player.position
 	var hexes = hexesInRadius(center, 11)
+	var elevatorStub = null
 	for(var i = 0; i < hexes.length; i++) {
 		var objs = objectsAtPosition(hexes[i])
 		for(var j = 0; j < objs.length; j++) {
@@ -383,11 +384,21 @@ function useElevator() {
 			if(obj.type === "scenery" && obj.pidID === 1293) {
 				console.log("elevator stub @ " + hexes[i].x +
 					        ", " + hexes[i].y)
-
-				//console.log("props: " + repr(obj.extra))
-				console.log("elevator type: " + obj.extra.type + ", " +
-					        "level: " + obj.extra.level)
+				elevatorStub = obj
+				break
 			}
 		}
 	}
+
+	if(elevatorStub === null)
+		throw "couldn't find elevator stub near " + center.x + ", " + center.y
+
+	console.log("elevator type: " + elevatorStub.extra.type + ", " +
+		        "level: " + elevatorStub.extra.level)
+
+	var elevator = getElevator(elevatorStub.extra.type)
+	if(!elevator)
+		throw "no elevator: " + elevatorStub.extra.type
+	
+	uiElevator(elevator)
 }

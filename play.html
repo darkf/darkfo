@@ -100,6 +100,7 @@ var proFiles = {}
 var lstFiles = {}
 var messageFiles = {}
 var mapInfo = null
+var elevatorInfo = null
 
 var floatMessages = []
 
@@ -158,14 +159,19 @@ var player = playerInit()
 
 function repr(obj) { return JSON.stringify(obj, null, 2) }
 
+function getElevator(type) {
+	if(elevatorInfo === null) {
+		console.log("loading elevator info")
+		elevatorInfo = getFileJSON("elevators.json")
+	}
+
+	return elevatorInfo.elevators[type]
+}
+
 function loadAreas() {
 	var areas = parseIni(getFileText("data/data/CITY.TXT"))
 	var out = {}
 	console.log("areas: " + areas)
-
-	function lookupArtIdx(idx) {
-		return "art/intrface/" + getLstId("art/intrface/intrface", idx).split('.')[0].toLowerCase()
-	}
 
 	for(var _area in areas) {
 		var area = areas[_area]
@@ -183,9 +189,9 @@ function loadAreas() {
 		//console.log(mapArtIdx + " - " + labelArtIdx)
 
 		if(mapArtIdx !== -1)
-			newArea.mapArt = lookupArtIdx(mapArtIdx)
+			newArea.mapArt = lookupInterfaceArt(mapArtIdx)
 		if(labelArtIdx !== -1)
-			newArea.labelArt = lookupArtIdx(labelArtIdx)
+			newArea.labelArt = lookupInterfaceArt(labelArtIdx)
 
 		// entrances
 		newArea.entrances = []
@@ -436,6 +442,10 @@ function getCritterArtPath(frmPID) {
 	}
 
 	return path
+}
+
+function lookupInterfaceArt(idx) {
+	return "art/intrface/" + getLstId("art/intrface/intrface", idx).split('.')[0].toLowerCase()
 }
 
 function lookupArt(frmPID) {
