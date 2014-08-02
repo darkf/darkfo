@@ -546,6 +546,8 @@ function changeElevation(level, updateScripts) {
 	gObjects = gMap.levels[level]["objects"]
 	gSpatials = gMap.levels[level]["spatials"]
 
+	critterStopWalking(player)
+
 	// TODO: remove this from the old gObjects if necessary
 	gObjects.push(player)
 
