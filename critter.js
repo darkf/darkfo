@@ -494,12 +494,14 @@ function hitSpatialTrigger(position) {
 function critterMove(obj, position) {
 	objectMove(obj, position)
 
-	var hitSpatials = hitSpatialTrigger(position)
-	for(var i = 0; i < hitSpatials.length; i++) {
-		var spatial = hitSpatials[i]
-		console.log("triggered spatial " + spatial.script + " (" + spatial.range + ") @ " +
-			        spatial.position.x + ", " + spatial.position.y)
-		scriptingEngine.spatial(spatial, obj)
+	if(doSpatials !== false) {
+		var hitSpatials = hitSpatialTrigger(position)
+		for(var i = 0; i < hitSpatials.length; i++) {
+			var spatial = hitSpatials[i]
+			console.log("triggered spatial " + spatial.script + " (" + spatial.range + ") @ " +
+				        spatial.position.x + ", " + spatial.position.y)
+			scriptingEngine.spatial(spatial, obj)
+		}
 	}
 }
 

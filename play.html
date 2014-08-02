@@ -75,6 +75,7 @@ var showSpatials = true // show spatial script triggers?
 var doLoadScripts = true // should we load scripts?
 var doUpdateCritters = false // should we give critters heartbeats?
 var doTimedEvents = true // should we handle registered timed events?
+var doSpatials = true // should we handle spatial triggers?
 var doCombat = true // allow combat?
 var doUseWeaponModel = true // use weapon model for NPC models?
 var doLoadItemInfo = true // load item information (such as inventory images)?
@@ -712,20 +713,22 @@ function loadMap(mapName, startingPosition, startingElevation) {
 		scriptingEngine.updateMap(gMapScript, gObjects, elevation)
 
 		// load spatial scripts
-		for(var level = 0; level < gMap.levels.length; level++) {
-			var spatials = gMap.levels[level]["spatials"]
-			for(var i = 0; i < spatials.length; i++) {
-				var spatial = spatials[i]
-				var script = scriptingEngine.loadScript(spatial.script)
-				if(script === null)
-					console.log("load script failed for spatial " + spatial.script)
-				else {
-					spatial._script = script
-					// no need to initialize here because spatials only use spatial_p_proc
-				}
+		if(doSpatials !== false) {
+			for(var level = 0; level < gMap.levels.length; level++) {
+				var spatials = gMap.levels[level]["spatials"]
+				for(var i = 0; i < spatials.length; i++) {
+					var spatial = spatials[i]
+					var script = scriptingEngine.loadScript(spatial.script)
+					if(script === null)
+						console.log("load script failed for spatial " + spatial.script)
+					else {
+						spatial._script = script
+						// no need to initialize here because spatials only use spatial_p_proc
+					}
 
-				spatial.isSpatial = true
-				spatial.position = fromTileNum(spatial.tileNum)
+					spatial.isSpatial = true
+					spatial.position = fromTileNum(spatial.tileNum)
+				}
 			}
 		}
 	}
@@ -1261,7 +1264,7 @@ heart.draw = function() {
 		heart.graphics.print("[turn " + combat.turnNum + " of " + whose + " AP: " + AP.getAvailableMoveAP() + "]", SCREEN_WIDTH - 200, 15)
 	}
 
-	if(showSpatials === true) {
+	if(showSpatials === true && doSpatials !== false) {
 		for(var i = 0; i < gSpatials.length; i++) {
 			var spatial = gSpatials[i]
 			var scr = hexToScreen(spatial.position.x, spatial.position.y)
