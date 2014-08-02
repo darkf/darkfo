@@ -717,6 +717,7 @@ function uiElevatorDone() {
 
 	// flip all buttons to hidden
 	$(".elevatorButton").css("visibility", "hidden").off("click")
+	$("#elevatorLabel").css("visibility", "hidden")
 }
 
 function uiElevator(elevator) {
@@ -724,6 +725,14 @@ function uiElevator(elevator) {
 	var art = lookupInterfaceArt(elevator.type)
 	console.log("elevator art: " + art)
 	console.log("buttons: " + elevator.buttonCount)
+
+	if(elevator.labels !== -1) {
+		var labelArt = lookupInterfaceArt(elevator.labels)
+		console.log("elevator label art: " + labelArt)
+
+		$("#elevatorLabel").css({visibility: "visible",
+	                             backgroundImage: "url('" + labelArt + ".png')"})
+	}
 
 	$("#elevatorBox").css({visibility: "visible",
 		                   backgroundImage: "url('" + art + ".png')"})

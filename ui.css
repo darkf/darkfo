@@ -540,6 +540,15 @@ left: 472; top: 75;
     /* background-image varies per elevator type */
 }
 
+#elevatorLabel {
+    position: absolute;
+    width: 107; height: 248;
+    left: 0; top: 37;
+    visibility: hidden;
+
+    /* background-image varies per elevator type */
+}
+
 #elevatorPositioner {
     /**/
 }
@@ -549,11 +558,11 @@ left: 472; top: 75;
     width: 48; height: 50;
     left: 16; /* left/x constant for all elevator buttons, top/y changes */
     visibility: hidden;
-    background-image: url("art/intrface/ebut_in.png");
+    background-image: url("art/intrface/ebut_out.png");
 }
 
 .elevatorButton:active {
-    background-image: url("art/intrface/ebut_out.png");
+    background-image: url("art/intrface/ebut_in.png");
 }
 
 #elevatorButton1 { top: 42; }
