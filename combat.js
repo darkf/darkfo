@@ -126,7 +126,64 @@ Combat.prototype.log = function(msg) {
 	console.log(msg)
 }
 
-Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
+
+
+Combat.prototype.accountForPartialCover = function(obj, target) {
+	//todo: get list of intervening critters. Substract 10 for each one in the way
+	return 0
+}
+
+Combat.prototype.getHitDistanceModifier = function(obj, target, weapon) {
+	//we calculate the distance between source and target
+	//we then substract the source's per modified by the weapon from it (except for scoped weapons)
+
+	//note: this function is supposed to have weird behaviour for multihex sources and targets. Let's ignore that.
+
+    //4 if weapon has long_range perk
+    //5 if weapon has scope_range perk
+	var distModifier = 2
+	//8 if weapon has scope_range perk
+	var minDistance = 0 
+	var perception = critterGetStat(obj, "PER")
+	var distance = hexDistance(obj.position, target.position)
+	if(distance < minDistance)
+		distance += minDistance //yes supposedly += not =, this means 7 grid distance is the worst
+	else
+	{
+		var tempPER = perception
+		if(obj.isPlayer === true)
+			tempPER -= 2 //supposedly player gets nerfed like this. WTF?
+		distance -= tempPER * distModifier
+	}
+
+	//this appears not to have any effect but was found so elsewhere
+	//If anyone can tell me why it exists or what it's for I'd be grateful.
+	if (-2*perception > distance)
+		distance = -2*perception
+
+	//needs to add sharpshooter perk bonuses on top
+	//distance -= 2*sharpshooterRank
+
+
+	//then we multiply a magic number on top. More if there is eye damage involved by the attacker
+	//this means for each field distance after PER modification we lose 4 points of hitchance
+	//12 if we have eyedamage
+	var objHasEyeDamage = false
+	if(distance >= 0 && objHasEyeDamage)
+		distance *= 12
+	else 
+		distance *= 4
+
+	//and if the result is a positive distance, we return that
+	//closeness can not improve hitchance above normal, so we don't return that
+	if(distance >= 0)
+		return distance
+	else
+		return 0
+
+}
+
+Combat.prototype.getHitChance = function(obj, target, region) {
 	// TODO: visibility (= light conditions) and distance
 	var weaponObj = critterGetEquippedWeapon(obj)
 	if(weaponObj === null)
@@ -139,11 +196,12 @@ Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
 	}
 	else
 		weaponSkill = critterGetSkill(obj, weapon.weaponSkillType)
+	var hitDistanceModifier = this.getHitDistanceModifier(obj, target, weapon)
 	var bonusAC = 0 // TODO: AP at end of turn bonus
 	var AC = critterGetStat(target, "AC") + bonusAC
 	var bonusCrit = 0 // TODO: perk bonuses, other crit influencing things
 	var baseCrit = critterGetStat(obj, "Critical Chance") + bonusCrit
-	var hitChance = weaponSkill - AC - CriticalEffects.regionHitChanceDecTable[region]
+	var hitChance = weaponSkill - AC - CriticalEffects.regionHitChanceDecTable[region] - hitDistanceModifier
 	var critChance = baseCrit + CriticalEffects.regionHitChanceDecTable[region]
 	if(isNaN(hitChance)) throw "something went wrong with hit chance calculation"
 	//1 in 20 chance of failing needs to be preserved
@@ -153,10 +211,17 @@ Combat.prototype.getHitChance = function(obj, target, region, critModifer) {
 
 Combat.prototype.rollHit = function (obj, target, region) {
 	var critModifer = critterGetStat(obj, "Better Criticals")
-	var hitChance = this.getHitChance(obj, target, region, critModifer)
+	var hitChance = this.getHitChance(obj, target, region)
 
-	if(rollSkillCheck(hitChance.hit, 0, true) === true) {
-		if(rollSkillCheck(hitChance.crit, 0, true) === true) {
+	//hey kids! Did you know FO only rolls the dice once here and uses the results two times?
+	var roll = getRandomInt(1,101)
+
+	if(hitChance.hit - roll > 0) {
+		var isCrit = false
+		if(rollSkillCheck(Math.floor(hitChance.hit - roll)/10, hitChance.crit, false) === true)
+			isCrit = true
+		//todo: if Slayer/Sniper perk -> second chance to crit
+		if(isCrit === true) {
 			var critLevel = Math.floor(Math.max(0, getRandomInt(critModifer,100+critModifer)) / 20)
 			this.log("crit level: " + critLevel)
 			var crit = CriticalEffects.getCritical(critterGetKillType(target), region, critLevel)
@@ -167,7 +232,13 @@ Combat.prototype.rollHit = function (obj, target, region) {
 		return {hit: true, crit: false} // hit
 	}
 
-	return {hit: false, crit: false} // miss
+	//in reverse because miss -> roll > hitchance.hit
+	var isCrit = false
+	if(rollSkillCheck(Math.floor(roll - hitChance.hit)/10,0,false))
+		isCrit = true
+	//todo: jinxed/pariah dog give (nonstacking) 50% chance for critical miss upon miss
+
+	return {hit: false, crit: isCrit} // miss
 }
 
 Combat.prototype.getDamageDone = function(obj, target, critModifer) {
@@ -210,8 +281,6 @@ Combat.prototype.attack = function(obj, target, callback) {
 	var hitRoll = this.rollHit(obj, target, "torso")
 	this.log("hit% is " + this.getHitChance(obj, target, "torso", 2).hit)
 
-	// todo: critical misses
-
 	if(hitRoll.hit === true) {
 		var critModifier = hitRoll.crit ? hitRoll.DM : 2
 		var damage = this.getDamageDone(obj, target, critModifier)
@@ -223,7 +292,29 @@ Combat.prototype.attack = function(obj, target, callback) {
 			combat.perish(target)
 	}
 	else
-		this.log(who + " missed " + targetName)		
+	{
+		this.log(who + " missed " + targetName + (hitRoll.crit === true ? " critically" : ""))		
+		if(hitRoll.crit === true)
+		{
+			var critFailMod = (critterGetStat(obj, "LUK") - 5) * - 5
+			var critFailRoll = Math.floor(getRandomInt(1,100) - critFailMod)
+			var critFailLevel = 1
+			if(critFailRoll <= 20)
+				critFailLevel = 1
+			else if(critFailRoll <= 50)
+				critFailLevel = 2
+			else if(critFailRoll <= 75)
+				critFailLevel = 3
+			else if(critFailRoll <= 95)
+				critFailLevel = 4
+			else
+				critFailLevel = 5
+			this.log(who + " failed at fail level "+critFailLevel);
+			//todo: map weapon type to crit fail table types
+			var critFailEffect = CriticalEffects.criticalFailTable.unarmed[critFailLevel]
+			CriticalEffects.temporaryDoCritFail(critFailEffect, obj)
+		}
+	}
 }
 
 Combat.prototype.perish = function(obj) {

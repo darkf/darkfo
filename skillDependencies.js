@@ -64,7 +64,7 @@ statDependencies['INT'] = new Stat(1, 10, 5, [])
 statDependencies['AGI'] = new Stat(1, 10, 5, [])
 statDependencies['LUK'] = new Stat(1, 10, 5, [])
 
-statDependencies['Max HP'] = new Stat(0, 999, 0, [])
+statDependencies['Max HP'] = new Stat(0, 999, 0, [new Dependency('One', 15), new Dependency('END', 2), new Dependency('STR', 2)])
 statDependencies['AP'] = new Stat(1, 99, 0, [new Dependency('One', 5), new Dependency('AGI', 0.5)])
 statDependencies['AC'] = new Stat(0, 999, 0, [new Dependency('AGI', 1)])
 statDependencies['Melee'] = new Stat(1, 500, 0, [new Dependency('One', -5), new Dependency('STR', 1)])

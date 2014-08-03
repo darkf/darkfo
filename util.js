@@ -62,6 +62,7 @@ function getFileJSON(path, err) {
 	return r
 }
 
+//min inclusive, max inclusive.
 function getRandomInt(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min
 }

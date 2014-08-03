@@ -18,8 +18,36 @@ limitations under the License.
 
 var CriticalEffects = (function() {
 	var generalRegionName = {0: "head", 1: "leftArm",2: "rightArm",3: "torso",4: "rightLeg", 5: "leftLeg", 6: "eyes", 7: "groin",8: "uncalled"}
-	var regionHitChanceDecTable = {"head":40,"torso":0}
+	//todo: make this table account for different weapon types. It appears melee weapons use a second one
+	//though it appears to only be a /2 for melee
+	var regionHitChanceDecTable = {"torso": 0, "leftLeg": 20, "rightLeg": 20, "groin": 30, "leftArm": 30, "rightArm": 30, "head": 40, "eyes": 60}
 	var critterTable = []
+
+	var critFailEffects = {
+		damageSelf: function(target) {
+			console.log(critterGetName(target) + " has damaged themselves. This does not do anything yet")
+		},
+
+		crippleRandomAppendage: function(target) {
+			console.log(critterGetName(target) + " has crippled a random appendage. This does not do anything yet")
+		},
+
+		hitRandomly: function(target) {
+			console.log(critterGetName(target) + " has hit randomly. This does not do anything yet")
+		},
+
+		hitSelf: function(target) {
+			console.log(critterGetName(target) + " has hit themselves. This does not do anything yet")
+		},
+
+		loseAmmo: function(target) {
+			console.log(critterGetName(target) + " has lost their ammo. This does not do anything yet")
+		},
+
+		destroyWeapon: function(target) {
+			console.log(critterGetName(target) + " has had their weapon blow up in their face. Ouch. This does not do anything yet")
+		},
+	}
 
 	var critterEffects = {
 		knockout: function(target) {
@@ -162,9 +190,69 @@ var CriticalEffects = (function() {
 		//critterTable[number] = critTableJsonToJsObjectParser(table)
 	}
 
+		var criticalFailTable = {}
+	criticalFailTable.unarmed = {
+		1: [],
+		2: [critterEffects.loseNextTurn],
+		3: [critterEffects.loseNextTurn],
+		4: [critFailEffects.damageSelf, critterEffects.knockdown],
+		5: [critFailEffects.crippleRandomAppendage]
+	}
+	criticalFailTable.melee = {
+		1: [],
+		2: [critterEffects.loseNextTurn],
+		3: [critterEffects.droppedWeapon],
+		4: [critFailEffects.hitRandomly],
+		5: [critFailEffects.hitSelf]
+	}
+	criticalFailTable.firearms = {
+		1: [],
+		2: [critFailEffects.loseAmmo],
+		3: [critterEffects.droppedWeapon],
+		4: [critterEffects.hitRandomly],
+		5: [critFailEffects.destroyWeapon]
+	}
+	criticalFailTable.energy = {
+		1: [critterEffects.loseNextTurn],
+		2: [critFailEffects.loseAmmo, critterEffects.loseNextTurn],
+		3: [critterEffects.droppedWeapon, critterEffects.loseNextTurn],
+		4: [critFailEffects.hitRandomly],
+		5: [critFailEffects.destroyWeapon, critterEffects.loseNextTurn]
+	}
+	criticalFailTable.grenades = {
+		1: [],
+		2: [critterEffects.droppedWeapon],
+		3: [critFailEffects.damageSelf, critterEffects.droppedWeapon],
+		4: [critFailEffects.hitRandomly],
+		5: [critFailEffects.destroyWeapon]
+	}
+	criticalFailTable.rocketlauncher = {
+		1: [critterEffects.loseNextTurn],
+		2: [], //yes that appears backwards but seems to be the case in FO
+		3: [critFailEffects.destroyWeapon],
+		4: [critFailEffects.hitRandomly],
+		5: [critFailEffects.destroyWeapon, critterEffects.loseNextTurn, critterEffects.knockdown]
+	}
+	criticalFailTable.flamers = {
+		1: [],
+		2: [critterEffects.loseNextTurn],
+		3: [critFailEffects.hitRandomly],
+		4: [critFailEffects.destroyWeapon],
+		5: [critFailEffects.destroyWeapon, critterEffects.loseNextTurn, critterEffects.onFire]
+	}
+
+	function temporaryDoCritFail(critFail, target) {
+		for (var i = 0; i < critFail.length; i++) {
+			critFail[i](target);
+		}
+	}
+
+
 	return {generalRegionName: generalRegionName,
 			regionHitChanceDecTable: regionHitChanceDecTable,
 			critterTable: critterTable,
 			getCritical: getCritical,
-			loadTable: loadTable}
+			loadTable: loadTable,
+			criticalFailTable: criticalFailTable,
+			temporaryDoCritFail: temporaryDoCritFail}
 })()
