@@ -1073,11 +1073,13 @@ heart.update = function() {
 		if(doTimedEvents === true && inCombat !== true) {
 			// check and update timed events
 			var timedEvents = scriptingEngine.timeEventList
-			for(var i = 0; i < timedEvents.length; i++) {
+			var numEvents = timedEvents.length
+			for(var i = 0; i < numEvents; i++) {
 				if(timedEvents[i].obj &&
 				   timedEvents[i].obj.dead === true) { // remove events for dead objects
 				   	console.log("removing timed event for dead object")
 				   	timedEvents.splice(i--, 1)
+				   	numEvents--
 				    continue
 				}
 
@@ -1086,6 +1088,7 @@ heart.update = function() {
 					scriptingEngine.info("timed event triggered", "timer")
 					timedEvents[i].fn()
 					timedEvents.splice(i--, 1)
+					numEvents--
 				}
 			}
 		}
