@@ -312,7 +312,7 @@ var scriptingEngine = (function() {
 			}
 
 			if(trait === 666) // OBJECT_VISIBILITY
-				return 1 // visible
+				return (obj.visible === false) ? 0 : 1 // 1 = visible, 0 = invisible
 			else if(trait === 10) // OBJECT_CUR_ROT
 				return obj.orientation
 
@@ -413,7 +413,20 @@ var scriptingEngine = (function() {
 			return undefined
 		},
 		critter_attempt_placement: function(obj, tile, elevation) { stub("critter_attempt_placement", arguments) },
-		critter_state: function(obj) { /*stub("critter_state", arguments);*/ return 0 },
+		critter_state: function(obj) {
+			/*stub("critter_state", arguments);*/
+			if(!isGameObject(obj)) {
+				warn("critter_state: not game object: " + obj)
+				return 0
+			}
+
+			var state = 0
+			if(obj.dead === true)
+				state |= 1
+			// TODO: if obj is prone, state |= 2
+
+			return state
+		},
 		kill_critter: function(obj, deathFrame) { stub("kill_critter", arguments) },
 		get_poison: function(obj) { stub("get_poison", arguments); return 0 },
 		get_pc_stat: function(pcstat) {
@@ -627,7 +640,14 @@ var scriptingEngine = (function() {
 				tile = hexInDirection(tile, direction)
 			return toTileNum(tile)
 		},
-		tile_in_tile_rect: function(_, _, _, _, t) { stub("tile_in_tile_rect", arguments, "tiles"); return 1 },
+		tile_in_tile_rect: function(ul, ur, ll, lr, t) {
+			//stub("tile_in_tile_rect", arguments, "tiles")
+			ul = fromTileNum(ul); ur = fromTileNum(ur)
+			ll = fromTileNum(ll); lr = fromTileNum(lr)
+			t = fromTileNum(t)
+
+			return (tile_in_tile_rect(t, ur, lr, ll, ul) ? 1 : 0)
+		},
 		tile_contains_obj_pid: function(tile, elevation, pid) {
 			if(elevation !== currentElevation) {
 				warn("tile_contains_obj_pid: not same elevation")
