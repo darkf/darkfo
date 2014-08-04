@@ -287,9 +287,9 @@ function tile_in_tile_rect(tile, a, b, c, d) {
 		return false
 	}
 	var inside = true
-	if(tile.x < a.x || tile.x > c.x)
+	if(tile.x <= a.x || tile.x >= c.x)
 		inside = false
-	if(tile.y < a.y || tile.y > c.y)
+	if(tile.y <= a.y || tile.y >= c.y)
 		inside = false
 
 	return inside
