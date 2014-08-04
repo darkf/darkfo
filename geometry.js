@@ -245,3 +245,58 @@ function pointInBoundingBox(point, bbox) {
 	return (bbox.x <= point.x && point.x <= bbox.x+bbox.w &&
 		    bbox.y <= point.y && point.y <= bbox.y+bbox.h)
 }
+
+function tile_in_tile_rect(tile, a, b, c, d) {
+
+	//our rect looks like this:
+	//a - - - - b
+	//.			.
+	//.			.
+	//.			.
+	//d - - - - c
+	//or like this:
+	//		a
+	//    .   .
+	//  .       .
+	//d 		  b
+	//  .       .
+	//    .   .
+	//		c
+	//these are the only possibilities that give sensical rectangles,
+	// anything else involves guessing of tiles on the borders anyway
+	//if I get the topmost position and check if it's below that
+	//and get the downmost position and check if it's above that
+	//and get the leftmost position and check if it's to the right of that
+	//and the rightmost and check if it's to the left of that
+	//then I do get inside a rect
+	//but not a rect where my points are necessarily corner points.
+
+	//assumption: well behaved rectangle in a grid
+	//a = min x, min y
+	//b = min x, max y
+	//c = max x, min y
+	//d = max x, max y
+	var error = false
+	if(c.x != d.x || a.x != b.x || a.x > d.x)
+		error = true
+	if(a.y != c.y || b.y != d.y || a.y > d.y)
+		error = true
+	if(error)
+	{
+		console.log("This is not a rectangle: (" + a.x +"," + a.y +"), (" + b.x +"," + b.y +"), (" + c.x +"," + c.y +"), (" + d.x +"," + d.y +")")
+		return false
+	}
+	var inside = true
+	if(tile.x < a.x || tile.x > d.x)
+		inside = false
+	if(tile.y < a.y || tile.y > d.y)
+		inside = false
+
+	return inside
+}
+
+function tile_in_tile_rect2(tile, a, d) {
+	var b = {x: a.x, y: d.y}
+	var c = {x: d.x, y: a.y}
+	return tile_in_tile_rect(tile, a, b, c, d)
+}
