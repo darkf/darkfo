@@ -274,12 +274,12 @@ function tile_in_tile_rect(tile, a, b, c, d) {
 	//assumption: well behaved rectangle in a grid
 	//a = min x, min y
 	//b = min x, max y
-	//c = max x, min y
-	//d = max x, max y
+	//c = max x, max y
+	//d = max x, min y
 	var error = false
-	if(c.x != d.x || a.x != b.x || a.x > d.x)
+	if(c.x != d.x || a.x != b.x || a.x > c.x)
 		error = true
-	if(a.y != c.y || b.y != d.y || a.y > d.y)
+	if(a.y != d.y || b.y != c.y || a.y > c.y)
 		error = true
 	if(error)
 	{
@@ -287,16 +287,16 @@ function tile_in_tile_rect(tile, a, b, c, d) {
 		return false
 	}
 	var inside = true
-	if(tile.x < a.x || tile.x > d.x)
+	if(tile.x < a.x || tile.x > c.x)
 		inside = false
-	if(tile.y < a.y || tile.y > d.y)
+	if(tile.y < a.y || tile.y > c.y)
 		inside = false
 
 	return inside
 }
 
-function tile_in_tile_rect2(tile, a, d) {
-	var b = {x: a.x, y: d.y}
-	var c = {x: d.x, y: a.y}
+function tile_in_tile_rect2(tile, a, c) {
+	var b = {x: a.x, y: c.y}
+	var d = {x: c.x, y: a.y}
 	return tile_in_tile_rect(tile, a, b, c, d)
 }
