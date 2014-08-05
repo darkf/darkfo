@@ -311,10 +311,16 @@ var scriptingEngine = (function() {
 				return
 			}
 
-			if(trait === 666) // OBJECT_VISIBILITY
-				return (obj.visible === false) ? 0 : 1 // 1 = visible, 0 = invisible
-			else if(trait === 10) // OBJECT_CUR_ROT
-				return obj.orientation
+			if(traitType === 1) {
+				switch(trait) {
+					case 5: break // OBJECT_AI_PACKET (TODO)
+					case 6: break // OBJECT_TEAM_NUM (TODO)
+					case 10: return obj.orientation // OBJECT_CUR_ROT
+					case 666: // OBJECT_VISIBILITY
+						return (obj.visible === false) ? 0 : 1 // 1 = visible, 0 = invisible
+					case 669: break // OBJECT_CUR_WEIGHT (TODO)
+				}
+			}
 
 			stub("has_trait", arguments)
 			return 0
