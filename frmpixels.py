@@ -132,6 +132,98 @@ def exportFRM(frmFile, outFile, palette, exportImage=True):
 		
 		return frmInfo
 
+def flatten(l):
+	return [item for sublist in l for item in sublist]
+
+# For .FR[0-5]
+def exportFRMs(frmFiles, outFile, palette, exportImage=True):
+	maxH = 0
+
+	frmInfos = []
+	for frmFile in frmFiles:
+		with open(frmFile, "rb") as f:
+			frmInfos.append(readFRMInfo(f, exportImage))
+
+	totalW = sum(sum(sum(fo['w'] for fo in offset) for offset in
+		                info['frameOffsets']) for info in frmInfos)
+
+	maxH = max(max(max(fo['h'] for fo in offset) for offset in info['frameOffsets']) for info in frmInfos)
+
+	#print totalW, maxH
+
+	_fps = frmInfos[0]['fps']
+	_numFrames = frmInfos[0]['numFrames']
+	_frameOffsets = flatten(frmInfo['frameOffsets'] for frmInfo in frmInfos)
+
+	if _fps == 0:
+		fpses = [x['fps'] for x in frmInfos if x['fps'] != 0]
+		if len(fpses) == 0:
+			_fps = 10 # default
+		else:
+			_fps = fpses[0]
+
+	for frmInfo in frmInfos:
+		if frmInfo['numFrames'] != _numFrames:
+			raise Exception("number of frames do not match")
+		elif frmInfo['fps'] != _fps and frmInfo['fps'] != 0:
+			raise Exception("FPS does not match (%d vs %d)" % (_fps, frmInfo['fps']))
+		elif len(frmInfo['frameOffsets']) != 1:
+			raise Exception("frameOffsets is not 1 (more than one direction?)")
+
+	if exportImage:
+		finalImg = Image.new("RGBA", (totalW, maxH))
+	currentX = 0
+	_sx = 0 # running total width offset
+
+	for frmInfo in frmInfos:
+			framePixels = frmInfo['framePixels']
+			frameOffsets = frmInfo['frameOffsets']
+
+			for nDir in range(frmInfo['numDirections']):
+				for frameNum,frame in enumerate(framePixels[nDir]):
+					offsets = frameOffsets[nDir][frameNum]
+					w,h = offsets['w'], offsets['h']
+					#print frame.shape, w, h, nDir, frameNum
+					if exportImage:
+						frame = np.reshape(frame, (h, w))
+
+						pixels = np.empty((h, w, 4), dtype=int) # HxW RGBA
+						for rowI,row in enumerate(frame):
+							for colI,palIdx in enumerate(row):
+								pixels[(rowI, colI)] = palette[palIdx] + (0 if palIdx == 0 else 255,)
+
+						img = Image.fromarray(pixels.astype('uint8'), "RGBA")
+						finalImg.paste(img, (currentX, 0))
+					currentX += w
+
+			# build an image map
+			for direction in frmInfo['frameOffsets']:
+				ox = 0 # running total offsets
+				oy = 0
+				for frame in direction:
+					ox += frame['x']
+					oy += frame['y']
+					frame['sx'] = _sx
+					frame['ox'] = ox
+					frame['oy'] = oy
+					_sx += frame['w']
+
+			del frmInfo['framePixels']
+
+	if exportImage:
+		finalImg.save(outFile)
+	
+	dOffsets = [[] for _ in range(6)]
+	for i,frmInfo in enumerate(frmInfos):
+		dOffsets[i] = frmInfo['directionOffsets'][0]
+
+	# construct new FRM info
+	return {'numFrames': _numFrames,
+			'fps': _fps,
+			'numDirections': len(frmFiles),
+	        'directionOffsets': dOffsets,
+	        'frameOffsets': _frameOffsets}
+
 def main():
 	if len(sys.argv) < 3:
 		print "USAGE: %s FRM OUTFILE [PALETTE]" % sys.argv[0]
