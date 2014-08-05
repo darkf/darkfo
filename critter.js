@@ -300,12 +300,20 @@ function critterWalkTo(obj, target, running, callback, maxLength) {
 	return true
 }
 
-function critterStaticAnim(obj, anim, callback) {
+function critterStaticAnim(obj, anim, callback, waitForLoad) {
 	obj.art = critterGetAnim(obj, anim)
 	obj.frame = 0
 	obj.lastFrameTime = 0
-	obj.anim = anim
-	obj.animCallback = (callback !== undefined) ? callback : (function() { critterStopWalking(obj) })
+	if(waitForLoad === true) {
+		lazyLoadImage(obj.art, function() {
+			obj.anim = anim
+			obj.animCallback = (callback !== undefined) ? callback : (function() { critterStopWalking(obj) })			
+		})
+	}
+	else {
+		obj.anim = anim
+		obj.animCallback = (callback !== undefined) ? callback : (function() { critterStopWalking(obj) })
+	}
 }
 
 function critterStopWalking(obj) {
@@ -518,7 +526,7 @@ function critterKill(obj, source, useScript, useAnim, callback) {
 			obj.frame-- // go to last frame
 			obj.anim = undefined
 			if(callback !== undefined) callback()
-		})
+		}, true)
 	}
 }
 
