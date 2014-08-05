@@ -406,8 +406,8 @@ var scriptingEngine = (function() {
 		critter_inven_obj: function(obj, where) {
 			if(!isGameObject(obj)) throw "critter_inven_obj: not game object"
 			if(where === 0) {} // INVEN_TYPE_WORN
-			else if(where === 1) {} // INVEN_TYPE_RIGHT_HAND
-			else if(where === 2) {} // INVEN_TYPE_LEFT_HAND
+			else if(where === 1) return obj.rightHand // INVEN_TYPE_RIGHT_HAND
+			else if(where === 2) return obj.leftHand // INVEN_TYPE_LEFT_HAND
 			else if(where === -2) throw "INVEN_TYPE_INV_COUNT"
 			stub("critter_inven_obj", arguments)
 			return undefined
