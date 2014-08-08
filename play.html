@@ -1159,6 +1159,17 @@ function objectBoundingBox(obj) {
 	return {x: scr.x - offsetX, y: scr.y - offsetY, w: frameInfo.w, h: frameInfo.h}
 }
 
+function objectOnScreen(obj) {
+	var bbox = objectBoundingBox(obj)
+	if(bbox === null)
+		return false
+
+	if(bbox.x + bbox.w < cameraX || bbox.y + bbox.h < cameraY ||
+	   bbox.x >= cameraX+SCREEN_WIDTH || bbox.y >= cameraY+SCREEN_HEIGHT)
+		return false
+	return true
+}
+
 function drawObject(obj) {
 	var scr = hexToScreen(obj.position.x, obj.position.y)
 
