@@ -165,8 +165,9 @@ var scriptingEngine = (function() {
 
 		if(currentDialogueObject !== null && currentDialogueObject._script.yieldedFn !== undefined) {
 			info("[calling yielded fn]")
-			currentDialogueObject._script.yieldedFn()
+			var f = currentDialogueObject._script.yieldedFn
 			currentDialogueObject._script.yieldedFn = undefined
+			f()
 		}
 
 		currentDialogueObject = null
