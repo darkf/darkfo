@@ -47,8 +47,11 @@ var damageType = {'Normal': 0, 'Laser': 1, 'Fire': 2, 'Plasma': 3,
 
 var weaponSkillMap = {'uzi': 'Small Guns',
                       'rifle': 'Small Guns',
-                      'spear': 'Melee Weapons'}
-			
+                      'spear': 'Melee Weapons',
+                      'knife': 'Melee Weapons',
+                      'flamethr': 'Big Guns',
+                     }
+
 function parseAttack(weapon) {
 	var attackModes = weapon.pro.extra['attackMode']
 	var modeOne = attackMode[attackModes & 0xf]
