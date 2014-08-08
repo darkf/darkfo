@@ -315,7 +315,8 @@ function loadPRO(pid, pidID) {
 	// use the proto/ .lst files to look up proto
 	var type = getPROType(pid)
 	var lsts = {"items": "proto/items/items", "critters": "proto/critters/critters",
-                "scenery": "proto/scenery/scenery", "misc": "proto/misc/misc"}
+                "scenery": "proto/scenery/scenery", "misc": "proto/misc/misc",
+                "walls": "proto/walls/walls"}
 	var id = lsts[type] ? getLstId(lsts[type], pidID - 1) : pidID
 	var path = lsts[type] ? id : (pad(id, 8) + '.pro')
 
