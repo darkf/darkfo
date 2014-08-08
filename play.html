@@ -792,7 +792,12 @@ heart.load = function() {
 
 	uiLog("Welcome to DarkFO")
 
-	loadMap(MAP_NAME) // load initial map
+	if(location.search !== "") {
+		// load map from query string (e.g. URL ending in ?modmain)
+		loadMap(location.search.slice(1))
+	}
+	else
+		loadMap(MAP_NAME) // load initial map
 
 	if(doCombat === true)
 		CriticalEffects.loadTable()
