@@ -48,14 +48,15 @@ var scriptingEngine = (function() {
 		debugMessage: true,
 		displayMessage: true,
 		floatMessage: false,
-		gvars: true,
-		lvars: true,
+		gvars: false,
+		lvars: false,
 		mvars: true,
 		tiles: true,
 		animation: false,
 		movement: true,
 		inventory: true,
 		party: false,
+		dialogue: false,
 	}
 
 	var statMap = {
@@ -192,7 +193,7 @@ var scriptingEngine = (function() {
 
 		set_global_var: function(gvar, value) {
 			globalVars[gvar] = value
-			info("set_global_var: " + gvar + " = " + value)
+			info("set_global_var: " + gvar + " = " + value, "gvars")
 			log("set_global_var", arguments, "gvars")
 		},
 		set_local_var: function(lvar, value) {
@@ -201,12 +202,13 @@ var scriptingEngine = (function() {
 			log("set_local_var", arguments, "lvars")
 		},
 		local_var: function(lvar) {
-			log("local_var", arguments, "lvars");
+			log("local_var", arguments, "lvars")
 			if(this.lvars[lvar] === undefined) {
-				warn("local_var: setting default value (0) for LVAR " + lvar)
+				warn("local_var: setting default value (0) for LVAR " + lvar, "lvars")
 				this.lvars[lvar] = 0
 			}
-			return this.lvars[lvar] },
+			return this.lvars[lvar]
+		},
 		map_var: function(mvar) {
 			if(this._mapScript === undefined) {
 				warn("map_var: no map script")
@@ -737,7 +739,8 @@ var scriptingEngine = (function() {
 		giq_option: function(iqTest, msgList, msgID, target, reaction) {
 			log("giQ_Option", arguments)
 			var msg = getScriptMessage(msgList, msgID)
-			console.log("DIALOGUE OPTION: " + msg + " [INT " + ((iqTest >= 0) ? (">="+iqTest) : ("<="+-iqTest)) + "]")
+			info("DIALOGUE OPTION: " + msg +
+				 " [INT " + ((iqTest >= 0) ? (">="+iqTest) : ("<="+-iqTest)) + "]", "dialogue")
 
 			var INT = critterGetStat(dudeObject, "INT")
 			if((iqTest > 0 && INT < iqTest) || (iqTest < 0 && INT > -iqTest))
