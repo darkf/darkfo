@@ -590,7 +590,14 @@ var scriptingEngine = (function() {
 			}
 			return obj.pid
 		},
-		obj_on_screen: function(obj) { stub("obj_on_screen", arguments); return 0 },
+		obj_on_screen: function(obj) {
+			log("obj_on_screen", arguments)
+			if(!isGameObject(obj)) {
+				warn("obj_on_screen: not a game object: " + obj)
+				return 0
+			}
+			return objectOnScreen(obj) ? 1 : 0
+		},
 		obj_type: function(obj) {
 			if(!isGameObject(obj)) { warn("obj_type: not game object: " + obj); return }
 			else if(obj.isPlayer) return 1 // critter
