@@ -366,7 +366,9 @@ function zsort(objects) {
 
 function objectMove(obj, position, curIdx) {
 	obj.position = position
-	objectZOrder(obj, curIdx)
+	
+	if(doZOrder !== false)
+		objectZOrder(obj, curIdx)
 }
 
 function useElevator() {
