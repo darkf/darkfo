@@ -359,6 +359,7 @@ function uiStartDialogue(force, target) {
 	$("#dialogueBox").css("visibility", "visible").css("top", 480).animate({top: 290}, 1000)
 
 	// center around the dialogue target
+	if(!target) return
 	var bbox = objectBoundingBox(target)
 	if(bbox !== null) {
 		var dc = $("#dialogueContainer")
@@ -425,7 +426,7 @@ function uiBarterMode(merchant) {
 	uiMode = UI_MODE_BARTER
 
 	// hide dialogue screen for now
-	$("#dialogueBox").animate({top: 480}, 1000, function() {
+	$("#dialogueBox").animate({top: 480}, 1000, "swing", function() {
 		$("#dialogueBox").css("visibility", "hidden")
 		console.log("going to pop up")
 		// pop up the bartering screen

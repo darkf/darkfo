@@ -709,7 +709,6 @@ var scriptingEngine = (function() {
 			//$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
 			if(!this.self_obj) throw "no self_obj for start_gdialog"
 			currentDialogueObject = this.self_obj
-
 		    uiStartDialogue(false, this.self_obj)
 			//stub("start_gdialog", arguments)
 		},
