@@ -17,8 +17,7 @@ Scripting system/engine for DarkFO
 */
 
 var scriptingEngine = (function() {
-	var gameObjects = []
-	var gameElevation = 0
+	var gameObjects = null
 	var dudeObject = null
 	var mapVars = null
 	var globalVars = {
@@ -53,7 +52,7 @@ var scriptingEngine = (function() {
 		mvars: false,
 		tiles: true,
 		animation: false,
-		movement: true,
+		movement: false,
 		inventory: true,
 		party: false,
 		dialogue: false,
@@ -340,6 +339,7 @@ var scriptingEngine = (function() {
 			drawPlayerInventory()
 		},
 		obj_is_carrying_obj_pid: function(obj, pid) { // Number of inventory items with matching PID
+			log("obj_is_carrying_obj_pid", arguments)
 			if(!isGameObject(obj)) {
 				warn("obj_is_carrying_obj_pid: not a game object")
 				return 0
@@ -348,7 +348,7 @@ var scriptingEngine = (function() {
 				return 0
 			}
 
-			info("obj_is_carrying_obj_pid: " + pid, "inventory")
+			//info("obj_is_carrying_obj_pid: " + pid, "inventory")
 			var count = 0
 			for(var i = 0; i < obj.inventory.length; i++) {
 				if(obj.inventory[i].pid === pid) count++
@@ -820,7 +820,7 @@ var scriptingEngine = (function() {
 				return
 			}
 			if(critterWalkTo(obj, tile, !!isRun) === false) {
-				warn("animate_move_obj_to_tile: no path")
+				warn("animate_move_obj_to_tile: no path", "movement")
 				return
 			}
 		},
@@ -832,7 +832,10 @@ var scriptingEngine = (function() {
 		// timing
 		add_timer_event: function(obj, ticks, userdata) {
 			log("add_timer_event", arguments)
-			if(!isGameObject(obj)) { warn("add_timer_event: not game object: " + obj); return }
+			if(!obj || !obj._script) {
+				warn("add_timer_event: not a scriptable object: " + obj)
+				return
+			}
 			info("timer event added in " + ticks + " ticks (userdata " + userdata + ")", "timer")
 			// trigger timedEvent in `ticks` game ticks
 			timeEventList.push({ticks: ticks, obj: obj, userdata: userdata, fn: function() {
@@ -1103,7 +1106,6 @@ var scriptingEngine = (function() {
 
 	function updateMap(mapScript, objects, elevation) {
 		gameObjects = objects
-		gameElevation = elevation
 		mapFirstRun = false
 
 		mapScript.combat_is_initialized = 0
@@ -1131,12 +1133,12 @@ var scriptingEngine = (function() {
 
 	function enterMap(mapScript, objects, elevation, mapID, isFirstRun) {
 		gameObjects = objects
-		gameElevation = elevation
 		currentMapID = mapID
 		mapFirstRun = isFirstRun
 
 		if(mapScript.map_enter_p_proc !== undefined) {
 			info("calling map enter")
+			mapScript.self_obj = {_script: mapScript}
 			mapScript.map_enter_p_proc()
 		}
 
