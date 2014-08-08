@@ -555,8 +555,9 @@ function changeElevation(level, updateScripts) {
 	gObjects.push(player)
 
 	if(updateScripts !== false) {
+		var objectsAndSpatials = gObjects.concat(gSpatials)
 		loadObjectScripts(gObjects)
-		scriptingEngine.updateMap(gMapScript, gObjects, currentElevation)
+		scriptingEngine.updateMap(gMapScript, objectsAndSpatials, currentElevation)
 	}
 
 	centerCamera(player.position)
@@ -709,11 +710,6 @@ function loadMap(mapName, startingPosition, startingElevation) {
 		player.position = startingPosition || gMap.startPosition
 		player.orientation = gMap.startOrientation
 
-		changeElevation(elevation, false)
-		loadObjectScripts(gObjects)
-		scriptingEngine.enterMap(gMapScript, gObjects, elevation, gMap.mapID, true)
-		scriptingEngine.updateMap(gMapScript, gObjects, elevation)
-
 		// load spatial scripts
 		if(doSpatials !== false) {
 			for(var level = 0; level < gMap.levels.length; level++) {
@@ -733,6 +729,12 @@ function loadMap(mapName, startingPosition, startingElevation) {
 				}
 			}
 		}
+
+		changeElevation(elevation, false)
+		loadObjectScripts(gObjects)
+		var objectsAndSpatials = gObjects.concat(gSpatials)
+		scriptingEngine.enterMap(gMapScript, objectsAndSpatials, elevation, gMap.mapID, true)
+		scriptingEngine.updateMap(gMapScript, objectsAndSpatials, elevation)
 	}
 	else changeElevation(elevation, false)
 
