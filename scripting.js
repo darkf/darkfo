@@ -20,7 +20,7 @@ var scriptingEngine = (function() {
 	var gameObjects = []
 	var gameElevation = 0
 	var dudeObject = null
-	var mapVars = {} // TODO: fix this being persisted across map loads
+	var mapVars = null
 	var globalVars = {
 		0: 50, // GVAR_PLAYER_REPUTATION
 		//10: 1, // GVAR_START_ARROYO_TRIAL (1 = TRIAL_FIGHT)
@@ -1166,6 +1166,7 @@ var scriptingEngine = (function() {
 		gameObjects = null
 		currentMapObject = null
 		currentMapID = null
+		mapVars = {}
 
 		dudeObject = dude
 		ScriptProto.dude_obj = dudeObject
