@@ -88,7 +88,7 @@ var AI = function(combatant) {
 
 AI.aiTxt = null // AI.TXT: packet num -> key/value
 
-var Combat = function(objects, player) {
+var Combat = function(objects) {
 	this.combatants = []
 	this.playerIdx = -1
 
@@ -112,12 +112,11 @@ var Combat = function(objects, player) {
 	if(this.playerIdx === -1)
 		throw "combat: couldn't find player?"
 
-	this.player = player
+	this.player = this.combatants[this.playerIdx]
 	this.turnNum = 1
 	this.whoseTurn = this.playerIdx - 1
 	this.inPlayerTurn = true
 
-	// TODO: Combat.start()?
 	uiStartCombat()
 }
 
@@ -125,8 +124,6 @@ Combat.prototype.log = function(msg) {
 	// Combat-related debug log
 	console.log(msg)
 }
-
-
 
 Combat.prototype.accountForPartialCover = function(obj, target) {
 	//todo: get list of intervening critters. Substract 10 for each one in the way
@@ -432,6 +429,15 @@ Combat.prototype.doAITurn = function(obj, idx) {
 		})
 	}
 	else this.nextTurn()
+}
+
+Combat.start = function(forceTurn) {
+	// begin combat
+	inCombat = true
+	combat = new Combat(gObjects)
+	if(forceTurn !== undefined)
+		combat.forceTurn(forceTurn)
+	combat.nextTurn()
 }
 
 Combat.prototype.end = function() {

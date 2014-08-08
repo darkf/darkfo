@@ -461,10 +461,8 @@ var scriptingEngine = (function() {
 			// since this isn't actually used beyond its basic form, we're not going to bother
 			// implementing all of it
 
-			inCombat = true
-			combat = new Combat(gameObjects, dudeObject)
-			combat.forceTurn(this.self_obj)
-			combat.nextTurn()
+			// begin combat, turn starting with us
+			Combat.start(this.self_obj)
 		},
 		terminate_combat: function() {
 			info("[terminate_combat]")

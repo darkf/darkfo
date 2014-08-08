@@ -45,9 +45,7 @@ function initUI() {
 		}
 		else {
 			// begin combat
-			inCombat = true
-			combat = new Combat(gObjects, player)
-			combat.nextTurn()
+			Combat.start()
 		}
 	})
 
