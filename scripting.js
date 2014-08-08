@@ -44,13 +44,13 @@ var scriptingEngine = (function() {
 		stub: true,
 		log: false,
 		timer: false,
-		load: true,
+		load: false,
 		debugMessage: true,
 		displayMessage: true,
 		floatMessage: false,
 		gvars: false,
 		lvars: false,
-		mvars: true,
+		mvars: false,
 		tiles: true,
 		animation: false,
 		movement: true,
@@ -104,14 +104,9 @@ var scriptingEngine = (function() {
 		if(obj === undefined || obj === null) return false
 		if(obj.isPlayer === true) return true
 		if(obj.type === "item" || obj.type === "critter" || obj.type === "scenery" ||
-		   obj.type == "wall" || obj.type === "tile" || obj.type === "misc")
+		   obj.type === "wall" || obj.type === "tile" || obj.type === "misc")
 			return true
-		/*for(var i = 0; i < gameObjects.length; i++) {
-			if(gameObjects[i] === obj) {
-				//console.log("is GO: " + obj.toString())
-				return true
-			}
-		}*/
+
 		warn("is NOT GO: " + obj.toString())
 		return false
 	}
@@ -222,7 +217,7 @@ var scriptingEngine = (function() {
 			else if(mapVars[scriptName] === undefined)
 				mapVars[scriptName] = {}
 			else if(mapVars[scriptName][mvar] === undefined) {
-				warn("map_var: setting default value (0) for MVAR " + mvar)
+				warn("map_var: setting default value (0) for MVAR " + mvar, "mvars")
 				mapVars[scriptName][mvar] = 0
 			}
 			return mapVars[scriptName][mvar]
