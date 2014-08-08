@@ -20,13 +20,7 @@ var scriptingEngine = (function() {
 	var gameObjects = []
 	var gameElevation = 0
 	var dudeObject = null
-	var mapVars = {
-		"Raiders2": {
-			0: 0, // MVAR_Been_Here_1
-			1: 0, // MVAR_Been_Here_2
-			2: 0, // MVAR_Been_Here_1
-		}
-	}
+	var mapVars = {} // TODO: fix this being persisted across map loads
 	var globalVars = {
 		0: 50, // GVAR_PLAYER_REPUTATION
 		//10: 1, // GVAR_START_ARROYO_TRIAL (1 = TRIAL_FIGHT)
@@ -401,7 +395,7 @@ var scriptingEngine = (function() {
 			}	
 			return 0
 		},
-		elevation: function(obj) { if(isGameObject(obj) || obj.isSpatial) return currentElevation
+		elevation: function(obj) { if(isGameObject(obj) || (obj && obj.isSpatial)) return currentElevation
 								   else { warn("elevation: not an object: " + obj); return -1 } },
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
 		obj_can_hear_obj: function(a, b) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
@@ -622,15 +616,18 @@ var scriptingEngine = (function() {
 
 		// tiles
 		tile_distance_objs: function(a, b) {
-			if((!isGameObject(a) || !isGameObject(b)) && (!a.isSpatial && !b.isSpatial)) {
+			if((!isGameObject(a) || !isGameObject(b)) && (a && !a.isSpatial && b && !b.isSpatial)) {
 				warn("tile_distance_objs: " + a + " or " + b + " are not game objects")
 				return
 			}
 			return hexDistance(a.position, b.position)
 		},
-		tile_distance: function(a, b) { return hexDistance(fromTileNum(a), fromTileNum(b)) }, // TODO: should we use floor?
+		tile_distance: function(a, b) { return hexDistance(fromTileNum(a), fromTileNum(b)) },
 		tile_num: function(obj) {
-			if(!isGameObject(obj) && !obj.isSpatial) { warn("tile_num: not game object"); return }
+			if(!isGameObject(obj) && (obj && !obj.isSpatial)) {
+				warn("tile_num: not a game object: " + obj)
+				return null
+			}
 			return toTileNum(obj.position)
 		},
 		tile_contains_pid_obj: function(tile, elevation, pid) {
@@ -658,7 +655,6 @@ var scriptingEngine = (function() {
 			ul = fromTileNum(ul); ur = fromTileNum(ur)
 			ll = fromTileNum(ll); lr = fromTileNum(lr)
 			t = fromTileNum(t)
-
 			return (tile_in_tile_rect(t, ur, lr, ll, ul) ? 1 : 0)
 		},
 		tile_contains_obj_pid: function(tile, elevation, pid) {
@@ -705,10 +701,10 @@ var scriptingEngine = (function() {
 		},
 		gdialog_set_barter_mod: function(mod) { stub("gdialog_set_barter_mod", arguments) },
 		gdialog_mod_barter: function(mod) { // switch to barter mode
+			log("gdialog_mod_barter", arguments)
 			console.log("--> barter mode")
 			if(!this.self_obj) throw "need self_obj"
 			uiBarterMode(this.self_obj)
-			//stub("gdialog_mod_barter", arguments)
 		},
 		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) {
 			log("start_gdialog", arguments)
@@ -722,13 +718,15 @@ var scriptingEngine = (function() {
 		gsay_start: function() { stub("gSay_Start", arguments) },
 		//gSay_Option: function(msgList, msgID, target, reaction) { stub("gSay_Option", arguments) },
 		gsay_reply: function(msgList, msgID) {
+			log("gSay_Reply", arguments)
 			var msg = getScriptMessage(msgList, msgID)
 			info("REPLY: " + msg, "dialogue")
 			//$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
 			uiSetDialogueReply(msg)
-			//stub("gSay_Reply", arguments)
 		},
 		gsay_message: function(msgList, msgID, reaction) {
+			// TODO: update this for ui
+			log("gsay_message", arguments)
 			// message with [Done] option
 			var msg = msgID
 			if(typeof msgID !== "string")
@@ -738,6 +736,7 @@ var scriptingEngine = (function() {
 		gsay_end: function() { stub("gSay_End", arguments) },
 		end_dialogue: function() { stub("end_dialogue", arguments) },
 		giq_option: function(iqTest, msgList, msgID, target, reaction) {
+			log("giQ_Option", arguments)
 			var msg = getScriptMessage(msgList, msgID)
 			console.log("DIALOGUE OPTION: " + msg + " [INT " + ((iqTest >= 0) ? (">="+iqTest) : ("<="+-iqTest)) + "]")
 
@@ -747,7 +746,6 @@ var scriptingEngine = (function() {
 
 			dialogueOptionProcs.push(target.bind(this))
 			uiAddDialogueOption(msg, dialogueOptionProcs.length - 1)
-			//stub("giQ_Option", arguments)
 		},
 		dialogue_system_enter: function() {
 			log("dialogue_system_enter", arguments)
@@ -757,8 +755,9 @@ var scriptingEngine = (function() {
 			}
 			talk(this.self_obj._script, this.self_obj)
 		},
-		float_msg: function(obj, msg, type) {			
-			info("FLOAT MSG: " + msg, "floatMessage")
+		float_msg: function(obj, msg, type) {
+			log("float_msg", arguments)
+			//info("FLOAT MSG: " + msg, "floatMessage")
 			if(!isGameObject(obj)) {
 				warn("float_msg: not game object: " + obj)
 				return
@@ -835,6 +834,7 @@ var scriptingEngine = (function() {
 
 		// timing
 		add_timer_event: function(obj, ticks, userdata) {
+			log("add_timer_event", arguments)
 			if(!isGameObject(obj)) { warn("add_timer_event: not game object: " + obj); return }
 			info("timer event added in " + ticks + " ticks (userdata " + userdata + ")", "timer")
 			// trigger timedEvent in `ticks` game ticks
@@ -855,13 +855,14 @@ var scriptingEngine = (function() {
 		},
 		game_ticks: function(seconds) { return seconds*10 },
 		game_time_advance: function(ticks) {
+			log("game_time_advance", arguments)
 			info("advancing time " + ticks + " ticks " + "(" + ticks/10 + " seconds)")
 			gameTickTime += ticks
 		},
 
 		// game
 		load_map: function(map, startLocation) {
-			stub("load_map", arguments)
+			log("load_map", arguments)
 			info("load_map: " + map)
 			if(typeof map === "string")
 				loadMap(map.split(".")[0].toLowerCase())
