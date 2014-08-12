@@ -97,6 +97,7 @@ var mapAreas = null
 var isLoading = true // are we currently loading a map?
 var loadingAssetsLoaded = 0 // how many images we've loaded
 var loadingAssetsTotal = 0 // out of this total
+var lazyAssetLoadingQueue = {} // set of lazily-loaded assets being loaded
 
 var proFiles = {}
 var lstFiles = {}
@@ -289,12 +290,26 @@ function lazyLoadImage(art, callback, isHeartImg) {
 		return
 	}
 	
+	if(lazyAssetLoadingQueue[art] !== undefined) {
+		if(callback)
+			lazyAssetLoadingQueue[art].push(callback)
+		return
+	}
+
+	console.log("lazy loading " + art + "...")
+
+	lazyAssetLoadingQueue[art] = (callback ? [callback] : [])
+
 	var img = new Image()
 	img.src = art + '.png'
 	img.onload = function() {
 		images[art] = new heart.HeartImage(img)
-		if(callback)
-			callback(isHeartImg ? images[art] : img)
+		var callbacks = lazyAssetLoadingQueue[art]
+		if(callbacks !== undefined) {
+			for(var i = 0; i < callbacks.length; i++)
+				callbacks[i](images[art])
+			lazyAssetLoadingQueue[art] = undefined
+		}
 	}
 }
 
@@ -1176,7 +1191,6 @@ function drawObject(obj) {
 	var scr = hexToScreen(obj.position.x, obj.position.y)
 
 	if(images[obj.art] === undefined) {
-		console.log("No art for object: " + obj.art + ", lazy loading...")
 		lazyLoadImage(obj.art) // try to load it in
 		return
 	}
@@ -1225,7 +1239,7 @@ heart.draw = function() {
 
 	var mousePos = heart.mouse.getPosition()
 	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
-	var mouseTile = tileFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
+	//var mouseTile = tileFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
 	// draw tile grids
 	if(showFloor === true && floorMap !== null)
@@ -1276,10 +1290,10 @@ heart.draw = function() {
 	if(showRoof === true && roofMap !== null)
 		drawTileMap(roofMap, -96);
 
-	if(floorMap[mouseTile.y] !== undefined) {
+	/*if(floorMap[mouseTile.y] !== undefined) {
 		var tileImg = floorMap[mouseTile.y][mouseTile.x]
 		heart.graphics.print("tile: " + tileImg, 5, 60)
-	}
+	}*/
 
 	if(inCombat === true) {
 		var whose = combat.inPlayerTurn ? "player" : critterGetName(combat.combatants[combat.whoseTurn])
@@ -1297,7 +1311,7 @@ heart.draw = function() {
 	}
 
 	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
-	heart.graphics.print("mt: " + mouseTile.x + "," + mouseTile.y, 100, 15)
+	//heart.graphics.print("mt: " + mouseTile.x + "," + mouseTile.y, 100, 15)
 	heart.graphics.print("m: " + mousePos[0] + ", " + mousePos[1], 175, 15)
 
 	for(var i = 0; i < floatMessages.length; i++) {
