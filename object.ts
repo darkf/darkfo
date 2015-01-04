@@ -75,7 +75,7 @@ function objectUpdateAnimation(obj) {
 	}
 }
 
-function objectBlocks(obj) {
+function objectBlocks(obj: any): boolean {
 	if(obj.type === "misc") return false
 	if(obj.type === "critter") return (obj.dead !== true) && (obj.visible !== false)
 	if(!obj.pro) return true
@@ -85,7 +85,7 @@ function objectBlocks(obj) {
 	return !(obj.pro.flags & 0x00000010 /* NoBlock */)
 }
 
-function canUseObject(obj, source) {
+function canUseObject(obj: any, source?: any) {
 	if(obj._script !== undefined && obj._script.use_p_proc !== undefined)
 		return true
 	else if(obj.type === "item" || obj.type === "scenery")
@@ -251,7 +251,7 @@ function useExplosive(obj, source) {
 	}})
 }
 
-function useObject(obj, source, useScript) {
+function useObject(obj: any, source?: any, useScript?: boolean) {
 	if(canUseObject(obj, source) === false) {
 		console.log("can't use object")
 		return false
@@ -364,7 +364,7 @@ function zsort(objects) {
 	objects.sort(objectZCompare)
 }
 
-function objectMove(obj, position, curIdx) {
+function objectMove(obj: any, position: any, curIdx?: number) {
 	obj.position = position
 	
 	if(doZOrder !== false)

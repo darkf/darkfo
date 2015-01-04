@@ -16,11 +16,11 @@ limitations under the License.
 Scripting system/engine for DarkFO
 */
 
-var scriptingEngine = (function() {
-	var gameObjects = null
-	var dudeObject = null
-	var mapVars = null
-	var globalVars = {
+module scriptingEngine {
+	var gameObjects: any = null
+	var dudeObject: any = null
+	var mapVars: any = null
+	var globalVars: any = {
 		0: 50, // GVAR_PLAYER_REPUTATION
 		//10: 1, // GVAR_START_ARROYO_TRIAL (1 = TRIAL_FIGHT)
 		531: 1, // GVAR_TALKED_TO_ELDER
@@ -37,7 +37,7 @@ var scriptingEngine = (function() {
 	var scriptMessages = {}
 	var dialogueOptionProcs = []
 	var currentDialogueObject = null
-	var timeEventList = []
+	export var timeEventList = []
 
 	var debugLogShowType = {
 		stub: true,
@@ -87,7 +87,7 @@ var scriptingEngine = (function() {
 		console.log("WARNING: " + msg)
 	}
 
-	function info(msg, type) {
+	export function info(msg, type) {
 		if(type !== undefined && debugLogShowType[type] === false) return
 		console.log("INFO: " + msg)
 	}
@@ -134,7 +134,7 @@ var scriptingEngine = (function() {
 		return scriptMessages[name][msg]
 	}
 
-	function dialogueReply(id) {
+	export function dialogueReply(id) {
 		var f = dialogueOptionProcs[id]
 		dialogueOptionProcs = []
 		f()
@@ -147,7 +147,7 @@ var scriptingEngine = (function() {
 		}
 	}
 
-	function dialogueEnd() {
+	export function dialogueEnd() {
 		// dialogue exited from [Done] or the UI
 		console.log("[dialogue exit via dialogueExit]")
 		dialogueExit()
@@ -933,7 +933,7 @@ var scriptingEngine = (function() {
 		}
 	}
 
-	function loadScript(name) {
+	export function loadScript(name) {
 		// e.g. "Raiders2"
 		var scriptObject = null
 		info("loading script " + name, "load")
@@ -969,14 +969,14 @@ var scriptingEngine = (function() {
 		return scriptObject
 	}
 
-	function initScript(script, obj) {
+	export function initScript(script, obj) {
 		obj._script.self_obj = obj
 		obj._script.cur_map_index = currentMapID
 		if(obj._script.start !== undefined)
 			obj._script.start()
 	}
 
-	function timedEvent(script, userdata) {
+	export function timedEvent(script, userdata) {
 		info("timedEvent: " + script.scriptName + ": " + userdata, "timer")
 		if(script.timed_event_p_proc === undefined)
 			throw "timedEvent called on script without a timed_event_p_proc!"
@@ -987,7 +987,7 @@ var scriptingEngine = (function() {
 		return script._didOverride
 	}
 
-	function use(obj, source) {
+	export function use(obj, source) {
 		if(!obj._script || obj._script.use_p_proc === undefined)
 			return null
 
@@ -998,7 +998,7 @@ var scriptingEngine = (function() {
 		return obj._script._didOverride
 	}
 
-	function talk(script, obj) {
+	export function talk(script, obj) {
 		script.self_obj = obj
 		script.game_time = Math.max(1, gameTickTime)
 		script.cur_map_index = currentMapID
@@ -1016,7 +1016,7 @@ var scriptingEngine = (function() {
 		return script._didOverride
 	}
 
-	function updateCritter(script, obj) {
+	export function updateCritter(script, obj) {
 		// critter heartbeat (critter_p_proc)
 		if(script.critter_p_proc === undefined)
 			return
@@ -1030,7 +1030,7 @@ var scriptingEngine = (function() {
 		return script._didOverride
 	}
 
-	function spatial(spatialObj, source) {
+	export function spatial(spatialObj, source) {
 		var script = spatialObj._script
 		if(script.spatial_p_proc === undefined)
 			throw "spatial script without a spatial_p_proc triggered"
@@ -1042,7 +1042,7 @@ var scriptingEngine = (function() {
 		script.spatial_p_proc()
 	}
 
-	function destroy(obj, source) {
+	export function destroy(obj, source) {
 		if(!obj._script || obj._script.destroy_p_proc === undefined)
 			return null
 
@@ -1055,7 +1055,7 @@ var scriptingEngine = (function() {
 		return obj._script._didOverride
 	}
 
-	function damage(obj, target, source, damage) {
+	export function damage(obj, target, source, damage) {
 		if(!obj._script || obj._script.damage_p_proc === undefined)
 			return null
 
@@ -1069,7 +1069,7 @@ var scriptingEngine = (function() {
 		return obj._script._didOverride
 	}
 
-	function combatEvent(obj, event) {
+	export function combatEvent(obj, event) {
 		var fixed_param = null
 		switch(event) {
 			case "turnBegin": fixed_param = 4; break // COMBAT_SUBTYPE_TURN
@@ -1104,7 +1104,7 @@ var scriptingEngine = (function() {
 		return doTerminate
 	}
 
-	function updateMap(mapScript, objects, elevation) {
+	export function updateMap(mapScript, objects, elevation) {
 		gameObjects = objects
 		mapFirstRun = false
 
@@ -1131,7 +1131,7 @@ var scriptingEngine = (function() {
 		// info("updated " + updated + " objects")
 	}
 
-	function enterMap(mapScript, objects, elevation, mapID, isFirstRun) {
+	export function enterMap(mapScript, objects, elevation, mapID, isFirstRun) {
 		gameObjects = objects
 		currentMapID = mapID
 		mapFirstRun = isFirstRun
@@ -1157,7 +1157,7 @@ var scriptingEngine = (function() {
 		}
 	}
 
-	function reset(dude, mapName) {
+	export function reset(dude, mapName) {
 		timeEventList.length = 0 // clear timed events
 		dialogueOptionProcs.length = 0
 		gameObjects = null
@@ -1169,14 +1169,16 @@ var scriptingEngine = (function() {
 		ScriptProto.dude_obj = dudeObject
 	}
 
-	function init(dude, mapName, mapID) {
+	export function init(dude: any, mapName: string, mapID?: number) {
 		seed(123)
 		reset(dude, mapName, mapID)
 	}
 
+/*
 	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
 		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
 		    timeEventList: timeEventList, info: info, reset: reset, talk: talk, damage: damage,
 		    globalVars: globalVars, combatEvent: combatEvent, initScript: initScript, use: use,
 			destroy: destroy, dialogueEnd: dialogueEnd, spatial: spatial}
-})()
+*/
+}

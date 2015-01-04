@@ -44,7 +44,7 @@ function loadAreas() {
 		if(areaID === null) throw "CITY.TXT: invalid area name: " + area.area_name
 		areaID = parseInt(areaID[1])
 
-		var newArea = {name: area.area_name,
+		var newArea: any = {name: area.area_name,
 			           id: areaID}
 
 	    // map/label art

@@ -95,7 +95,7 @@ var worldmapKey = "p"
 
 // the player object
 // todo: just load this from the PRO or something
-var playerWeapon = {art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9, position: {x: -1, y: -1},
+var playerWeapon: any = {art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9, position: {x: -1, y: -1},
   subtype: "weapon", amount: 1, inventory: [], type: "item", pro: {
     lightRadius: 0, frmPID: 44, extra: {
       animCode: 6, weight: 5,  materialID: 1, subType: 3, flagsExt: "'\\x00\\x00\\x00'",
@@ -108,7 +108,7 @@ var playerWeapon = {art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9, position
   invArt: "art/inven/uzi"}
 playerWeapon.weapon = new Weapon(playerWeapon)
 
-var player = playerInit()
+var player: any = playerInit()
 			/*{position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null, type: "critter",
@@ -126,7 +126,7 @@ var player = playerInit()
 
 function repr(obj) { return JSON.stringify(obj, null, 2) }
 
-function lazyLoadImage(art, callback, isHeartImg) {
+function lazyLoadImage(art: string, callback?: (x:any) => void, isHeartImg?: boolean) {
 	if(images[art] !== undefined) {
 		if(callback)
 			callback(isHeartImg ? images[art] : images[art].img)
@@ -341,7 +341,7 @@ function loadObjectScripts(objects) {
 	}
 }
 
-function changeElevation(level, updateScripts) {
+function changeElevation(level: number, updateScripts?: boolean) {
 	currentElevation = level
 	floorMap = gMap.levels[level]["tiles"]["floor"]
 	roofMap  = gMap.levels[level]["tiles"]["roof"]
@@ -451,8 +451,8 @@ function centerCamera(around) {
 	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2)
 }
 
-function loadMap(mapName, startingPosition, startingElevation) {
-	function load(file, callback) {
+function loadMap(mapName: string, startingPosition?: any, startingElevation?: any) {
+	function load(file: string, callback?: (x:any) => void) {
 		if(images[file] !== undefined) return // don't load more than once
 		loadingAssetsTotal++
 		heart.graphics.newImage(file+".png", function(r) {
@@ -614,7 +614,7 @@ heart.load = function() {
 	initUI()
 }
 
-function isSelectableObject(obj) {
+function isSelectableObject(obj: any) {
 	return obj.visible !== false && (canUseObject(obj) || obj.type === "critter")
 }
 
@@ -741,7 +741,7 @@ heart.keydown = function(k) {
 		else {
 			console.log("[COMBAT BEGIN]")
 			inCombat = true
-			combat = new Combat(gObjects, player)
+			combat = new Combat(gObjects)
 			combat.nextTurn()
 		}
 	}
@@ -796,7 +796,7 @@ function recalcPath(start, goal) {
 	for(var i = 0; i < gObjects.length; i++) {
 		// if there are multiple, any blocking one will block
 		var obj = gObjects[i]
-		matrix[obj.position.y][obj.position.x] |= objectBlocks(obj)
+		matrix[obj.position.y][obj.position.x] |= <any>objectBlocks(obj)
 	}
 
 	var grid = new PF.Grid(HEX_GRID_SIZE, HEX_GRID_SIZE, matrix)

@@ -275,7 +275,7 @@ function longestSequenceWithoutTurning(start, path, index) {
 	return {seq: n, lastPosition: {x: pos[0], y: pos[1]}, firstDirection: firstDir}
 }
 
-function critterWalkTo(obj, target, running, callback, maxLength) {
+function critterWalkTo(obj: any, target: any, running?: boolean, callback?: any, maxLength?: number) {
 	// pathfind and set walking to target
 	if(obj.position.x === target.x && obj.position.y === target.y) {
 		// can't walk to the same tile
@@ -303,7 +303,7 @@ function critterWalkTo(obj, target, running, callback, maxLength) {
 	return true
 }
 
-function critterStaticAnim(obj: any, anim: any, callback: any, waitForLoad?: bool) {
+function critterStaticAnim(obj: any, anim: any, callback: any, waitForLoad?: boolean) {
 	obj.art = critterGetAnim(obj, anim)
 	obj.frame = 0
 	obj.lastFrameTime = 0
@@ -516,7 +516,7 @@ function critterMove(obj, position) {
 	}
 }
 
-function critterKill(obj, source, useScript, useAnim, callback) {
+function critterKill(obj: any, source: any, useScript?: boolean, useAnim?: boolean, callback?: any) {
 	obj.dead = true
 
 	if(useScript === undefined || useScript === true) {
@@ -533,7 +533,7 @@ function critterKill(obj, source, useScript, useAnim, callback) {
 	}
 }
 
-function critterDamage(obj: any, damage: number, source: any, useScript?: bool, useAnim?: bool, damageType?: any, callback?: any) {
+function critterDamage(obj: any, damage: number, source: any, useScript?: boolean, useAnim?: boolean, damageType?: any, callback?: any) {
 	decreaseStat(obj, 'HP', damage, false, false, true)
 	if(critterGetStat(obj, 'HP') <= 0)
 		return critterKill(obj, source, useScript)

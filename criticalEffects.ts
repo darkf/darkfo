@@ -179,7 +179,7 @@ module CriticalEffects {
 		return critterTable[critterType][region][actualLevel]
 	}
 
-	function loadTable() {
+	export function loadTable() {
 		// read in the global table
 		//console.log("loading critical table...")
 		var table = getFileJSON("criticalTables.json")
