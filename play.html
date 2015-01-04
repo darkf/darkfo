@@ -1,5 +1,5 @@
 <!--
-Copyright 2014 darkf, Stratege
+Copyright 2014-2015 darkf, Stratege
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ limitations under the License.
 <script src="util.js"></script>
 <script src="geometry.js"></script>
 <script src="scripting.js"></script>
+<script src="data.js"></script>
 <script src="combat.js"></script>
 <script src="object.js"></script>
 <script src="critter.js"></script>
@@ -33,7 +34,7 @@ limitations under the License.
 <script>
 "use strict";
 
-var MAP_NAME = "vault13" // name of the current map
+var MAP_NAME = "ctest" // name of the current map
 var DEBUG = false // debug mode
 
 var gMapScript = null
@@ -92,18 +93,10 @@ var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3
     UI_MODE_INVENTORY = 4, UI_MODE_WORLDMAP = 5, UI_MODE_ELEVATOR = 6
 var uiMode = UI_MODE_NONE
 
-var mapAreas = null
-
 var isLoading = true // are we currently loading a map?
 var loadingAssetsLoaded = 0 // how many images we've loaded
 var loadingAssetsTotal = 0 // out of this total
 var lazyAssetLoadingQueue = {} // set of lazily-loaded assets being loaded
-
-var proFiles = {}
-var lstFiles = {}
-var messageFiles = {}
-var mapInfo = null
-var elevatorInfo = null
 
 var floatMessages = []
 
@@ -162,127 +155,6 @@ var player = playerInit()
 
 function repr(obj) { return JSON.stringify(obj, null, 2) }
 
-function getElevator(type) {
-	if(elevatorInfo === null) {
-		console.log("loading elevator info")
-		elevatorInfo = getFileJSON("elevators.json")
-	}
-
-	return elevatorInfo.elevators[type]
-}
-
-function loadAreas() {
-	var areas = parseIni(getFileText("data/data/CITY.TXT"))
-	var out = {}
-	console.log("areas: " + areas)
-
-	for(var _area in areas) {
-		var area = areas[_area]
-		var areaID = _area.match(/Area (\d+)/)
-		if(areaID === null) throw "CITY.TXT: invalid area name: " + area.area_name
-		areaID = parseInt(areaID[1])
-
-		var newArea = {name: area.area_name,
-			           id: areaID}
-
-	    // map/label art
-		var mapArtIdx = parseInt(area.townmap_art_idx)
-		var labelArtIdx = parseInt(area.townmap_label_art_idx)
-
-		//console.log(mapArtIdx + " - " + labelArtIdx)
-
-		if(mapArtIdx !== -1)
-			newArea.mapArt = lookupInterfaceArt(mapArtIdx)
-		if(labelArtIdx !== -1)
-			newArea.labelArt = lookupInterfaceArt(labelArtIdx)
-
-		// entrances
-		newArea.entrances = []
-		for(var _key in area) {
-			// entrance_N
-			// e.g.: entrance_0=On,345,230,Destroyed Arroyo Bridge,-1,26719,0
-
-			var s = _key.split("_")
-			if(s[0] === "entrance") {
-				var entranceString = area[_key]
-				s = entranceString.split(",")
-
-				var entrance = {
-					startState: s[0],
-					x: parseInt(s[1]),
-					y: parseInt(s[2]),
-					mapLookupName: s[3],
-					elevation: parseInt(s[4]),
-					tileNum: parseInt(s[5]),
-					orientation: parseInt(s[6])
-				}
-				newArea.entrances.push(entrance)
-			}
-		}
-
-		out[areaID] = newArea
-	}
-
-	return out
-}
-
-function allAreas() {
-	if(mapAreas === null)
-		mapAreas = loadAreas()
-	var areas = []
-	for(var area in mapAreas)
-		areas.push(mapAreas[area])
-	return areas
-}
-
-function loadMessage(name) {
-	var msg = getFileText("data/text/english/game/" + name + ".msg")
-	if(messageFiles[name] === undefined)
-		messageFiles[name] = {}
-
-	// parse message file
-	var lines = msg.split(/\r|\n/)
-
-	// preprocess and merge lines
-	for(var i = 0; i < lines.length; i++) {
-		// comments/blanks
-		if(lines[i][0] === '#' || lines[i].trim() === '') {
-			lines.splice(i--, 1)
-			continue
-		}
-
-		// probably a continuation -- merge it with the last line
-		if(lines[i][0] !== '{') {
-			lines[i-1] += lines[i]
-			lines.splice(i--, 1)
-			continue
-		}
-	}
-
-	for(var i = 0; i < lines.length; i++) {
-		// e.g. {100}{}{You have entered a dark cave in the side of a mountain.}
-		var m = lines[i].match(/\{(\d+)\}\{.*\}\{(.*)\}/)
-		if(m === null)
-			throw "message parsing: not a valid line: " + lines[i]
-		// HACK: replace unicode replacement character with an apostrophe (because the Web sucks at character encodings)
-		messageFiles[name][m[1]] = m[2].replace(/\ufffd/g, "'")
-	}
-}
-
-
-function loadLst(lst) {
-	return getFileText("data/" + lst + ".lst").split('\n')
-}
-
-function getLstId(lst, id) {
-	if(lstFiles[lst] === undefined)
-		lstFiles[lst] = loadLst(lst)
-	if(lstFiles[lst] === undefined)
-		return null
-
-	return lstFiles[lst][id]
-}
-
 function lazyLoadImage(art, callback, isHeartImg) {
 	if(images[art] !== undefined) {
 		if(callback)
@@ -311,12 +183,6 @@ function lazyLoadImage(art, callback, isHeartImg) {
 			lazyAssetLoadingQueue[art] = undefined
 		}
 	}
-}
-
-function pad(n, width, z) {
-  z = z || '0';
-  n = n + '';
-  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 
 function getPROType(pid) {
