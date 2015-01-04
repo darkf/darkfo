@@ -53,7 +53,7 @@ function getFileText(path: string, err?: () => void) {
 	return r
 }
 
-function getFileJSON(path, err) {
+function getFileJSON(path: string, err?: () => void) {
 	var r = null
 	$.ajax(path, {async: false,
 		          success: function(text) { r = text },
@@ -63,7 +63,7 @@ function getFileJSON(path, err) {
 }
 
 //min inclusive, max inclusive.
-function getRandomInt(min, max) {
+function getRandomInt(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min + 1)) + min
 }
 

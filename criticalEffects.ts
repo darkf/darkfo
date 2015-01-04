@@ -16,11 +16,11 @@ limitations under the License.
 
 // Critical Effects system
 
-var CriticalEffects = (function() {
+module CriticalEffects {
 	var generalRegionName = {0: "head", 1: "leftArm",2: "rightArm",3: "torso",4: "rightLeg", 5: "leftLeg", 6: "eyes", 7: "groin",8: "uncalled"}
 	//todo: make this table account for different weapon types. It appears melee weapons use a second one
 	//though it appears to only be a /2 for melee
-	var regionHitChanceDecTable = {"torso": 0, "leftLeg": 20, "rightLeg": 20, "groin": 30, "leftArm": 30, "rightArm": 30, "head": 40, "eyes": 60}
+	export var regionHitChanceDecTable = {"torso": 0, "leftLeg": 20, "rightLeg": 20, "groin": 30, "leftArm": 30, "rightArm": 30, "head": 40, "eyes": 60}
 	var critterTable = []
 
 	var critFailEffects = {
@@ -112,27 +112,31 @@ var CriticalEffects = (function() {
 			this.effects[i](target)
 	}
 
-	var StatCheck = function(stat, modifier, effects, failEffectMessage) {
-		this.stat = stat
-		this.modifier = modifier
-		this.effects = effects
-		this.failEffectMessageID = failEffectMessage
-	}
+	class StatCheck {
+		stat: any; modifier: any; effects: any; failEffectMessageID: any; // TODO
 
-	StatCheck.prototype.doEffectsOn = function(target)
-	{
-		if(this.stat === -1)
-			return false
-
-		var statToRollAgainst = critterGetStat(target,this.stat)
-		statToRollAgainst += this.modifier
-
-		if(!rollSkillCheck(statToRollAgainst*10,0,false)) {
-			this.effects.doEffectsOn(target)
-			return {success: true, msgID: this.failEffectMessageID}
+		constructor(stat, modifier, effects, failEffectMessage) {
+			this.stat = stat
+			this.modifier = modifier
+			this.effects = effects
+			this.failEffectMessageID = failEffectMessage
 		}
 
-		return {success: false}
+		doEffectsOn(target: any): any
+		{
+			if(this.stat === -1)
+				return false
+
+			var statToRollAgainst = critterGetStat(target,this.stat)
+			statToRollAgainst += this.modifier
+
+			if(!rollSkillCheck(statToRollAgainst*10,0,false)) {
+				this.effects.doEffectsOn(target)
+				return {success: true, msgID: this.failEffectMessageID}
+			}
+
+			return {success: false}
+		}
 	}
 
 	var CritType = function(damageMultiplier, effects, statCheck, effectMsg) {
@@ -170,7 +174,7 @@ var CriticalEffects = (function() {
 		return new Effects(tempEffects)
 	}
 
-	function getCritical(critterType, region, critLevel) {
+	export function getCritical(critterType, region, critLevel) {
 		var actualLevel = Math.min(critLevel, critterTable[critterType][region].length-1)
 		return critterTable[critterType][region][actualLevel]
 	}
@@ -190,7 +194,7 @@ var CriticalEffects = (function() {
 		//critterTable[number] = critTableJsonToJsObjectParser(table)
 	}
 
-	var criticalFailTable = {
+	export var criticalFailTable = {
 		unarmed: {
 			1: [],
 			2: [critterEffects.loseNextTurn],
@@ -209,7 +213,7 @@ var CriticalEffects = (function() {
 			1: [],
 			2: [critFailEffects.loseAmmo],
 			3: [critterEffects.droppedWeapon],
-			4: [critterEffects.hitRandomly],
+			4: [critFailEffects.hitRandomly],
 			5: [critFailEffects.destroyWeapon]
 		},
 		energy: {
@@ -242,17 +246,18 @@ var CriticalEffects = (function() {
 		}
 	}
 
-	function temporaryDoCritFail(critFail, target) {
+	export function temporaryDoCritFail(critFail, target) {
 		for (var i = 0; i < critFail.length; i++) {
 			critFail[i](target)
 		}
 	}
 
-	return {generalRegionName: generalRegionName,
+/*	return {generalRegionName: generalRegionName,
 			regionHitChanceDecTable: regionHitChanceDecTable,
 			critterTable: critterTable,
 			getCritical: getCritical,
 			loadTable: loadTable,
 			criticalFailTable: criticalFailTable,
 			temporaryDoCritFail: temporaryDoCritFail}
-})()
+*/
+}

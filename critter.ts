@@ -52,12 +52,12 @@ var weaponSkillMap = {'uzi': 'Small Guns',
                       'flamethr': 'Big Guns',
                      }
 
-function parseAttack(weapon) {
+function parseAttack(weapon: any) {
 	var attackModes = weapon.pro.extra['attackMode']
 	var modeOne = attackMode[attackModes & 0xf]
 	var modeTwo = attackMode[(attackModes >> 4) & 0xf]
-	var attackOne = {mode: modeOne}
-	var attackTwo = {mode: modeTwo}
+	var attackOne: any = {mode: modeOne}
+	var attackTwo: any = {mode: modeTwo}
 	
 	if(modeOne !== attackMode.none) {
 		attackOne.APCost = weapon.pro.extra.APCost1
