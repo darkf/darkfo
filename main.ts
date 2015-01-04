@@ -184,7 +184,7 @@ function getPROTypeName(type) {
 	return map[type]
 }
 
-function getPROSubTypeName(type) {
+function getPROSubTypeName(type: number): string {
 	var map = {0: 'armor', 1: 'container', 2: 'drug', 3: 'weapon', 4: 'ammo', 5: 'misc', 6: 'key'}
 	return map[type]
 }
@@ -582,7 +582,7 @@ function lookupMapName(mapID) {
 	return mapInfo[mapID].name || null
 }
 
-function loadMapID(mapID, startingPosition, startingElevation) {
+function loadMapID(mapID: number, startingPosition?: any, startingElevation?: any) { // TODO: any
 	var mapName = lookupMapName(mapID)
 	if(mapName !== null)
 		loadMap(mapName, startingPosition, startingElevation)

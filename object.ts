@@ -43,7 +43,7 @@ function objectGetMoney(obj) {
 	return 0
 }
 
-function objectSingleAnim(obj, reversed, callback) {
+function objectSingleAnim(obj: any, reversed?: boolean, callback?: any) { // TODO: any
 	if(reversed) obj.frame = imageInfo[obj.art].numFrames - 1
 	else obj.frame = 0
 	obj.lastFrameTime = 0
@@ -191,7 +191,7 @@ function objectGetDamageType(obj) {
 
 function objectExplode(obj, source, minDmg, maxDmg) {
 	var damage = maxDmg
-	var explosion = createObjectWithPID(makePID(5 /* misc */, 14 /* Explosion */), -1)
+	var explosion: any = createObjectWithPID(makePID(5 /* misc */, 14 /* Explosion */), -1) // TODO: any
 	explosion.position.x = obj.position.x
 	explosion.position.y = obj.position.y
 	obj.dmgType = "explosion"
@@ -251,7 +251,7 @@ function useExplosive(obj, source) {
 	}})
 }
 
-function useObject(obj: any, source?: any, useScript?: boolean) {
+function useObject(obj: any, source?: any, useScript?: boolean): boolean {
 	if(canUseObject(obj, source) === false) {
 		console.log("can't use object")
 		return false
@@ -262,14 +262,16 @@ function useObject(obj: any, source?: any, useScript?: boolean) {
 			source = player
 		if(scriptingEngine.use(obj, source) === true) {
 			console.log("useObject: overriden")
-			return // script overrided us
+			return true // script overrided us
 		}
 	}
 	else if(obj.script !== undefined && !obj._script)
 		console.log("object used has script but is not loaded: " + obj.script)
 
-	if(objectIsExplosive(obj))
-		return useExplosive(obj, source)
+	if(objectIsExplosive(obj)) {
+		useExplosive(obj, source)
+		return true
+	}
 
 	if(objectIsDoor(obj) || objectIsContainer(obj)) {
 		// open/closable doors/containers
@@ -312,6 +314,8 @@ function useObject(obj: any, source?: any, useScript?: boolean) {
 	}
 	else
 		objectSingleAnim(obj)
+
+	return true
 }
 
 function objectFindIndex(obj) {
@@ -434,11 +438,12 @@ interface Obj {
 	inventory: Obj[];
 }
 
+// TODO: refactor this with the above interfaces
 function createObjectWithPID(pid, sid) {
 	var pidType = (pid >> 24) & 0xff
 	var pidID = pid & 0xffff
-	var pro = loadPRO(pid, pidID)
-	var obj = {type: getPROTypeName(pidType), pro: pro, pid: pid, pidID: pidID, amount: 1, position: {x: -1, y: -1}, inventory: []}
+	var pro: any = loadPRO(pid, pidID) // TODO: any
+	var obj: any = {type: getPROTypeName(pidType), pro: pro, pid: pid, pidID: pidID, amount: 1, position: {x: -1, y: -1}, inventory: []}
 
 	if(pidType === 0) { // item
 		obj.subtype = getPROSubTypeName(pro.extra.subtype)

@@ -64,7 +64,7 @@ module scriptingEngine {
 		35: "HP", 7: "Max HP"
 	}
 
-	function stub(name, args, type) {
+	function stub(name, args, type?) {
 		if(debugLogShowType.stub === false || debugLogShowType[type] === false) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
@@ -73,7 +73,7 @@ module scriptingEngine {
 		console.log("STUB: " + name + ": " + a)
 	}
 
-	function log(name, args, type) {
+	function log(name, args, type?) {
 		if(debugLogShowType.log === false || debugLogShowType[type] === false) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
@@ -82,12 +82,12 @@ module scriptingEngine {
 		console.log("log: " + name + ": " + a)
 	}
 
-	function warn(msg, type) {
+	function warn(msg, type?) {
 		if(type !== undefined && debugLogShowType[type] === false) return
 		console.log("WARNING: " + msg)
 	}
 
-	export function info(msg, type) {
+	export function info(msg, type?) {
 		if(type !== undefined && debugLogShowType[type] === false) return
 		console.log("INFO: " + msg)
 	}
@@ -243,7 +243,7 @@ module scriptingEngine {
 		debug_msg: function(msg) { log("debug_msg", arguments); info("DEBUG MSG: " + msg, "debugMessage") },
 		display_msg: function(msg) { log("display_msg", arguments); info("DISPLAY MSG: " + msg, "displayMessage"); uiLog(msg) },
 		message_str: function(msgList, msgNum) { return getScriptMessage(msgList, msgNum) },
-		metarule: function(id, target) {
+		metarule: function(id, target): any {
 			switch(id) {
 				case 14: return mapFirstRun // map_first_run
 				case 15: // elevator
@@ -783,7 +783,7 @@ module scriptingEngine {
 		},
 
 		// animation
-		reg_anim_func: function(_, _) { stub("reg_anim_func", arguments, "animation") },
+		reg_anim_func: function(_1, _2) { stub("reg_anim_func", arguments, "animation") },
 		reg_anim_animate: function(obj, anim, delay) { stub("reg_anim_animate", arguments, "animation") },
 		reg_anim_animate_forever: function(obj, anim) {
 			log("reg_anim_animate_forever", arguments, "animation")
@@ -941,7 +941,7 @@ module scriptingEngine {
 			function() { console.log("script loading error (" + name + ")") })
 
 		//console.log("code: " + code)
-		var f = new Function(code)
+		var f: any = new Function(code)
 		f.prototype = ScriptProto
 		var obj = new f()
 		obj.scriptName = name
@@ -1157,12 +1157,12 @@ module scriptingEngine {
 		}
 	}
 
-	export function reset(dude, mapName) {
+	export function reset(dude, mapName, mapID?: number) {
 		timeEventList.length = 0 // clear timed events
 		dialogueOptionProcs.length = 0
 		gameObjects = null
 		currentMapObject = null
-		currentMapID = null
+		currentMapID = (mapID !== undefined) ? mapID : null
 		mapVars = {}
 
 		dudeObject = dude
