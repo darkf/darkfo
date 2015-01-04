@@ -16,14 +16,39 @@ limitations under the License.
 
 // Skill Dependencies system
 
-var Skill = function(_startvalue, _dependencies){
-	this.startvalue = _startvalue
-	this.dependencies = _dependencies
+class Skill {
+	// TODO
+	startvalue: any;
+	dependencies: any;
+
+	constructor(_startvalue, _dependencies) {
+		this.startvalue = _startvalue
+		this.dependencies = _dependencies
+	}
+
+	calculateValue(obj: any) {
+		var addedValue = 0
+		//console.log(this)
+		//console.log(this.dependencies)
+		for(var i = 0; i < this.dependencies.length; i++)
+		{
+			var stat = critterGetStat(obj,this.dependencies[i].statType)
+			if(stat !== undefined)
+				addedValue += Math.floor(stat * this.dependencies[i].multiplicator)
+		}
+		return (this.startvalue + addedValue)
+	} 
 }
 
-var Dependency = function(_statType, _multiplicator){
-	this.statType = _statType
-	this.multiplicator = _multiplicator
+class Dependency {
+	// TODO
+	statType: any;
+	multiplicator: any;
+
+	constructor(_statType, _multiplicator) {
+		this.statType = _statType
+		this.multiplicator = _multiplicator
+	}
 }
 
 //FO2 specific, FO1 uses its own, possibly extracting this to an outside file that is loaded in would thus make sense
@@ -102,10 +127,11 @@ statDependencies['Reputation'] = new Stat(-20, 20, 0, [])
 statDependencies['Karma'] = new Stat(-99999999, 99999999, 0, [])
 
 
-//all the weird pseudo stats
-statDependencies['Party Limit'] = new Stat(0, 5, 0, [new Dependency('CHA', 0.5)])
-statDependencies['Skill Rate'] = new Skill(0, 2^31-1, 0, [new Dependency('IN', 2), new Dependency('One', 5)])
-statDependencies['Perk Rate'] = new Skill(1, 2^31-1, 0, [new Dependency('One', 3)])
+// TODO: figure out what is going on with Skill
+// all the weird pseudo stats
+//statDependencies['Party Limit'] = new Stat(0, 5, 0, [new Dependency('CHA', 0.5)])
+//statDependencies['Skill Rate'] = new Skill(0, Math.pow(2, 31-1), 0, [new Dependency('IN', 2), new Dependency('One', 5)])
+//statDependencies['Perk Rate'] = new Skill(1, Math.pow(2, 31-1), 0, [new Dependency('One', 3)])
 
 //helper
 statDependencies['One'] = new Stat(1, 1, 1, [])
@@ -132,21 +158,6 @@ function getImprovementCost(obj, skill) {
 		return 999999999
 }
 
-Skill.prototype.calculateValue = function(obj)
-{
-	var addedValue = 0
-	//console.log(this)
-	//console.log(this.dependencies)
-	for(var i = 0; i < this.dependencies.length; i++)
-	{
-		var stat = critterGetStat(obj,this.dependencies[i].statType)
-		if(stat !== undefined)
-			addedValue += Math.floor(stat * this.dependencies[i].multiplicator)
-	}
-	return (this.startvalue + addedValue)
-} 
-
-
 function calculateStatValueAddition(obj, stat)
 {
 	var statDependency = statDependencies[stat]
@@ -158,9 +169,9 @@ function calculateStatValueAddition(obj, stat)
 	}
 	for(var i = 0; i < statDependency.dependencies.length; i++)
 	{
-		var stat = critterGetStat(obj,statDependency.dependencies[i].statType)
-		if(stat !== undefined)
-			addedValue += Math.floor(stat * statDependency.dependencies[i].multiplicator)
+		var statVal = critterGetStat(obj, statDependency.dependencies[i].statType)
+		if(statVal !== undefined)
+			addedValue += Math.floor(statVal * statDependency.dependencies[i].multiplicator)
 	}
 	return addedValue
 }

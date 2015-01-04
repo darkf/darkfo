@@ -64,7 +64,7 @@ function initUI() {
 	$("#endContainer").bind("animationiteration", uiEndCombatAnimationDone)
 	$("#endContainer").bind("webkitAnimationIteration", uiEndCombatAnimationDone)
 
-	function makeScrollable($el, scroll) {
+	function makeScrollable($el: any, scroll?: number) {
 		$el.bind("mousewheel DOMMouseScroll", function(e) {
 			var delta = (e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) ? -1 : 1
 	        $el.scrollTop($el.scrollTop() + (scroll || 60)*delta)
@@ -186,7 +186,7 @@ function makeDropTarget($el, dropCallback) {
 	   on("dragover",  function() { return false })
 }
 
-function makeDraggable($el, data, endCallback) {
+function makeDraggable($el, data, endCallback?: any) { // TODO: any
 	$el.attr("draggable", "true").on("dragstart", function(e) {
 		e.originalEvent.dataTransfer.setData('text/plain', data)
 		console.log("start drag")
@@ -317,7 +317,7 @@ function drawInventory($el, obj, clickCallback) {
 			var s = obj.inventory[i].art.split('/')
 			var inventoryImage = 'art/inven/' + s[s.length-1]
 		} else
-			var inventoryImage = obj.inventory[i].invArt
+			var inventoryImage = <string>obj.inventory[i].invArt // TODO: we should drop the cast @critter
 
 		//console.log("inv img: " + inventoryImage)
 		if(images[inventoryImage] === undefined)
@@ -348,7 +348,7 @@ function drawPlayerInventory() {
 	})
 }
 
-function uiStartDialogue(force, target) {
+function uiStartDialogue(force, target?: any) {
 	if(uiMode === UI_MODE_BARTER && force !== true)
 		return
 
@@ -388,7 +388,7 @@ function uiAddDialogueOption(msg, optionID) {
 
 function uiGetAmount(item) {
 	while(true) {
-		var amount = prompt("How many?")
+		var amount: any = prompt("How many?")
 		if(amount === null)
 			return 0
 		else if(amount === "")
@@ -401,7 +401,7 @@ function uiGetAmount(item) {
 	}
 }
 
-function uiSwapItem(a, item, b, amount) {
+function uiSwapItem(a, item, b, amount?: number) {
 	objectSwapItem({inventory: a}, item, {inventory: b}, amount)
 }
 
