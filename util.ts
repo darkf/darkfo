@@ -16,7 +16,7 @@ limitations under the License.
 
 // Utility functions
 
-function parseIni(text) {
+function parseIni(text: string) {
 	// Parse a .ini-style categorized key-value format
 	var lines = text.split('\n')
 	var category = null
@@ -44,7 +44,7 @@ function parseIni(text) {
 	return ini
 }
 
-function getFileText(path, err) {
+function getFileText(path: string, err?: () => void) {
 	var r = null
 	$.ajax(path, {async: false,
 		          success: function(text) { r = text },

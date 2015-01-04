@@ -159,7 +159,7 @@ function playerInit() {
 			   leftHand: playerWeapon, rightHand: null, weapon: null, armor: null,
 			   dead: false, name: "Player", gender: "male", inventory: [
           	   {type: "misc", name: "Money", pid: 41, pidID: 41, amount: 1337, pro: {textID: 4100, extra: {cost: 1}, invFRM: 117440552}, invArt: 'art/inven/cap2'}
-          	   ]}
+          	   ], stats: null, skills: null, tempChanges: null}
 
 	obj.inventory = [{type: "misc", name: "Money", pid: 41, pidID: 41, amount: 1337, pro: {textID: 4100,
 	 				extra: {cost: 1}, invFRM: 117440552}, invArt: 'art/inven/cap2'}]

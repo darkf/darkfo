@@ -303,7 +303,7 @@ function critterWalkTo(obj, target, running, callback, maxLength) {
 	return true
 }
 
-function critterStaticAnim(obj, anim, callback, waitForLoad) {
+function critterStaticAnim(obj: any, anim: any, callback: any, waitForLoad?: bool) {
 	obj.art = critterGetAnim(obj, anim)
 	obj.frame = 0
 	obj.lastFrameTime = 0
@@ -533,7 +533,7 @@ function critterKill(obj, source, useScript, useAnim, callback) {
 	}
 }
 
-function critterDamage(obj, damage, source, useScript, useAnim, damageType, callback) {
+function critterDamage(obj: any, damage: number, source: any, useScript?: bool, useAnim?: bool, damageType?: any, callback?: any) {
 	decreaseStat(obj, 'HP', damage, false, false, true)
 	if(critterGetStat(obj, 'HP') <= 0)
 		return critterKill(obj, source, useScript)

@@ -190,55 +190,56 @@ var CriticalEffects = (function() {
 		//critterTable[number] = critTableJsonToJsObjectParser(table)
 	}
 
-	var criticalFailTable = {}
-	criticalFailTable.unarmed = {
-		1: [],
-		2: [critterEffects.loseNextTurn],
-		3: [critterEffects.loseNextTurn],
-		4: [critFailEffects.damageSelf, critterEffects.knockdown],
-		5: [critFailEffects.crippleRandomAppendage]
-	}
-	criticalFailTable.melee = {
-		1: [],
-		2: [critterEffects.loseNextTurn],
-		3: [critterEffects.droppedWeapon],
-		4: [critFailEffects.hitRandomly],
-		5: [critFailEffects.hitSelf]
-	}
-	criticalFailTable.firearms = {
-		1: [],
-		2: [critFailEffects.loseAmmo],
-		3: [critterEffects.droppedWeapon],
-		4: [critterEffects.hitRandomly],
-		5: [critFailEffects.destroyWeapon]
-	}
-	criticalFailTable.energy = {
-		1: [critterEffects.loseNextTurn],
-		2: [critFailEffects.loseAmmo, critterEffects.loseNextTurn],
-		3: [critterEffects.droppedWeapon, critterEffects.loseNextTurn],
-		4: [critFailEffects.hitRandomly],
-		5: [critFailEffects.destroyWeapon, critterEffects.loseNextTurn]
-	}
-	criticalFailTable.grenades = {
-		1: [],
-		2: [critterEffects.droppedWeapon],
-		3: [critFailEffects.damageSelf, critterEffects.droppedWeapon],
-		4: [critFailEffects.hitRandomly],
-		5: [critFailEffects.destroyWeapon]
-	}
-	criticalFailTable.rocketlauncher = {
-		1: [critterEffects.loseNextTurn],
-		2: [], //yes that appears backwards but seems to be the case in FO
-		3: [critFailEffects.destroyWeapon],
-		4: [critFailEffects.hitRandomly],
-		5: [critFailEffects.destroyWeapon, critterEffects.loseNextTurn, critterEffects.knockdown]
-	}
-	criticalFailTable.flamers = {
-		1: [],
-		2: [critterEffects.loseNextTurn],
-		3: [critFailEffects.hitRandomly],
-		4: [critFailEffects.destroyWeapon],
-		5: [critFailEffects.destroyWeapon, critterEffects.loseNextTurn, critterEffects.onFire]
+	var criticalFailTable = {
+		unarmed: {
+			1: [],
+			2: [critterEffects.loseNextTurn],
+			3: [critterEffects.loseNextTurn],
+			4: [critFailEffects.damageSelf, critterEffects.knockdown],
+			5: [critFailEffects.crippleRandomAppendage]
+		},
+		melee: {
+			1: [],
+			2: [critterEffects.loseNextTurn],
+			3: [critterEffects.droppedWeapon],
+			4: [critFailEffects.hitRandomly],
+			5: [critFailEffects.hitSelf]
+		},
+		firearms: {
+			1: [],
+			2: [critFailEffects.loseAmmo],
+			3: [critterEffects.droppedWeapon],
+			4: [critterEffects.hitRandomly],
+			5: [critFailEffects.destroyWeapon]
+		},
+		energy: {
+			1: [critterEffects.loseNextTurn],
+			2: [critFailEffects.loseAmmo, critterEffects.loseNextTurn],
+			3: [critterEffects.droppedWeapon, critterEffects.loseNextTurn],
+			4: [critFailEffects.hitRandomly],
+			5: [critFailEffects.destroyWeapon, critterEffects.loseNextTurn]
+		},
+		grenades: {
+			1: [],
+			2: [critterEffects.droppedWeapon],
+			3: [critFailEffects.damageSelf, critterEffects.droppedWeapon],
+			4: [critFailEffects.hitRandomly],
+			5: [critFailEffects.destroyWeapon]
+		},
+		rocketlauncher: {
+			1: [critterEffects.loseNextTurn],
+			2: [], //yes that appears backwards but seems to be the case in FO
+			3: [critFailEffects.destroyWeapon],
+			4: [critFailEffects.hitRandomly],
+			5: [critFailEffects.destroyWeapon, critterEffects.loseNextTurn, critterEffects.knockdown]
+		},
+		flamers: {
+			1: [],
+			2: [critterEffects.loseNextTurn],
+			3: [critFailEffects.hitRandomly],
+			4: [critFailEffects.destroyWeapon],
+			5: [critFailEffects.destroyWeapon, critterEffects.loseNextTurn, critterEffects.onFire]
+		}
 	}
 
 	function temporaryDoCritFail(critFail, target) {

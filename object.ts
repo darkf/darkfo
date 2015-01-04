@@ -408,3 +408,82 @@ function useElevator() {
 	
 	uiElevator(elevator)
 }
+
+// TODO: find a better place for this
+
+interface Point {
+	x: number;
+	y: number;
+}
+
+interface Obj {
+	pid: number;
+	pidID: number;
+	type: string; // TODO: enum
+	pro: any; // TODO: pro ref
+
+	script: any; // TODO: Script?
+
+	// TOOD: unify these
+	name?: string;
+	subtype?: string;
+	invArt?: string;
+
+	amount: number; // = 1
+	position: Point;
+	inventory: Obj[];
+}
+
+function createObjectWithPID(pid, sid) {
+	var pidType = (pid >> 24) & 0xff
+	var pidID = pid & 0xffff
+	var pro = loadPRO(pid, pidID)
+	var obj = {type: getPROTypeName(pidType), pro: pro, pid: pid, pidID: pidID, amount: 1, position: {x: -1, y: -1}, inventory: []}
+
+	if(pidType === 0) { // item
+		obj.subtype = getPROSubTypeName(pro.extra.subtype)
+		obj.name = getMessage("pro_item", pro.textID)
+
+		var invPID = pro.extra.invFRM & 0xffff
+		console.log("invPID: " + invPID + ", also: " + pid)
+		if(invPID !== 0xffff)
+			obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
+	}
+
+	if(obj.pro !== undefined)
+		obj.art = lookupArt(makePID(obj.pro.frmType, obj.pro.frmPID))
+	else
+		obj.art = "art/items/RESERVED"
+
+	if(pidType === 1) // critter
+		initCritters([obj]) // initialize the critter
+	else
+		initObjects([obj])
+
+	var objectScriptID = -1
+	if(obj.pro !== undefined) {
+		if(obj.pro.extra !== undefined && obj.pro.extra.scriptID !== undefined)
+			objectScriptID = obj.pro.extra.scriptID
+		else if(obj.pro.scriptID !== undefined)
+			objectScriptID = obj.pro.scriptID
+	}
+
+	if(obj.pro !== undefined && obj.pro.extra !== undefined &&
+	   sid !== undefined && objectScriptID != sid) {
+		//console.log("!!! createObjectWithPID: need to change script ID (" + objectScriptID +
+		//	" to " + sid + ")")
+		console.log("createObjectWithPID: sid = " + sid)
+		var scriptName = lookupScriptName(sid)
+		console.log("createObjectWithPID: loading " + scriptName + " (" + sid + ")")
+		var script = scriptingEngine.loadScript(scriptName)
+		if(script === null) {
+			console.log("createObjectWithPID: load script failed for " + scriptName + " ( " + sid + ")")
+		} else {
+			obj._script = script
+			scriptingEngine.initScript(obj._script, obj)
+			// TODO: do we enterMap/etc?
+		}
+	}
+
+	return obj
+}
