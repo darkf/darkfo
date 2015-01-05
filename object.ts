@@ -444,6 +444,8 @@ class Obj {
 	type: string; // TODO: enum
 	pro: any = null; // TODO: pro ref
 	art: string; // TODO: Path
+	frmPID: number = null;
+	orientation: number = null;
 
 	script: any;
 	_script: any; // TODO: Script?
@@ -458,10 +460,13 @@ class Obj {
 	inventory: Obj[] = [];
 
 	static fromPID(pid: number, sid?: number): Obj {
+		return Obj.fromPID_(new Obj(), pid, sid)
+	}
+
+	static fromPID_<T extends Obj>(obj: T, pid: number, sid?: number): T {
 		console.log("fromPID: %d, %d", pid, sid)
 		var pidType = (pid >> 24) & 0xff
 		var pidID = pid & 0xffff
-		var obj = new Obj()
 
 		var pro: any = loadPRO(pid, pidID) // TODO: any
 		obj.type = getPROTypeName(pidType)
@@ -483,12 +488,7 @@ class Obj {
 		else
 			obj.art = "art/items/RESERVED"
 
-		/*if(pidType === 1) // critter
-			initCritters([obj]) // initialize the critter
-		else
-			initObjects([obj])*/
-
-		obj.init();
+		obj.init()
 
 		var objectScriptID = -1
 		if(obj.pro !== undefined) {
@@ -519,9 +519,12 @@ class Obj {
 	}
 
 	static fromMapObject(mobj: any): Obj {
+		return Obj.fromMapObject_(new Obj(), mobj)
+	}
+
+	static fromMapObject_<T extends Obj>(obj: T, mobj: any): T {
 		// Load an Obj from a map object
 		console.log("fromMapObject: %o", mobj)
-		var obj = new Obj()
 		obj.pid = mobj.pid
 		obj.pidID = mobj.pidID
 		obj.frmPID = mobj.frmPID
@@ -554,10 +557,6 @@ class Obj {
 			var invPID = this.pro.extra.invFRM & 0xffff
 			if(invPID !== 0xffff)
 				this.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
-
-			// TODO: Subtypes
-			//if(this.pro.extra.subType === 3 /* weapon */)
-			//	this.weapon = new Weapon(obj)
 		}
 
 		else if(this.type === "scenery") {
@@ -566,17 +565,131 @@ class Obj {
 			var subtypeMap = {0: "door", 1: "stairs", 2: "elevator", 3: "ladder",
 							  4: "ladder", 5: "generic"}
 			this.subtype = subtypeMap[this.pro.extra.subType]
-
-			// TODO
-			//if(this.subtype === "door")
-			//	this.open = false
 		}
 		else if(this.type === "wall") { }
 	}
 }
 
+class Critter extends Obj {
+	static fromPID(pid: number, sid?: number): Critter {
+		return Obj.fromPID_(new Critter(), pid, sid)
+
+	}
+
+	static fromMapObject(mobj: any): Critter {
+		console.log("MAPOBJ")
+		return Obj.fromMapObject_(new Critter(), mobj);
+	}
+
+	init() {
+		super.init()
+		// TODO: Critter initialization
+		console.log("Critter init")
+	}
+}
+
+class Item extends Obj {
+	static fromPID(pid: number, sid?: number): Item {
+		return <Item>Obj.fromPID(pid, sid)
+	}
+
+	init() {
+		super.init()
+	}
+}
+
+class WeaponObj extends Item {
+	weapon: any = null;
+
+	static fromPID(pid: number, sid?: number): WeaponObj {
+		return <WeaponObj>Obj.fromPID(pid, sid)
+	}
+
+	init() {
+		super.init()
+		// TODO: Weapon initialization
+		console.log("Weapon init")
+		this.weapon = new Weapon(this)
+	}
+}
+
+class Door extends Obj {
+	open: boolean;
+
+	static fromPID(pid: number, sid?: number): Door {
+		return <Door>Obj.fromPID(pid, sid)
+	}
+
+	init() {
+		super.init()
+		console.log("Door init")
+		this.open = false
+	}
+}
+
+class Scenery extends Obj {
+	static fromPID(pid: number, sid?: number): Scenery {
+		return <Scenery>Obj.fromPID(pid, sid)
+	}
+
+	init() {
+		super.init()
+		console.log("Scenery init")
+	}
+}
+
+
+
+
+// Creates an object of a relevant type from a Prototype ID and an optional Script ID
+function createObjectWithPID(pid: number, sid?: number) {
+	var pidType = (pid >> 24) & 0xff
+	if(pidType == 1) // critter
+		return Critter.fromPID(pid, sid)
+	else if(pidType == 0) { // item
+		var pro = loadPRO(pid, pid & 0xffff)
+		if(pro && pro.extra && pro.extra.subType == 3)
+			return WeaponObj.fromPID(pid, sid)
+		else
+			return Item.fromPID(pid, sid)
+	}
+	else if(pidType == 2) { // scenery
+		var pro = loadPRO(pid, pid & 0xffff)
+		if(pro && pro.extra && pro.extra.subType == 0)
+			return Door.fromPID(pid, sid)
+		else
+			return Scenery.fromPID(pid, sid)
+	}
+	else
+		return Obj.fromPID(pid, sid)
+}
+
+function objFromMapObject(mobj: any) {
+	var pid = mobj.pid
+	var pidType = (pid >> 24) & 0xff
+	console.log("PID TYPE: %d", pidType)
+	if(pidType == 1) // critter
+		return Critter.fromMapObject(mobj)
+	else if(pidType == 0) { // item
+		var pro = mobj.pro || loadPRO(pid, pid & 0xffff)
+		if(pro && pro.extra && pro.extra.subType == 3)
+			return WeaponObj.fromMapObject(mobj)
+		else
+			return Item.fromMapObject(mobj)
+	}
+	else if(pidType == 2) { // scenery
+		var pro = mobj.pro || loadPRO(pid, pid & 0xffff)
+		if(pro && pro.extra && pro.extra.subType == 0)
+			return Door.fromMapObject(mobj)
+		else
+			return Scenery.fromMapObject(mobj)
+	}
+	else
+		return Obj.fromMapObject(mobj)
+}
+
 // TODO: refactor this with the above interfaces
-function createObjectWithPID(pid, sid) {
+function createObjectWithPID_(pid, sid) {
 	var pidType = (pid >> 24) & 0xff
 	var pidID = pid & 0xffff
 	var pro: any = loadPRO(pid, pidID) // TODO: any

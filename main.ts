@@ -497,7 +497,7 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 
 	for(var level = 0; level < gMap.levels.length; level++) {
 		if(doLoadItemInfo !== false)
-			gMap.levels[level]["objects"] = gMap.levels[level]["objects"].map(Obj.fromMapObject)
+			gMap.levels[level]["objects"] = gMap.levels[level]["objects"].map(objFromMapObject)
 			//initObjects(gMap.levels[level]["objects"])
 		initCritters(gMap.levels[level]["objects"])
 	}
@@ -699,7 +699,7 @@ heart.keydown = function(k) {
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
 				var hasScripts = (gObjects[i].script !== undefined ? ("yes (" + gObjects[i].script + ")") : "no") + " " + (gObjects[i]._script === undefined ? "and is NOT loaded" : "and is loaded")
-				console.log("object is at index " + i + ", of type " + gObjects[i].type + ", has art " + gObjects[i].art + ", and has scripts? " + hasScripts)
+				console.log("object is at index " + i + ", of type " + gObjects[i].type + ", has art " + gObjects[i].art + ", and has scripts? " + hasScripts + " -> %o", gObjects[i])
 			}
 		}
 	}
