@@ -46,7 +46,7 @@ var showSpatials = true // show spatial script triggers?
 
 var doLoadScripts = true // should we load scripts?
 var doUpdateCritters = false // should we give critters heartbeats?
-var doTimedEvents = true // should we handle registered timed events?
+var doTimedEvents = false // should we handle registered timed events?
 var doSpatials = true // should we handle spatial triggers?
 var doCombat = true // allow combat?
 var doUseWeaponModel = true // use weapon model for NPC models?
@@ -266,6 +266,7 @@ function lookupArt(frmPID) {
 }
 
 function lookupScriptName(scriptID) {
+	console.log("SID: " + scriptID)
 	return getLstId("scripts/scripts", scriptID - 1).split('.')[0].toLowerCase()
 }
 
@@ -355,7 +356,8 @@ function changeElevation(level: number, updateScripts?: boolean) {
 
 	if(updateScripts !== false) {
 		var objectsAndSpatials = gObjects.concat(gSpatials)
-		loadObjectScripts(gObjects)
+		// TODO:
+		//loadObjectScripts(gObjects)
 		scriptingEngine.updateMap(gMapScript, objectsAndSpatials, currentElevation)
 	}
 

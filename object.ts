@@ -489,32 +489,7 @@ class Obj {
 			obj.art = "art/items/RESERVED"
 
 		obj.init()
-
-		var objectScriptID = -1
-		if(obj.pro !== undefined) {
-			if(obj.pro.extra !== undefined && obj.pro.extra.scriptID !== undefined)
-				objectScriptID = obj.pro.extra.scriptID
-			else if(obj.pro.scriptID !== undefined)
-				objectScriptID = obj.pro.scriptID
-		}
-
-		if(obj.pro !== undefined && obj.pro.extra !== undefined &&
-		   sid !== undefined && objectScriptID != sid) {
-			//console.log("!!! createObjectWithPID: need to change script ID (" + objectScriptID +
-			//	" to " + sid + ")")
-			console.log("createObjectWithPID: sid = " + sid)
-			var scriptName = lookupScriptName(sid)
-			console.log("createObjectWithPID: loading " + scriptName + " (" + sid + ")")
-			var script = scriptingEngine.loadScript(scriptName)
-			if(script === null) {
-				console.log("createObjectWithPID: load script failed for " + scriptName + " ( " + sid + ")")
-			} else {
-				obj._script = script
-				scriptingEngine.initScript(obj._script, obj)
-				// TODO: do we enterMap/etc?
-			}
-		}
-
+		obj.loadScript(sid)
 		return obj
 	}
 
@@ -524,7 +499,7 @@ class Obj {
 
 	static fromMapObject_<T extends Obj>(obj: T, mobj: any): T {
 		// Load an Obj from a map object
-		console.log("fromMapObject: %o", mobj)
+		//console.log("fromMapObject: %o", mobj)
 		obj.pid = mobj.pid
 		obj.pidID = mobj.pidID
 		obj.frmPID = mobj.frmPID
@@ -535,19 +510,48 @@ class Obj {
 		obj.subtype = mobj.subtype
 		obj.amount = mobj.amount
 		obj.inventory = mobj.inventory
+		obj.script = mobj.script
 
 		obj.pro = mobj.pro || loadPRO(obj.pid, obj.pidID)
 
 		// etc? TODO: check this!
 
 		obj.init()
+		obj.loadScript()
 		return obj
 	}
 
 	init() {
-		console.log("init: %o", this)
+		//console.log("init: %o", this)
 		if(this.inventory !== undefined) // containers and critters
 			this.inventory = this.inventory.map(objFromMapObject)
+	}
+
+	loadScript(sid?:number) {
+		var scriptName = null
+
+		if(sid && sid >= 0)
+			scriptName = lookupScriptName(sid)
+		else if(this.script)
+			scriptName = this.script
+		else if(this.pro) {
+			if(this.pro.extra !== undefined && this.pro.extra.scriptID >= 0)
+				scriptName = lookupScriptName(this.pro.extra.scriptID)
+			else if(this.pro.scriptID >= 0)
+				scriptName = lookupScriptName(this.pro.scriptID)
+		}
+
+		if(scriptName != null) {
+			console.log("loadScript: loading " + scriptName + " (" + sid + ")")
+			var script = scriptingEngine.loadScript(scriptName)
+			if(!script) {
+				console.log("loadScript: load script failed for " + scriptName + " ( " + sid + ")")
+			} else {
+				this._script = script
+				scriptingEngine.initScript(this._script, this)
+				// TODO: do we enterMap/etc?
+			}
+		}
 	}
 }
 
@@ -558,14 +562,14 @@ class Critter extends Obj {
 	}
 
 	static fromMapObject(mobj: any): Critter {
-		console.log("MAPOBJ")
+		//console.log("MAPOBJ")
 		return Obj.fromMapObject_(new Critter(), mobj);
 	}
 
 	init() {
 		super.init()
 		// TODO: Critter initialization
-		console.log("Critter init")
+		//console.log("Critter init")
 	}
 }
 
@@ -602,7 +606,7 @@ class WeaponObj extends Item {
 	init() {
 		super.init()
 		// TODO: Weapon initialization
-		console.log("Weapon init")
+		//console.log("Weapon init")
 		this.weapon = new Weapon(this)
 	}
 }
@@ -616,7 +620,7 @@ class Scenery extends Obj {
 
 	init() {
 		super.init()
-		console.log("Scenery init")
+		//console.log("Scenery init")
 
 		if(this.pro === null)
 			return
@@ -625,7 +629,6 @@ class Scenery extends Obj {
 		this.subtype = subtypeMap[this.pro.extra.subType]
 	}
 }
-
 
 class Door extends Scenery {
 	open: boolean;
@@ -638,7 +641,7 @@ class Door extends Scenery {
 
 	init() {
 		super.init()
-		console.log("Door init")
+		//console.log("Door init")
 		this.open = false
 	}
 }
@@ -671,7 +674,7 @@ function createObjectWithPID(pid: number, sid?: number) {
 function objFromMapObject(mobj: any) {
 	var pid = mobj.pid
 	var pidType = (pid >> 24) & 0xff
-	console.log("PID TYPE: %d", pidType)
+
 	if(pidType == 1) // critter
 		return Critter.fromMapObject(mobj)
 	else if(pidType == 0) { // item
