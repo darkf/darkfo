@@ -321,27 +321,6 @@ function critterAtPosition(position) {
 	return null
 }
 
-function loadObjectScripts(objects) {
-	var goodScripts = {} // cache scripts that don't load
-	for(var i = 0; i < objects.length; i++) {
-		var scriptName = objects[i].script
-		if(scriptName === undefined || objects[i]._script !== undefined) continue
-		if(goodScripts[scriptName] === false) continue
-
-		/*console.log("loading " + scriptName + " for " + objects[i].art + " (" + objects[i].type + ")" +
-			" @ " + objects[i].position.x + ", " + objects[i].position.y)*/
-		var script = scriptingEngine.loadScript(scriptName)
-		if(script === null) {
-			console.log("load script failed for " + scriptName)
-			goodScripts[scriptName] = false
-			continue
-		} else {
-			objects[i]._script = script
-			scriptingEngine.initScript(objects[i]._script, objects[i])
-		}
-	}
-}
-
 function changeElevation(level: number, updateScripts?: boolean) {
 	currentElevation = level
 	floorMap = gMap.levels[level]["tiles"]["floor"]
@@ -356,95 +335,13 @@ function changeElevation(level: number, updateScripts?: boolean) {
 
 	if(updateScripts !== false) {
 		var objectsAndSpatials = gObjects.concat(gSpatials)
-		// TODO:
+		// TODO: we need some kind of active/inactive flag on scripts to toggle here,
+		// since scripts should already be loaded
 		//loadObjectScripts(gObjects)
 		scriptingEngine.updateMap(gMapScript, objectsAndSpatials, currentElevation)
 	}
 
 	centerCamera(player.position)
-}
-
-// Initialize various objects, such as items.
-function initObjects(objects) {
-	for(var i = 0; i < objects.length; i++) {
-		var obj = objects[i]
-		if(obj.type === "critter") {
-			initObjects(obj.inventory)
-			continue // critters are handled separately
-		}
-
-		if(obj.inventory !== undefined)
-			initObjects(obj.inventory) // containers, etc
-
-		if(obj.type === "item") { // load item inventory art
-			obj.pro = loadPRO(obj.pid, obj.pidID)
-			if(obj.pro === null) continue
-
-			obj.name = getMessage("pro_item", obj.pro.textID)
-
-			var invPID = obj.pro.extra.invFRM & 0xffff
-			if(invPID !== 0xffff)
-				obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
-
-			if(obj.pro.extra.subType === 3 /* weapon */)
-				obj.weapon = new Weapon(obj)
-		}
-		else if(obj.type === "scenery") {
-			obj.pro = loadPRO(obj.pid, obj.pidID)
-			if(obj.pro === null) continue
-			var subtypeMap = {0: "door", 1: "stairs", 2: "elevator", 3: "ladder",
-							  4: "ladder", 5: "generic"}
-			obj.subtype = subtypeMap[obj.pro.extra.subType]
-
-			if(obj.subtype === "door")
-				obj.open = false
-		}
-		else if(obj.type === "wall") {
-			obj.pro = loadPRO(obj.pid, obj.pidID)
-		}
-	}
-}
-
-// Initialize critters (mainly loading inventory and .PRO files)
-function initCritters(objects) {
-	// load .PRO prototypes for all critters
-	for(var i = 0; i < objects.length; i++) {
-		var obj = objects[i]
-		if(obj.type !== "critter") continue
-		if(!obj.pro)
-			obj.pro = loadPRO(obj.pid, obj.pidID)
-		obj.stats = calcStats(obj, obj.pro)
-		obj.skills = obj.pro.extra.skills
-		obj.name = getMessage("pro_crit", obj.pro.textID)
-
-		// PROs for weapons
-		for(var j = 0; j < obj.inventory.length; j++) {
-			var inv = obj.inventory[j]
-			if(inv.pro === undefined)
-				inv.pro = loadPRO(inv.pid, inv.pidID)
-
-			if(inv.subtype === "weapon") {
-				if(obj.leftHand === undefined) {
-					if(inv.weapon.canEquip(obj))
-						obj.leftHand = inv
-				}
-				else if(obj.rightHand === undefined) {
-					if(inv.weapon.canEquip(obj))
-						obj.rightHand = inv
-				}
-				//console.log("left: " + obj.leftHand + " | right: " + obj.rightHand)
-			}
-		}
-
-		// default to punches
-		if(!obj.leftHand)
-			obj.leftHand = {type: "item", subtype: "weapon", weapon: new Weapon("punch")}
-		if(!obj.rightHand)
-			obj.rightHand = {type: "item", subtype: "weapon", weapon: new Weapon("punch")}
-
-		// set them in their proper idle state for the weapon
-		obj.art = critterGetAnim(obj, "idle")
-	}
 }
 
 function centerCamera(around) {
@@ -500,8 +397,6 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 	for(var level = 0; level < gMap.levels.length; level++) {
 		if(doLoadItemInfo !== false)
 			gMap.levels[level]["objects"] = gMap.levels[level]["objects"].map(objFromMapObject)
-			//initObjects(gMap.levels[level]["objects"])
-		initCritters(gMap.levels[level]["objects"])
 	}
 
 	if(doLoadScripts === true) {
@@ -533,7 +428,8 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 		}
 
 		changeElevation(elevation, false)
-		loadObjectScripts(gObjects)
+		// TODO:
+		//loadObjectScripts(gObjects)
 		var objectsAndSpatials = gObjects.concat(gSpatials)
 		scriptingEngine.enterMap(gMapScript, objectsAndSpatials, elevation, gMap.mapID, true)
 		scriptingEngine.updateMap(gMapScript, objectsAndSpatials, elevation)

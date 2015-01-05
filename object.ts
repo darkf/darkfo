@@ -420,24 +420,6 @@ interface Point {
 	y: number;
 }
 
-/*interface Obj {
-	pid: number;
-	pidID: number;
-	type: string; // TODO: enum
-	pro: any; // TODO: pro ref
-
-	script: any; // TODO: Script?
-
-	// TOOD: unify these
-	name?: string;
-	subtype?: string;
-	invArt?: string;
-
-	amount: number; // = 1
-	position: Point;
-	inventory: Obj[];
-}*/
-
 class Obj {
 	pid: number;
 	pidID: number;
@@ -556,6 +538,13 @@ class Obj {
 }
 
 class Critter extends Obj {
+	// TODO: any
+	stats: any;
+	skills: any;
+
+	leftHand: WeaponObj;
+	rightHand: WeaponObj;
+
 	static fromPID(pid: number, sid?: number): Critter {
 		return Obj.fromPID_(new Critter(), pid, sid)
 
@@ -570,6 +559,35 @@ class Critter extends Obj {
 		super.init()
 		// TODO: Critter initialization
 		//console.log("Critter init")
+
+		this.stats = calcStats(this, this.pro)
+		this.skills = this.pro.extra.skills
+		this.name = getMessage("pro_crit", this.pro.textID)
+
+		// initialize weapons
+		this.inventory.forEach(inv => {
+			if(inv.subtype === "weapon") {
+				var w = <WeaponObj>inv
+				if(this.leftHand === undefined) {
+					if(w.weapon.canEquip(this))
+						this.leftHand = w
+				}
+				else if(this.rightHand === undefined) {
+					if(w.weapon.canEquip(this))
+						this.rightHand = w
+				}
+				//console.log("left: " + this.leftHand + " | right: " + this.rightHand)
+			}
+		})
+
+		// default to punches
+		if(!this.leftHand)
+			this.leftHand = <WeaponObj>{type: "item", subtype: "weapon", weapon: new Weapon("punch")}
+		if(!this.rightHand)
+			this.rightHand = <WeaponObj>{type: "item", subtype: "weapon", weapon: new Weapon("punch")}
+
+		// set them in their proper idle state for the weapon
+		this.art = critterGetAnim(this, "idle")
 	}
 }
 
@@ -647,7 +665,6 @@ class Door extends Scenery {
 }
 
 
-
 // Creates an object of a relevant type from a Prototype ID and an optional Script ID
 function createObjectWithPID(pid: number, sid?: number) {
 	var pidType = (pid >> 24) & 0xff
@@ -693,59 +710,4 @@ function objFromMapObject(mobj: any) {
 	}
 	else
 		return Obj.fromMapObject(mobj)
-}
-
-// TODO: refactor this with the above interfaces
-function createObjectWithPID_(pid, sid) {
-	var pidType = (pid >> 24) & 0xff
-	var pidID = pid & 0xffff
-	var pro: any = loadPRO(pid, pidID) // TODO: any
-	var obj: any = {type: getPROTypeName(pidType), pro: pro, pid: pid, pidID: pidID, amount: 1, position: {x: -1, y: -1}, inventory: []}
-
-	if(pidType === 0) { // item
-		obj.subtype = getPROSubTypeName(pro.extra.subtype)
-		obj.name = getMessage("pro_item", pro.textID)
-
-		var invPID = pro.extra.invFRM & 0xffff
-		console.log("invPID: " + invPID + ", also: " + pid)
-		if(invPID !== 0xffff)
-			obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
-	}
-
-	if(obj.pro !== undefined)
-		obj.art = lookupArt(makePID(obj.pro.frmType, obj.pro.frmPID))
-	else
-		obj.art = "art/items/RESERVED"
-
-	if(pidType === 1) // critter
-		initCritters([obj]) // initialize the critter
-	else
-		initObjects([obj])
-
-	var objectScriptID = -1
-	if(obj.pro !== undefined) {
-		if(obj.pro.extra !== undefined && obj.pro.extra.scriptID !== undefined)
-			objectScriptID = obj.pro.extra.scriptID
-		else if(obj.pro.scriptID !== undefined)
-			objectScriptID = obj.pro.scriptID
-	}
-
-	if(obj.pro !== undefined && obj.pro.extra !== undefined &&
-	   sid !== undefined && objectScriptID != sid) {
-		//console.log("!!! createObjectWithPID: need to change script ID (" + objectScriptID +
-		//	" to " + sid + ")")
-		console.log("createObjectWithPID: sid = " + sid)
-		var scriptName = lookupScriptName(sid)
-		console.log("createObjectWithPID: loading " + scriptName + " (" + sid + ")")
-		var script = scriptingEngine.loadScript(scriptName)
-		if(script === null) {
-			console.log("createObjectWithPID: load script failed for " + scriptName + " ( " + sid + ")")
-		} else {
-			obj._script = script
-			scriptingEngine.initScript(obj._script, obj)
-			// TODO: do we enterMap/etc?
-		}
-	}
-
-	return obj
 }
