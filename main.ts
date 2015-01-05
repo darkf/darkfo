@@ -497,7 +497,8 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 
 	for(var level = 0; level < gMap.levels.length; level++) {
 		if(doLoadItemInfo !== false)
-			initObjects(gMap.levels[level]["objects"])
+			gMap.levels[level]["objects"] = gMap.levels[level]["objects"].map(Obj.fromMapObject)
+			//initObjects(gMap.levels[level]["objects"])
 		initCritters(gMap.levels[level]["objects"])
 	}
 

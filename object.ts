@@ -420,7 +420,7 @@ interface Point {
 	y: number;
 }
 
-interface Obj {
+/*interface Obj {
 	pid: number;
 	pidID: number;
 	type: string; // TODO: enum
@@ -436,6 +436,143 @@ interface Obj {
 	amount: number; // = 1
 	position: Point;
 	inventory: Obj[];
+}*/
+
+class Obj {
+	pid: number;
+	pidID: number;
+	type: string; // TODO: enum
+	pro: any = null; // TODO: pro ref
+	art: string; // TODO: Path
+
+	script: any;
+	_script: any; // TODO: Script?
+
+	// TOOD: unify these
+	name: string; // = "<unnamed obj>";
+	subtype: string;
+	invArt: string;
+
+	amount: number = 1;
+	position: Point = {x: -1, y: -1};
+	inventory: Obj[] = [];
+
+	static fromPID(pid: number, sid?: number): Obj {
+		console.log("fromPID: %d, %d", pid, sid)
+		var pidType = (pid >> 24) & 0xff
+		var pidID = pid & 0xffff
+		var obj = new Obj()
+
+		var pro: any = loadPRO(pid, pidID) // TODO: any
+		obj.type = getPROTypeName(pidType)
+		obj.pro = pro
+
+		// TODO: Subclasses
+		if(pidType == 0) { // item
+			obj.subtype = getPROSubTypeName(pro.extra.subtype)
+			obj.name = getMessage("pro_item", pro.textID)
+
+			var invPID = pro.extra.invFRM & 0xffff
+			console.log("invPID: " + invPID + ", also: " + pid)
+			if(invPID !== 0xffff)
+				obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
+		}
+
+		if(obj.pro !== undefined)
+			obj.art = lookupArt(makePID(obj.pro.frmType, obj.pro.frmPID))
+		else
+			obj.art = "art/items/RESERVED"
+
+		/*if(pidType === 1) // critter
+			initCritters([obj]) // initialize the critter
+		else
+			initObjects([obj])*/
+
+		obj.init();
+
+		var objectScriptID = -1
+		if(obj.pro !== undefined) {
+			if(obj.pro.extra !== undefined && obj.pro.extra.scriptID !== undefined)
+				objectScriptID = obj.pro.extra.scriptID
+			else if(obj.pro.scriptID !== undefined)
+				objectScriptID = obj.pro.scriptID
+		}
+
+		if(obj.pro !== undefined && obj.pro.extra !== undefined &&
+		   sid !== undefined && objectScriptID != sid) {
+			//console.log("!!! createObjectWithPID: need to change script ID (" + objectScriptID +
+			//	" to " + sid + ")")
+			console.log("createObjectWithPID: sid = " + sid)
+			var scriptName = lookupScriptName(sid)
+			console.log("createObjectWithPID: loading " + scriptName + " (" + sid + ")")
+			var script = scriptingEngine.loadScript(scriptName)
+			if(script === null) {
+				console.log("createObjectWithPID: load script failed for " + scriptName + " ( " + sid + ")")
+			} else {
+				obj._script = script
+				scriptingEngine.initScript(obj._script, obj)
+				// TODO: do we enterMap/etc?
+			}
+		}
+
+		return obj
+	}
+
+	static fromMapObject(mobj: any): Obj {
+		// Load an Obj from a map object
+		console.log("fromMapObject: %o", mobj)
+		var obj = new Obj()
+		obj.pid = mobj.pid
+		obj.pidID = mobj.pidID
+		obj.frmPID = mobj.frmPID
+		obj.orientation = mobj.orientation
+		obj.type = mobj.type
+		obj.art = mobj.art
+		obj.position = mobj.position
+		obj.subtype = mobj.subtype
+		obj.amount = mobj.amount
+		obj.inventory = mobj.inventory
+
+		obj.pro = mobj.pro || loadPRO(obj.pid, obj.pidID)
+
+		// etc? TODO: check this!
+
+		obj.init()
+		return obj
+	}
+
+	init() {
+		console.log("init: %o", this)
+		if(this.inventory !== undefined)
+			initObjects(this.inventory) // containers and critters
+
+		if(this.type === "item") { // load item inventory art
+			if(this.pro === null)
+				return
+			this.name = getMessage("pro_item", this.pro.textID)
+
+			var invPID = this.pro.extra.invFRM & 0xffff
+			if(invPID !== 0xffff)
+				this.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
+
+			// TODO: Subtypes
+			//if(this.pro.extra.subType === 3 /* weapon */)
+			//	this.weapon = new Weapon(obj)
+		}
+
+		else if(this.type === "scenery") {
+			if(this.pro === null)
+				return
+			var subtypeMap = {0: "door", 1: "stairs", 2: "elevator", 3: "ladder",
+							  4: "ladder", 5: "generic"}
+			this.subtype = subtypeMap[this.pro.extra.subType]
+
+			// TODO
+			//if(this.subtype === "door")
+			//	this.open = false
+		}
+		else if(this.type === "wall") { }
+	}
 }
 
 // TODO: refactor this with the above interfaces
