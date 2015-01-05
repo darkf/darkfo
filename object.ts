@@ -546,27 +546,8 @@ class Obj {
 
 	init() {
 		console.log("init: %o", this)
-		if(this.inventory !== undefined)
-			initObjects(this.inventory) // containers and critters
-
-		if(this.type === "item") { // load item inventory art
-			if(this.pro === null)
-				return
-			this.name = getMessage("pro_item", this.pro.textID)
-
-			var invPID = this.pro.extra.invFRM & 0xffff
-			if(invPID !== 0xffff)
-				this.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
-		}
-
-		else if(this.type === "scenery") {
-			if(this.pro === null)
-				return
-			var subtypeMap = {0: "door", 1: "stairs", 2: "elevator", 3: "ladder",
-							  4: "ladder", 5: "generic"}
-			this.subtype = subtypeMap[this.pro.extra.subType]
-		}
-		else if(this.type === "wall") { }
+		if(this.inventory !== undefined) // containers and critters
+			this.inventory = this.inventory.map(objFromMapObject)
 	}
 }
 
@@ -593,8 +574,19 @@ class Item extends Obj {
 		return <Item>Obj.fromPID(pid, sid)
 	}
 
+	static fromMapObject(mobj: any): Item { return Obj.fromMapObject_(new Item(), mobj) }
+
 	init() {
 		super.init()
+
+		// load item inventory art
+		if(this.pro === null)
+			return
+		this.name = getMessage("pro_item", this.pro.textID)
+
+		var invPID = this.pro.extra.invFRM & 0xffff
+		if(invPID !== 0xffff)
+			this.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
 	}
 }
 
@@ -605,6 +597,8 @@ class WeaponObj extends Item {
 		return <WeaponObj>Obj.fromPID(pid, sid)
 	}
 
+	static fromMapObject(mobj: any): WeaponObj { return Obj.fromMapObject_(new WeaponObj(), mobj) }
+
 	init() {
 		super.init()
 		// TODO: Weapon initialization
@@ -613,12 +607,34 @@ class WeaponObj extends Item {
 	}
 }
 
-class Door extends Obj {
+class Scenery extends Obj {
+	static fromPID(pid: number, sid?: number): Scenery {
+		return <Scenery>Obj.fromPID(pid, sid)
+	}
+
+	static fromMapObject(mobj: any): Scenery { return Obj.fromMapObject_(new Scenery(), mobj) }
+
+	init() {
+		super.init()
+		console.log("Scenery init")
+
+		if(this.pro === null)
+			return
+		var subtypeMap = {0: "door", 1: "stairs", 2: "elevator", 3: "ladder",
+						  4: "ladder", 5: "generic"}
+		this.subtype = subtypeMap[this.pro.extra.subType]
+	}
+}
+
+
+class Door extends Scenery {
 	open: boolean;
 
 	static fromPID(pid: number, sid?: number): Door {
 		return <Door>Obj.fromPID(pid, sid)
 	}
+
+	static fromMapObject(mobj: any): Door { return Obj.fromMapObject_(new Door(), mobj) }
 
 	init() {
 		super.init()
@@ -626,18 +642,6 @@ class Door extends Obj {
 		this.open = false
 	}
 }
-
-class Scenery extends Obj {
-	static fromPID(pid: number, sid?: number): Scenery {
-		return <Scenery>Obj.fromPID(pid, sid)
-	}
-
-	init() {
-		super.init()
-		console.log("Scenery init")
-	}
-}
-
 
 
 
