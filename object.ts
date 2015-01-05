@@ -429,6 +429,8 @@ class Obj {
 	frmPID: number = null;
 	orientation: number = null;
 
+	extra: any; // TODO
+
 	script: any;
 	_script: any; // TODO: Script?
 
@@ -493,6 +495,7 @@ class Obj {
 		obj.amount = mobj.amount
 		obj.inventory = mobj.inventory
 		obj.script = mobj.script
+		obj.extra = mobj.extra
 
 		obj.pro = mobj.pro || loadPRO(obj.pid, obj.pidID)
 
