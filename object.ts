@@ -418,27 +418,28 @@ interface Point {
 }
 
 class Obj {
-	pid: number;
-	pidID: number;
-	type: string = null; // TODO: enum
-	pro: any = null; // TODO: pro ref
-	art: string; // TODO: Path
-	frmPID: number = null;
-	orientation: number = null;
+	pid: number; // PID (Prototype IDentifier)
+	pidID: number; // ID (not type) part of the PID
+	type: string = null; // TODO: enum // Type of object (critter, item, ...)
+	pro: any = null; // TODO: pro ref // PRO Object
+	art: string; // TODO: Path // Art path
+	frmPID: number = null; // Art FID
+	orientation: number = null; // Direction the object is facing
 
 	extra: any; // TODO
 
-	script: any;
-	_script: any; // TODO: Script?
+	script: any; // Script name
+	_script: any; // TODO: Script? // Live script object
 
 	// TOOD: unify these
-	name: string; // = "<unnamed obj>";
-	subtype: string;
-	invArt: string;
+	name: string; // = "<unnamed obj>"; // Only for some critters at the moment.
+	subtype: string; // Some objects, like items and scenery, have subtypes
+	invArt: string; // Art path used for in-inventory image
 
-	anim: any = null;
-	animCallback: any = null;
-	frame: number = 0;
+	anim: any = null; // Current animation (TODO: Is this only a string? It should probably be an enum.)
+	animCallback: any = null; // Callback when current animation is finished playing
+	frame: number = 0; // Animation frame index
+	lastFrameTime: number = 0; // Time since last animation frame played
 
 	amount: number = 1; // TODO: Where does this belong? Items and misc seem to have it, or is Money an Item?
 	position: Point = {x: -1, y: -1};
@@ -546,7 +547,7 @@ class Obj {
 		return this
 	}
 
-	move(position: any, curIdx?: number) { // TODO: Point
+	move(position: any, curIdx?: number): void { // TODO: Point
 		this.position = position
 		
 		if(doZOrder !== false)
