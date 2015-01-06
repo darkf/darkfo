@@ -16,6 +16,8 @@ limitations under the License.
 
 // Contains the Player class and relevant initialization logic
 
+"use strict";
+
 class Player extends Critter {
 	// TODO: make it so this gets added whenever needed so that other things than just the player can use it
 	// It is however only used for tag skills and temporary levelup menu stuff, so it's not crucial

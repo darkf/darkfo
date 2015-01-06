@@ -1,5 +1,5 @@
 /*
-Copyright 2014 darkf
+Copyright 2014-2015 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@ limitations under the License.
 
 Scripting system/engine for DarkFO
 */
+
+"use strict";
 
 module scriptingEngine {
 	var gameObjects: any = null
@@ -1173,12 +1175,4 @@ module scriptingEngine {
 		seed(123)
 		reset(dude, mapName, mapID)
 	}
-
-/*
-	return {init: init, enterMap: enterMap, updateMap: updateMap, loadScript: loadScript,
-		    dialogueReply: dialogueReply, timedEvent: timedEvent, updateCritter: updateCritter,
-		    timeEventList: timeEventList, info: info, reset: reset, talk: talk, damage: damage,
-		    globalVars: globalVars, combatEvent: combatEvent, initScript: initScript, use: use,
-			destroy: destroy, dialogueEnd: dialogueEnd, spatial: spatial}
-*/
 }

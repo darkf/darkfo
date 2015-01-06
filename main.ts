@@ -1,3 +1,21 @@
+/*
+Copyright 2014-2015 darkf
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// Main file with a lot of ugly global singletons
+
 "use strict";
 
 // make TypeScript happy about external libraries (TODO: use .d.ts files)
@@ -8,13 +26,14 @@ declare var PF;
 var MAP_NAME = "ctest" // name of the current map
 var DEBUG = false // debug mode
 
-var gMapScript = null
-var floorMap = null
-var roofMap = null
-var images = {}
-var imageInfo = null
-var gObjects = []
-var gMap = null
+var gMapScript = null // Current map script object
+var floorMap: string[][] = null // Floor tilemap
+var roofMap: string[][] = null // Roof tilemap
+var images = {} // Image cache
+var imageInfo = null // Metadata about images (Number of frames, FPS, etc)
+var gMap: any = null // Current map object
+var gObjects: Obj[] = null // Map objects on current level
+var gMapObjects: Obj[][] = null // Map objects on all levels
 var gSpatials = null
 var currentElevation = 0 // current map elevation
 var hexOverlay = null
@@ -116,7 +135,6 @@ function lazyLoadImage(art: string, callback?: (x:any) => void, isHeartImg?: boo
 	lazyAssetLoadingQueue[art] = (callback ? [callback] : [])
 
 	var img = new Image()
-	img.src = art + '.png'
 	img.onload = function() {
 		images[art] = new heart.HeartImage(img)
 		var callbacks = lazyAssetLoadingQueue[art]
@@ -126,6 +144,7 @@ function lazyLoadImage(art: string, callback?: (x:any) => void, isHeartImg?: boo
 			lazyAssetLoadingQueue[art] = undefined
 		}
 	}
+	img.src = art + '.png'
 }
 
 function getPROType(pid) {
@@ -297,7 +316,7 @@ function changeElevation(level: number, updateScripts?: boolean) {
 	currentElevation = level
 	floorMap = gMap.levels[level]["tiles"]["floor"]
 	roofMap  = gMap.levels[level]["tiles"]["roof"]
-	gObjects = gMap.levels[level]["objects"]
+	gObjects = gMapObjects[level]
 	gSpatials = gMap.levels[level]["spatials"]
 
 	critterStopWalking(player)
@@ -366,9 +385,10 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 	gMap = map
 	var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
+	gMapObjects = new Array(gMap.levels.length)
 	for(var level = 0; level < gMap.levels.length; level++) {
 		if(doLoadItemInfo !== false)
-			gMap.levels[level]["objects"] = gMap.levels[level]["objects"].map(objFromMapObject)
+			gMapObjects[level] = gMap.levels[level]["objects"].map(objFromMapObject)
 	}
 
 	if(doLoadScripts === true) {
@@ -501,8 +521,9 @@ heart.mousepressed = function(x, y, btn) {
 	if(obj !== null) {
 		if(obj.type === "critter") {
 			if(obj === player) return
+			var who = <Critter>obj
 
-			if(inCombat === true && obj.dead !== true) {
+			if(inCombat === true && who.dead !== true) {
 				// attack a critter
 				if(!combat.inPlayerTurn || objectInAnim(player)) {
 					console.log("You can't do that yet.")
@@ -516,15 +537,15 @@ heart.mousepressed = function(x, y, btn) {
 
 				player.AP.subtractCombatAP(4)
 				console.log("Attacking...")
-				combat.attack(player, obj)
+				combat.attack(player, who)
 			}
-			else if(obj.dead !== true && inCombat !== true &&
-				obj._script && obj._script.talk_p_proc !== undefined) {
+			else if(who.dead !== true && inCombat !== true &&
+				who._script && who._script.talk_p_proc !== undefined) {
 				// talk to a critter
-				console.log("Talking to " + critterGetName(obj))
-				scriptingEngine.talk(obj._script, obj)
+				console.log("Talking to " + critterGetName(who))
+				scriptingEngine.talk(who._script, who)
 			}
-			else if(obj.dead === true) {
+			else if(who.dead === true) {
 				// loot a dead body
 				uiLoot(obj)
 			}
@@ -773,11 +794,9 @@ heart.update = function() {
 		}
 	}
 
-	//critterUpdateAnimation(player)
-
 	for(var i = 0; i < gObjects.length; i++) {
 		if(gObjects[i].type == "critter") {
-			if(didTick && doUpdateCritters && inCombat !== true && !gObjects[i].dead &&
+			if(didTick && doUpdateCritters && inCombat !== true && !(<Critter>gObjects[i]).dead &&
 				objectInAnim(gObjects[i]) === false && gObjects[i]._script)
 				scriptingEngine.updateCritter(gObjects[i]._script, gObjects[i])
 		}

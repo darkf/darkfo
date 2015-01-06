@@ -1,5 +1,6 @@
 /*
 Copyright 2014 darkf, Stratege
+Copyright 2015 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +16,8 @@ limitations under the License.
 */
 
 // Critical Effects system
+
+"use strict";
 
 module CriticalEffects {
 	var generalRegionName = {0: "head", 1: "leftArm",2: "rightArm",3: "torso",4: "rightLeg", 5: "leftLeg", 6: "eyes", 7: "groin",8: "uncalled"}

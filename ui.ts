@@ -24,6 +24,8 @@ limitations under the License.
 // TODO: fix style for inventory image amount
 // TODO: option for scaling the UI
 
+"use strict";
+
 function initUI() {
 	makeDropTarget($("#inventoryBoxList"), function(data) { uiMoveSlot(data, "inventory") })
 	makeDropTarget($("#inventoryBoxItem1"), function(data) { uiMoveSlot(data, "leftHand") })

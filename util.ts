@@ -1,5 +1,6 @@
 /*
 Copyright 2014 darkf, Stratege
+Copyright 2015 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +16,8 @@ limitations under the License.
 */
 
 // Utility functions
+
+"use strict";
 
 function parseIni(text: string) {
 	// Parse a .ini-style categorized key-value format

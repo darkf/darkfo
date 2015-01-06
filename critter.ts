@@ -17,7 +17,7 @@ limitations under the License.
 
 // Collection of functions for dealing with critters
 
-// TODO: Critter should really be a class of its own
+"use strict";
 
 var animInfo = {"idle": {type: "static"},
                 "attack": {type: "static"},
@@ -417,10 +417,6 @@ function getAnimPartialActions(art, anim) {
 	return partialActions
 }
 
-function critterUpdateAnimation(obj) {
-	obj.updateAnim()
-}
-
 function hitSpatialTrigger(position) {
 	if(gSpatials === null) return null
 	var hit = []
@@ -485,12 +481,9 @@ function cloneStats(stats) { return $.extend({}, stats) }
 function addStats(a, b) {
 	var w = cloneStats(a)
 	if(w["HP"] !== undefined)
-	{
 		w["Max HP"] = w["HP"]
-	}
-	for(var prop in b) {
+	for(var prop in b)
 		w[prop] += b[prop]
-	}
 	return w
 }
 function calcStats(obj, pro) {
@@ -586,8 +579,6 @@ class Critter extends Obj {
 
 	init() {
 		super.init()
-		// TODO: Critter initialization
-		//console.log("Critter init")
 
 		this.stats = calcStats(this, this.pro)
 		this.skills = this.pro.extra.skills
