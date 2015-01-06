@@ -1,5 +1,5 @@
 /*
-Copyright 2014 darkf
+Copyright 2014-2015 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -437,9 +437,10 @@ class Obj {
 	invArt: string;
 
 	anim: any = null;
+	animCallback: any = null;
 	frame: number = 0;
 
-	amount: number = 1;
+	amount: number = 1; // TODO: Where does this belong? Items and misc seem to have it, or is Money an Item?
 	position: Point = {x: -1, y: -1};
 	inventory: Obj[] = [];
 
@@ -540,6 +541,11 @@ class Obj {
 		}
 	}
 
+	setAmount(amount: number): Obj {
+		this.amount = amount
+		return this
+	}
+
 	move(position: any, curIdx?: number) { // TODO: Point
 		this.position = position
 		
@@ -613,9 +619,7 @@ class Critter extends Obj {
 class Item extends Obj {
 	type = "item";
 
-	static fromPID(pid: number, sid?: number): Item {
-		return <Item>Obj.fromPID(pid, sid)
-	}
+	static fromPID(pid: number, sid?: number): Item { return Obj.fromPID_(new Item(), pid, sid) }
 
 	static fromMapObject(mobj: any): Item { return Obj.fromMapObject_(new Item(), mobj) }
 
@@ -636,9 +640,7 @@ class Item extends Obj {
 class WeaponObj extends Item {
 	weapon: any = null;
 
-	static fromPID(pid: number, sid?: number): WeaponObj {
-		return <WeaponObj>Obj.fromPID(pid, sid)
-	}
+	static fromPID(pid: number, sid?: number): WeaponObj { return Obj.fromPID_(new WeaponObj(), pid, sid) }
 
 	static fromMapObject(mobj: any): WeaponObj { return Obj.fromMapObject_(new WeaponObj(), mobj) }
 
@@ -653,9 +655,7 @@ class WeaponObj extends Item {
 class Scenery extends Obj {
 	type = "scenery";
 
-	static fromPID(pid: number, sid?: number): Scenery {
-		return <Scenery>Obj.fromPID(pid, sid)
-	}
+	static fromPID(pid: number, sid?: number): Scenery { return Obj.fromPID_(new Scenery(), pid, sid) }
 
 	static fromMapObject(mobj: any): Scenery { return Obj.fromMapObject_(new Scenery(), mobj) }
 
@@ -674,9 +674,7 @@ class Scenery extends Obj {
 class Door extends Scenery {
 	open: boolean;
 
-	static fromPID(pid: number, sid?: number): Door {
-		return <Door>Obj.fromPID(pid, sid)
-	}
+	static fromPID(pid: number, sid?: number): Door { return Obj.fromPID_(new Door(), pid, sid) }
 
 	static fromMapObject(mobj: any): Door { return Obj.fromMapObject_(new Door(), mobj) }
 

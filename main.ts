@@ -93,36 +93,8 @@ var useKey = "u"
 var killKey = "k"
 var worldmapKey = "p"
 
-// the player object
-// todo: just load this from the PRO or something
-var playerWeapon: any = {art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9, position: {x: -1, y: -1},
-  subtype: "weapon", amount: 1, inventory: [], type: "item", pro: {
-    lightRadius: 0, frmPID: 44, extra: {
-      animCode: 6, weight: 5,  materialID: 1, subType: 3, flagsExt: "'\\x00\\x00\\x00'",
-      cost: 1000, APCost2: 6, APCost1: 5, rounds: 10, minDmg: 1, size: 3,
-      dmgType: 0, minST: 4, soundID: "D", maxAmmo: 30, attackMode: 118, maxRange2: 20,
-      maxRange1: 25, invFRM: 117440514, maxDmg: 12, ammoPID: 29, critFail: 2, scriptID: -1,
-      projPID: -1, caliber: 8},
-    textID: 900, pid: 9, frmType: 0, flags: 8, lightIntensity: 0, type: 0},
-  name: "10mm SMG",
-  invArt: "art/inven/uzi"}
-playerWeapon.weapon = new Weapon(playerWeapon)
-
+// the global player object
 var player = new Player()
-			/*{position: {x: 94, y: 109}, orientation: 2, frame: 0,
-              art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
-              path: null, animCallback: null, type: "critter",
-          	  baseStats: {STR: 8, PER: 5, END: 5, CHR: 6, INT: 5, AGI: 6, LUK: 5, HP: 100},
-          	  bonusStats: {STR: 0, PER: 0, END: 0, CHR: 0, INT: 0, AGI: 0, LUK: 0, HP: 0},
-          	  leftHand: playerWeapon, rightHand: null, weapon: null, armor: null,
-          	  dead: false, name: "Player", gender: "male",
-          	  skills: {"Repair": 25, "Big Guns": 25, "Outdoorsman": 25, "Traps": 25, "Barter": 25,
-          	  		   "Melee": 25, "Throwing": 25, "Steal": 25, "Doctor": 25, "Sneak": 25,
-          	  		   "Unarmed": 25, "Speech": 25, "First Aid": 25, "Lockpick": 25, "Science": 25,
-          	  		   "Gambling": 25, "Small Guns": 50, "Energy Weapons": 50},
-          	  inventory: [
-          	  	{type: "misc", name: "Money", pid: 41, pidID: 41, amount: 1337, pro: {textID: 4100, extra: {cost: 1}, invFRM: 117440552}, invArt: 'art/inven/cap2'}
-          	  ]}*/
 
 function repr(obj) { return JSON.stringify(obj, null, 2) }
 
