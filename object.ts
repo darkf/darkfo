@@ -55,16 +55,6 @@ function objectInAnim(obj) {
 	return !!(obj.path || obj.animCallback)
 }
 
-function objectBlocks(obj: any): boolean {
-	if(obj.type === "misc") return false
-	if(obj.type === "critter") return (obj.dead !== true) && (obj.visible !== false)
-	if(!obj.pro) return true
-	if(obj.open !== undefined) return !obj.open
-	if(obj.visible === false) return false
-
-	return !(obj.pro.flags & 0x00000010 /* NoBlock */)
-}
-
 function canUseObject(obj: any, source?: any) {
 	if(obj._script !== undefined && obj._script.use_p_proc !== undefined)
 		return true
@@ -405,6 +395,7 @@ class Obj {
 	art: string; // TODO: Path // Art path
 	frmPID: number = null; // Art FID
 	orientation: number = null; // Direction the object is facing
+	visible: boolean = true; // Is the object visible?
 
 	extra: any; // TODO
 
@@ -552,6 +543,19 @@ class Obj {
 					this.animCallback()
 			}
 		}
+	}
+
+	blocks(): boolean {
+		// TODO: We could make use of subclass polymorphism to reduce the cases here
+
+		if(this.type === "misc") return false
+		if(this.type === "critter")
+			return ((<Critter>this).dead !== true) && (this.visible !== false)
+		if(!this.pro) return true
+		if(this.subtype == "door") return !(<Door>this).open
+		if(this.visible === false) return false
+
+		return !(this.pro.flags & 0x00000010 /* NoBlock */)
 	}
 }
 

@@ -667,7 +667,7 @@ function recalcPath(start, goal) {
 	for(var i = 0; i < gObjects.length; i++) {
 		// if there are multiple, any blocking one will block
 		var obj = gObjects[i]
-		matrix[obj.position.y][obj.position.x] |= <any>objectBlocks(obj)
+		matrix[obj.position.y][obj.position.x] |= <any>obj.blocks()
 	}
 
 	var grid = new PF.Grid(HEX_GRID_SIZE, HEX_GRID_SIZE, matrix)
@@ -781,7 +781,7 @@ heart.update = function() {
 				objectInAnim(gObjects[i]) === false && gObjects[i]._script)
 				scriptingEngine.updateCritter(gObjects[i]._script, gObjects[i])
 		}
-		
+
 		gObjects[i].updateAnim()
 	}
 }
