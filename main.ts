@@ -773,17 +773,16 @@ heart.update = function() {
 		}
 	}
 
-	critterUpdateAnimation(player)
+	//critterUpdateAnimation(player)
 
 	for(var i = 0; i < gObjects.length; i++) {
-		if(gObjects[i].type === "critter") {
+		if(gObjects[i].type == "critter") {
 			if(didTick && doUpdateCritters && inCombat !== true && !gObjects[i].dead &&
 				objectInAnim(gObjects[i]) === false && gObjects[i]._script)
 				scriptingEngine.updateCritter(gObjects[i]._script, gObjects[i])
-			critterUpdateAnimation(gObjects[i])
 		}
-		else if(gObjects[i].anim === "single" || gObjects[i].anim === "reverse")
-			objectUpdateAnimation(gObjects[i])
+		
+		gObjects[i].updateAnim()
 	}
 }
 

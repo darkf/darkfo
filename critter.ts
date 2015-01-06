@@ -1,5 +1,6 @@
 /*
 Copyright 2014 darkf, Stratege
+Copyright 2015 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -346,22 +347,6 @@ function critterAdvancePath(obj) {
 	return true
 }
 
-function critterUpdateStaticAnimation(obj) {
-	var time = heart.timer.getTime()
-	var fps = 8 // todo: get FPS from image info
-
-	if(time - obj.lastFrameTime >= 1000/fps) {
-		obj.frame++
-		obj.lastFrameTime = time
-
-		if(obj.frame === imageInfo[obj.art].numFrames) {
-			// animation is done
-			if(obj.animCallback)
-				obj.animCallback()
-		}
-	}
-}
-
 // This checks if a critter (such as the player) entered an exit grid
 // It could also check if a trap is ran into
 
@@ -433,62 +418,7 @@ function getAnimPartialActions(art, anim) {
 }
 
 function critterUpdateAnimation(obj) {
-	if(obj.anim === undefined || obj.anim === "idle") return
-	if(animInfo[obj.anim].type === "static") return critterUpdateStaticAnimation(obj)
-
-	var time = heart.timer.getTime()
-	var fps = imageInfo[obj.art].fps
-	var targetScreen = hexToScreen(obj.path.target.x, obj.path.target.y)
-	var moveDistance = getAnimDistance(obj.art)
-	var tilePerFrame = Math.floor(imageInfo[obj.art].numFrames / moveDistance)
-
-	var partials = getAnimPartialActions(obj.art, obj.anim)
-	if(obj.path.partial === undefined)
-		obj.path.partial = 0
-	//console.log("partial: " + obj.path.partial + " | distance: " + obj.path.distance +
-	//	" | frame: " + obj.frame)
-	var currentPartial = partials.actions[obj.path.partial]
-
-	if(time - obj.lastFrameTime >= 1000/fps) {
-		// advance frame
-		obj.frame++
-		obj.lastFrameTime = time
-
-		if(obj.frame === currentPartial.endFrame) {
-			var partialsLeft = obj.path.distance - obj.path.partial - 1
-
-			if(partialsLeft > 0 && partials.actions[obj.path.partial+1] !== undefined) {
-				// proceed to next partial
-				obj.path.partial++
-				obj.frame = partials.actions[obj.path.partial].startFrame
-			} else {
-				// we're done animating this, loop
-				obj.path.partial = 0
-				obj.frame = partials.actions[obj.path.partial].startFrame
-
-				var distMoved = Math.min(moveDistance, obj.path.distance)
-				//console.log("end partial, moved " + distMoved + " hexes, " + (obj.path.distance-distMoved) + " hexes left")
-				var h = hexInDirection(obj.position, obj.orientation)
-				obj.position = h
-				if(critterWalkCallback(obj)) return
-				for(var i = 0; i < distMoved-1; i++) {
-					h = hexInDirection(h, obj.orientation)
-					obj.position = h
-					if(critterWalkCallback(obj)) return
-				}
-				critterMove(obj, h)
-				obj.path.distance -= distMoved
-			}
-		}
-
-		if(obj.position.x === obj.path.target.x && obj.position.y === obj.path.target.y) {
-			// reached target
-			if(DEBUG) console.log("target reached")
-			if(critterAdvancePath(obj) === false)
-				if(obj.animCallback)
-					obj.animCallback()
-		}
-	}
+	obj.updateAnim()
 }
 
 function hitSpatialTrigger(position) {
@@ -626,4 +556,141 @@ function critterGetRawSkill(obj, skill) {
 function critterSetRawSkill(obj, skill, amount) {
 	obj.skills[skill] = amount
 	console.log(skill + " changed to: " + obj.skills[skill])
+}
+
+class Critter extends Obj {
+	// TODO: any
+	stats: any;
+	skills: any;
+
+	leftHand: WeaponObj;
+	rightHand: WeaponObj;
+
+	type = "critter";
+	anim = "idle";
+	path: any = null;
+	AP: any = null; // TODO: AP
+
+	isPlayer: boolean = false;
+	dead: boolean = false;
+
+	static fromPID(pid: number, sid?: number): Critter {
+		return Obj.fromPID_(new Critter(), pid, sid)
+
+	}
+
+	static fromMapObject(mobj: any): Critter {
+		//console.log("MAPOBJ")
+		return Obj.fromMapObject_(new Critter(), mobj);
+	}
+
+	init() {
+		super.init()
+		// TODO: Critter initialization
+		//console.log("Critter init")
+
+		this.stats = calcStats(this, this.pro)
+		this.skills = this.pro.extra.skills
+		this.name = getMessage("pro_crit", this.pro.textID)
+
+		// initialize weapons
+		this.inventory.forEach(inv => {
+			if(inv.subtype === "weapon") {
+				var w = <WeaponObj>inv
+				if(this.leftHand === undefined) {
+					if(w.weapon.canEquip(this))
+						this.leftHand = w
+				}
+				else if(this.rightHand === undefined) {
+					if(w.weapon.canEquip(this))
+						this.rightHand = w
+				}
+				//console.log("left: " + this.leftHand + " | right: " + this.rightHand)
+			}
+		})
+
+		// default to punches
+		if(!this.leftHand)
+			this.leftHand = <WeaponObj>{type: "item", subtype: "weapon", weapon: new Weapon("punch")}
+		if(!this.rightHand)
+			this.rightHand = <WeaponObj>{type: "item", subtype: "weapon", weapon: new Weapon("punch")}
+
+		// set them in their proper idle state for the weapon
+		this.art = critterGetAnim(this, "idle")
+	}
+
+	updateStaticAnim(): void {
+		var time = heart.timer.getTime()
+		var fps = 8 // todo: get FPS from image info
+
+		if(time - this.lastFrameTime >= 1000/fps) {
+			this.frame++
+			this.lastFrameTime = time
+
+			if(this.frame === imageInfo[this.art].numFrames) {
+				// animation is done
+				if(this.animCallback)
+					this.animCallback()
+			}
+		}
+	}
+
+	updateAnim(): void {
+		if(this.anim === undefined || this.anim === "idle") return
+		if(animInfo[this.anim].type === "static") return this.updateStaticAnim()
+
+		var time = heart.timer.getTime()
+		var fps = imageInfo[this.art].fps
+		var targetScreen = hexToScreen(this.path.target.x, this.path.target.y)
+		var moveDistance = getAnimDistance(this.art)
+		var tilePerFrame = Math.floor(imageInfo[this.art].numFrames / moveDistance)
+
+		var partials = getAnimPartialActions(this.art, this.anim)
+		if(this.path.partial === undefined)
+			this.path.partial = 0
+		//console.log("partial: " + this.path.partial + " | distance: " + this.path.distance +
+		//	" | frame: " + this.frame)
+		var currentPartial = partials.actions[this.path.partial]
+
+		if(time - this.lastFrameTime >= 1000/fps) {
+			// advance frame
+			this.frame++
+			this.lastFrameTime = time
+
+			if(this.frame === currentPartial.endFrame) {
+				var partialsLeft = this.path.distance - this.path.partial - 1
+
+				if(partialsLeft > 0 && partials.actions[this.path.partial+1] !== undefined) {
+					// proceed to next partial
+					this.path.partial++
+					this.frame = partials.actions[this.path.partial].startFrame
+				} else {
+					// we're done animating this, loop
+					this.path.partial = 0
+					this.frame = partials.actions[this.path.partial].startFrame
+
+					var distMoved = Math.min(moveDistance, this.path.distance)
+					//console.log("end partial, moved " + distMoved + " hexes, " + (this.path.distance-distMoved) + " hexes left")
+					var h = hexInDirection(this.position, this.orientation)
+					this.position = h
+					if(critterWalkCallback(this)) return
+					for(var i = 0; i < distMoved-1; i++) {
+						h = hexInDirection(h, this.orientation)
+						this.position = h
+						if(critterWalkCallback(this)) return
+					}
+					critterMove(this, h)
+					this.path.distance -= distMoved
+				}
+			}
+
+			if(this.position.x === this.path.target.x && this.position.y === this.path.target.y) {
+				// reached target
+				if(DEBUG) console.log("target reached")
+				if(critterAdvancePath(this) === false)
+					if(this.animCallback)
+						this.animCallback()
+			}
+		}
+	}
 }

@@ -55,26 +55,6 @@ function objectInAnim(obj) {
 	return !!(obj.path || obj.animCallback)
 }
 
-function objectUpdateAnimation(obj) {
-	var time = heart.timer.getTime()
-	var fps = imageInfo[obj.art].fps
-	if(fps === 0) fps = 10 // ?
-
-	if(time - obj.lastFrameTime >= 1000/fps) {
-		if(obj.anim === "reverse") obj.frame--
-		else obj.frame++
-		obj.lastFrameTime = time
-
-		if(obj.frame === -1 || obj.frame === imageInfo[obj.art].numFrames) {
-			// animation is done
-			if(obj.anim === "reverse") obj.frame++
-			else obj.frame--
-			if(obj.animCallback)
-				obj.animCallback()
-		}
-	}
-}
-
 function objectBlocks(obj: any): boolean {
 	if(obj.type === "misc") return false
 	if(obj.type === "critter") return (obj.dead !== true) && (obj.visible !== false)
@@ -553,67 +533,25 @@ class Obj {
 		if(doZOrder !== false)
 			objectZOrder(this, curIdx)
 	}
-}
 
-class Critter extends Obj {
-	// TODO: any
-	stats: any;
-	skills: any;
+	updateAnim(): void {
+		var time = heart.timer.getTime()
+		var fps = imageInfo[this.art].fps
+		if(fps === 0) fps = 10 // ?
 
-	leftHand: WeaponObj;
-	rightHand: WeaponObj;
+		if(time - this.lastFrameTime >= 1000/fps) {
+			if(this.anim === "reverse") this.frame--
+			else this.frame++
+			this.lastFrameTime = time
 
-	type = "critter";
-	anim = "idle";
-	path: any = null;
-	AP: any = null; // TODO: AP
-
-	isPlayer: boolean = false;
-	dead: boolean = false;
-
-	static fromPID(pid: number, sid?: number): Critter {
-		return Obj.fromPID_(new Critter(), pid, sid)
-
-	}
-
-	static fromMapObject(mobj: any): Critter {
-		//console.log("MAPOBJ")
-		return Obj.fromMapObject_(new Critter(), mobj);
-	}
-
-	init() {
-		super.init()
-		// TODO: Critter initialization
-		//console.log("Critter init")
-
-		this.stats = calcStats(this, this.pro)
-		this.skills = this.pro.extra.skills
-		this.name = getMessage("pro_crit", this.pro.textID)
-
-		// initialize weapons
-		this.inventory.forEach(inv => {
-			if(inv.subtype === "weapon") {
-				var w = <WeaponObj>inv
-				if(this.leftHand === undefined) {
-					if(w.weapon.canEquip(this))
-						this.leftHand = w
-				}
-				else if(this.rightHand === undefined) {
-					if(w.weapon.canEquip(this))
-						this.rightHand = w
-				}
-				//console.log("left: " + this.leftHand + " | right: " + this.rightHand)
+			if(this.frame === -1 || this.frame === imageInfo[this.art].numFrames) {
+				// animation is done
+				if(this.anim === "reverse") this.frame++
+				else this.frame--
+				if(this.animCallback)
+					this.animCallback()
 			}
-		})
-
-		// default to punches
-		if(!this.leftHand)
-			this.leftHand = <WeaponObj>{type: "item", subtype: "weapon", weapon: new Weapon("punch")}
-		if(!this.rightHand)
-			this.rightHand = <WeaponObj>{type: "item", subtype: "weapon", weapon: new Weapon("punch")}
-
-		// set them in their proper idle state for the weapon
-		this.art = critterGetAnim(this, "idle")
+		}
 	}
 }
 
