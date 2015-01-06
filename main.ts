@@ -108,7 +108,7 @@ var playerWeapon: any = {art: "art/items/uzi", frmPID: 44, pid: 9, pidID: 9, pos
   invArt: "art/inven/uzi"}
 playerWeapon.weapon = new Weapon(playerWeapon)
 
-var player: any = playerInit()
+var player = new Player()
 			/*{position: {x: 94, y: 109}, orientation: 2, frame: 0,
               art: "art/critters/hmjmpsaa", isPlayer: true, anim: "idle", lastFrameTime: 0,
               path: null, animCallback: null, type: "critter",

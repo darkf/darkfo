@@ -368,11 +368,8 @@ function zsort(objects) {
 	objects.sort(objectZCompare)
 }
 
-function objectMove(obj: any, position: any, curIdx?: number) {
-	obj.position = position
-	
-	if(doZOrder !== false)
-		objectZOrder(obj, curIdx)
+function objectMove(obj: Obj, position: any, curIdx?: number) {
+	return obj.move(position, curIdx)
 }
 
 function useElevator() {
@@ -423,7 +420,7 @@ interface Point {
 class Obj {
 	pid: number;
 	pidID: number;
-	type: string; // TODO: enum
+	type: string = null; // TODO: enum
 	pro: any = null; // TODO: pro ref
 	art: string; // TODO: Path
 	frmPID: number = null;
@@ -438,6 +435,9 @@ class Obj {
 	name: string; // = "<unnamed obj>";
 	subtype: string;
 	invArt: string;
+
+	anim: any = null;
+	frame: number = 0;
 
 	amount: number = 1;
 	position: Point = {x: -1, y: -1};
@@ -488,7 +488,8 @@ class Obj {
 		obj.pidID = mobj.pidID
 		obj.frmPID = mobj.frmPID
 		obj.orientation = mobj.orientation
-		obj.type = mobj.type
+		if(obj.type == null)
+			obj.type = mobj.type
 		obj.art = mobj.art
 		obj.position = mobj.position
 		obj.subtype = mobj.subtype
@@ -538,6 +539,13 @@ class Obj {
 			}
 		}
 	}
+
+	move(position: any, curIdx?: number) { // TODO: Point
+		this.position = position
+		
+		if(doZOrder !== false)
+			objectZOrder(this, curIdx)
+	}
 }
 
 class Critter extends Obj {
@@ -547,6 +555,14 @@ class Critter extends Obj {
 
 	leftHand: WeaponObj;
 	rightHand: WeaponObj;
+
+	type = "critter";
+	anim = "idle";
+	path: any = null;
+	AP: any = null; // TODO: AP
+
+	isPlayer: boolean = false;
+	dead: boolean = false;
 
 	static fromPID(pid: number, sid?: number): Critter {
 		return Obj.fromPID_(new Critter(), pid, sid)
@@ -595,6 +611,8 @@ class Critter extends Obj {
 }
 
 class Item extends Obj {
+	type = "item";
+
 	static fromPID(pid: number, sid?: number): Item {
 		return <Item>Obj.fromPID(pid, sid)
 	}
@@ -633,6 +651,8 @@ class WeaponObj extends Item {
 }
 
 class Scenery extends Obj {
+	type = "scenery";
+
 	static fromPID(pid: number, sid?: number): Scenery {
 		return <Scenery>Obj.fromPID(pid, sid)
 	}
