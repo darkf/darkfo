@@ -759,7 +759,7 @@ function uiElevator(elevator) {
 					// same map, different elevation
 					console.log("elevator -> level " + level + " @ " + 
 						        position.x + ", " + position.y)
-					critterMove(player, position)
+					player.move(position)
 					changeElevation(level, true)
 				}
 

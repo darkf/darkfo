@@ -53,7 +53,7 @@ var weaponSkillMap = {'uzi': 'Small Guns',
                       'flamethr': 'Big Guns',
                      }
 
-function parseAttack(weapon: any) {
+function parseAttack(weapon: WeaponObj) {
 	var attackModes = weapon.pro.extra['attackMode']
 	var modeOne = attackMode[attackModes & 0xf]
 	var modeTwo = attackMode[(attackModes >> 4) & 0xf]
@@ -107,17 +107,18 @@ var Weapon = function(weapon) {
 	}
 }
 
-Weapon.prototype.getMaximumRange = function(attackType) {
+// TODO: enum
+Weapon.prototype.getMaximumRange = function(attackType: number): number {
 	if(attackType === 1) return this.weapon.pro.extra.maxRange1
 	if(attackType === 2) return this.weapon.pro.extra.maxRange2
 	else throw "invalid attack type " + attackType
 }
 
-Weapon.prototype.getAPCost = function(attackMode) {
+Weapon.prototype.getAPCost = function(attackMode: number): number {
 	return this.weapon.pro.extra["APCost" + attackMode]
 }
 
-Weapon.prototype.getSkin = function() {
+Weapon.prototype.getSkin = function(): string {
 	if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
 		return null
 	var animCodeMap = {0: 'a',// None
@@ -134,7 +135,7 @@ Weapon.prototype.getSkin = function() {
 	return animCodeMap[this.weapon.pro.extra.animCode]
 }
 
-Weapon.prototype.getAttackSkin = function() {
+Weapon.prototype.getAttackSkin = function(): string {
 	if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
 		return null
 	if(this.weapon === 'punch') return 'q'
@@ -156,7 +157,7 @@ Weapon.prototype.getAttackSkin = function() {
 	}
 }
 
-Weapon.prototype.getAnim = function(anim) {
+Weapon.prototype.getAnim = function(anim: string): string {
 	if(weaponAnims[this.name] && weaponAnims[this.name][anim])
 		return weaponAnims[this.name][anim]
 
@@ -167,37 +168,37 @@ Weapon.prototype.getAnim = function(anim) {
 		case 'attack':
 			var attackSkin = this.getAttackSkin()
 			return wep + attackSkin
-		default: return false // let something else handle it
+		default: return null // let something else handle it
 	}
 }
 
-Weapon.prototype.canEquip = function(obj) {
+Weapon.prototype.canEquip = function(obj: Critter): boolean {
 	return imageInfo[critterGetBase(obj) + this.getAnim('attack')] !== undefined
 }
 
-Weapon.prototype.getDamageType = function() {
+Weapon.prototype.getDamageType = function(): string {
 	return this.weapon.pro.extra.dmgType
 }
 
-function critterGetBase(obj) {
+function critterGetBase(obj: Critter): string {
 	return obj.art.slice(0, -2)
 }
 
-function critterGetEquippedWeapon(obj) {
+function critterGetEquippedWeapon(obj: Critter): WeaponObj {
 	//todo: get actual selection
 	if(objectIsWeapon(obj.leftHand)) return obj.leftHand
 	if(objectIsWeapon(obj.rightHand)) return obj.rightHand
 	return null
 }
 
-function critterGetAnim(obj, anim) {
+function critterGetAnim(obj: Critter, anim: string): string {
 	var base = critterGetBase(obj)
 
 	// try weapon animation first
 	var weaponObj = critterGetEquippedWeapon(obj)
 	if(weaponObj !== null && doUseWeaponModel === true) {
 		var wepAnim = weaponObj.weapon.getAnim(anim)
-		if(wepAnim !== false)
+		if(wepAnim)
 			return base + wepAnim
 	}
 
@@ -223,23 +224,23 @@ function critterGetAnim(obj, anim) {
 	}
 }
 
-function critterHasAnim(obj, anim) {
+function critterHasAnim(obj: Critter, anim: string): boolean {
 	return imageInfo[critterGetAnim(obj, anim)] !== undefined
 }
 
-function critterGetName(obj) {
+function critterGetName(obj: Critter): string {
 	if(obj.name !== undefined)
 		return obj.name
 	return "<unnamed>"
 }
 
-function critterGetKillType(obj) {
+function critterGetKillType(obj: Critter): number {
 	if(obj.isPlayer) return 19 // last type
 	if(!obj.pro || !obj.pro.extra) return null
 	return obj.pro.extra.killType
 }
 
-function getAnimDistance(art) {
+function getAnimDistance(art: string): number {
 	var info = imageInfo[art]
 	if(info === undefined)
 		throw "no image info for " + art
@@ -251,7 +252,7 @@ function getAnimDistance(art) {
 	return Math.floor((lastShift - firstShift + 16) / 32)
 }
 
-function longestSequenceWithoutTurning(start, path, index) {
+function longestSequenceWithoutTurning(start: Point, path, index: number) {
 	// todo: make logic less complex
 	var firstDir = directionOfDelta(start.x, start.y, path[index][0], path[index][1])
 	if(index+1 >= path.length)
@@ -276,7 +277,7 @@ function longestSequenceWithoutTurning(start, path, index) {
 	return {seq: n, lastPosition: {x: pos[0], y: pos[1]}, firstDirection: firstDir}
 }
 
-function critterWalkTo(obj: any, target: any, running?: boolean, callback?: any, maxLength?: number) {
+function critterWalkTo(obj: Critter, target: Point, running?: boolean, callback?: () => void, maxLength?: number): boolean {
 	// pathfind and set walking to target
 	if(obj.position.x === target.x && obj.position.y === target.y) {
 		// can't walk to the same tile
@@ -297,14 +298,14 @@ function critterWalkTo(obj: any, target: any, running?: boolean, callback?: any,
 	obj.path = {path: path, index: 0, target: null, seqLength: null, distance: null}
 	obj.anim = (running === true) ? "run" : "walk"
 	obj.art = critterGetAnim(obj, obj.anim)
-	obj.animCallback = (callback !== undefined) ? callback : (function() { critterStopWalking(obj) })
+	obj.animCallback = callback || (() => critterStopWalking(obj))
 	obj.frame = 0
 	obj.lastFrameTime = 0
 	critterAdvancePath(obj)
 	return true
 }
 
-function critterStaticAnim(obj: any, anim: any, callback: any, waitForLoad?: boolean) {
+function critterStaticAnim(obj: Critter, anim: string, callback: () => void, waitForLoad?: boolean): void {
 	obj.art = critterGetAnim(obj, anim)
 	obj.frame = 0
 	obj.lastFrameTime = 0
@@ -320,7 +321,7 @@ function critterStaticAnim(obj: any, anim: any, callback: any, waitForLoad?: boo
 	}
 }
 
-function critterStopWalking(obj) {
+function critterStopWalking(obj: Critter): void {
 	obj.path = null
 	obj.anim = "idle"
 	obj.frame = 0
@@ -328,7 +329,7 @@ function critterStopWalking(obj) {
 	obj.animCallback = null
 }
 
-function critterAdvancePath(obj) {
+function critterAdvancePath(obj: Critter): boolean {
 	if(obj.path.seqLength !== undefined && obj.path.seqLength !== null)
 		obj.path.index += obj.path.seqLength
 	else
@@ -349,8 +350,7 @@ function critterAdvancePath(obj) {
 
 // This checks if a critter (such as the player) entered an exit grid
 // It could also check if a trap is ran into
-
-function critterWalkCallback(obj) {
+function critterWalkCallback(obj: Critter): boolean {
 	if(obj.isPlayer !== true) return
 	var objs = objectsAtPosition(obj.position)
 	for(var i = 0; i < objs.length; i++) {
@@ -372,7 +372,7 @@ function critterWalkCallback(obj) {
 					" @ " + startingPosition.x + ", " + startingPosition.y)
 				if(exitMapID === gMap.mapID) {
 					// same map, different elevation
-					critterMove(player, startingPosition)
+					player.move(startingPosition)
 					changeElevation(startingElevation, true)
 				}
 				else
@@ -417,7 +417,7 @@ function getAnimPartialActions(art, anim) {
 	return partialActions
 }
 
-function hitSpatialTrigger(position) {
+function hitSpatialTrigger(position: Point): any { // TODO: return type (SpatialTrigger)
 	if(gSpatials === null) return null
 	var hit = []
 	for(var i = 0; i < gSpatials.length; i++) {
@@ -428,21 +428,7 @@ function hitSpatialTrigger(position) {
 	return hit
 }
 
-function critterMove(obj, position) {
-	objectMove(obj, position)
-
-	if(doSpatials !== false) {
-		var hitSpatials = hitSpatialTrigger(position)
-		for(var i = 0; i < hitSpatials.length; i++) {
-			var spatial = hitSpatials[i]
-			console.log("triggered spatial " + spatial.script + " (" + spatial.range + ") @ " +
-				        spatial.position.x + ", " + spatial.position.y)
-			scriptingEngine.spatial(spatial, obj)
-		}
-	}
-}
-
-function critterKill(obj: any, source: any, useScript?: boolean, useAnim?: boolean, callback?: any) {
+function critterKill(obj: Critter, source: Critter, useScript?: boolean, useAnim?: boolean, callback?: () => void) {
 	obj.dead = true
 
 	if(useScript === undefined || useScript === true) {
@@ -454,12 +440,12 @@ function critterKill(obj: any, source: any, useScript?: boolean, useAnim?: boole
 			// todo: corpse-ify
 			obj.frame-- // go to last frame
 			obj.anim = undefined
-			if(callback !== undefined) callback()
+			if(callback) callback()
 		}, true)
 	}
 }
 
-function critterDamage(obj: any, damage: number, source: any, useScript?: boolean, useAnim?: boolean, damageType?: any, callback?: any) {
+function critterDamage(obj: Critter, damage: number, source: Critter, useScript?: boolean, useAnim?: boolean, damageType?: string, callback?: () => void) {
 	decreaseStat(obj, 'HP', damage, false, false, true)
 	if(critterGetStat(obj, 'HP') <= 0)
 		return critterKill(obj, source, useScript)
@@ -497,8 +483,7 @@ function reprStats(stats) {
 
 // todo: bring Unity to how stats and skills are calculated
 
-function critterGetStat(obj, stat) {
-
+function critterGetStat(obj: Critter, stat: string) {
 	var rawStat = critterGetRawStat(obj, stat)
 	if(rawStat !== undefined) {
 		var retval = clamp(statDependencies[stat].min, statDependencies[stat].max, rawStat + calculateStatValueAddition(obj, stat))
@@ -508,7 +493,7 @@ function critterGetStat(obj, stat) {
 	return null
 }
 
-function critterGetRawStat(obj, stat) {
+function critterGetRawStat(obj: Critter, stat: string) {
 	//console.log("STAT: " + stat + " IS: " + obj.stats[stat])
 	if(obj.stats[stat] === undefined) {
 		//console.log("NO STAT: " + stat + " - attempting to add it")
@@ -524,7 +509,7 @@ function critterGetRawStat(obj, stat) {
 	return obj.stats[stat]
 }
 
-function critterSetRawStat(obj, stat, amount) {
+function critterSetRawStat(obj: Critter, stat: string, amount: number) {
 	obj.stats[stat] = amount
 	//console.log(stat + " changed to: " + obj.stats[stat])
 }
@@ -537,7 +522,7 @@ function critterGetSkill(obj, skill) {
 	return rawSkill
 }
 
-function critterGetRawSkill(obj, skill) {
+function critterGetRawSkill(obj: Critter, skill: string) {
 	//console.log("SKILL: " + skill + " IS: " + obj.skills[skill])
 	if(obj.skills[skill] === undefined) {
 		console.log("NO SKILL: " + skill + " - adding it")
@@ -546,7 +531,7 @@ function critterGetRawSkill(obj, skill) {
 	return obj.skills[skill]
 }
 
-function critterSetRawSkill(obj, skill, amount) {
+function critterSetRawSkill(obj: Critter, skill: string, amount: number) {
 	obj.skills[skill] = amount
 	console.log(skill + " changed to: " + obj.skills[skill])
 }
@@ -627,7 +612,7 @@ class Critter extends Obj {
 	}
 
 	updateAnim(): void {
-		if(this.anim === undefined || this.anim === "idle") return
+		if(!this.anim || this.anim === "idle") return
 		if(animInfo[this.anim].type === "static") return this.updateStaticAnim()
 
 		var time = heart.timer.getTime()
@@ -670,7 +655,7 @@ class Critter extends Obj {
 						this.position = h
 						if(critterWalkCallback(this)) return
 					}
-					critterMove(this, h)
+					this.move(h)
 					this.path.distance -= distMoved
 				}
 			}
@@ -681,6 +666,24 @@ class Critter extends Obj {
 				if(critterAdvancePath(this) === false)
 					if(this.animCallback)
 						this.animCallback()
+			}
+		}
+	}
+
+	inAnim(): boolean {
+		return !!(this.path || this.animCallback)
+	}
+
+	move(position: Point, curIdx?: number): void {
+		super.move(position, curIdx)
+
+		if(doSpatials !== false) {
+			var hitSpatials = hitSpatialTrigger(position)
+			for(var i = 0; i < hitSpatials.length; i++) {
+				var spatial = hitSpatials[i]
+				console.log("triggered spatial " + spatial.script + " (" + spatial.range + ") @ " +
+					        spatial.position.x + ", " + spatial.position.y)
+				scriptingEngine.spatial(spatial, this)
 			}
 		}
 	}

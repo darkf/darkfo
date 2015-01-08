@@ -541,7 +541,7 @@ module scriptingEngine {
 				warn("anim_busy: not game object: " + obj)
 				return false
 			}
-			return objectInAnim(obj)
+			return obj.inAnim()
 		},
 		obj_art_fid: function(obj) { stub("obj_art_fid", arguments); return 0 },
 		set_obj_visibility: function(obj, visibility) {

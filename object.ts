@@ -18,7 +18,7 @@ limitations under the License.
 
 "use strict";
 
-function objectAddItem(obj, item, count) {
+function objectAddItem(obj: Obj, item: Obj, count: number): void {
 	for(var i = 0; i < obj.inventory.length; i++) {
 		if(obj.inventory[i].pidID === item.pidID) { // todo: pidID or pid?
 			obj.inventory[i].amount += count
@@ -32,7 +32,7 @@ function objectAddItem(obj, item, count) {
 	obj.inventory.push(item_)
 }
 
-function objectGetMoney(obj) {
+function objectGetMoney(obj: Obj): number {
 	var MONEY_PID = 41
 	for(var i = 0; i < obj.inventory.length; i++) {
 		if(obj.inventory[i].pid === MONEY_PID) {
@@ -43,19 +43,15 @@ function objectGetMoney(obj) {
 	return 0
 }
 
-function objectSingleAnim(obj: any, reversed?: boolean, callback?: any) { // TODO: any
+function objectSingleAnim(obj: Obj, reversed?: boolean, callback?: () => void): void {
 	if(reversed) obj.frame = imageInfo[obj.art].numFrames - 1
 	else obj.frame = 0
 	obj.lastFrameTime = 0
 	obj.anim = reversed ? "reverse" : "single"
-	obj.animCallback = (callback !== undefined) ? callback : (function() { obj.anim = null  })
+	obj.animCallback = callback || (() => obj.anim = null)
 }
 
-function objectInAnim(obj) {
-	return !!(obj.path || obj.animCallback)
-}
-
-function canUseObject(obj: any, source?: any) {
+function canUseObject(obj: Obj, source?: Obj): boolean {
 	if(obj._script !== undefined && obj._script.use_p_proc !== undefined)
 		return true
 	else if(obj.type === "item" || obj.type === "scenery")
@@ -66,36 +62,36 @@ function canUseObject(obj: any, source?: any) {
 	return false
 }
 
-function objectIsDoor(obj) {
+function objectIsDoor(obj: Obj): boolean {
 	return (obj.type === "scenery" && obj.pro.extra.subType === 0) // SCENERY_DOOR
 }
 
-function objectIsStairs(obj) {
+function objectIsStairs(obj: Obj): boolean {
 	return (obj.type === "scenery" && obj.pro.extra.subType === 1) // SCENERY_STAIRS
 }
 
-function objectIsLadder(obj) {
+function objectIsLadder(obj: Obj): boolean {
 	return (obj.type === "scenery" &&
 	       (obj.pro.extra.subType === 3 || // SCENERY_LADDER_BOTTOM
 	       	obj.pro.extra.subType === 4)) // SCENERY_LADDER_TOP
 }
 
-function objectIsContainer(obj) {
+function objectIsContainer(obj: Obj): boolean {
 	return (obj.type === "item" && obj.pro.extra.subType === 1) // SUBTYPE_CONTAINER
 }
 
-function objectIsWeapon(obj) {
+function objectIsWeapon(obj: any): boolean {
 	if(obj === undefined || obj === null)
 		return false
 	//return obj.type === "item" && obj.pro.extra.subType === 3 // weapon subtype
 	return obj.weapon !== undefined
 }
 
-function objectIsExplosive(obj) {
+function objectIsExplosive(obj: Obj): boolean {
 	return (obj.pid === 85 /* Plastic Explosives */ || obj.pid === 51 /* Dynamite */)
 }
 
-function objectFindItemIndex(obj, item) {
+function objectFindItemIndex(obj: Obj, item: Obj): number {
 	for(var i = 0; i < obj.inventory.length; i++) {
 		if(obj.inventory[i].pid === item.pid)
 			return i
@@ -103,7 +99,7 @@ function objectFindItemIndex(obj, item) {
 	return -1
 }
 
-function cloneItem(item) { return $.extend({}, item) }
+function cloneItem(item: Obj): Obj { return $.extend({}, item) }
 
 function objectSwapItem(a, item, b, amount) {
 	// swap item from a -> b
@@ -123,7 +119,7 @@ function objectSwapItem(a, item, b, amount) {
 	}
 }
 
-function objectRemove(obj) {
+function objectRemove(obj: Obj): void {
 	// remove `obj` from the world
 	// it would be pretty hard to remove it anywhere else without either
 	// a walk of the object graph or a `parent` reference.
@@ -147,24 +143,24 @@ function objectRemove(obj) {
 	console.log("objectRemove: couldn't find object in global list")
 }
 
-function objectDestroy(obj) {
+function objectDestroy(obj: Obj): void {
 	objectRemove(obj)
 	
 	// TODO: notify scripts with destroy_p_proc
 }
 
-function objectGetDamageType(obj) {
+function objectGetDamageType(obj: any): string { // TODO: any (where does dmgType go? WeaponObj?)
 	if(obj.dmgType !== undefined)
 		return obj.dmgType
 	throw "no damage type for obj: " + obj
 }
 
-function objectExplode(obj, source, minDmg, maxDmg) {
+function objectExplode(obj: Obj, source: Obj, minDmg: number, maxDmg: number): void {
 	var damage = maxDmg
-	var explosion: any = createObjectWithPID(makePID(5 /* misc */, 14 /* Explosion */), -1) // TODO: any
+	var explosion = createObjectWithPID(makePID(5 /* misc */, 14 /* Explosion */), -1)
 	explosion.position.x = obj.position.x
-	explosion.position.y = obj.position.y
-	obj.dmgType = "explosion"
+	explosion.position.y = obj.position.y;
+	(<any>obj).dmgType = "explosion" // TODO: any (WeaponObj?)
 
 	lazyLoadImage(explosion.art, function() {
 		gObjects.push(explosion)
@@ -191,7 +187,7 @@ function objectExplode(obj, source, minDmg, maxDmg) {
 	})
 }
 
-function useExplosive(obj, source) {
+function useExplosive(obj: Obj, source: Critter): void {
 	if(source.isPlayer !== true) return // ?
 	var mins, secs
 
@@ -221,7 +217,7 @@ function useExplosive(obj, source) {
 	}})
 }
 
-function useObject(obj: any, source?: any, useScript?: boolean): boolean {
+function useObject(obj: any, source?: Critter, useScript?: boolean): boolean { // TODO: any
 	if(canUseObject(obj, source) === false) {
 		console.log("can't use object")
 		return false
@@ -288,14 +284,14 @@ function useObject(obj: any, source?: any, useScript?: boolean): boolean {
 	return true
 }
 
-function objectFindIndex(obj) {
+function objectFindIndex(obj: Obj): number {
 	for(var i = 0; i < gObjects.length; i++)
 		if(gObjects[i] === obj)
 			return i
 	return -1
 }
 
-function objectZCompare(a, b) {
+function objectZCompare(a: Obj, b: Obj): number {
 	var aY = a.position.y
 	var bY = b.position.y
 
@@ -316,7 +312,7 @@ function objectZCompare(a, b) {
 	else if(aY > bY) return 1
 }
 
-function objectZOrder(obj, index) {
+function objectZOrder(obj: Obj, index: number): void {
 	var oldIdx = (index !== undefined) ? index : objectFindIndex(obj)
 	if(oldIdx === -1) {
 		console.log("objectZOrder: no such object...")
@@ -334,15 +330,15 @@ function objectZOrder(obj, index) {
 	}
 }
 
-function zsort(objects) {
+function zsort(objects: Obj[]): void {
 	objects.sort(objectZCompare)
 }
 
-function objectMove(obj: Obj, position: any, curIdx?: number) {
+function objectMove(obj: Obj, position: Point, curIdx?: number): void {
 	return obj.move(position, curIdx)
 }
 
-function useElevator() {
+function useElevator(): void {
 	// Player walked into an elevator
 	//
 	// We search for the Elevator Stub (Scenery PID 1293)
@@ -518,7 +514,7 @@ class Obj {
 		return this
 	}
 
-	move(position: any, curIdx?: number): void { // TODO: Point
+	move(position: Point, curIdx?: number): void {
 		this.position = position
 		
 		if(doZOrder !== false)
@@ -526,6 +522,7 @@ class Obj {
 	}
 
 	updateAnim(): void {
+		if(!this.anim) return
 		var time = heart.timer.getTime()
 		var fps = imageInfo[this.art].fps
 		if(fps === 0) fps = 10 // ?
@@ -556,6 +553,10 @@ class Obj {
 		if(this.visible === false) return false
 
 		return !(this.pro.flags & 0x00000010 /* NoBlock */)
+	}
+
+	inAnim(): boolean {
+		return !!this.animCallback // TODO: find a better way
 	}
 }
 

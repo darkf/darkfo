@@ -525,7 +525,7 @@ heart.mousepressed = function(x, y, btn) {
 
 			if(inCombat === true && who.dead !== true) {
 				// attack a critter
-				if(!combat.inPlayerTurn || objectInAnim(player)) {
+				if(!combat.inPlayerTurn || player.inAnim()) {
 					console.log("You can't do that yet.")
 					return
 				}
@@ -663,7 +663,7 @@ heart.keydown = function(k) {
 	}
 
 	if(k == 'h')
-		critterMove(player, mouseHex)
+		player.move(mouseHex)
 
 	if(k == killKey) {
 		var objs = objectsAtPosition(mouseHex)
@@ -797,7 +797,7 @@ heart.update = function() {
 	for(var i = 0; i < gObjects.length; i++) {
 		if(gObjects[i].type == "critter") {
 			if(didTick && doUpdateCritters && inCombat !== true && !(<Critter>gObjects[i]).dead &&
-				objectInAnim(gObjects[i]) === false && gObjects[i]._script)
+				!gObjects[i].inAnim() && gObjects[i]._script)
 				scriptingEngine.updateCritter(gObjects[i]._script, gObjects[i])
 		}
 
