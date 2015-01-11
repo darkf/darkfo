@@ -221,7 +221,7 @@ class Combat {
 		return {hit: hitChance, crit: critChance}
 	}
 
-	rollHit (obj, target, region): any {
+	rollHit(obj: Critter, target: Critter, region: string): any {
 		var critModifer = critterGetStat(obj, "Better Criticals")
 		var hitChance = this.getHitChance(obj, target, region)
 
@@ -279,7 +279,7 @@ class Combat {
 		return getMessage("combat", id)
 	}
 
-	attack(obj, target, region="torso", callback?) {
+	attack(obj: Critter, target: Critter, region="torso", callback?: () => void) {
 		// turn to face the target
 		var hex = hexNearestNeighbor(obj.position, target.position)
 		if(hex !== null)
@@ -291,7 +291,7 @@ class Combat {
 		var who = obj.isPlayer ? "You" : critterGetName(obj)
 		var targetName = target.isPlayer ? "you" : critterGetName(target)
 		var hitRoll = this.rollHit(obj, target, region)
-		this.log("hit% is " + this.getHitChance(obj, target, region, 2).hit)
+		this.log("hit% is " + this.getHitChance(obj, target, region).hit)
 
 		if(hitRoll.hit === true) {
 			var critModifier = hitRoll.crit ? hitRoll.DM : 2

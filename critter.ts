@@ -296,7 +296,7 @@ function longestSequenceWithoutTurning(start: Point, path, index: number) {
 	return {seq: n, lastPosition: {x: pos[0], y: pos[1]}, firstDirection: firstDir}
 }
 
-function critterWalkTo(obj: Critter, target: Point, running?: boolean, callback?: () => void, maxLength?: number): boolean {
+function critterWalkTo(obj: Critter, target: Point, running?: boolean, callback?: () => void, maxLength?: number, path?: any): boolean {
 	// pathfind and set walking to target
 	if(obj.position.x === target.x && obj.position.y === target.y) {
 		// can't walk to the same tile

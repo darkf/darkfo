@@ -347,7 +347,7 @@ function centerCamera(around) {
 	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2)
 }
 
-function loadMap(mapName: string, startingPosition?: any, startingElevation?: any) {
+function loadMap(mapName: string, startingPosition?: any, startingElevation?: any, loadedCallback?: () => void) {
 	function load(file: string, callback?: (x:any) => void) {
 		if(images[file] !== undefined) return // don't load more than once
 		loadingAssetsTotal++
@@ -578,9 +578,9 @@ function playerUse() {
 	if(obj.type === "critter") {
 		if(obj === player) return // can't use yourself
 
-		if(inCombat === true && obj.dead !== true) {
+		if(inCombat === true && who.dead !== true) {
 			// attack a critter
-			if(!combat.inPlayerTurn || objectInAnim(player)) {
+			if(!combat.inPlayerTurn || player.inAnim()) {
 				console.log("You can't do that yet.")
 				return
 			}
@@ -600,8 +600,8 @@ function playerUse() {
 
 			if(weapon.weapon.isCalled()) {
 				var art = "art/critters/hmjmpsna" // default art
-				if(critterHasAnim(obj, "called-shot"))
-					art = critterGetAnim(obj, "called-shot")
+				if(critterHasAnim(who, "called-shot"))
+					art = critterGetAnim(who, "called-shot")
 
 				console.log("art: %s", art)
 
@@ -627,7 +627,7 @@ function playerUse() {
 
 		// if there's an object under the cursor, use it
 		if(obj.type === "critter") {
-			if(obj.dead !== true && inCombat !== true &&
+			if(who.dead !== true && inCombat !== true &&
 			   obj._script && obj._script.talk_p_proc !== undefined) {
 				// talk to a critter
 				console.log("Talking to " + critterGetName(who))
@@ -774,14 +774,14 @@ heart.keydown = function(k) {
 	if(k == worldmapKey)
 		uiWorldMap()
 
-	if(k == calledShotKey)
-		uiCalledShot()
+	//if(k == calledShotKey)
+	//	uiCalledShot()
 
-	if(k == 'a')
-		Worldmap.checkEncounters()
+	//if(k == 'a')
+	//	Worldmap.checkEncounters()
 }
 
-function recalcPath(start, goal, isGoalBlocking) {
+function recalcPath(start: Point, goal: Point, isGoalBlocking?: boolean) {
 	var matrix = new Array(HEX_GRID_SIZE)
 
 	for(var y = 0; y < HEX_GRID_SIZE; y++)

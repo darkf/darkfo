@@ -66,10 +66,6 @@ module scriptingEngine {
 		35: "HP", 7: "Max HP"
 	}
 
-	function getGlobalVar(gvar) {
-		return (globalVars[gvar] !== undefined) ? globalVars[gvar] : 0
-	}
-
 	function stub(name, args, type?) {
 		if(debugLogShowType.stub === false || debugLogShowType[type] === false) return
 		var a = ""
@@ -103,6 +99,10 @@ module scriptingEngine {
 	    Math.random = function() {
 	        s = Math.sin(s) * 10000; return s - Math.floor(s)
 	    }
+	}
+
+	export function getGlobalVar(gvar: number): any {
+		return (globalVars[gvar] !== undefined) ? globalVars[gvar] : 0
 	}
 
 	function isGameObject(obj) {

@@ -505,7 +505,8 @@ class Obj {
 				this._script = script
 				scriptingEngine.initScript(this._script, this)
 				// TODO: do we updateMap?
-				scriptingEngine.enterMap(gMapScript, [obj], currentElevation, gMap.mapID, true)
+				// TODO: is this correct?
+				scriptingEngine.enterMap(gMapScript, [this], currentElevation, gMap.mapID, true)
 			}
 		}
 	}

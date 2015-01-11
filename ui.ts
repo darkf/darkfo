@@ -700,7 +700,7 @@ function uiCloseWorldMap() {
 	Worldmap.stop()
 }
 
-function uiWorldMap(onAreaMap) {
+function uiWorldMap(onAreaMap: boolean=false) {
 	uiMode = UI_MODE_WORLDMAP
 	$("#worldMapContainer").css("visibility", "visible")
 
@@ -857,7 +857,7 @@ function uiCalledShot(art, target, callback) {
 	$("#calledShotBox").show()
 
 	function drawChance(region) {
-		var chance = Combat.prototype.getHitChance(player, target, region).hit
+		var chance: any = Combat.prototype.getHitChance(player, target, region).hit
 		console.log("id: %s | chance: %d", "#calledShot-"+region+"-chance #digit", chance)
 		if(chance <= 0)
 			chance = "--"

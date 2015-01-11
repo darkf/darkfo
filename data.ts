@@ -36,8 +36,6 @@ function getElevator(type) {
 function parseAreas(data) {
 	var areas = parseIni(data)
 	var out = {}
-	//console.log("areas:")
-	console.log(areas)
 
 	for(var _area in areas) {
 		var area = areas[_area]
@@ -90,9 +88,6 @@ function parseAreas(data) {
 
 		out[areaID] = newArea
 	}
-
-	console.log("areas:")
-	console.log(out)
 
 	return out
 }
