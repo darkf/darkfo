@@ -164,6 +164,13 @@ function hexInDirection(position, dir) {
 	return hexNeighbors(position)[dir]
 }
 
+function hexInDirectionDistance(position, dir, distance) {
+	var tile = hexInDirection(position, dir)
+	for(var i = 0; i < distance-1; i++) // repeat for each further distance
+		tile = hexInDirection(tile, dir)
+	return tile
+}
+
 function directionOfDelta(xa, ya, xb, yb) {
 	var neighbors = hexNeighbors({x: xa, y: ya})
 	for(var i = 0; i < neighbors.length; i++) {

@@ -72,6 +72,7 @@ var doUseWeaponModel = true // use weapon model for NPC models?
 var doLoadItemInfo = true // load item information (such as inventory images)?
 var doAlwaysRun = true // always run instead of walk?
 var doZOrder = true // Z-order objects?
+var doEncounters = true // allow random encounters?
 
 var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0 // real time of the last game tick
@@ -86,6 +87,7 @@ var uiMode = UI_MODE_NONE
 var isLoading = true // are we currently loading a map?
 var loadingAssetsLoaded = 0 // how many images we've loaded
 var loadingAssetsTotal = 0 // out of this total
+var loadingLoadedCallback = null // loaded callback
 var lazyAssetLoadingQueue = {} // set of lazily-loaded assets being loaded
 
 var floatMessages = []
@@ -352,9 +354,12 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 		})
 	}
 
+	mapName = mapName.toLowerCase()
+
 	isLoading = true
 	loadingAssetsTotal = 1 // this will remain +1 until we load the map, preventing it from exiting early
 	loadingAssetsLoaded = 0
+	loadingLoadedCallback = loadedCallback || null
 
 	// clear any previous objects/events
 	gMap = null
@@ -450,9 +455,33 @@ function parseMapInfo() {
 		var id = category.match(/Map (\d+)/)[1]
 		if(id === null) throw "MAPS.TXT: invalid category: " + category
 		id = parseInt(id)
+
+		var randomStartPoints = []
+		for(var key in ini[category]) {
+			if(key.indexOf("random_start_point_") === 0) {
+				var startPoint = ini[category][key].match(/elev:(\d), tile_num:(\d+)/)
+				if(startPoint === null)
+					throw "invalid random_start_point: " + ini[category][key]
+				randomStartPoints.push({elevation: parseInt(startPoint[1]),
+					                    tileNum: parseInt(startPoint[2])})
+			}
+		}
+
 		mapInfo[id] = {name: ini[category].map_name,
-			           lookupName: ini[category].lookup_name}
+			           lookupName: ini[category].lookup_name,
+			           randomStartPoints: randomStartPoints}
 	}
+}
+
+function lookupMapFromLookup(lookupName) {
+	if(mapInfo === null)
+		parseMapInfo()
+
+	for(var mapID in mapInfo) {
+		if(mapInfo[mapID].lookupName === lookupName)
+			return mapInfo[mapID]
+	}
+	return null
 }
 
 function lookupMapNameFromLookup(lookupName) {
@@ -460,7 +489,7 @@ function lookupMapNameFromLookup(lookupName) {
 		parseMapInfo()
 
 	for(var mapID in mapInfo) {
-		if(mapInfo[mapID].lookupName === lookupName)
+		if(mapInfo[mapID].lookupName.toLowerCase() === lookupName.toLowerCase())
 			return mapInfo[mapID].name
 	}
 	return null
@@ -677,6 +706,9 @@ heart.keydown = function(k) {
 
 	if(k == worldmapKey)
 		uiWorldMap()
+
+	if(k == 'a')
+		Worldmap.checkEncounters()
 }
 
 function recalcPath(start, goal) {
@@ -733,7 +765,10 @@ function getObjectUnderCursor(p) {
 
 heart.update = function() {
 	if(isLoading === true) {
-		if(loadingAssetsLoaded === loadingAssetsTotal) isLoading = false
+		if(loadingAssetsLoaded === loadingAssetsTotal) {
+			isLoading = false
+			if(loadingLoadedCallback) loadingLoadedCallback()
+		}
 		else return
 	}
 	if(uiMode !== UI_MODE_NONE)

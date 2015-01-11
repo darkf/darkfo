@@ -66,6 +66,10 @@ module scriptingEngine {
 		35: "HP", 7: "Max HP"
 	}
 
+	function getGlobalVar(gvar) {
+		return (globalVars[gvar] !== undefined) ? globalVars[gvar] : 0
+	}
+
 	function stub(name, args, type?) {
 		if(debugLogShowType.stub === false || debugLogShowType[type] === false) return
 		var a = ""
@@ -819,6 +823,7 @@ module scriptingEngine {
 			if(tile.x < 0 || tile.x >= 200 || tile.y < 0 || tile.y >= 200) {
 				warn("animate_move_obj_to_tile: invalid tile: " + tile.x +
 				      ", " + tile.y + " (" + tileNum + ")")
+				console.trace()
 				return
 			}
 			if(critterWalkTo(obj, tile, !!isRun) === false) {
