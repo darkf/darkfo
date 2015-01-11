@@ -279,7 +279,7 @@ class Combat {
 		return getMessage("combat", id)
 	}
 
-	attack(obj, target, callback) {
+	attack(obj, target, region="torso", callback?) {
 		// turn to face the target
 		var hex = hexNearestNeighbor(obj.position, target.position)
 		if(hex !== null)
@@ -290,8 +290,8 @@ class Combat {
 
 		var who = obj.isPlayer ? "You" : critterGetName(obj)
 		var targetName = target.isPlayer ? "you" : critterGetName(target)
-		var hitRoll = this.rollHit(obj, target, "torso")
-		this.log("hit% is " + this.getHitChance(obj, target, "torso").hit)
+		var hitRoll = this.rollHit(obj, target, region)
+		this.log("hit% is " + this.getHitChance(obj, target, region, 2).hit)
 
 		if(hitRoll.hit === true) {
 			var critModifier = hitRoll.crit ? hitRoll.DM : 2
@@ -438,7 +438,7 @@ class Combat {
 			if(critterGetEquippedWeapon(obj) === null)
 				throw "combatant has no equipped weapon"
 
-			this.attack(obj, target, function() {
+			this.attack(obj, target, "torso", function() {
 				critterStopWalking(obj)
 				that.doAITurn(obj, idx) // if we can, do another turn
 			})

@@ -591,9 +591,32 @@ function playerUse() {
 
 			// TODO: move within range of target
 
-			player.AP.subtractCombatAP(4)
-			console.log("Attacking...")
-			combat.attack(player, obj)
+			var weapon = critterGetEquippedWeapon(player)
+			if(weapon === null) {
+				console.log("You have no weapon equipped!")
+				return
+			}
+
+			if(weapon.weapon.isCalled()) {
+				var art = "art/critters/hmjmpsna" // default art
+				if(critterHasAnim(obj, "called-shot"))
+					art = critterGetAnim(obj, "called-shot")
+
+				console.log("art: %s", art)
+
+				uiCalledShot(art, who, function(region) {
+					player.AP.subtractCombatAP(4)
+					console.log("Attacking %s...", region)
+					combat.attack(player, obj, region)
+					uiCloseCalledShot()
+				})
+			}
+			else {
+				player.AP.subtractCombatAP(4)
+				console.log("Attacking the torso...")
+				combat.attack(player, obj, "torso")
+			}
+
 			return
 		}
 	}

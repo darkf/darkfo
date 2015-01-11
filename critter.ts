@@ -75,6 +75,7 @@ function parseAttack(weapon: WeaponObj) {
 			
 var Weapon = function(weapon) {
 	this.weapon = weapon
+	this.modes = ['single', 'called']
 
 	if(weapon === 'punch') { // default punch
 		// todo: use character stats...
@@ -105,6 +106,16 @@ var Weapon = function(weapon) {
 		if(this.weaponSkillType === undefined)
 			console.log("unknown weapon type for " + this.name)
 	}
+
+	this.mode = this.modes[0]
+}
+
+Weapon.prototype.cycleMode = function() {
+	this.mode = this.modes[(this.modes.indexOf(this.mode) + 1) % this.modes.length]
+}
+
+Weapon.prototype.isCalled = function() {
+	return this.mode === "called"
 }
 
 // TODO: enum
@@ -214,6 +225,7 @@ function critterGetAnim(obj: Critter, anim: string): string {
 		case "static": return obj.art
 		case "hitFront": return base + 'ao'
 		//case "punch": return base + 'aq'
+		case "called-shot": return base + 'na'	
 		case "death":
 			if(obj.pro !== undefined && obj.pro.extra.killType === 18) { // Boss is special-cased
 				console.log("Boss death...")

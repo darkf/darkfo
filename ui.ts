@@ -72,6 +72,12 @@ function initUI() {
 			// begin combat
 			Combat.start()
 		}
+	}).bind("contextmenu", function() { // right mouse button (cycle weapon modes)
+		var wep = critterGetEquippedWeapon(player)
+		if(wep === null) return
+		wep.weapon.cycleMode()
+		uiDrawWeapon()
+		return false
 	})
 
 	$("#endTurnButton").click(function() {
@@ -145,7 +151,7 @@ function uiDrawWeapon() {
 	if(weapon === null)
 		return
 
-	if(weapon.type !== "melee") {
+	if(weapon.weapon.type !== "melee") {
 		$("#attackButtonWeapon").off("load")
 		var $img = $("#attackButtonWeapon").load(function() {
 			if(!this.complete) return
@@ -167,6 +173,12 @@ function uiDrawWeapon() {
 	// TODO: all melee weapons
 	var type = {"melee": "punch", "gun": "single"}[weapon.weapon.type]
 	$("#attackButtonType").attr("src", "art/intrface/" + type + ".png")
+
+	// hide or show called shot sigil?
+	if(weapon.weapon.mode === "called")
+		$("#attackButtonCalled").show()
+	else
+		$("#attackButtonCalled").hide()
 }
 
 function uiMoveSlot(data, target) {
@@ -334,7 +346,10 @@ function drawDigits(idPrefix, amount, maxDigits, hasSign) {
 		$(idPrefix + i).css("background-position", 0)
 	for(var i = 0; i < digits.length; i++) {
 		var idx = digits.length - 1 - i
-		var digit = parseInt(digits[idx])
+		if(digits[idx] === '-')
+			var digit = 12
+		else
+			var digit = parseInt(digits[idx])
 		$(idPrefix + (maxDigits-i)).css("background-position", 0 - CHAR_W*digit)
 	}
 }
@@ -837,9 +852,34 @@ function uiCloseCalledShot() {
 	$("#calledShotBox").hide()
 }
 
-function uiCalledShot() {
+function uiCalledShot(art, target, callback) {
 	uiMode = UI_MODE_CALLED_SHOT
 	$("#calledShotBox").show()
 
-	drawDigits("#calledShotTorsoChance #digit", 12, 2, false)
+	function drawChance(region) {
+		var chance = Combat.prototype.getHitChance(player, target, region).hit
+		console.log("id: %s | chance: %d", "#calledShot-"+region+"-chance #digit", chance)
+		if(chance <= 0)
+			chance = "--"
+		drawDigits("#calledShot-"+region+"-chance #digit", chance, 2, false)
+	}
+
+	drawChance("torso")
+	drawChance("head")
+	drawChance("eyes")
+	drawChance("groin")
+	drawChance("leftArm")
+	drawChance("rightArm")
+	drawChance("leftLeg")
+	drawChance("rightLeg")
+
+	$("#calledShotBackground").css("background-image", "url('" + art + ".png')")
+
+	$(".calledShotLabel").click(function(evt) {
+		var id = $(evt.target).attr("id")
+		var regionHit = id.split("-")[1]
+		console.log("clicked a called location (%s)", regionHit)
+		if(callback)
+			callback(regionHit)
+	})
 }

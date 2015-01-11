@@ -120,6 +120,14 @@ body {
     height: 67;
 }
 
+#attackButtonCalled {
+    position: absolute;
+    right: 7; bottom: 7;
+    width: 18; height: 18;
+    background-image: url("art/intrface/bullseye.png");
+    display: none;
+}
+
 #attackButtonAP {
     position: absolute;
     bottom: 7; left: 7;
@@ -672,7 +680,7 @@ left: 472; top: 75;
     left: 170; top: 31;
     width: 170; height: 225;
     /*border: 1px solid cyan;*/
-    background-image: url("art/critters/MASRATNA.png");
+    background-image: url("art/critters/masratna.png");
 }
 
 #calledShotCancelBtn {
@@ -693,11 +701,38 @@ left: 472; top: 75;
     font-size: small;
 }
 
+.calledShotLabel:hover {
+    cursor: hand;
+}
+
 .calledShotChance {
     position: absolute;
     width: 25; height: 25;
     /*border: 1px solid cyan;*/
 }
 
-#calledShotTorsoLabel { right: 5; top: 30; }
-#calledShotTorsoChance { right: 26; top: 35; }
+/* right side of called shot screen */
+#calledShot-torso-chance { right: 26; top: 35; }
+#calledShot-torso-label { left: 380; top: 30; }
+
+#calledShot-groin-chance { right: 26; top: 102; }
+#calledShot-groin-label { left: 380; top: 90; }
+
+#calledShot-leftArm-chance { right: 26; top: 164; }
+#calledShot-leftArm-label { left: 360; top: 160; }
+
+#calledShot-leftLeg-chance { right: 26; top: 230; }
+#calledShot-leftLeg-label { left: 370; top: 225; }
+
+/* left side */
+#calledShot-head-chance { left: 33; top: 35; }
+#calledShot-head-label { left: 75; top: 30; }
+
+#calledShot-eyes-chance { left: 33; top: 102; }
+#calledShot-eyes-label { left: 75; top: 95; }
+
+#calledShot-rightArm-chance { left: 33; top: 164; }
+#calledShot-rightArm-label { left: 75; top: 160; }
+
+#calledShot-rightLeg-chance { left: 33; top: 230; }
+#calledShot-rightLeg-label { left: 75; top: 225; }
