@@ -506,7 +506,9 @@ class Obj {
 				scriptingEngine.initScript(this._script, this)
 				// TODO: do we updateMap?
 				// TODO: is this correct?
-				scriptingEngine.enterMap(gMapScript, [this], currentElevation, gMap.mapID, true)
+				// TODO: gObjects should be a registry, and this should be activated when objects
+				// are added in. @important
+				//scriptingEngine.enterMap(gMapScript, [this], currentElevation, gMap.mapID, true)
 			}
 		}
 	}
