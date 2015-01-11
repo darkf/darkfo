@@ -33,19 +33,24 @@ function getElevator(type) {
 	return elevatorInfo.elevators[type]
 }
 
-function loadAreas() {
-	var areas = parseIni(getFileText("data/data/CITY.TXT"))
+function parseAreas(data) {
+	var areas = parseIni(data)
 	var out = {}
-	console.log("areas: " + areas)
+	//console.log("areas:")
+	console.log(areas)
 
 	for(var _area in areas) {
 		var area = areas[_area]
 		var areaID = _area.match(/Area (\d+)/)
 		if(areaID === null) throw "CITY.TXT: invalid area name: " + area.area_name
 		areaID = parseInt(areaID[1])
+		var worldPos = area.world_pos.split(",").map(function(x) { return parseInt(x) })
 
 		var newArea: any = {name: area.area_name,
-			           id: areaID}
+			           id: areaID,
+			           size: area.size.toLowerCase(),
+			           state: area.start_state.toLowerCase() === "on",
+			       	   worldPosition: {x: worldPos[0], y: worldPos[1]}}
 
 	    // map/label art
 		var mapArtIdx = parseInt(area.townmap_art_idx)
@@ -85,7 +90,14 @@ function loadAreas() {
 		out[areaID] = newArea
 	}
 
+	console.log("areas:")
+	console.log(out)
+
 	return out
+}
+
+function loadAreas() {
+	return parseAreas(getFileText("data/data/CITY.TXT"))
 }
 
 function allAreas() {

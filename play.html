@@ -32,7 +32,7 @@ limitations under the License.
 <script src="skillDependencies.js"></script>
 <script src="characterCreation.js"></script>
 <script src="player.js"></script>
-<script src="main.js"></script>
+<script src="worldmap.js"></script>
 <link rel="stylesheet" type="text/css" href="ui.css">
 </head>
 <body>
@@ -111,7 +111,14 @@ limitations under the License.
 		<div id="worldMapBox">
 			<div id="worldMapLabels"></div>
 		</div>
-		<div id="worldMapWorld"></div>
+		<div id="worldMapWorld">
+			<div id="worldmap">
+				<img id="worldmapImage" src="worldmap.png">
+				<div id="worldmapTarget"></div>
+				<div id="worldmapPlayer"></div>
+			</div>
+			<div id="areamap"></div>
+		</div>
 	</div>
 	<div id="elevatorBox">
 		<div id="elevatorLabel"></div>

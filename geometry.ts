@@ -300,3 +300,8 @@ function tile_in_tile_rect2(tile, a, c) {
 	var d = {x: c.x, y: a.y}
 	return tile_in_tile_rect(tile, a, b, c, d)
 }
+
+function pointIntersectsCircle(center, radius, point) {
+	return Math.abs(point.x - center.x) <= radius &&
+	       Math.abs(point.y - center.y) <= radius
+}

@@ -474,8 +474,16 @@ left: 472; top: 75;
 
 #worldMapWorld {
     position: absolute;
-    left: 105; top: 85;
+    left: 105; top: 82;
     width: 445; height: 438;
+}
+
+#areamap {
+    position: absolute;
+    left: 0; top: 0;
+    /*overflow: auto;*/
+    overflow: hidden;
+    width: 100%; height: 100%;
 }
 
 #worldMapLabels {
@@ -569,3 +577,73 @@ left: 472; top: 75;
 #elevatorButton2 { top: 102; }
 #elevatorButton3 { top: 162; }
 #elevatorButton4 { top: 222; }
+
+/* ------- */
+/* world map */
+
+/*#worldmapBox {
+    border: 1px solid green;
+    position: absolute;
+    left: 30%; top: 20%;
+}*/
+
+#worldmap {
+    position: absolute;
+    left: 0; top: 0;
+    /*overflow: auto;*/
+    overflow: hidden;
+    width: 100%; height: 100%;
+    /* */
+}
+
+#worldmapImage {
+    position: absolute; left: 0; top: 0;
+    /*background-image: url("worldmap.png");*/
+    /*width: 525; height: 450;*/
+}
+
+.areaLabel {
+    position: absolute;
+    font-family: sans-serif;
+    color: #00FF00;
+}
+
+.areaCircle {
+    position: absolute;
+    /*width: 100; height: 100;*/
+    border: 2px solid #00FF00;
+    border-radius: 50%; /* circle */
+    background: #007F00;
+    opacity: 0.25;
+}
+
+.areaSize-small { width: 8; height: 8; }
+.areaSize-medium { width: 32; height: 32; }
+.areaSize-large { width: 64; height: 64; }
+
+.worldmapSquare {
+    position: absolute;
+    width: 51; height: 51;
+}
+
+.worldmapSquare-undiscovered { background-color: black; }
+.worldmapSquare-discovered { background-color: black; display: none; }
+.worldmapSquare-seen { background-color: black; opacity: 0.5; }
+
+/* The player marker on the world map. Hidden until travelling. */
+#worldmapPlayer {
+    position: absolute;
+    width: 25; height: 13;
+    background-repeat: no-repeat;
+    background-image: url("art/intrface/wmaploc.png");
+    /*visibility: hidden;*/
+    z-index: 100;
+}
+
+/* Target. Changes into a hotspot when reached by the player. */
+#worldmapTarget {
+    position: absolute;
+    width: 25; height: 13;
+    background-repeat: no-repeat;           
+    z-index: 100;
+}

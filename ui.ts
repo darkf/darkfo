@@ -87,6 +87,8 @@ function initUI() {
 
 	drawHP(critterGetStat(player, "HP"))
 	uiDrawWeapon()
+
+	Worldmap.init()
 }
 
 function uiStartCombat() {
@@ -650,17 +652,73 @@ function uiCloseWorldMap() {
 	uiMode = UI_MODE_NONE
 
 	$("#worldMapContainer").css("visibility", "hidden")
+	Worldmap.stop()
 }
 
-function uiWorldMap() {
+function uiWorldMap(onAreaMap) {
 	uiMode = UI_MODE_WORLDMAP
-
 	$("#worldMapContainer").css("visibility", "visible")
 
 	if(mapAreas === null)
 		mapAreas = loadAreas()
+
+	if(onAreaMap)
+		uiWorldMapAreaView()
+	else
+		uiWorldMapWorldView()
+	uiWorldMapLabels()
+}
+
+function uiWorldMapAreaView(shownArea) {
+	$("#worldmap").css("visibility", "hidden")
+	$("#areamap").css("visibility", "visible")
+
+	Worldmap.stop()
+}
+
+function uiWorldMapWorldView() {
+	$("#worldmap").css("visibility", "visible")
+	$("#areamap").css("visibility", "hidden")
+
+	Worldmap.start()
+}
+
+function uiWorldMapShowArea(area) {
+	uiWorldMapAreaView()
+
+	$("#areamap").css({
+		backgroundImage: "url('" + area.mapArt + ".png')"
+	}).html("")
+
+	var entrances = area.entrances
+	for(var j = 0; j < entrances.length; j++) {
+		console.log("entrance: " + entrances[j].mapLookupName)
+		var $entranceEl = $("<div class='worldmapEntrance'>")
+		var $hotspot = $("<div class='worldmapEntranceHotspot'>")
+
+		$hotspot.click((function(entrance) {
+			return function() {
+				// hotspot click -- travel to relevant map
+				var mapName = lookupMapNameFromLookup(entrance.mapLookupName)
+				console.log("hotspot -> " + mapName + " (via " +
+					        entrance.mapLookupName + ")")
+				loadMap(mapName)
+				uiCloseWorldMap()
+			}
+		})(entrances[j]))
+
+		$entranceEl.append($hotspot)
+		$entranceEl.append(entrances[j].mapLookupName)
+		$entranceEl.css({
+			left: entrances[j].x,
+			top:  entrances[j].y
+		})
+		$("#areamap").append($entranceEl)
+	}
+}
+
+function uiWorldMapLabels() {
 	$("#worldMapLabels").html("<div id='worldMapLabelsBackground'></div>")
-	$("#worldMapWorld").html("")
 
     var i = 0
     for(var areaID in mapAreas) {
@@ -672,37 +730,9 @@ function uiWorldMap() {
         var labelButton = $("<div>").addClass("worldMapLabelButton").
               click((function(areaID) {
               	return function() {
-            		$("#worldMapWorld").css({
-            			backgroundImage: "url('" + mapAreas[areaID].mapArt + ".png')"
-            		}).html("")
-
-            		var entrances = mapAreas[areaID].entrances
-            		for(var j = 0; j < entrances.length; j++) {
-            			console.log("entrance: " + entrances[j].mapLookupName)
-            			var $entranceEl = $("<div class='worldmapEntrance'>")
-            			var $hotspot = $("<div class='worldmapEntranceHotspot'>")
-
-            			$hotspot.click((function(entrance) {
-            				return function() {
-	            				// hotspot click -- travel to relevant map
-	            				var mapName = lookupMapNameFromLookup(entrance.mapLookupName)
-	            				console.log("hotspot -> " + mapName + " (via " +
-	            					        entrance.mapLookupName + ")")
-	            				loadMap(mapName)
-	            				uiCloseWorldMap()
-            				}
-            			})(entrances[j]))
-
-            			$entranceEl.append($hotspot)
-            			$entranceEl.append(entrances[j].mapLookupName)
-            			$entranceEl.css({
-            				left: entrances[j].x,
-            				top:  entrances[j].y
-            			})
-            			$("#worldMapWorld").append($entranceEl)
-            		}
-            	}
-        })(areaID))
+              		uiWorldMapShowArea(mapAreas[areaID])
+              	}
+        	  })(areaID))
 
         var areaLabel = $("<div>").addClass("worldMapLabel").
                                    css({top: 1 + i*(27)}).
