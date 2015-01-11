@@ -472,6 +472,17 @@ left: 472; top: 75;
     background-image: url("art/intrface/wmapbox.png");
 }
 
+#worldmapViewButton {
+    position: absolute;
+    left: 519; top: 440;
+    width: 15; height: 16;
+    background-image: url("art/intrface/lilredup.png");
+}
+
+#worldmapViewButton:active {
+    background-image: url("art/intrface/lilreddn.png");
+}
+
 #worldMapWorld {
     position: absolute;
     left: 105; top: 82;

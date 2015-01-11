@@ -1,0 +1,19 @@
+{
+  "startPosition": {
+    "y": 0,
+    "x": 0
+  },
+  "startOrientation": 0,
+  "levels": [
+    {
+      "tiles": {
+        "roof": [],
+        "floor": []
+      },
+      "objects": [],
+      "spatials": []
+    }
+  ],
+  "mapID": -1,
+  "startElevation": 0
+}

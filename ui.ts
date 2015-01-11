@@ -31,6 +31,19 @@ function initUI() {
 	makeDropTarget($("#inventoryBoxItem1"), function(data) { uiMoveSlot(data, "leftHand") })
 	makeDropTarget($("#inventoryBoxItem2"), function(data) { uiMoveSlot(data, "rightHand") })
 
+	$("#worldmapViewButton").click(function() {
+		var onAreaMap = ($("#areamap").css("visibility") === "visible")
+		if(onAreaMap)
+			uiWorldMapWorldView()
+		else {
+			var currentArea = areaContainingMap(MAP_NAME)
+			if(currentArea !== null)
+				uiWorldMapShowArea(currentArea)
+			else
+				uiWorldMapAreaView()
+		}
+	})
+
 	$("#inventoryButton").click(uiInventoryScreen)
 	$("#inventoryDoneButton").click(function() {
 		uiMode = UI_MODE_NONE
@@ -652,6 +665,11 @@ function uiCloseWorldMap() {
 	uiMode = UI_MODE_NONE
 
 	$("#worldMapContainer").css("visibility", "hidden")
+	$("#worldmap").css("visibility", "hidden")
+	$("#worldmapTarget").css("visibility", "hidden")
+	$("#worldmapPlayer").css("visibility", "hidden")
+	$("#areamap").css("visibility", "hidden")
+
 	Worldmap.stop()
 }
 
@@ -669,9 +687,11 @@ function uiWorldMap(onAreaMap) {
 	uiWorldMapLabels()
 }
 
-function uiWorldMapAreaView(shownArea) {
+function uiWorldMapAreaView() {
 	$("#worldmap").css("visibility", "hidden")
 	$("#areamap").css("visibility", "visible")
+	$("#worldmapTarget").css("visibility", "hidden")
+	$("#worldmapPlayer").css("visibility", "hidden")
 
 	Worldmap.stop()
 }

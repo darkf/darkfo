@@ -79,6 +79,7 @@ function parseAreas(data) {
 					x: parseInt(s[1]),
 					y: parseInt(s[2]),
 					mapLookupName: s[3],
+					mapName: lookupMapNameFromLookup(s[3]),
 					elevation: parseInt(s[4]),
 					tileNum: parseInt(s[5]),
 					orientation: parseInt(s[6])
@@ -94,6 +95,17 @@ function parseAreas(data) {
 	console.log(out)
 
 	return out
+}
+
+function areaContainingMap(mapName) {
+	for(var area in mapAreas) {
+		var entrances = mapAreas[area].entrances
+		for(var i = 0; i < entrances.length; i++) {
+			if(entrances[i].mapName === mapName)
+				return mapAreas[area]
+		}
+	}
+	return null
 }
 
 function loadAreas() {
