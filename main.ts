@@ -55,7 +55,8 @@ var FLOAT_MSG_DURATION = 3 // in seconds
 
 var showHexOverlay = false // show hex grid?
 var showCoordinates = false // show coordinates on hex grid?
-var showPath = true // show player's path?
+var showCursor = true // show hex cursor?
+var showPath = false // show player's path?
 var showFloor = true // show floor tiles?
 var showRoof = true // show roof tiles?
 var showObjects = true // show objects?
@@ -1039,8 +1040,10 @@ heart.draw = function() {
 			}
 		}
 	} else {
-		var scr = hexToScreen(mouseHex.x, mouseHex.y)
-		heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
+		if(showCursor === true) {
+			var scr = hexToScreen(mouseHex.x, mouseHex.y)
+			heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
+		}
 
 		if(showPath === true && player.path !== null) {
 			for(var i = 0; i < player.path.path.length; i++) {

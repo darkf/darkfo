@@ -118,8 +118,15 @@ Weapon.prototype.isCalled = function() {
 	return this.mode === "called"
 }
 
+Weapon.prototype.getProjectilePID = function() {
+	if(this.type === "melee")
+		return -1
+	return this.weapon.pro.extra.projPID
+}
+
 // TODO: enum
 Weapon.prototype.getMaximumRange = function(attackType: number): number {
+
 	if(attackType === 1) return this.weapon.pro.extra.maxRange1
 	if(attackType === 2) return this.weapon.pro.extra.maxRange2
 	else throw "invalid attack type " + attackType
@@ -156,7 +163,7 @@ Weapon.prototype.getAttackSkin = function(): string {
 		'kick': 'r',
 		'swing': 'g',
 		'thrust': 'f',
-		'throw': 'm',
+		'throw': 's',
 		'fire single': 'j',
 		'fire burst': 'k',
 		'flame': 'l'
@@ -322,7 +329,7 @@ function critterStaticAnim(obj: Critter, anim: string, callback: () => void, wai
 	obj.art = critterGetAnim(obj, anim)
 	obj.frame = 0
 	obj.lastFrameTime = 0
-	if(waitForLoad === true) {
+	if(waitForLoad === true || waitForLoad === undefined) {
 		lazyLoadImage(obj.art, function() {
 			obj.anim = anim
 			obj.animCallback = (callback !== undefined) ? callback : (function() { critterStopWalking(obj) })			
