@@ -31,6 +31,16 @@ function initUI() {
 	makeDropTarget($("#inventoryBoxItem1"), function(data) { uiMoveSlot(data, "leftHand") })
 	makeDropTarget($("#inventoryBoxItem2"), function(data) { uiMoveSlot(data, "rightHand") })
 
+	for(var i = 0; i < 2; i++) {
+		$("#calledShotBox .calledShotChance")
+		   .append(
+		   	  $("<div class='number'>").css("left", i*9).attr("id", "digit" + (i+1)))
+	}
+
+	$("#calledShotCancelBtn").click(function() {
+		uiCloseCalledShot()
+	})
+
 	$("#worldmapViewButton").click(function() {
 		var onAreaMap = ($("#areamap").css("visibility") === "visible")
 		if(onAreaMap)
@@ -309,21 +319,23 @@ function uiInventoryScreen() {
 }
 
 function drawHP(hp) {
-	drawDigits("#hpDigit", hp)
+	drawDigits("#hpDigit", hp, 4, true)
 }
 
-function drawDigits(idPrefix, amount) {
+function drawDigits(idPrefix, amount, maxDigits, hasSign) {
 	var CHAR_W = 9, CHAR_NEG = 12
 	var sign = (amount < 0) ? CHAR_NEG : 0
 	if(amount < 0) amount = -amount
 	var digits = amount.toString()
-	$(idPrefix+"1").css("background-position", 0 - CHAR_W*sign) // sign
-	for(var i = 2; i <= 4-digits.length; i++) // left-fill with zeroes
+	var firstDigitIdx = (hasSign ? 1 : 0)
+	if(hasSign)
+		$(idPrefix+"1").css("background-position", 0 - CHAR_W*sign) // sign
+	for(var i = firstDigitIdx; i <= maxDigits-digits.length; i++) // left-fill with zeroes
 		$(idPrefix + i).css("background-position", 0)
 	for(var i = 0; i < digits.length; i++) {
 		var idx = digits.length - 1 - i
 		var digit = parseInt(digits[idx])
-		$(idPrefix + (4-i)).css("background-position", 0 - CHAR_W*digit)
+		$(idPrefix + (maxDigits-i)).css("background-position", 0 - CHAR_W*digit)
 	}
 }
 
@@ -818,4 +830,16 @@ function uiElevator(elevator) {
 			}
 		}(i))
 	}
+}
+
+function uiCloseCalledShot() {
+	uiMode = UI_MODE_NONE
+	$("#calledShotBox").hide()
+}
+
+function uiCalledShot() {
+	uiMode = UI_MODE_CALLED_SHOT
+	$("#calledShotBox").show()
+
+	drawDigits("#calledShotTorsoChance #digit", 12, 2, false)
 }

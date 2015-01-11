@@ -82,7 +82,8 @@ var inCombat = false // are we currently in combat?
 var gameHasFocus = false // do we have input focus?
 var lastMousePickTime = 0 // time when we last checked what's under the mouse cursor
 var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3,
-    UI_MODE_INVENTORY = 4, UI_MODE_WORLDMAP = 5, UI_MODE_ELEVATOR = 6
+    UI_MODE_INVENTORY = 4, UI_MODE_WORLDMAP = 5, UI_MODE_ELEVATOR = 6,
+    UI_MODE_CALLED_SHOT = 7
 var uiMode = UI_MODE_NONE
 
 var isLoading = true // are we currently loading a map?
@@ -114,6 +115,7 @@ var showTargetInventoryKey = "v"
 var useKey = "u"
 var killKey = "k"
 var worldmapKey = "p"
+var calledShotKey = "z"
 
 // the global player object
 var player = new Player()
@@ -747,6 +749,9 @@ heart.keydown = function(k) {
 
 	if(k == worldmapKey)
 		uiWorldMap()
+
+	if(k == calledShotKey)
+		uiCalledShot()
 
 	if(k == 'a')
 		Worldmap.checkEncounters()

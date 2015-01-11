@@ -658,3 +658,46 @@ left: 472; top: 75;
     background-repeat: no-repeat;           
     z-index: 100;
 }
+
+#calledShotBox {
+    position: absolute;
+    left: 135; top: 135;
+    width: 504; height: 309;
+    display: none;
+    background-image: url("art/intrface/called.png");
+}
+
+#calledShotBackground {
+    position: absolute;
+    left: 170; top: 31;
+    width: 170; height: 225;
+    /*border: 1px solid cyan;*/
+    background-image: url("art/critters/MASRATNA.png");
+}
+
+#calledShotCancelBtn {
+    position: absolute;
+    left: 208; top: 268;
+    width: 15; height: 16;
+    background-image: url("art/intrface/lilredup.png");
+}
+
+#calledShotCancelBtn:active {
+    background-image: url("art/intrface/lilreddn.png");
+}
+
+.calledShotLabel {
+    position: absolute;
+    width: 100;
+    color: #00FF00;
+    font-size: small;
+}
+
+.calledShotChance {
+    position: absolute;
+    width: 25; height: 25;
+    /*border: 1px solid cyan;*/
+}
+
+#calledShotTorsoLabel { right: 5; top: 30; }
+#calledShotTorsoChance { right: 26; top: 35; }
