@@ -284,7 +284,8 @@ function critterWalkTo(obj: Critter, target: Point, running?: boolean, callback?
 		return false
 	}
 
-	var path = recalcPath(obj.position, target)
+	if(path === undefined)
+		path = recalcPath(obj.position, target)
 	if(path.length === 0) {
 		// no path
 		//console.log("not a valid path")

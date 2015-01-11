@@ -73,6 +73,7 @@ var doLoadItemInfo = true // load item information (such as inventory images)?
 var doAlwaysRun = true // always run instead of walk?
 var doZOrder = true // Z-order objects?
 var doEncounters = true // allow random encounters?
+var doInfiniteUse = false // allow infinite-range object usage?
 
 var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0 // real time of the last game tick
@@ -534,42 +535,74 @@ heart.load = function() {
 	initUI()
 }
 
+function critterMoveInFrontOf(obj, targetPos, callback) {
+	var path = recalcPath(obj.position, targetPos, false)
+	if(path.length === 0) // invalid path
+		return false
+	else if(path.length <= 2) { // we're already infront of or on it
+		if(callback !== undefined)
+			callback()
+		return true
+	}
+	path.pop() // we don't want targetPos in the path
+
+	var target = path[path.length - 1]
+	targetPos = {x: target[0], y: target[1]}
+
+	var running = doAlwaysRun
+	if(hexDistance(obj.position, targetPos) > 5)
+		running = true
+
+	console.log("path: %o, callback %o", path, callback)
+	return critterWalkTo(obj, targetPos, running, callback, undefined, path)
+}
 function isSelectableObject(obj: any) {
 	return obj.visible !== false && (canUseObject(obj) || obj.type === "critter")
 }
 
-heart.mousepressed = function(x, y, btn) {
-	if(isLoading === true) return
-	if(btn !== "l") return
-
+function playerUse() {
 	var mousePos = heart.mouse.getPosition()
 	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
-
-	// if there's an object under the cursor, use it
 	var obj = getObjectUnderCursor(isSelectableObject)
-	if(obj !== null) {
-		if(obj.type === "critter") {
-			if(obj === player) return
-			var who = <Critter>obj
+	var who = <Critter>obj
 
-			if(inCombat === true && who.dead !== true) {
-				// attack a critter
-				if(!combat.inPlayerTurn || player.inAnim()) {
-					console.log("You can't do that yet.")
-					return
-				}
+	if(obj === null) { // walk to the destination if there is no usable object
+		if(critterWalkTo(player, mouseHex, doAlwaysRun) === false)
+			console.log("Cannot walk there")
+		return
+	}
 
-				if(player.AP.getAvailableCombatAP() < 4) {
-					uiLog(getProtoMsg(700))
-					return
-				}
+	if(obj.type === "critter") {
+		if(obj === player) return // can't use yourself
 
-				player.AP.subtractCombatAP(4)
-				console.log("Attacking...")
-				combat.attack(player, who)
+		if(inCombat === true && obj.dead !== true) {
+			// attack a critter
+			if(!combat.inPlayerTurn || objectInAnim(player)) {
+				console.log("You can't do that yet.")
+				return
 			}
-			else if(who.dead !== true && inCombat !== true &&
-				who._script && who._script.talk_p_proc !== undefined) {
+
+			if(player.AP.getAvailableCombatAP() < 4) {
+				uiLog(getProtoMsg(700))
+				return
+			}
+
+			// TODO: move within range of target
+
+			player.AP.subtractCombatAP(4)
+			console.log("Attacking...")
+			combat.attack(player, obj)
+			return
+		}
+	}
+
+	var callback = function() {
+		critterStopWalking(player)
+
+		// if there's an object under the cursor, use it
+		if(obj.type === "critter") {
+			if(obj.dead !== true && inCombat !== true &&
+			   obj._script && obj._script.talk_p_proc !== undefined) {
 				// talk to a critter
 				console.log("Talking to " + critterGetName(who))
 				scriptingEngine.talk(who._script, who)
@@ -583,9 +616,17 @@ heart.mousepressed = function(x, y, btn) {
 		else
 			useObject(obj, player)
 	}
-	else // otherwise walk to the destination
-		if(critterWalkTo(player, mouseHex, doAlwaysRun) === false)
-			console.log("Cannot walk there")
+
+	if(doInfiniteUse === true)
+		callback()
+	else
+		critterMoveInFrontOf(player, obj.position, callback)
+}
+
+heart.mousepressed = function(x, y, btn) {
+	if(isLoading === true) return
+	if(btn !== "l") return
+	playerUse()
 }
 
 heart.keydown = function(k) {
@@ -711,7 +752,7 @@ heart.keydown = function(k) {
 		Worldmap.checkEncounters()
 }
 
-function recalcPath(start, goal) {
+function recalcPath(start, goal, isGoalBlocking) {
 	var matrix = new Array(HEX_GRID_SIZE)
 
 	for(var y = 0; y < HEX_GRID_SIZE; y++)
@@ -723,10 +764,12 @@ function recalcPath(start, goal) {
 		matrix[obj.position.y][obj.position.x] |= <any>obj.blocks()
 	}
 
+	if(isGoalBlocking === false)
+		matrix[goal.y][goal.x] = 0
+
 	var grid = new PF.Grid(HEX_GRID_SIZE, HEX_GRID_SIZE, matrix)
 	var finder = new PF.BestFirstFinder()
-	var path = finder.findPath(start.x, start.y, goal.x, goal.y, grid)
-	return path
+	return finder.findPath(start.x, start.y, goal.x, goal.y, grid)
 }
 
 function changeCursor(image) {

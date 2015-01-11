@@ -896,6 +896,7 @@ module scriptingEngine {
 			else throw "mark_area_known: invalid area type " + areaType
 		},
 		game_ui_disable: function() { stub("game_ui_disable", arguments) },
+		game_ui_enable: function() { stub("game_ui_enable", arguments) },
 
 		// sound
 		play_sfx: function(sfx) { stub("play_sfx", arguments) },
