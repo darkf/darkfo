@@ -280,6 +280,17 @@ module scriptingEngine {
 					}
 				}
 			}
+			else if(id === 106) { // METARULE3_TILE_GET_NEXT_CRITTER
+				// As far as I know, with lastCritter == 0, it just grabs the critter that is not the player at the tile. TODO: Test this!
+				var tile = obj, elevation = userdata, lastCritter = radius
+				var objs = objectsAtPosition(fromTileNum(tile))
+				log("metarule3 106 (tile_get_next_critter)", arguments)
+				for(var i = 0; i < objs.length; i++) {
+					if(objs[i].type === "critter" && !objs[i].isPlayer)
+						return objs[i]
+				}
+				return 0 // no critter found at that position (TODO: test)
+			}
 
 			stub("metarule3", arguments)
 		},
