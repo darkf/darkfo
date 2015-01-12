@@ -514,9 +514,9 @@ function uiBarterMode(merchant) {
 
 			// add in the table items
 			for(var i = 0; i < merchantBarterTable.length; i++)
-				objectAddItem(player, merchantBarterTable[i], merchantBarterTable[i].amount)
+				player.addInventoryItem(merchantBarterTable[i], merchantBarterTable[i].amount)
 			for(var i = 0; i < playerBarterTable.length; i++)
-				objectAddItem(merchant, playerBarterTable[i], playerBarterTable[i].amount)
+				merchant.addInventoryItem(playerBarterTable[i], playerBarterTable[i].amount)
 
 			// re-clone so we can continue bartering if necessary
 			workingPlayerInventory = player.inventory.map(cloneItem)

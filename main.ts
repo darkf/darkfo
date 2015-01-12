@@ -394,10 +394,10 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 	gMap = map
 	var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
+	// load map objects
 	gMapObjects = new Array(gMap.levels.length)
 	for(var level = 0; level < gMap.levels.length; level++) {
-		if(doLoadItemInfo !== false)
-			gMapObjects[level] = gMap.levels[level]["objects"].map(objFromMapObject)
+		gMapObjects[level] = gMap.levels[level]["objects"].map(objFromMapObject)
 	}
 
 	if(doLoadScripts === true) {
@@ -429,11 +429,17 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 		}
 
 		changeElevation(elevation, false)
-		// TODO:
-		//loadObjectScripts(gObjects)
+
+		// TODO: when exactly are these called?
+		// TODO: when objectsAndSpatials is updated, the scripting engine won't know
 		var objectsAndSpatials = gObjects.concat(gSpatials)
 		scriptingEngine.enterMap(gMapScript, objectsAndSpatials, elevation, gMap.mapID, true)
 		scriptingEngine.updateMap(gMapScript, objectsAndSpatials, elevation)
+
+		// tell objects that they're now on the map
+		for(var level = 0; level < gMap.levels.length; level++) {
+			gMapObjects[level].forEach(obj => obj.enterMap())
+		}
 	}
 	else changeElevation(elevation, false)
 

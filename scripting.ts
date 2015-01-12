@@ -375,7 +375,7 @@ module scriptingEngine {
 
 			//info("add_mult_objs_to_inven: " + count + " counts of " + item.toString(), "inventory")
 			console.log("add_mult_objs_to_inven: %d counts of %o to %o", count, item, obj)
-			objectAddItem(obj, item, count)
+			obj.addInventoryItem(item, count)
 			drawPlayerInventory()
 		},
 		rm_mult_objs_from_inven: function(obj, item, count) { // Remove count copies of item from obj's inventory
@@ -634,23 +634,23 @@ module scriptingEngine {
 		},
 		tile_distance: function(a, b) { return hexDistance(fromTileNum(a), fromTileNum(b)) },
 		tile_num: function(obj) {
-			if(!isGameObject(obj) && (obj && !obj.isSpatial)) {
+			if(!isGameObject(obj) || (!obj || obj.isSpatial)) {
 				warn("tile_num: not a game object: " + obj)
 				return null
 			}
 			return toTileNum(obj.position)
 		},
-		tile_contains_pid_obj: function(tile, elevation, pid) {
+		tile_contains_pid_obj: function(tile, elevation, pid): any {
 			stub("tile_contains_pid_obj", arguments, "tiles")
 			var pos = fromTileNum(tile)
-			var objects = gMap.levels[elevation]["objects"]
+			var objects = gMapObjects[elevation]
 			for(var i = 0; i < objects.length; i++) {
 				if(objects[i].position.x === pos.x && objects[i].position.y === pos.y &&
 				   objects[i].pid === pid) {
 					return objects[i]
 				}
 			}
-			return null
+			return 0 // it's not there
 		},
 		tile_num_in_direction: function(tile, direction, distance) {
 			if(distance === 0) return tile // QCFrank uses this but does not use its result
@@ -694,7 +694,7 @@ module scriptingEngine {
 			if(elevation !== currentElevation) {
 				info("move_to: moving to elevation " + elevation)
 				objectRemove(obj)
-				gMap.levels[elevation]["objects"].push(obj)
+				gMapObjects[elevation].push(obj)
 			}
 			obj.position = fromTileNum(tileNum)
 		},
@@ -1158,18 +1158,20 @@ module scriptingEngine {
 			mapScript.map_enter_p_proc()
 		}
 
-		var updated = 0
 		for(var i = 0; i < gameObjects.length; i++) {
-			var script = gameObjects[i]._script
-			if(script !== undefined && script.map_enter_p_proc !== undefined) {
-				script.combat_is_initialized = 0
-				script.self_obj = gameObjects[i]
-				script.game_time = Math.max(1, gameTickTime)
-				script.game_time_hour = 1200 // hour of the day
-				script.cur_map_index = currentMapID
-				script.map_enter_p_proc()
-				updated++
-			}
+			objectEnterMap(gameObjects[i], elevation, mapID)			
+		}
+	}
+
+	export function objectEnterMap(obj: Obj, elevation: number, mapID: number) {
+		var script = obj._script
+		if(script !== undefined && script.map_enter_p_proc !== undefined) {
+			script.combat_is_initialized = 0
+			script.self_obj = obj
+			script.game_time = Math.max(1, gameTickTime)
+			script.game_time_hour = 1200 // hour of the day
+			script.cur_map_index = currentMapID
+			script.map_enter_p_proc()
 		}
 	}
 

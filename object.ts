@@ -18,10 +18,6 @@ limitations under the License.
 
 "use strict";
 
-function objectAddItem(obj: Obj, item: Obj, count: number): void {
-	return obj.addInventoryItem(item, count)
-}
-
 function objectGetMoney(obj: Obj): number {
 	var MONEY_PID = 41
 	for(var i = 0; i < obj.inventory.length; i++) {
@@ -101,11 +97,11 @@ function objectSwapItem(a, item, b, amount) {
 	if(amount !== undefined && amount < item.amount) {
 		// just deduct amount from a and give amount to b
 		item.amount -= amount
-		objectAddItem(b, cloneItem(item), amount)
+		b.addInventoryItem(cloneItem(item), amount)
 	}
 	else { // just swap them
 		a.inventory.splice(idx, 1)
-		objectAddItem(b, item, amount || 1)
+		b.addInventoryItem(item, amount || 1)
 	}
 }
 
@@ -473,7 +469,7 @@ class Obj {
 			this.inventory = this.inventory.map(objFromMapObject)
 	}
 
-	loadScript(sid:number=-1) {
+	loadScript(sid:number=-1): void {
 		var scriptName = null
 
 		if(sid >= 0)
@@ -495,13 +491,18 @@ class Obj {
 			} else {
 				this._script = script
 				scriptingEngine.initScript(this._script, this)
-				// TODO: do we updateMap?
-				// TODO: is this correct?
-				// TODO: gObjects should be a registry, and this should be activated when objects
-				// are added in. @important
-				//scriptingEngine.enterMap(gMapScript, [this], currentElevation, gMap.mapID, true)
 			}
 		}
+	}
+
+	enterMap(): void {
+		// TODO: do we updateMap?
+		// TODO: is this correct?
+		// TODO: gObjects should be a registry, and this should be activated when objects
+		// are added in. @important
+		
+		if(this._script)
+			scriptingEngine.objectEnterMap(this, currentElevation, gMap.mapID)
 	}
 
 	setAmount(amount: number): Obj {
