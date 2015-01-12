@@ -387,7 +387,7 @@ class Combat {
 			this.maybeTaunt(obj, "run", messageRoll)
 			var targetPos = {x: 128, y: obj.position.y} // left edge
 			if(this.walkUpTo(obj, idx, targetPos, AP, function() {
-				critterStopWalking(obj)
+				obj.clearAnim()
 				that.doAITurn(obj, idx) // if we can, do another turn
 			}) === false)
 				return this.nextTurn() // not a valid path, just move on
@@ -413,7 +413,7 @@ class Combat {
 			var didCreep = false
 			for(var i = 0; i < neighbors.length; i++) {
 				if(critterWalkTo(obj, neighbors[i], false, function() {
-					critterStopWalking(obj)
+					obj.clearAnim()
 					that.doAITurn(obj, idx) // if we can, do another turn
 				}, maxDistance) !== false) {
 					// OK
@@ -439,7 +439,7 @@ class Combat {
 				throw "combatant has no equipped weapon"
 
 			this.attack(obj, target, "torso", function() {
-				critterStopWalking(obj)
+				obj.clearAnim()
 				that.doAITurn(obj, idx) // if we can, do another turn
 			})
 		}

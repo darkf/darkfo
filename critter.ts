@@ -342,14 +342,6 @@ function critterStaticAnim(obj: Critter, anim: string, callback: () => void, wai
 	}
 }
 
-function critterStopWalking(obj: Critter): void {
-	obj.path = null
-	obj.anim = "idle"
-	obj.frame = 0
-	obj.art = critterGetAnim(obj, "idle")
-	obj.animCallback = null
-}
-
 function critterAdvancePath(obj: Critter): boolean {
 	if(obj.path.seqLength !== undefined && obj.path.seqLength !== null)
 		obj.path.index += obj.path.seqLength
@@ -381,7 +373,7 @@ function critterWalkCallback(obj: Critter): boolean {
 			var exitMapID = objs[i].extra.exitMapID
 			var startingPosition = fromTileNum(objs[i].extra.startingPosition)
 			var startingElevation = objs[i].extra.startingElevation
-			critterStopWalking(obj)
+			obj.clearAnim()
 
 			if(startingPosition.x === -1 || startingPosition.y === -1 ||
 			   exitMapID < 0) { // world map
@@ -478,7 +470,7 @@ function critterDamage(obj: Critter, damage: number, source: Critter, useScript?
 	// todo: other hit animations
 	if((useAnim === undefined || useAnim === true) && critterHasAnim(obj, "hitFront")) {
 		critterStaticAnim(obj, "hitFront", function() {
-			critterStopWalking(obj)
+			obj.clearAnim()
 			if(callback !== undefined) callback()
 		})
 	}

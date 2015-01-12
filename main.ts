@@ -325,7 +325,7 @@ function changeElevation(level: number, updateScripts?: boolean) {
 	gObjects = gMapObjects[level]
 	gSpatials = gMap.levels[level]["spatials"]
 
-	critterStopWalking(player)
+	player.clearAnim()
 
 	// TODO: remove this from the old gObjects if necessary
 	gObjects.push(player)
@@ -623,7 +623,7 @@ function playerUse() {
 	}
 
 	var callback = function() {
-		critterStopWalking(player)
+		player.clearAnim()
 
 		// if there's an object under the cursor, use it
 		if(obj.type === "critter") {
