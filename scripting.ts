@@ -519,7 +519,7 @@ module scriptingEngine {
 
 			// TODO: if tile is valid...
 			if(elevation !== currentElevation) {
-				warn("create_object_sid: want to create object on another elevation")
+				warn("create_object_sid: want to create object on another elevation (current=" + currentElevation + ", elev=" + elevation + ")")
 				return
 			}
 			obj.position = fromTileNum(tile)

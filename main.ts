@@ -556,7 +556,7 @@ function critterMoveInFrontOf(obj, targetPos, callback) {
 	if(hexDistance(obj.position, targetPos) > 5)
 		running = true
 
-	console.log("path: %o, callback %o", path, callback)
+	//console.log("path: %o, callback %o", path, callback)
 	return critterWalkTo(obj, targetPos, running, callback, undefined, path)
 }
 function isSelectableObject(obj: any) {

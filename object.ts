@@ -482,25 +482,25 @@ class Obj {
 			this.inventory = this.inventory.map(objFromMapObject)
 	}
 
-	loadScript(sid?:number) {
+	loadScript(sid:number=-1) {
 		var scriptName = null
 
-		if(sid && sid >= 0)
+		if(sid >= 0)
 			scriptName = lookupScriptName(sid)
 		else if(this.script)
 			scriptName = this.script
 		else if(this.pro) {
 			if(this.pro.extra !== undefined && this.pro.extra.scriptID >= 0)
-				scriptName = lookupScriptName(this.pro.extra.scriptID)
+				scriptName = lookupScriptName(this.pro.extra.scriptID & 0xffff)
 			else if(this.pro.scriptID >= 0)
-				scriptName = lookupScriptName(this.pro.scriptID)
+				scriptName = lookupScriptName(this.pro.scriptID & 0xffff)
 		}
 
 		if(scriptName != null) {
-			console.log("loadScript: loading " + scriptName + " (" + sid + ")")
+			console.log("loadScript: loading %s (sid=%d)", scriptName, sid)
 			var script = scriptingEngine.loadScript(scriptName)
 			if(!script) {
-				console.log("loadScript: load script failed for " + scriptName + " ( " + sid + ")")
+				console.log("loadScript: load script failed for %s (sid=%d)", scriptName, sid)
 			} else {
 				this._script = script
 				scriptingEngine.initScript(this._script, this)
