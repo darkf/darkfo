@@ -318,26 +318,27 @@ function critterWalkTo(obj: Critter, target: Point, running?: boolean, callback?
 	obj.path = {path: path, index: 0, target: null, seqLength: null, distance: null}
 	obj.anim = (running === true) ? "run" : "walk"
 	obj.art = critterGetAnim(obj, obj.anim)
-	obj.animCallback = callback || (() => critterStopWalking(obj))
+	obj.animCallback = callback || (() => obj.clearAnim())
 	obj.frame = 0
 	obj.lastFrameTime = 0
 	critterAdvancePath(obj)
 	return true
 }
 
-function critterStaticAnim(obj: Critter, anim: string, callback: () => void, waitForLoad?: boolean): void {
+function critterStaticAnim(obj: Critter, anim: string, callback: () => void, waitForLoad: boolean=true): void {
 	obj.art = critterGetAnim(obj, anim)
 	obj.frame = 0
 	obj.lastFrameTime = 0
-	if(waitForLoad === true || waitForLoad === undefined) {
+
+	if(waitForLoad) {
 		lazyLoadImage(obj.art, function() {
 			obj.anim = anim
-			obj.animCallback = (callback !== undefined) ? callback : (function() { critterStopWalking(obj) })			
+			obj.animCallback = callback || (() => obj.clearAnim())		
 		})
 	}
 	else {
 		obj.anim = anim
-		obj.animCallback = (callback !== undefined) ? callback : (function() { critterStopWalking(obj) })
+		obj.animCallback = callback || (() => obj.clearAnim())
 	}
 }
 
@@ -706,5 +707,14 @@ class Critter extends Obj {
 				scriptingEngine.spatial(spatial, this)
 			}
 		}
+	}
+
+	clearAnim(): void {
+		super.clearAnim()
+		this.path = null
+
+		// reset to idle pose
+		this.anim = "idle"
+		this.art = critterGetAnim(this, "idle")
 	}
 }

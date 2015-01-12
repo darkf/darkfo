@@ -562,6 +562,13 @@ class Obj {
 	inAnim(): boolean {
 		return !!this.animCallback // TODO: find a better way
 	}
+
+	// Clear any animation the object has
+	clearAnim(): void {
+		this.frame = 0
+		this.animCallback = null
+		this.anim = null
+	}
 }
 
 class Item extends Obj {
