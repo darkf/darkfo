@@ -373,7 +373,8 @@ module scriptingEngine {
 				return
 			}
 
-			info("add_mult_objs_to_inven: " + count + " counts of " + item.toString(), "inventory")
+			//info("add_mult_objs_to_inven: " + count + " counts of " + item.toString(), "inventory")
+			console.log("add_mult_objs_to_inven: %d counts of %o to %o", count, item, obj)
 			objectAddItem(obj, item, count)
 			drawPlayerInventory()
 		},
@@ -506,24 +507,31 @@ module scriptingEngine {
 			useObject(obj, this.self_obj, false)
 			//stub("obj_open", arguments)
 		},
-		create_object_sid: function(pid, tile, elevation, sid) { // Create object of pid and possibly script
-			info("create_object_sid: " + pid + " / " + tile + " / " + sid)
+		create_object_sid: function(pid, tile, elev, sid) { // Create object of pid and possibly script
+			info("create_object_sid: pid=" + pid + " tile=" + tile + " elev=" + elev + " sid=" + sid)
+
+			if(elev < 0 || elev > 2)
+				throw "create_object_sid: elev out of range: elev=" + elev
 
 			var obj = createObjectWithPID(pid, sid)
-			if(obj === null) {
+			if(!obj) {
 				warn("create_object_sid: couldn't create object")
 				return null
 			}
-			//info("OBJ: " + repr(obj))
+			obj.position = fromTileNum(tile)
+
 			//stub("create_object_sid", arguments)
 
 			// TODO: if tile is valid...
-			if(elevation !== currentElevation) {
+			/*if(elevation !== currentElevation) {
 				warn("create_object_sid: want to create object on another elevation (current=" + currentElevation + ", elev=" + elevation + ")")
 				return
-			}
-			obj.position = fromTileNum(tile)
-			gObjects.push(obj)
+			}*/
+
+
+			// add it to the map
+			//gObjects.push(obj)
+			gMapObjects[elev].push(obj)
 
 			return obj
 		},

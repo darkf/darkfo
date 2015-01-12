@@ -19,17 +19,7 @@ limitations under the License.
 "use strict";
 
 function objectAddItem(obj: Obj, item: Obj, count: number): void {
-	for(var i = 0; i < obj.inventory.length; i++) {
-		if(obj.inventory[i].pidID === item.pidID) { // todo: pidID or pid?
-			obj.inventory[i].amount += count
-			return
-		}
-	}
-
-	// add new inventory object
-	var item_ = $.extend(true, {}, item) // clone the item (deep copy)
-	item_.amount = count // set the amount
-	obj.inventory.push(item_)
+	return obj.addInventoryItem(item, count)
 }
 
 function objectGetMoney(obj: Obj): number {
@@ -423,6 +413,7 @@ class Obj {
 
 		var pro: any = loadPRO(pid, pidID) // TODO: any
 		obj.type = getPROTypeName(pidType)
+		obj.pid = pid
 		obj.pro = pro
 
 		// TODO: Subclasses
@@ -568,6 +559,25 @@ class Obj {
 		this.frame = 0
 		this.animCallback = null
 		this.anim = null
+	}
+
+	// Are two objects approximately (not necessarily strictly) equal?
+	approxEq(obj: Obj) {
+		return (this.pid === obj.pid)
+	}
+
+	addInventoryItem(item: Obj, count: number=1): void {
+		for(var i = 0; i < this.inventory.length; i++) {
+			if(this.inventory[i].approxEq(item)) {
+				this.inventory[i].amount += count
+				return
+			}
+		}
+
+		// no existing item, add new inventory object
+		var item_ = $.extend(true, {}, item) // clone the item (deep copy)
+		item_.amount = count // set the amount
+		this.inventory.push(item_)
 	}
 }
 
