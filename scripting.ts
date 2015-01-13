@@ -418,7 +418,8 @@ module scriptingEngine {
 		has_skill: function(obj, skill) { stub("has_skill", arguments); return 100 },
 		roll_vs_skill: function(obj, skill, bonus) { stub("roll_vs_skill", arguments); return 1 },
 		do_check: function(obj, check, modifier) { stub("do_check", arguments); return 1 },
-		is_success: function(roll) { stub("is_success", arguments); return 0 },
+		is_success: function(roll) { stub("is_success", arguments); return 1 },
+		is_critical: function(roll) { stub("is_critical", arguments); return 0 },
 		critter_inven_obj: function(obj, where) {
 			if(!isGameObject(obj)) throw "critter_inven_obj: not game object"
 			if(where === 0) {} // INVEN_TYPE_WORN
