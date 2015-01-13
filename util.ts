@@ -65,7 +65,7 @@ function getFileJSON(path: string, err?: () => void) {
 	return r
 }
 
-//min inclusive, max inclusive.
+// Min inclusive, max inclusive
 function getRandomInt(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min + 1)) + min
 }
@@ -78,6 +78,31 @@ function rollSkillCheck(skill, modifier, isBounded) {
 
 	var roll = getRandomInt(0,100)
 	return roll < tempSkill
+}
+
+function rollVsSkill(who: Critter, skill: string, modifier: number) {
+	var skillLevel = critterGetSkill(who, skill) + modifier
+	var roll = skillLevel - getRandomInt(1, 100)
+
+	if(roll <= 0) { // failure
+		if((-roll)/10 > getRandomInt(1, 100))
+			return 0 // critical failure
+		return 1 // failure
+	}
+	else { // success
+		var critChance = critterGetStat(who, "Critical Chance")
+		if((roll/10 + critChance) > getRandomInt(1, 100))
+			return 3 // critical success
+		return 2 // success
+	}
+}
+
+function rollIsSuccess(roll: number) {
+	return (roll == 2) || (roll == 3)
+}
+
+function rollIsCritical(roll: number) {
+	return (roll == 0) || (roll == 3)
 }
 
 function arrayRemove(array, value)
