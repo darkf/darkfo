@@ -445,8 +445,39 @@ function uiGetAmount(item) {
 	}
 }
 
-function uiSwapItem(a, item, b, amount?: number) {
-	objectSwapItem({inventory: a}, item, {inventory: b}, amount)
+function _uiAddItem(items: Obj[], item: Obj, count: number) {
+	for(var i = 0; i < items.length; i++) {
+		if(items[i].approxEq(item)) {
+			items[i].amount += count
+			return
+		}
+	}
+
+	// no existing item, add new inventory object
+	items.push(item.clone().setAmount(count))
+}
+
+function uiSwapItem(a: Obj[], item: Obj, b: Obj[], amount: number) {
+	// swap item from a -> b
+	if(amount === 0) return
+
+	var idx = -1
+	for(var i = 0; i < a.length; i++) {
+		if(a[i].approxEq(item)) {
+			idx = i
+			break
+		}
+	}
+	if(idx === -1)
+		throw "item (" + item + ") does not exist in a"
+
+	if(amount < item.amount) // deduct amount from a and give amount to b
+		item.amount -= amount
+	else // just swap them
+		a.splice(idx, 1)
+
+	// add the item to b
+	_uiAddItem(b, item, amount)
 }
 
 function uiEndBarterMode() {
@@ -578,7 +609,7 @@ function uiBarterMode(merchant) {
 			return
 		else if(obj.amount > 1)
 			uiSwapItem(from, obj, to, uiGetAmount(obj))
-		else uiSwapItem(from, obj, to)
+		else uiSwapItem(from, obj, to, 1)
 
 		redrawBarterInventory()
 	}
@@ -641,7 +672,7 @@ function uiLoot(object) {
 			return
 		else if(obj.amount > 1)
 			uiSwapItem(from, obj, to, uiGetAmount(obj))
-		else uiSwapItem(from, obj, to)
+		else uiSwapItem(from, obj, to, 1)
 
 		drawLoot()
 	}

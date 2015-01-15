@@ -87,7 +87,7 @@ function objectFindItemIndex(obj: Obj, item: Obj): number {
 
 function cloneItem(item: Obj): Obj { return $.extend({}, item) }
 
-function objectSwapItem(a, item, b, amount) {
+function objectSwapItem(a: Obj, item: Obj, b: Obj, amount: number) {
 	// swap item from a -> b
 	if(amount === 0) return
 
@@ -567,6 +567,11 @@ class Obj {
 		return (this.pid === obj.pid)
 	}
 
+	clone(): Obj {
+		// TODO: check this and probably fix it
+		return $.extend(true, {}, this)
+	}
+
 	addInventoryItem(item: Obj, count: number=1): void {
 		for(var i = 0; i < this.inventory.length; i++) {
 			if(this.inventory[i].approxEq(item)) {
@@ -576,9 +581,7 @@ class Obj {
 		}
 
 		// no existing item, add new inventory object
-		var item_ = $.extend(true, {}, item) // clone the item (deep copy)
-		item_.amount = count // set the amount
-		this.inventory.push(item_)
+		this.inventory.push(item.clone().setAmount(count))
 	}
 }
 
