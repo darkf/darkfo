@@ -106,13 +106,15 @@ module scriptingEngine {
 	}
 
 	function isGameObject(obj) {
+		// TODO: just use isinstance Obj?
 		if(obj === undefined || obj === null) return false
 		if(obj.isPlayer === true) return true
 		if(obj.type === "item" || obj.type === "critter" || obj.type === "scenery" ||
 		   obj.type === "wall" || obj.type === "tile" || obj.type === "misc")
 			return true
 
-		warn("is NOT GO: " + obj.toString())
+		//warn("is NOT GO: " + obj.toString())
+		console.log("is NOT GO: %o", obj)
 		return false
 	}
 
@@ -519,6 +521,7 @@ module scriptingEngine {
 			useObject(obj, this.self_obj, false)
 			//stub("obj_open", arguments)
 		},
+		proto_data: function(pid:number, data_member:number) { stub("proto_data", arguments); return null },
 		create_object_sid: function(pid, tile, elev, sid) { // Create object of pid and possibly script
 			info("create_object_sid: pid=" + pid + " tile=" + tile + " elev=" + elev + " sid=" + sid)
 
@@ -568,6 +571,7 @@ module scriptingEngine {
 			return obj.inAnim()
 		},
 		obj_art_fid: function(obj) { stub("obj_art_fid", arguments); return 0 },
+		art_anim: function(fid:number):number { stub("art_anim", arguments); return 0 },
 		set_obj_visibility: function(obj, visibility) {
 			if(!isGameObject(obj)) {
 				warn("set_obj_visibility: not a game object: " + obj)
