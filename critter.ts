@@ -564,6 +564,7 @@ class Critter extends Obj {
 
 	aiNum: number = -1; // AI packet number
 	teamNum: number = -1; // AI team number (TODO: implement this)
+	ai: AI = null; // AI packet
 
 	isPlayer: boolean = false;
 	dead: boolean = false;

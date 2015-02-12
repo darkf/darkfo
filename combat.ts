@@ -93,7 +93,6 @@ class AI {
 	}
 }
 
-
 class Combat {
 	combatants: any[]; // TODO: Critter[]
 	playerIdx: number;
@@ -102,27 +101,27 @@ class Combat {
 	whoseTurn: number;
 	inPlayerTurn: boolean;
 
-	constructor(objects) {
-		this.combatants = []
-		this.playerIdx = -1
+	constructor(objects: Obj[]) {
+		// Gather a list of combatants (critters meeting a certain criteria)
+		this.combatants = _.filter(objects, (obj: Obj) => {
+			if(obj instanceof Critter) {
+				if(obj.dead || !obj.visible)
+					return false
 
-		for(var i = 0; i < objects.length; i++) {
-			if(objects[i].type === "critter") {
-				if(objects[i].dead === true) continue
-				if(objects[i].visible === false) continue
-				this.combatants.push(objects[i])
+				// TODO: should we initialize AI elsewhere, like in Critter?
+				if(!obj.isPlayer && !obj.ai)
+					obj.ai = new AI(obj)
+				//else this.playerIdx = this.combatants.length - 1
 
-				if(!objects[i].isPlayer)
-					objects[i].ai = new AI(objects[i])
-				else this.playerIdx = this.combatants.length - 1
-
-				if(objects[i].stats === undefined)
+				if(obj.stats === undefined)
 					throw "no stats"
-				objects[i].dead = false
-				objects[i].AP = new ActionPoints(objects[i])
+				obj.dead = false
+				obj.AP = new ActionPoints(obj)
+				return true
 			}
-		}
+		})
 
+		this.playerIdx = _.findIndex(this.combatants, (x:Critter) => x.isPlayer)
 		if(this.playerIdx === -1)
 			throw "combat: couldn't find player?"
 
@@ -351,7 +350,7 @@ class Combat {
 		//return this.player
 	}
 
-	walkUpTo(obj, idx, target, maxDistance, callback) {
+	walkUpTo(obj: Critter, idx: number, target: Point, maxDistance: number, callback: () => void) {
 		// Walk up to `maxDistance` hexes, adjusting AP to fit
 		if(critterWalkTo(obj, target, false, callback, maxDistance) !== false) {
 			// OK
@@ -364,7 +363,7 @@ class Combat {
 		return false
 	}
 
-	doAITurn(obj, idx) {
+	doAITurn(obj: Critter, idx: number) {
 		var that = this
 		var target = this.findTarget(obj)
 		var distance = hexDistance(obj.position, target.position)
