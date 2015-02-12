@@ -17,7 +17,7 @@ limitations under the License.
 
 // Turn-based combat system
 
-var ActionPoints = function(obj) {
+var ActionPoints = function(obj: Critter) {
 	this.combat = 0
 	this.move = 0
 	this.attachedObject = obj
@@ -44,7 +44,7 @@ ActionPoints.prototype.getAvailableCombatAP = function() {
 	return this.combat
 }
 
-ActionPoints.prototype.subtractMoveAP = function(value) {
+ActionPoints.prototype.subtractMoveAP = function(value: number) {
 	if(this.getAvailableMoveAP() < value)
 		return false
 
@@ -60,7 +60,7 @@ ActionPoints.prototype.subtractMoveAP = function(value) {
 	return true
 }
 
-ActionPoints.prototype.subtractCombatAP = function(value) {
+ActionPoints.prototype.subtractCombatAP = function(value: number) {
 	if(this.combat < value)
 		return false
 
@@ -70,10 +70,10 @@ ActionPoints.prototype.subtractCombatAP = function(value) {
 
 class AI {
 	static aiTxt: any = null; // AI.TXT: packet num -> key/value
-	combatant: any;
+	combatant: Critter;
 	info: any;
 
-	constructor(combatant) {
+	constructor(combatant: Critter) {
 		this.combatant = combatant
 
 		if(AI.aiTxt === null) { // load AI.TXT
@@ -94,7 +94,7 @@ class AI {
 }
 
 class Combat {
-	combatants: any[]; // TODO: Critter[]
+	combatants: Critter[];
 	playerIdx: number;
 	player: any;
 	turnNum: number;
@@ -139,12 +139,12 @@ class Combat {
 		console.log(msg)
 	}
 
-	accountForPartialCover(obj, target) {
+	accountForPartialCover(obj: Critter, target: Critter): number {
 		//todo: get list of intervening critters. Substract 10 for each one in the way
 		return 0
 	}
 
-	getHitDistanceModifier(obj, target, weapon) {
+	getHitDistanceModifier(obj: Critter, target: Critter, weapon): number {
 		//we calculate the distance between source and target
 		//we then substract the source's per modified by the weapon from it (except for scoped weapons)
 
@@ -194,7 +194,7 @@ class Combat {
 
 	}
 
-	getHitChance(obj: any, target: any, region: any) {
+	getHitChance(obj: Critter, target: Critter, region: string) {
 		// TODO: visibility (= light conditions) and distance
 		var weaponObj = critterGetEquippedWeapon(obj)
 		if(weaponObj === null)
@@ -336,21 +336,21 @@ class Combat {
 		return getMessage("combatai", id)
 	}
 
-	maybeTaunt(obj, type, roll) {
+	maybeTaunt(obj: Critter, type: string, roll: boolean) {
 		if(roll === false) return
 		var msgID = getRandomInt(parseInt(obj.ai.info[type+"_start"]),
 		                         parseInt(obj.ai.info[type+"_end"]))
 		this.log("[TAUNT " + critterGetName(obj) + ": " + this.getCombatAIMessage(msgID) + "]")
 	}
 
-	findTarget(obj: Critter) {
+	findTarget(obj: Critter): Critter {
 		// TODO: find target according to AI rules
 		// Find the first combatant on a different team
 		return _.find(this.combatants, (x:Critter) => x.teamNum != obj.teamNum)
 		//return this.player
 	}
 
-	walkUpTo(obj: Critter, idx: number, target: Point, maxDistance: number, callback: () => void) {
+	walkUpTo(obj: Critter, idx: number, target: Point, maxDistance: number, callback: () => void): boolean {
 		// Walk up to `maxDistance` hexes, adjusting AP to fit
 		if(critterWalkTo(obj, target, false, callback, maxDistance) !== false) {
 			// OK
@@ -363,7 +363,7 @@ class Combat {
 		return false
 	}
 
-	doAITurn(obj: Critter, idx: number) {
+	doAITurn(obj: Critter, idx: number): void {
 		var that = this
 		var target = this.findTarget(obj)
 		var distance = hexDistance(obj.position, target.position)
@@ -459,6 +459,9 @@ class Combat {
 	end() {
 		// TODO: check number of active combatants to see if we can end
 
+		// set all combatants to non-hostile
+		_.forEach(this.combatants, (obj:Critter) => obj.hostile = false)
+
 		console.log("[end combat]")
 		combat = null // todo: invert control
 		inCombat = false
@@ -466,12 +469,12 @@ class Combat {
 		uiEndCombat()
 	}
 
-	forceTurn(obj) {
-		if(obj === player)
+	forceTurn(obj: Critter) {
+		if(obj.isPlayer)
 			this.whoseTurn = this.playerIdx - 1
 		else {
 			var idx = this.combatants.indexOf(obj)
-			if(idx === -1) throw "forceTurn: no combatant " + critterGetName(obj)
+			if(idx === -1) throw "forceTurn: no combatant '" + obj.name + ''
 
 			this.whoseTurn = idx - 1
 		}
@@ -483,9 +486,9 @@ class Combat {
 		for(var i = 0; i < this.combatants.length; i++) {
 			var obj = this.combatants[i]
 			if(obj.dead === true || obj.isPlayer === true) continue
-			obj.inRange = hexDistance(obj.position, this.player.position) <= obj.ai.info.max_dist
+			var inRange = hexDistance(obj.position, this.player.position) <= obj.ai.info.max_dist
 
-			if(obj.inRange === true || obj.hostile === true) {
+			if(inRange === true || obj.hostile === true) {
 				obj.hostile = true
 				numActive++
 			}

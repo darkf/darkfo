@@ -234,7 +234,7 @@ function critterGetAnim(obj: Critter, anim: string): string {
 		//case "punch": return base + 'aq'
 		case "called-shot": return base + 'na'	
 		case "death":
-			if(obj.pro !== undefined && obj.pro.extra.killType === 18) { // Boss is special-cased
+			if(obj.pro && obj.pro.extra.killType === 18) { // Boss is special-cased
 				console.log("Boss death...")
 				return base + 'bl'
 			}
@@ -554,20 +554,21 @@ class Critter extends Obj {
 	stats: any;
 	skills: any;
 
-	leftHand: WeaponObj;
-	rightHand: WeaponObj;
+	leftHand: WeaponObj; // Left-hand object slot (TODO: Obj?)
+	rightHand: WeaponObj; // Right-hand object slot
 
 	type = "critter";
 	anim = "idle";
-	path: any = null;
-	AP: any = null; // TODO: AP
+	path: any = null; // Holds pathfinding objects
+	AP: any = null; // TODO: AP class
 
 	aiNum: number = -1; // AI packet number
 	teamNum: number = -1; // AI team number (TODO: implement this)
 	ai: AI = null; // AI packet
+	hostile: boolean = false; // Currently engaging an enemy?
 
-	isPlayer: boolean = false;
-	dead: boolean = false;
+	isPlayer: boolean = false; // Is this critter the player character?
+	dead: boolean = false; // Is this critter dead?
 
 	static fromPID(pid: number, sid?: number): Critter {
 		return Obj.fromPID_(new Critter(), pid, sid)
