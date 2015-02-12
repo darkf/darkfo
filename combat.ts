@@ -344,9 +344,11 @@ class Combat {
 		this.log("[TAUNT " + critterGetName(obj) + ": " + this.getCombatAIMessage(msgID) + "]")
 	}
 
-	findTarget(obj) {
-		// todo: find target according to AI rules
-		return this.player
+	findTarget(obj: Critter) {
+		// TODO: find target according to AI rules
+		// Find the first combatant on a different team
+		return _.find(this.combatants, (x:Critter) => x.teamNum != obj.teamNum)
+		//return this.player
 	}
 
 	walkUpTo(obj, idx, target, maxDistance, callback) {

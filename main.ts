@@ -20,6 +20,7 @@ limitations under the License.
 
 // make TypeScript happy about external libraries (TODO: use .d.ts files)
 declare var $;
+declare var _;
 declare var heart;
 declare var PF;
 

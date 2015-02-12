@@ -29,6 +29,8 @@ class Player extends Critter {
 	stats = {AGI: 8, INT: 8, STR: 8, CHA: 8, HP: 100}
 	skills = {}
 
+	teamNum = 0 // TODO: what team is the player actually on?
+
 	position = {x: 94, y: 109}
 	orientation = 3
 	gender = "male"
