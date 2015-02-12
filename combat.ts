@@ -86,10 +86,10 @@ class AI {
 			}
 		}
 
-		this.info = AI.aiTxt[this.combatant.pro.extra.AI]
+		this.info = AI.aiTxt[this.combatant.aiNum]
 		if(this.info === undefined)
 			throw "no AI packet for " + combatant.toString() +
-				  " (packet " + this.combatant.pro.extra.AI + ")"
+				  " (packet " + this.combatant.aiNum + ")"
 	}
 }
 

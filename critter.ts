@@ -562,6 +562,9 @@ class Critter extends Obj {
 	path: any = null;
 	AP: any = null; // TODO: AP
 
+	aiNum: number = -1; // AI packet number
+	teamNum: number = -1; // AI team number (TODO: implement this)
+
 	isPlayer: boolean = false;
 	dead: boolean = false;
 
@@ -581,6 +584,10 @@ class Critter extends Obj {
 		this.stats = calcStats(this, this.pro)
 		this.skills = this.pro.extra.skills
 		this.name = getMessage("pro_crit", this.pro.textID)
+
+		// initialize AI packet / team number
+		this.aiNum = this.pro.extra.AI
+		this.teamNum = this.pro.extra.team
 
 		// initialize weapons
 		this.inventory.forEach(inv => {
