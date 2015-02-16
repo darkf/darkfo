@@ -621,6 +621,11 @@ left: 472; top: 75;
     /*width: 525; height: 450;*/
 }
 
+.area {
+    position: absolute;
+    z-index: 1;
+}
+
 .areaLabel {
     position: absolute;
     font-family: sans-serif;
@@ -645,7 +650,7 @@ left: 472; top: 75;
     width: 51; height: 51;
 }
 
-.worldmapSquare-undiscovered { background-color: black; }
+.worldmapSquare-undiscovered { background-color: black; z-index: 2; }
 .worldmapSquare-discovered { background-color: black; display: none; }
 .worldmapSquare-seen { background-color: black; opacity: 0.5; }
 

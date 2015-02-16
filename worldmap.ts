@@ -429,24 +429,26 @@ module Worldmap {
 			var area = mapAreas[key]
 			if(area.state !== true) continue
 
+			var $area = $("<div>").addClass("area").appendTo($worldmap)
+
 			//console.log("adding one @ " + area.worldPosition.x + ", " + area.worldPosition.y)
 			var $el = $("<div>").addClass("areaCircle")
 			                    .addClass("areaSize-" + area.size)
-			                    .appendTo($worldmap)
+			                    .appendTo($area)
 
 			// transform the circle since (0,0) is the top-left instead of center
 			var x = area.worldPosition.x - $el.width() / 2
 			var y = area.worldPosition.y - $el.height() / 2
 			//console.log("adding one @ " + x + ", " + y + " | " + $el.width() + ", " + $el.height())
 			//console.log("size = " + area.size)
-			$el.css({left: x, top: y})
+			$area.css({left: x, top: y})
 
 			//if(area.name==="Arroyo")console.log("ARROYO IS " + key)
 
 			$("<div>").addClass("areaLabel")
-			          .css({left: x, top: y + $el.height()})
+			          .css({left: 0, top: 2 + $el.height()})
 			          .html(area.name)
-			          .appendTo($worldmap)
+			          .appendTo($area)
 		}
 
 		for(var x = 0; x < NUM_SQUARES_X; x++) {
