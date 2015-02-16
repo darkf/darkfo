@@ -21,6 +21,7 @@ limitations under the License.
 module Worldmap {
 	var worldmap = null
 	var worldmapPlayer = null
+	var $worldmap = null
 	var $worldmapPlayer = null
 	var $worldmapTarget = null
 	var worldmapTimer = null
@@ -388,7 +389,7 @@ module Worldmap {
 
 		$worldmapPlayer = $("#worldmapPlayer")
 		$worldmapTarget = $("#worldmapTarget")
-		var $worldmap = $("#worldmap")
+		$worldmap = $("#worldmap")
 
 		worldmap = parseWorldmap(getFileText("data/data/WORLDMAP.TXT"))
 
@@ -530,6 +531,14 @@ module Worldmap {
 			    worldmapPlayer.x += dx * speed
 			    worldmapPlayer.y += dy * speed
 			}
+
+
+			// center the worldmap to the player
+			var width = $worldmap.width()
+			var height = $worldmap.height()
+			var sx = clamp(0, width, Math.floor(worldmapPlayer.x - width/2))
+			var sy = clamp(0, height, Math.floor(worldmapPlayer.y - height/2))
+			$worldmap.scrollLeft(sx).scrollTop(sy)
 
 		    
 		    if(currentSquare.state !== WORLDMAP_DISCOVERED)
