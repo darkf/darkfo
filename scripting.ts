@@ -648,7 +648,11 @@ module scriptingEngine {
 			}
 			return hexDistance(a.position, b.position)
 		},
-		tile_distance: function(a, b) { return hexDistance(fromTileNum(a), fromTileNum(b)) },
+		tile_distance: function(a, b) {
+			if(a === -1 || b === -1)
+				return 9999
+			return hexDistance(fromTileNum(a), fromTileNum(b))
+		},
 		tile_num: function(obj) {
 			if(!isGameObject(obj) || (!obj || obj.isSpatial)) {
 				warn("tile_num: not a game object: " + obj)
@@ -669,8 +673,10 @@ module scriptingEngine {
 			return 0 // it's not there
 		},
 		tile_num_in_direction: function(tile, direction, distance) {
-			if(distance === 0) return tile // QCFrank uses this but does not use its result
-			if(distance < 1) throw "tile_num_in_direction: distance < 1"
+			if(distance === 0) {
+				//warn("tile_num_in_direction: distance=" + distance)
+				return -1
+			}
 			tile = hexInDirection(fromTileNum(tile), direction)
 			for(var i = 0; i < distance-1; i++) // repeat for each further distance
 				tile = hexInDirection(tile, direction)
