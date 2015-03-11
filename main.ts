@@ -66,8 +66,8 @@ var showBoundingBox = false // show bounding boxes around objects?
 var showSpatials = true // show spatial script triggers?
 
 var doLoadScripts = true // should we load scripts?
-var doUpdateCritters = false // should we give critters heartbeats?
-var doTimedEvents = false // should we handle registered timed events?
+var doUpdateCritters = true // should we give critters heartbeats?
+var doTimedEvents = true // should we handle registered timed events?
 var doSpatials = true // should we handle spatial triggers?
 var doCombat = true // allow combat?
 var doUseWeaponModel = true // use weapon model for NPC models?
@@ -919,6 +919,73 @@ heart.update = function() {
 	}
 }
 
+function getPixelIndex(x, y, imageData) {
+	return (x + y * imageData.width) * 4
+}
+
+function drawFloor(matrix) {
+	// get the screen framebuffer
+	//var imageData = heart.ctx.getImageData(0, 0, canvas.width, canvas.height)
+
+	for(var i = 0; i < matrix.length; i++) {
+		for(var j = 0; j < matrix[0].length; j++) {
+			var tile = matrix[j][i]
+			if(tile === "grid000") continue
+			var img = "art/tiles/" + tile
+
+			if(images[img] !== undefined) {
+				var scr = tileToScreen(i, j)
+				if(scr.x+TILE_WIDTH < cameraX || scr.y+TILE_HEIGHT < cameraY ||
+				   scr.x >= cameraX+SCREEN_WIDTH || scr.y >= cameraY+SCREEN_HEIGHT)
+					continue
+
+				var hex = hexFromScreen(scr.x, //(scr.x - 32),
+					                    scr.y + 13) // Math.floor((scr.y - 16) / 2))
+
+				//console.log("hex: %o", hex)
+
+				var hscr = hexToScreen(hex.x, hex.y)
+				heart.graphics.draw(hexOverlay, hscr.x - 16 - cameraX, hscr.y - 12 - cameraY)
+
+				if(Lighting.initTile(hex)) { // triangle-lit tile
+					var framebuffer = Lighting.computeFrame()
+					//console.log("framebuffer: %o", framebuffer)
+
+					var sx = scr.x - cameraX
+					var sy = scr.y - cameraY
+
+					// draw the image
+					heart.graphics.draw(images[img], sx, sy)
+
+					// get the screen framebuffer
+					var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+
+					for(var y = 0; y < 36; y++) {
+						for(var x = 0; x < 80; x++) {
+							var intensity_ = Lighting.intensity_map[640 + y*80 + x]
+							var intensity = Math.floor(intensity_/65536) * 256
+							var index = getPixelIndex(sx + x, sy + y, imageData)
+
+							// multiply the output
+							imageData.data[index + 0] *= intensity
+							imageData.data[index + 1] *= intensity
+							imageData.data[index + 2] *= intensity
+						}
+					}
+
+					// write the framebuffer back
+					heart.ctx.putImageData(imageData, 0, 0)
+				}
+				else // uniformly lit tile
+					heart.graphics.draw(images[img], scr.x - cameraX, scr.y - cameraY)
+			}
+		}
+	}
+
+	// write the framebuffer back
+	//heart.ctx.putImageData(imageData, 0, 0)
+}
+
 function drawTileMap(matrix, offsetY) {
 	for(var i = 0; i < matrix.length; i++) {
 		for(var j = 0; j < matrix[0].length; j++) {
@@ -1030,7 +1097,8 @@ heart.draw = function() {
 
 	// draw tile grids
 	if(showFloor === true && floorMap !== null)
-		drawTileMap(floorMap, 0);
+		drawFloor(floorMap);
+		//drawTileMap(floorMap, 0);
 
 	// draw hex grid overlay
 	if(showHexOverlay === true || showCoordinates === true) {
