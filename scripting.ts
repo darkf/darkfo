@@ -248,7 +248,7 @@ module scriptingEngine {
 			return globalVars[gvar]
 		},
 		random: function(min, max) { log("random", arguments); return getRandomInt(min, max) },
-		debug_msg: function(msg) { log("debug_msg", arguments); info("DEBUG MSG: " + msg, "debugMessage") },
+		debug_msg: function(msg) { log("debug_msg", arguments); info("DEBUG MSG: [" + this.scriptName + "]: " + msg, "debugMessage") },
 		display_msg: function(msg) { log("display_msg", arguments); info("DISPLAY MSG: " + msg, "displayMessage"); uiLog(msg) },
 		message_str: function(msgList, msgNum) { return getScriptMessage(msgList, msgNum) },
 		metarule: function(id, target): any {

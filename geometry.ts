@@ -47,6 +47,105 @@ function tileFromScreen(x, y) {
 	return {x: 99 - Math.round(tx), y: Math.round(ty)}
 }
 
+function centerTile(): Point {
+	return hexFromScreen(cameraX + Math.floor((SCREEN_WIDTH - 32) / 2),
+		                 cameraY + Math.floor((SCREEN_HEIGHT - 16) / 2))
+}
+
+var tile_center = {x: 0, y: 0}
+
+function setCenterTile() {
+	tile_center = centerTile()
+}
+
+// tile_coord(0x319E) == {x: -336, y: -250}
+// tile_coord(0x319F) should be the same
+// tile_coord(0x5018) should be (230, 304)
+
+function tile_coord(tileNum: number): Point {
+	if(tileNum < 0 || tileNum >= 200*200)
+		return null
+
+	//var tile_x = 0x62 // todo: ?
+	//var tile_y = 0x64 // todo: ?
+	setCenterTile()
+	var tile_x = /*199 -*/ tile_center.x
+	var tile_y = tile_center.y
+
+	var tile_offx = 272
+	var tile_offy = 182
+
+	var a2 = tile_offx // x (normally this would be cameraX aka tile_offx)
+	var a3 = tile_offy // y (normally this would be cameraY aka tile_offy)
+
+	var v3 = 200 - 1 - (tileNum % 200)
+	var v4 = Math.floor(tileNum / 200)
+
+	var v5 = Math.floor((v3 - tile_x) / -2)
+
+	a2 += 48 * Math.ceil((v3 - tile_x) / 2) // TODO: ceil, round or floor?
+	a3 += 12 * v5
+
+	console.log("v3:", v3, "=", v3&1)
+
+	if ( v3 & 1 )
+	{
+	  if ( v3 > tile_x )
+	  {
+	    a2 += 32
+	  }
+	  else
+	  {
+	    a2 -= 16
+	    a3 += 12
+	  }
+	}
+
+	var v6 = v4 - tile_y
+	a2 += 16 * v6
+	a3 += 12 * v6
+
+	return {x: a2, y: a3}
+}
+/*
+function tile_coord(tileNum: number): Point {
+	if(tileNum < 0 || tileNum >= 200*200)
+		return null
+
+	var tile_x = 0x62 // todo: ? this seems to be the same as tile_offx right now
+	var tile_y = 0x64 // same, but for tile_offy
+
+	var a2 = tile_x // x (normally this would be cameraX aka tile_offx)
+	var a3 = tile_y // y (normally this would be cameraY aka tile_offy)
+
+	var v3 = 200 - 1 - tileNum % 200
+	var v4 = Math.floor(tileNum / 200)
+
+	var v5 = Math.floor((v3 - tile_x) / -2)
+
+	a2 += 48 * Math.floor((v3 - tile_x) / 2)
+	a3 += 12 * v5
+
+	if ( v3 & 1 )
+	{
+	  if ( v3 > tile_x )
+	  {
+	    a2 += 32
+	  }
+	  else
+	  {
+	    a2 -= 16
+	    a3 += 12
+	  }
+	}
+
+	var v6 = v4 - tile_y
+	a2 += 16 * v6
+	a3 += 12 * v6
+
+	return {x: a2, y: a3}
+}*/
+
 function hexToScreen(x, y) {
 	var sx = 4816 - ((((x + 1) >> 1) << 5) + ((x >> 1) << 4) - (y << 4))
 	var sy = ((12 * (x >> 1)) + (y * 12)) + 11

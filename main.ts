@@ -925,7 +925,7 @@ function getPixelIndex(x, y, imageData) {
 
 function drawFloor(matrix) {
 	// get the screen framebuffer
-	//var imageData = heart.ctx.getImageData(0, 0, canvas.width, canvas.height)
+	var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	for(var i = 0; i < matrix.length; i++) {
 		for(var j = 0; j < matrix[0].length; j++) {
@@ -955,21 +955,33 @@ function drawFloor(matrix) {
 					var sy = scr.y - cameraY
 
 					// draw the image
-					heart.graphics.draw(images[img], sx, sy)
+					//heart.graphics.draw(images[img], sx, sy)
 
 					// get the screen framebuffer
-					var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+					//var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+
+					// temp canvas to get tile framebuffer
+					var tmpCanvas = document.createElement('canvas')
+					var ctx = tmpCanvas.getContext('2d')
+					ctx.drawImage(images[img].img, 0, 0)
+					var tileData = ctx.getImageData(0, 0, images[img].img.width, images[img].img.height)
 
 					for(var y = 0; y < 36; y++) {
 						for(var x = 0; x < 80; x++) {
+							var tileIndex = getPixelIndex(x, y, tileData)
+							if(tileData.data[tileIndex + 3] === 0) // transparent pixel
+								continue
+
 							var intensity_ = Lighting.intensity_map[640 + y*80 + x]
-							var intensity = Math.floor(intensity_/65536) * 256
+							var intensity = intensity_/65536
 							var index = getPixelIndex(sx + x, sy + y, imageData)
 
+							// blit the image
 							// multiply the output
-							imageData.data[index + 0] *= intensity
-							imageData.data[index + 1] *= intensity
-							imageData.data[index + 2] *= intensity
+							imageData.data[index + 0] = Math.floor(tileData.data[tileIndex + 0] * intensity)
+							imageData.data[index + 1] = Math.floor(tileData.data[tileIndex + 1] * intensity)
+							imageData.data[index + 2] = Math.floor(tileData.data[tileIndex + 2] * intensity)
+							imageData.data[index + 3] = 255
 						}
 					}
 
@@ -983,7 +995,7 @@ function drawFloor(matrix) {
 	}
 
 	// write the framebuffer back
-	//heart.ctx.putImageData(imageData, 0, 0)
+	heart.ctx.putImageData(imageData, 0, 0)
 }
 
 function drawTileMap(matrix, offsetY) {
