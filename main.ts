@@ -939,6 +939,9 @@ function drawFloor(matrix) {
 				   scr.x >= cameraX+SCREEN_WIDTH || scr.y >= cameraY+SCREEN_HEIGHT)
 					continue
 
+				var sx = scr.x - cameraX
+				var sy = scr.y - cameraY
+
 				var hex = hexFromScreen(scr.x, //(scr.x - 32),
 					                    scr.y + 13) // Math.floor((scr.y - 16) / 2))
 
@@ -951,8 +954,6 @@ function drawFloor(matrix) {
 					var framebuffer = Lighting.computeFrame()
 					//console.log("framebuffer: %o", framebuffer)
 
-					var sx = scr.x - cameraX
-					var sy = scr.y - cameraY
 
 					// draw the image
 					//heart.graphics.draw(images[img], sx, sy)
@@ -986,10 +987,35 @@ function drawFloor(matrix) {
 					}
 
 					// write the framebuffer back
-					heart.ctx.putImageData(imageData, 0, 0)
+					//heart.ctx.putImageData(imageData, 0, 0)
 				}
-				else // uniformly lit tile
-					heart.graphics.draw(images[img], scr.x - cameraX, scr.y - cameraY)
+				else { // uniformly lit tile
+					//heart.graphics.draw(images[img], scr.x - cameraX, scr.y - cameraY)
+					// temp canvas to get tile framebuffer
+					var tmpCanvas = document.createElement('canvas')
+					var ctx = tmpCanvas.getContext('2d')
+					ctx.drawImage(images[img].img, 0, 0)
+					var tileData = ctx.getImageData(0, 0, images[img].img.width, images[img].img.height)
+
+					// blit it
+					for(var y = 0; y < 36; y++) {
+						for(var x = 0; x < 80; x++) {
+							var tileIndex = getPixelIndex(x, y, tileData)
+							if(tileData.data[tileIndex + 3] === 0) // transparent pixel
+								continue
+
+							var intensity = Lighting.vertices[3]/65536
+							var index = getPixelIndex(sx + x, sy + y, imageData)
+
+							// blit the image
+							// multiply the output
+							imageData.data[index + 0] = Math.floor(tileData.data[tileIndex + 0] * intensity)
+							imageData.data[index + 1] = Math.floor(tileData.data[tileIndex + 1] * intensity)
+							imageData.data[index + 2] = Math.floor(tileData.data[tileIndex + 2] * intensity)
+							imageData.data[index + 3] = 255
+						}
+					}
+				}
 			}
 		}
 	}

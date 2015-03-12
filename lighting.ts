@@ -63,7 +63,7 @@ module Lighting {
 	]
 
 	// length 40
-	var vertices = [
+	export var vertices = [
 		0x10,
 		-1,
 		-201,
@@ -140,12 +140,18 @@ module Lighting {
 		}*/
 
 		// do a uniform-lit check
-		for(var i = 0; i < 36/2; i++) {
+		if(vertices[7] != vertices[3])
+			return true
+
+		var uni = 1
+		for(var i = 1; i < 9; i++) {
 			if(vertices[7 + i] != vertices[3 + i])
-				return true
+				uni++ //return true
 		}
 
-		return false
+		return (uni === 9)
+
+		//return false
 	}
 
 	function rutris(): void {
