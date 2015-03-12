@@ -116,8 +116,18 @@ module Lighting {
 
 	var ambient = 0xA000 // ambient light level
 
+	declare var tile_intensity: number[];
+	export declare var intensityColorTable: number[];
+
+	export var colorLUT: any = null; // string color integer -> palette index
+	export var colorRGB: any = null; // palette index -> string color integer
+
 	function light_get_tile(tilenum: number): number {
-		return 65536 // TODO
+		//return 65536 // TODO
+		//return getRandomInt(0, 65536)
+		//var pos = fromTileNum(tilenum)
+		//return tile_intensity[pos.y*200 + x]
+		return Math.min(65536, tile_intensity[tilenum])
 	}
 
 	function init(tilenum: number): boolean {
@@ -140,6 +150,7 @@ module Lighting {
 		}*/
 
 		// do a uniform-lit check
+		//return false
 		if(vertices[7] != vertices[3])
 			return true
 
@@ -237,13 +248,225 @@ module Lighting {
 		//printf("end ...\n");
 	}
 
+	function udtris(): void {
+		var first = true
+		var numLeft = 0
+		for(var i = 0; i < 15; i += 3) {
+			//printf("i = %u ...\n", i);
+			var a = upside_down_triangles[i + 0]; // eax
+			var b = upside_down_triangles[i + 1]; // middle eax
+			var c = upside_down_triangles[i + 2]; // esi
+
+			var ebx = vertices[3 + 4*a]
+			var esi = vertices[3 + 4*c]
+			esi -= ebx
+			esi = Math.trunc(esi / 32)
+			var ecx = vertices[4*a]
+			//console.log("ecx=%d (offset=%d), a=%d", ecx, ecx*4, a)
+
+			var eax = vertices[3 + 4*b]
+			eax -= ebx
+			eax = Math.trunc(eax / 13)
+
+			var v34 = eax
+			/*if(i == 0)
+				console.log("v34:", v34)*/
+
+			if(esi === 0) {
+				// right
+				//throw "right"
+				var right_right = (eax != 0)
+				var edi = 0
+
+				do {
+					//console.log("esi:", esi)
+					eax = upside_down_table[esi]
+					//eax <<= 2
+					var edx = upside_down_table[1 + esi]
+					ecx += eax //Math.floor(eax/4)
+					eax = edi
+
+					if(edx > 0) {
+						do {
+							eax++
+							if(ecx < 0) console.log("ecx=%d", ecx)
+							//if(first) { console.log("first write [right]: ecx=%d", ecx); first = false }
+							intensity_map[ecx] = ebx
+							//console.log("ecx=%d, ebx=%d", ecx, ebx)
+							ecx++
+						}
+						while(eax < edx)
+					}
+
+					esi += 2//8
+					if(right_right) {
+						ebx += v34
+					}
+				}
+				while(esi < 26) //104)
+			}
+			else {
+				// left
+				//throw "left"
+				numLeft++
+
+				var left_left = (eax != 0)
+				var v18 = 0
+
+				do {
+					eax = v18
+					edi = v18
+					eax = upside_down_table[eax]
+					edx = ebx
+					//eax <<= 2
+					edi = upside_down_table[1 + edi]
+					ecx += eax //Math.floor(eax/4)
+
+					eax = 0
+
+					if(edi > 0) {
+						do {
+							eax++
+							//if(first) { console.log("first write [left]: ecx=%d", ecx); first = false }
+							if(ecx < 0) console.log("ecx=%d", ecx)
+							//if(edx < ambient) console.log("edx=%d", edx)
+							intensity_map[ecx] = edx
+							ecx++
+							edx += esi
+						}
+						while(eax < edi)
+					}
+
+					edi = v18
+					edi += 2//8
+					v18 = edi
+
+					if(left_left) {
+						ebx += v34
+					}
+				}
+				while(edi < 26) //104);
+
+			}
+		}
+		//console.log("left=%d", numLeft)
+
+
+
+			/*
+			// each "element" of vertices is 16 bytes, so that's 4 int elements
+			var x = vertices[3 + 4*b]; // eax
+			var y = vertices[3 + 4*c]; // esi
+			var z = vertices[3 + 4*a]; // ebx
+			// see below
+			//int ecx = vertices[4*c];
+		    //ecx *= 4; // should be for an index?
+
+		    // printf("i=%d, x=%d, y=%d, z=%d\n", i, x, y, z);
+
+			var esi = Math.floor((y - z) / 32);
+
+		    // eax = vertices[12+a]
+		    // esi = vertices[12+b]
+		    // ebx = vertices[12+c]
+
+		    //int eax = x - z;
+		    var eax = Math.floor((x - z) / 13);
+		    var v1 = eax;
+
+		    //printf("vertices[4*c] = 0x%X (%d)\n", vertices[4*c], vertices[4*c]);
+		    //char *ecx = intensity_map + vertices[4*c] * 4; // pointer arithmetic (this is on a char*)
+		    var ecx = vertices[4*a]
+
+		    if(esi === 0) { // if(Math.floor((x - z) / 32) == 0) {
+		    	// right branch
+				//printf("right ...\n");
+
+				var j = 0; // esi
+				var edi = 0;
+
+				var right_right = (eax != 0);  // right-right branch
+	    		do {
+		    		var eax = upside_down_table[j];
+		    		var edx = upside_down_table[1 + j];
+		    		ecx += eax; // add to offset
+		    		//printf("eax=%d, ecx += %d\n", eax, eax);
+	    			//printf("rutris: j=%d, eax=%d edx=%d\n", j, eax, edx);
+		    		
+		    		eax = edi;
+		    		if(edx > 0) {
+		    			do {
+		    				//printf("%d\n", ecx - intensity_map);
+		    				//unsigned long offset = (unsigned long)(ecx - intensity_map);
+		    				//printf("intensity_map offset = 0x%X (%d)\n", offset, offset);
+
+			    			// *(int *)ecx = z;
+			    			intensity_map[ecx] = z
+			    			ecx++
+			    			eax++
+			    		}
+			    		while(eax < edx);
+		    		}
+
+		    		if(right_right) {
+						eax = v1;
+						z += eax;
+					}
+
+					j += 2; // 8
+				}
+				while(j < 26); // 13);
+		    }
+		    else {
+		    	// todo: left branch
+		    	//throw "left ..."
+		    	// left
+		    	//var eax = 0
+		    	var v18 = 0
+		    	var left_left = (eax != 0)
+
+		    	do {
+		    		var eax = upside_down_table[v18/4]
+		    		var edi = v18
+		    		var edx = z
+		    		eax <<= 2
+		    		edi = upside_down_table[1 + edi/4]
+		    		ecx += eax/4
+		    		eax = 0
+
+		    		if(edi > 0) {
+		    			do {
+			    			eax++
+			    			intensity_map[ecx] = edx
+			    			ecx++
+			    			edx += esi
+			    		}
+			    		while(eax < edi);
+		    		}
+
+		    		edi = v18
+		    		edi += 8
+		    		v18 = edi
+
+		    		if(left_left) {
+			    		edx = v1
+			    		z += edx
+			    	}
+		    	}
+		    	while(edi != 104);
+		    }
+		}*/
+
+		//printf("end ...\n");
+	}
+
 	export function initTile(hex: Point): boolean  {
 		return init(toTileNum(hex));
 	}
 
 	export function computeFrame(): number[] {
 		rutris()
-		// udtris()
+		udtris()
 		return intensity_map
 	}
 }

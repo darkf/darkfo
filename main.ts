@@ -925,7 +925,7 @@ function getPixelIndex(x, y, imageData) {
 
 var globalOffset = 0 //8
 
-function drawFloor(matrix) {
+function drawFloor(matrix, useColorTable: boolean=false) {
 	// get the screen framebuffer
 	var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
@@ -977,15 +977,37 @@ function drawFloor(matrix) {
 
 							//var intensity_ = Lighting.intensity_map[globalOffset + 640 + y*80 + x]
 							var intensity_ = Lighting.intensity_map[globalOffset + 160 + 80*y + x]
-							var intensity = intensity_/65536
+							var intensity = Math.min(1.0, intensity_/65536)
 							var index = getPixelIndex(sx + x, sy + y, imageData)
 
-							// blit the image
-							// multiply the output
-							imageData.data[index + 0] = Math.floor(tileData.data[tileIndex + 0] * intensity)
-							imageData.data[index + 1] = Math.floor(tileData.data[tileIndex + 1] * intensity)
-							imageData.data[index + 2] = Math.floor(tileData.data[tileIndex + 2] * intensity)
-							imageData.data[index + 3] = 255
+							if(useColorTable) {
+								// TODO: hack
+								if(Lighting.colorLUT === null) {
+									Lighting.colorLUT = getFileJSON("color_lut.json")
+									Lighting.colorRGB = getFileJSON("color_rgb.json")
+								}
+
+								var orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
+								var palIdx = Lighting.colorLUT[orig_color.toString()] | 0
+								var tableIdx = palIdx*256 + Math.trunc(intensity_/512)
+								var colorPal = Lighting.intensityColorTable[tableIdx]
+								var color = Lighting.colorRGB[colorPal.toString()]
+
+								// blit the image
+								// multiply the output
+								imageData.data[index + 0] = color[0] //Math.floor(tileData.data[tileIndex + 0] * intensity)
+								imageData.data[index + 1] = color[1] //Math.floor(tileData.data[tileIndex + 1] * intensity)
+								imageData.data[index + 2] = color[2] //Math.floor(tileData.data[tileIndex + 2] * intensity)
+								imageData.data[index + 3] = 255
+							}
+							else {
+								// blit the image
+								// multiply the output
+								imageData.data[index + 0] = Math.floor(tileData.data[tileIndex + 0] * intensity)
+								imageData.data[index + 1] = Math.floor(tileData.data[tileIndex + 1] * intensity)
+								imageData.data[index + 2] = Math.floor(tileData.data[tileIndex + 2] * intensity)
+								imageData.data[index + 3] = 255
+							}
 						}
 					}
 
