@@ -923,6 +923,8 @@ function getPixelIndex(x, y, imageData) {
 	return (x + y * imageData.width) * 4
 }
 
+var globalOffset = 0 //8
+
 function drawFloor(matrix) {
 	// get the screen framebuffer
 	var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -973,7 +975,8 @@ function drawFloor(matrix) {
 							if(tileData.data[tileIndex + 3] === 0) // transparent pixel
 								continue
 
-							var intensity_ = Lighting.intensity_map[640 + y*80 + x]
+							//var intensity_ = Lighting.intensity_map[globalOffset + 640 + y*80 + x]
+							var intensity_ = Lighting.intensity_map[globalOffset + 160 + 80*y + x]
 							var intensity = intensity_/65536
 							var index = getPixelIndex(sx + x, sy + y, imageData)
 
