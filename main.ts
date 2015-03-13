@@ -928,6 +928,7 @@ var globalOffset = 0 //8
 function drawFloor(matrix, useColorTable: boolean=false) {
 	// get the screen framebuffer
 	var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+	var hexes = []
 
 	for(var i = 0; i < matrix.length; i++) {
 		for(var j = 0; j < matrix[0].length; j++) {
@@ -944,13 +945,14 @@ function drawFloor(matrix, useColorTable: boolean=false) {
 				var sx = scr.x - cameraX
 				var sy = scr.y - cameraY
 
-				var hex = hexFromScreen(scr.x, //(scr.x - 32),
+				var hex = hexFromScreen(scr.x - 13, //(scr.x - 32),
 					                    scr.y + 13) // Math.floor((scr.y - 16) / 2))
 
 				//console.log("hex: %o", hex)
 
-				var hscr = hexToScreen(hex.x, hex.y)
-				heart.graphics.draw(hexOverlay, hscr.x - 16 - cameraX, hscr.y - 12 - cameraY)
+
+				//hexes.push(hex)
+				//hex.x = 199 - hex.x
 
 				if(Lighting.initTile(hex)) { // triangle-lit tile
 					var framebuffer = Lighting.computeFrame()
@@ -1047,6 +1049,12 @@ function drawFloor(matrix, useColorTable: boolean=false) {
 
 	// write the framebuffer back
 	heart.ctx.putImageData(imageData, 0, 0)
+
+	// draw hexes
+	hexes.forEach(hex => {
+		var hscr = hexToScreen(hex.x, hex.y)
+		heart.graphics.draw(hexOverlay, hscr.x - 16 - cameraX, hscr.y - 12 - cameraY)
+	})
 }
 
 function drawTileMap(matrix, offsetY) {

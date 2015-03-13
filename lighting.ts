@@ -133,7 +133,7 @@ module Lighting {
 	function init(tilenum: number): boolean {
 		var start = (tilenum & 1); // even/odd
 
-		for(var i = 0, j = start; i < 36; i += 4, j += 4) {
+		for(var i = 0, j = start; i <= 36; i += 4, j += 4) {
 			var offset = vertices[1 + j];
 			//printf("init: j = %u, v[1+j] = 0x%X (%d)\n", j, offset, offset);
 			var t = tilenum + offset;
@@ -150,17 +150,26 @@ module Lighting {
 		}*/
 
 		// do a uniform-lit check
+		// true means it's triangle lit
 		//return false
-		if(vertices[7] != vertices[3])
+		if(vertices[7] !== vertices[3])
 			return true
 
 		var uni = 1
-		for(var i = 1; i < 9; i++) {
-			if(vertices[7 + i] != vertices[3 + i])
+		//for(var i = 1; i < 9; i++) {
+		for(var i = 4; i < 36; i += 4) {
+			if(vertices[7 + i] === vertices[3 + i])
 				uni++ //return true
+			else {
+				//console.log("mismatch: %d vs %d", vertices[7 + i*4], vertices[3 + i*4])
+			}
 		}
 
-		return (uni === 9)
+		//return (uni !== 9)
+		if(uni === 9)
+			return false // uniform
+		else
+			return true // triangle
 
 		//return false
 	}
