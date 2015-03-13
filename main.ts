@@ -923,12 +923,18 @@ function getPixelIndex(x, y, imageData) {
 	return (x + y * imageData.width) * 4
 }
 
-var globalOffset = 0 //8
-
 function drawFloor(matrix, useColorTable: boolean=false) {
 	// get the screen framebuffer
 	var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 	var hexes = []
+
+	if(useColorTable) {
+		// TODO: hack
+		if(Lighting.colorLUT === null) {
+			Lighting.colorLUT = getFileJSON("color_lut.json")
+			Lighting.colorRGB = getFileJSON("color_rgb.json")
+		}
+	}
 
 	for(var i = 0; i < matrix.length; i++) {
 		for(var j = 0; j < matrix[0].length; j++) {
@@ -945,97 +951,58 @@ function drawFloor(matrix, useColorTable: boolean=false) {
 				var sx = scr.x - cameraX
 				var sy = scr.y - cameraY
 
-				var hex = hexFromScreen(scr.x - 13, //(scr.x - 32),
-					                    scr.y + 13) // Math.floor((scr.y - 16) / 2))
-
-				//console.log("hex: %o", hex)
-
+				// TODO: how correct is this?
+				var hex = hexFromScreen(scr.x - 13,
+					                    scr.y + 13)
 
 				//hexes.push(hex)
 				//hex.x = 199 - hex.x
 
-				if(Lighting.initTile(hex)) { // triangle-lit tile
-					var framebuffer = Lighting.computeFrame()
-					//console.log("framebuffer: %o", framebuffer)
+				// temp canvas to get tile framebuffer
+				var tmpCanvas = document.createElement('canvas')
+				var ctx = tmpCanvas.getContext('2d')
+				ctx.drawImage(images[img].img, 0, 0)
+				var tileData = ctx.getImageData(0, 0, images[img].img.width, images[img].img.height)
 
+				var isTriangleLit = Lighting.initTile(hex)
+				var framebuffer
+				var intensity_
+				var intensity
 
-					// draw the image
-					//heart.graphics.draw(images[img], sx, sy)
+				if(isTriangleLit)
+					framebuffer = Lighting.computeFrame()
 
-					// get the screen framebuffer
-					//var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+				// render tile
+				for(var y = 0; y < 36; y++) {
+					for(var x = 0; x < 80; x++) {
+						var tileIndex = getPixelIndex(x, y, tileData)
+						if(tileData.data[tileIndex + 3] === 0) // transparent pixel
+							continue
+						var index = getPixelIndex(sx + x, sy + y, imageData)
 
-					// temp canvas to get tile framebuffer
-					var tmpCanvas = document.createElement('canvas')
-					var ctx = tmpCanvas.getContext('2d')
-					ctx.drawImage(images[img].img, 0, 0)
-					var tileData = ctx.getImageData(0, 0, images[img].img.width, images[img].img.height)
-
-					for(var y = 0; y < 36; y++) {
-						for(var x = 0; x < 80; x++) {
-							var tileIndex = getPixelIndex(x, y, tileData)
-							if(tileData.data[tileIndex + 3] === 0) // transparent pixel
-								continue
-
-							//var intensity_ = Lighting.intensity_map[globalOffset + 640 + y*80 + x]
-							var intensity_ = Lighting.intensity_map[globalOffset + 160 + 80*y + x]
-							var intensity = Math.min(1.0, intensity_/65536)
-							var index = getPixelIndex(sx + x, sy + y, imageData)
-
-							if(useColorTable) {
-								// TODO: hack
-								if(Lighting.colorLUT === null) {
-									Lighting.colorLUT = getFileJSON("color_lut.json")
-									Lighting.colorRGB = getFileJSON("color_rgb.json")
-								}
-
-								var orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
-								var palIdx = Lighting.colorLUT[orig_color.toString()] | 0
-								var tableIdx = palIdx*256 + Math.trunc(intensity_/512)
-								var colorPal = Lighting.intensityColorTable[tableIdx]
-								var color = Lighting.colorRGB[colorPal.toString()]
-
-								// blit the image
-								// multiply the output
-								imageData.data[index + 0] = color[0] //Math.floor(tileData.data[tileIndex + 0] * intensity)
-								imageData.data[index + 1] = color[1] //Math.floor(tileData.data[tileIndex + 1] * intensity)
-								imageData.data[index + 2] = color[2] //Math.floor(tileData.data[tileIndex + 2] * intensity)
-								imageData.data[index + 3] = 255
-							}
-							else {
-								// blit the image
-								// multiply the output
-								imageData.data[index + 0] = Math.floor(tileData.data[tileIndex + 0] * intensity)
-								imageData.data[index + 1] = Math.floor(tileData.data[tileIndex + 1] * intensity)
-								imageData.data[index + 2] = Math.floor(tileData.data[tileIndex + 2] * intensity)
-								imageData.data[index + 3] = 255
-							}
+						if(isTriangleLit) {
+							intensity_ = framebuffer[160 + 80*y + x]
 						}
-					}
+						else { // uniformly lit
+							intensity_ = Lighting.vertices[3]
+						}
 
-					// write the framebuffer back
-					//heart.ctx.putImageData(imageData, 0, 0)
-				}
-				else { // uniformly lit tile
-					//heart.graphics.draw(images[img], scr.x - cameraX, scr.y - cameraY)
-					// temp canvas to get tile framebuffer
-					var tmpCanvas = document.createElement('canvas')
-					var ctx = tmpCanvas.getContext('2d')
-					ctx.drawImage(images[img].img, 0, 0)
-					var tileData = ctx.getImageData(0, 0, images[img].img.width, images[img].img.height)
+						intensity = Math.min(1.0, intensity_/65536)
 
-					// blit it
-					for(var y = 0; y < 36; y++) {
-						for(var x = 0; x < 80; x++) {
-							var tileIndex = getPixelIndex(x, y, tileData)
-							if(tileData.data[tileIndex + 3] === 0) // transparent pixel
-								continue
+						// blit to the framebuffer
+						if(useColorTable) {
+							var orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
+							var palIdx = Lighting.colorLUT[orig_color.toString()] | 0
+							var tableIdx = palIdx*256 + Math.trunc(intensity_/512)
+							var colorPal = Lighting.intensityColorTable[tableIdx]
+							var color = Lighting.colorRGB[colorPal.toString()]
 
-							var intensity = Lighting.vertices[3]/65536
-							var index = getPixelIndex(sx + x, sy + y, imageData)
-
-							// blit the image
-							// multiply the output
+							imageData.data[index + 0] = color[0]
+							imageData.data[index + 1] = color[1]
+							imageData.data[index + 2] = color[2]
+							imageData.data[index + 3] = 255
+						}
+						else {
 							imageData.data[index + 0] = Math.floor(tileData.data[tileIndex + 0] * intensity)
 							imageData.data[index + 1] = Math.floor(tileData.data[tileIndex + 1] * intensity)
 							imageData.data[index + 2] = Math.floor(tileData.data[tileIndex + 2] * intensity)
