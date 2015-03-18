@@ -161,79 +161,31 @@ module Lighting {
 			var b = rightside_up_triangles[i + 1]
 			var c = rightside_up_triangles[i + 2]
 
-			var x = vertices[3 + 4*a]; // eax
-			var y = vertices[3 + 4*b]; // esi
-			var z = vertices[3 + 4*c]; // ebx
+			var x = vertices[3 + 4*a]
+			var y = vertices[3 + 4*b]
+			var z = vertices[3 + 4*c]
 
-			//var esi = Math.floor((y - x) / 32);
-		    var eax = ((x - z) / 13) | 0
+		    var eax = (x - z) / 13 | 0
 		    var v1 = eax
 		    var ecx = vertices[4*c]
-		    var w = (((y - x) / 32) | 0)
-		    console.log("w: %d (%s)", w, w.toString(16))
+		    var w = (y - x) / 32 | 0
 
-		    if(w == 0) {
-		    	// right branch
-				var j = 0 // esi
+	    	// right branch
+	    	for(var j = 0; j < 26; j += 2) {
+	    		var edx = rightside_up_table[1 + j]
+	    		ecx += rightside_up_table[j] // add to offset
+	    		
+	    		var light = z
+	    		for(var k = 0; k < edx; k++) {
+	    			intensity_map[ecx++] = light
+	    			light += w
+	    		}
 
-				var right_right = (eax != 0);  // right-right branch
-	    		do {
-		    		var edx = rightside_up_table[1 + j]
-		    		ecx += rightside_up_table[j] // add to offset
-		    		
-		    		eax = 0
-		    		if(edx > 0) {
-		    			do {
-			    			intensity_map[ecx] = z
-			    			ecx++
-			    			eax++
-			    		}
-			    		while(eax < edx)
-		    		}
-
-		    		if(right_right) {
-						z += v1
-					}
-
-					j += 2
-				}
-				while(j < 26)
-		    }
-		    else {
-		    	// todo: left branch
-		    	//throw "left ..."
-		    			    	// right branch
-				var j = 0 // esi
-
-				var right_right = (eax != 0);  // right-right branch
-	    		do {
-		    		var edx = rightside_up_table[1 + j]
-		    		ecx += rightside_up_table[j] // add to offset
-		    		
-		    		eax = 0
-		    		var g = z
-		    		if(edx > 0) {
-		    			do {
-			    			intensity_map[ecx] = g
-			    			ecx++
-			    			eax++
-			    			g += w
-			    		}
-			    		while(eax < edx)
-		    		}
-
-		    		if(right_right) {
-						z += v1
-					}
-
-					j += 2
-				}
-				while(j < 26)
-		    }
+				z += v1
+			}
 		}
 	}
 
-	// refactored
 	function udtris(): void {
 		for(var i = 0; i < 15; i += 3) {
 			var a = upside_down_triangles[i + 0] // eax
@@ -255,8 +207,8 @@ module Lighting {
 			for(var j = 0; j < 26; j += 2) {
 				var edx = upside_down_table[1 + j]
 				ecx += upside_down_table[j]
-				var light = ebx
 
+				var light = ebx
 				for(var k = 0; k < edx; k++) {
 					intensity_map[ecx++] = light
 					light += esi

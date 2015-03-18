@@ -923,7 +923,9 @@ function getPixelIndex(x, y, imageData) {
 	return (x + y * imageData.width) * 4
 }
 
-function drawFloor(matrix, useColorTable: boolean=false) {
+var gx = 0, gy = 0
+
+function drawFloor(matrix, useColorTable: boolean=true) {
 	// get the screen framebuffer
 	var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 	var hexes = []
@@ -952,8 +954,8 @@ function drawFloor(matrix, useColorTable: boolean=false) {
 				var sy = scr.y - cameraY
 
 				// TODO: how correct is this?
-				var hex = hexFromScreen(scr.x - 13,
-					                    scr.y + 13)
+				var hex = hexFromScreen(scr.x - 13 + gx,
+					                    scr.y + 13 + gy)
 
 				//hexes.push(hex)
 				//hex.x = 199 - hex.x
