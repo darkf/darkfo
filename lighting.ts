@@ -155,6 +155,49 @@ module Lighting {
 		return (uni !== 9)
 	}
 
+	function renderTris(isRightsideUp: boolean): void {
+		var tris = isRightsideUp ? rightside_up_triangles : upside_down_triangles
+		var table = isRightsideUp ? rightside_up_table : upside_down_table
+
+		for(var i = 0; i < 15; i += 3) {
+			var a = tris[i + 0]
+			var b = tris[i + 1]
+			var c = tris[i + 2]
+
+			var x = vertices[3 + 4*a]
+			var y = vertices[3 + 4*b]
+			var z = vertices[3 + 4*c]
+
+			var inc, intensityIdx, baseLight, lightInc
+
+			if(isRightsideUp) { // rightside up triangles
+			    inc = (x - z) / 13 | 0
+			    lightInc = (y - x) / 32 | 0
+			    intensityIdx = vertices[4*c]
+			    baseLight = z
+			}
+			else { // upside down triangles
+				intensityIdx = vertices[4*a]
+				lightInc = (z - x) / 32 | 0
+				inc = (y - x) / 13 | 0
+				baseLight = vertices[3 + 4*a]
+			}
+
+			for(var j = 0; j < 26; j += 2) {
+				var edx = table[1 + j]
+				intensityIdx += table[j]
+
+				var light = baseLight
+				for(var k = 0; k < edx; k++) {
+					intensity_map[intensityIdx++] = light
+					light += lightInc
+				}
+
+				baseLight += inc
+			}
+		}
+	}
+
 	function rutris(): void {
 		for(var i = 0; i < 15; i += 3) {
 			var a = rightside_up_triangles[i + 0]
@@ -224,8 +267,10 @@ module Lighting {
 	}
 
 	export function computeFrame(): number[] {
-		rutris()
-		udtris()
+		//rutris()
+		//udtris()
+		renderTris(true)
+		renderTris(false)
 		return intensity_map
 	}
 }
