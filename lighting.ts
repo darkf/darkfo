@@ -198,77 +198,11 @@ module Lighting {
 		}
 	}
 
-	function rutris(): void {
-		for(var i = 0; i < 15; i += 3) {
-			var a = rightside_up_triangles[i + 0]
-			var b = rightside_up_triangles[i + 1]
-			var c = rightside_up_triangles[i + 2]
-
-			var x = vertices[3 + 4*a]
-			var y = vertices[3 + 4*b]
-			var z = vertices[3 + 4*c]
-
-		    var eax = (x - z) / 13 | 0
-		    var v1 = eax
-		    var ecx = vertices[4*c]
-		    var w = (y - x) / 32 | 0
-
-	    	// right branch
-	    	for(var j = 0; j < 26; j += 2) {
-	    		var edx = rightside_up_table[1 + j]
-	    		ecx += rightside_up_table[j] // add to offset
-	    		
-	    		var light = z
-	    		for(var k = 0; k < edx; k++) {
-	    			intensity_map[ecx++] = light
-	    			light += w
-	    		}
-
-				z += v1
-			}
-		}
-	}
-
-	function udtris(): void {
-		for(var i = 0; i < 15; i += 3) {
-			var a = upside_down_triangles[i + 0] // eax
-			var b = upside_down_triangles[i + 1] // middle eax
-			var c = upside_down_triangles[i + 2] // esi
-
-			var ebx = vertices[3 + 4*a]
-			var esi = vertices[3 + 4*c]
-			esi -= ebx
-			esi = (esi / 32) | 0
-			var ecx = vertices[4*a]
-
-			var eax = vertices[3 + 4*b]
-			eax -= ebx
-			eax = (eax / 13) | 0
-
-			var v34 = eax
-
-			for(var j = 0; j < 26; j += 2) {
-				var edx = upside_down_table[1 + j]
-				ecx += upside_down_table[j]
-
-				var light = ebx
-				for(var k = 0; k < edx; k++) {
-					intensity_map[ecx++] = light
-					light += esi
-				}
-
-				ebx += v34
-			}
-		}
-	}
-
 	export function initTile(hex: Point): boolean  {
 		return init(toTileNum(hex));
 	}
 
 	export function computeFrame(): number[] {
-		//rutris()
-		//udtris()
 		renderTris(true)
 		renderTris(false)
 		return intensity_map
