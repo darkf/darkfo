@@ -169,19 +169,19 @@ module Lighting {
 		    var eax = ((x - z) / 13) | 0
 		    var v1 = eax
 		    var ecx = vertices[4*c]
+		    var w = (((y - x) / 32) | 0)
+		    console.log("w: %d (%s)", w, w.toString(16))
 
-		    if((((b - a) / 32) | 0) == 0) {
+		    if(w == 0) {
 		    	// right branch
 				var j = 0 // esi
-				var edi = 0
 
 				var right_right = (eax != 0);  // right-right branch
 	    		do {
-		    		var eax = rightside_up_table[j]
 		    		var edx = rightside_up_table[1 + j]
-		    		ecx += eax // add to offset
+		    		ecx += rightside_up_table[j] // add to offset
 		    		
-		    		eax = edi
+		    		eax = 0
 		    		if(edx > 0) {
 		    			do {
 			    			intensity_map[ecx] = z
@@ -192,8 +192,7 @@ module Lighting {
 		    		}
 
 		    		if(right_right) {
-						eax = v1
-						z += eax
+						z += v1
 					}
 
 					j += 2
@@ -202,11 +201,39 @@ module Lighting {
 		    }
 		    else {
 		    	// todo: left branch
-		    	throw "left ..."
+		    	//throw "left ..."
+		    			    	// right branch
+				var j = 0 // esi
+
+				var right_right = (eax != 0);  // right-right branch
+	    		do {
+		    		var edx = rightside_up_table[1 + j]
+		    		ecx += rightside_up_table[j] // add to offset
+		    		
+		    		eax = 0
+		    		var g = z
+		    		if(edx > 0) {
+		    			do {
+			    			intensity_map[ecx] = g
+			    			ecx++
+			    			eax++
+			    			g += w
+			    		}
+			    		while(eax < edx)
+		    		}
+
+		    		if(right_right) {
+						z += v1
+					}
+
+					j += 2
+				}
+				while(j < 26)
 		    }
 		}
 	}
 
+	// refactored
 	function udtris(): void {
 		for(var i = 0; i < 15; i += 3) {
 			var a = upside_down_triangles[i + 0] // eax
@@ -225,68 +252,17 @@ module Lighting {
 
 			var v34 = eax
 
-			if(esi === 0) {
-				// right
-				var right_right = (eax != 0)
-				var edi = 0
+			for(var j = 0; j < 26; j += 2) {
+				var edx = upside_down_table[1 + j]
+				ecx += upside_down_table[j]
+				var light = ebx
 
-				do {
-					eax = upside_down_table[esi]
-					var edx = upside_down_table[1 + esi]
-					ecx += eax
-					eax = edi
-
-					if(edx > 0) {
-						do {
-							eax++
-							intensity_map[ecx] = ebx
-							ecx++
-						}
-						while(eax < edx)
-					}
-
-					esi += 2
-					if(right_right) {
-						ebx += v34
-					}
+				for(var k = 0; k < edx; k++) {
+					intensity_map[ecx++] = light
+					light += esi
 				}
-				while(esi < 26)
-			}
-			else {
-				// left
-				var left_left = (eax != 0)
-				var v18 = 0
 
-				do {
-					eax = v18
-					edi = v18
-					eax = upside_down_table[eax]
-					edx = ebx
-					edi = upside_down_table[1 + edi]
-					ecx += eax
-
-					eax = 0
-
-					if(edi > 0) {
-						do {
-							eax++
-							intensity_map[ecx] = edx
-							ecx++
-							edx += esi
-						}
-						while(eax < edi)
-					}
-
-					edi = v18
-					edi += 2
-					v18 = edi
-
-					if(left_left) {
-						ebx += v34
-					}
-				}
-				while(edi < 26)
-
+				ebx += v34
 			}
 		}
 	}
