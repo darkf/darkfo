@@ -142,7 +142,7 @@ module Lighting {
 
 		// do a uniformly-lit check
 		// true means it's triangle lit
-		
+
 		if(vertices[7] !== vertices[3])
 			return true
 
@@ -166,11 +166,11 @@ module Lighting {
 			var z = vertices[3 + 4*c]; // ebx
 
 			//var esi = Math.floor((y - x) / 32);
-		    var eax = Math.floor((x - z) / 13);
+		    var eax = ((x - z) / 13) | 0
 		    var v1 = eax
 		    var ecx = vertices[4*c]
 
-		    if(Math.floor((b - a) / 32) == 0) {
+		    if((((b - a) / 32) | 0) == 0) {
 		    	// right branch
 				var j = 0 // esi
 				var edi = 0
@@ -216,12 +216,12 @@ module Lighting {
 			var ebx = vertices[3 + 4*a]
 			var esi = vertices[3 + 4*c]
 			esi -= ebx
-			esi = Math.trunc(esi / 32)
+			esi = (esi / 32) | 0
 			var ecx = vertices[4*a]
 
 			var eax = vertices[3 + 4*b]
 			eax -= ebx
-			eax = Math.trunc(eax / 13)
+			eax = (eax / 13) | 0
 
 			var v34 = eax
 

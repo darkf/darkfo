@@ -993,7 +993,7 @@ function drawFloor(matrix, useColorTable: boolean=false) {
 						if(useColorTable) {
 							var orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
 							var palIdx = Lighting.colorLUT[orig_color.toString()] | 0
-							var tableIdx = palIdx*256 + Math.trunc(intensity_/512)
+							var tableIdx = palIdx*256 + (intensity_/512 | 0)
 							var colorPal = Lighting.intensityColorTable[tableIdx]
 							var color = Lighting.colorRGB[colorPal.toString()]
 
