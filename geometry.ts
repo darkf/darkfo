@@ -16,12 +16,12 @@ limitations under the License.
 
 // Geometry-related functions, for the hex and isometric grids
 
-function toTileNum(position) {
+function toTileNum(position: Point): number {
 	return position.y * 200 + position.x
 }
 
-function fromTileNum(tile) {
-	return {x: tile % 200, y: Math.floor(tile / 200)}
+function fromTileNum(tile: number): Point {
+	return {x: tile % 200, y: Math.floor(tile / 200)} // TODO: use x|0 instead of floor for some of these
 }
 
 function tileToScreen(x, y) {
@@ -48,8 +48,10 @@ function tileFromScreen(x, y) {
 }
 
 function centerTile(): Point {
-	return hexFromScreen(cameraX + Math.floor((SCREEN_WIDTH - 32) / 2),
-		                 cameraY + Math.floor((SCREEN_HEIGHT - 16) / 2))
+	return hexFromScreen(cameraX + ((SCREEN_WIDTH / 2)|0) - 32,
+		                 cameraY + ((SCREEN_HEIGHT / 2)|0) - 16)
+	/*return hexFromScreen(cameraX + Math.floor((SCREEN_WIDTH - 32) / 2),
+		                 cameraY + Math.floor((SCREEN_HEIGHT - 16) / 2))*/
 }
 
 var tile_center = {x: 0, y: 0}
@@ -259,11 +261,16 @@ function hexNeighbors(position) {
 	return neighbors
 }
 
-function hexInDirection(position, dir) {
+function hexInDirection(position: Point, dir: number): Point {
 	return hexNeighbors(position)[dir]
 }
 
-function hexInDirectionDistance(position, dir, distance) {
+function hexInDirectionDistance(position: Point, dir: number, distance: number): Point {
+	if(distance === 0) {
+		console.log("hexInDirectionDistance: distance=0")
+		return null
+	}
+
 	var tile = hexInDirection(position, dir)
 	for(var i = 0; i < distance-1; i++) // repeat for each further distance
 		tile = hexInDirection(tile, dir)
