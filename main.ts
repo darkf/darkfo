@@ -76,6 +76,7 @@ var doAlwaysRun = true // always run instead of walk?
 var doZOrder = true // Z-order objects?
 var doEncounters = true // allow random encounters?
 var doInfiniteUse = false // allow infinite-range object usage?
+var doFloorLighting = true // use FO2-realistic floor lighting?
 
 var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0 // real time of the last game tick
@@ -923,8 +924,6 @@ function getPixelIndex(x, y, imageData) {
 	return (x + y * imageData.width) * 4
 }
 
-var gx = 0, gy = 0
-
 function drawFloor(matrix, useColorTable: boolean=true) {
 	// get the screen framebuffer
 	var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -954,8 +953,8 @@ function drawFloor(matrix, useColorTable: boolean=true) {
 				var sy = scr.y - cameraY
 
 				// TODO: how correct is this?
-				var hex = hexFromScreen(scr.x - 13 + gx,
-					                    scr.y + 13 + gy)
+				var hex = hexFromScreen(scr.x - 13,
+					                    scr.y + 13)
 
 				//hexes.push(hex)
 				//hex.x = 199 - hex.x
@@ -1136,9 +1135,12 @@ heart.draw = function() {
 	//var mouseTile = tileFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
 	// draw tile grids
-	if(showFloor === true && floorMap !== null)
-		drawFloor(floorMap);
-		//drawTileMap(floorMap, 0);
+	if(showFloor === true && floorMap !== null) {
+		if(doFloorLighting)
+			drawFloor(floorMap)
+		else
+			drawTileMap(floorMap, 0)
+	}
 
 	// draw hex grid overlay
 	if(showHexOverlay === true || showCoordinates === true) {
