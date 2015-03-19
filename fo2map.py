@@ -398,8 +398,9 @@ object_ = Struct("object",
 	UBInt32("elevation"),
 	UBInt32("protoPID"),
 	Padding(4), # unknown
-	Padding(4), # unknown (light strength?)
-	Padding(4*2), # unknown
+	UBInt32("lightRadius"),
+	UBInt32("lightIntensity"),
+	Padding(4), # unknown
 	UBInt32("mapPID"),
 	SBInt32("scriptID"),
 	UBInt32("numInventory"),
@@ -537,7 +538,9 @@ def convertMap(data, mapName, outDir, verbose=True):
 					   "pidID": (object_.protoPID & 0xffff),
 					   "frmPID": object_.frmPID,
 					   "position": tileNumToPos(object_.position),
-					   "orientation": object_.orientation}
+					   "orientation": object_.orientation,
+					   "lightRadius": object_.lightRadius,
+					   "lightIntensity": object_.lightIntensity}
 				#if hasattr(object_.extra, "subtype"):
 				#	obj["subtype"] = object_.extra.subtype
 

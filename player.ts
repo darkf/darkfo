@@ -38,6 +38,9 @@ class Player extends Critter {
 
 	inventory = [createObjectWithPID(41).setAmount(1337)]
 
+	lightRadius = 4
+	lightIntensity = 65536
+
 	toString() { return "The Dude" }
 
 	/*

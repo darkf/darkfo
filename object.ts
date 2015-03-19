@@ -398,6 +398,9 @@ class Obj {
 	position: Point = {x: -1, y: -1};
 	inventory: Obj[] = [];
 
+	lightRadius: number = 0;
+	lightIntensity: number = 655;
+
 	static fromPID(pid: number, sid?: number): Obj {
 		return Obj.fromPID_(new Obj(), pid, sid)
 	}
@@ -448,6 +451,8 @@ class Obj {
 			obj.type = mobj.type
 		obj.art = mobj.art
 		obj.position = mobj.position
+		obj.lightRadius = mobj.lightRadius
+		obj.lightIntensity = mobj.lightIntensity
 		obj.subtype = mobj.subtype
 		obj.amount = mobj.amount
 		obj.inventory = mobj.inventory
