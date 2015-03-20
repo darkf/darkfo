@@ -525,7 +525,12 @@ class Obj {
 
 	move(position: Point, curIdx?: number): void {
 		this.position = position
+
+		// rebuild the lightmap
+		if(doFloorLighting)
+			Lightmap.rebuildLight()
 		
+		// give us a new z-order
 		if(doZOrder !== false)
 			objectZOrder(this, curIdx)
 	}

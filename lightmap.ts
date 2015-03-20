@@ -66,7 +66,7 @@ module Lightmap {
 	// obj_adjust_light(eax=obj_ptr, ebx=0, edx=0)
 	// edx controls whether light is added or subtracted
 
-	export function obj_adjust_light(obj: Obj, isSub: boolean=false) {
+	function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 		var pos = obj.position
 		var lightModifier = isSub ? light_subtract_from_tile : light_add_to_tile
 
@@ -692,11 +692,20 @@ module Lightmap {
 		return toTileNum(hex)
 	}
 
-	export function obj_rebuild_all_light(): void {
+	function obj_rebuild_all_light(): void {
 		light_reset()
 
 		gObjects.forEach(obj => {
 			obj_adjust_light(obj, false)
 		})
+	}
+
+	export function resetLight(): void {
+		light_reset()
+		obj_light_table_init()
+	}
+
+	export function rebuildLight(): void {
+		obj_rebuild_all_light()
 	}
 }

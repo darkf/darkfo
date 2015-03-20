@@ -340,6 +340,12 @@ function changeElevation(level: number, updateScripts?: boolean) {
 		scriptingEngine.updateMap(gMapScript, objectsAndSpatials, currentElevation)
 	}
 
+	// rebuild the lightmap
+	if(doFloorLighting) {
+		Lightmap.resetLight()
+		Lightmap.rebuildLight()
+	}
+
 	centerCamera(player.position)
 }
 
