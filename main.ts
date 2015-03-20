@@ -301,7 +301,7 @@ function hexLinecast(a, b) {
 	return null
 }
 
-function objectsAtPosition(position) {
+function objectsAtPosition(position: Point) {
 	var ret = []
 	for(var i = 0; i < gObjects.length; i++) {
 		if(gObjects[i].position.x === position.x && gObjects[i].position.y === position.y) {
@@ -311,7 +311,7 @@ function objectsAtPosition(position) {
 	return ret
 }
 
-function critterAtPosition(position) {
+function critterAtPosition(position: Point) {
 	var objects = objectsAtPosition(position)
 	for(var i = 0; i < objects.length; i++) {
 		if(objects[i].type === "critter")

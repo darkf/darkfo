@@ -1,11 +1,33 @@
-// obj_adjust_light(eax=obj_ptr, ebx=0, edx=0)
-// edx controls whether light is added or subtracted
+/*
+Copyright 2015 darkf
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// Generates a lightmap for floor lighting
+
+// You should call obj_light_table_init whenever the tilemap
+// changes (such as through elevation change, or map load.)
+//
+// obj_rebuild_all_light should be called whenever an object
+// moves or the tilemap changes.
 
 function light_reset(): void {
 	for(var i = 0; i < tile_intensity.length; i++)
 		tile_intensity[i] = 655
 }
 
+// tile lightmap
 var tile_intensity = new Array(40000)
 light_reset()
 
@@ -40,6 +62,9 @@ function objectAt(pos: Point) {
 	return null
 }
 
+// obj_adjust_light(eax=obj_ptr, ebx=0, edx=0)
+// edx controls whether light is added or subtracted
+
 function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 	var pos = obj.position
 	var lightModifier = isSub ? light_subtract_from_tile : light_add_to_tile
@@ -55,8 +80,6 @@ function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 		isInit = true
 	}
 
-
-	//var v30 = // light_offsets byte offset, todo
 	var edx: any, eax
 	edx = (pos.x%2)*3 * 32
 	eax = edx*9
@@ -65,18 +88,11 @@ function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 
 	var light_per_dist = /* obj.lightIntensity - */ (((obj.lightIntensity - 655) / (obj.lightRadius+1)) | 0)
 
-	console.log("light per dist: %d", light_per_dist)
+	//console.log("light per dist: %d", light_per_dist)
 
 	var stackArray = new Array(36)
 	var idx = 0
 	var light = obj.lightIntensity
-	/*for(var radius = 1; radius <= 8; radius++) {
-		light -= light_per_dist
-		
-		for(var i = 0; i < radius; i++) {
-			stackArray[idx++] = light
-		}
-	}*/
 
 	light -= light_per_dist
 	stackArray[0] = light
