@@ -974,14 +974,17 @@ function drawFloor(matrix, useColorTable: boolean=true) {
 				var isTriangleLit = Lighting.initTile(hex)
 				var framebuffer
 				var intensity_
-				var intensity
 
 				if(isTriangleLit)
 					framebuffer = Lighting.computeFrame()
 
 				// render tile
-				for(var y = 0; y < 36; y++) {
-					for(var x = 0; x < 80; x++) {
+				var w = Math.min(SCREEN_WIDTH - sx, 80)
+				var h = Math.min(SCREEN_HEIGHT - sy, 36)
+				for(var y = 0; y < h; y++) {
+					for(var x = 0; x < w; x++) {
+						if((sx + x) < 0 || (sy + y) < 0)
+							continue
 						var tileIndex = getPixelIndex(x, y, tileData)
 						if(tileData.data[tileIndex + 3] === 0) // transparent pixel
 							continue
@@ -994,7 +997,7 @@ function drawFloor(matrix, useColorTable: boolean=true) {
 							intensity_ = Lighting.vertices[3]
 						}
 
-						intensity = Math.min(1.0, intensity_/65536)
+						var intensity = Math.min(1.0, intensity_/65536)
 
 						// blit to the framebuffer
 						if(useColorTable) {
