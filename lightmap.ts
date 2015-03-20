@@ -41,8 +41,10 @@ function objectAt(pos: Point) {
 }
 
 function obj_adjust_light(obj: Obj, isSub: boolean=false) {
-	var pos = obj.position;
-	(isSub ? light_subtract_from_tile : light_add_to_tile)(toTileNum(obj.position), obj.lightIntensity)
+	var pos = obj.position
+	var lightModifier = isSub ? light_subtract_from_tile : light_add_to_tile
+
+	lightModifier(toTileNum(obj.position), obj.lightIntensity)
 
 	obj.lightIntensity = Math.min(obj.lightIntensity, 65536)
 
@@ -282,18 +284,68 @@ function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 					v14 = eax
 
 					if(eax > 0 && eax < 40000) {
-						//throw "todo"
-						esi = objectAt(fromTileNum(eax))
+						//esi = objectAt(fromTileNum(eax))
 						edi = 1
-						if(esi !== null) {
+						// for each object at position eax
+						var objs = objectsAtPosition(fromTileNum(eax))
+						for(var objsN = 0; objsN < objs.length; objsN++) {
+							var curObj = objs[objsN]
+							if(!curObj.pro)
+								continue
 
-							/* for each object at position eax (todo: objectsAt) */
-							do {
-								// something with flags
-								vc = 0 // hack, temporary
-								//edi = 0
+							// vc = light blocked
+
+							// if(curObj+24h & 1 === 0) { continue }
+							if((curObj.flags & 1) !== 0) { // ?
+								console.log("continue (%s)", curObj.flags.toString(16))
+								continue
 							}
-							while(false) // next object
+
+							// edx = !(curObj+27h & 0x20)
+							vc = !((curObj.flags >> 24) & 0x20) // LightThru flag?
+							console.log("vc = %o", vc)
+
+							// ebx = (curObj+20h) & 0x0F000000 >> 24
+							if(curObj.type === "wall") {
+							    console.log("obj flags: " + curObj.flags.toString(16))
+								if(!(curObj.flags & 8)) // Flat flag?
+								{
+								    //proto_ptr(*(v37 + 100), &v43, 3, v11);
+								    //var flags = (pro+24)
+								    var flags = curObj.pro.flags // flags directly from PRO?
+								    console.log("pro flags: " + flags.toString(16))
+								    if(flags & 0x8000000 || flags & 0x40000000) {
+								    	if(ecx != 4 && ecx != 5 && (ecx || ebp >= 8) && (ecx != 3 || ebp <= 15))
+								    		edi = 0
+								    }
+								    else if(flags & 0x10000000) {
+								    	if(ecx && ecx != 5)
+								    		edi = 0
+								    }
+								    else if(flags & 0x20000000) {
+								    	if(ecx && ecx != 1 && ecx != 4 && ecx != 5 && (ecx != 3 || ebp <= 15))
+								    		edi = 0
+								    }
+								    else if(ecx && ecx != 1 && (ecx != 5 || ebp <= 7)) {
+								    	edi = 0
+								    }
+								    console.log("edi: " + edi)
+								}
+							}
+							else { // TODO: check logic
+								if(edx !== 0) {
+									if(ecx >= 2) {
+										if(ecx === 3) {
+											edi = 0
+										}
+									}
+									else if(ecx === 1)
+										edi = 0
+								}
+							}
+
+							//vc = 0 // hack, temporary
+							//edi = 0
 						}
 
 						if(edi !== 0) {
@@ -301,10 +353,8 @@ function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 							edx = v14
 							//console.log("ebx: %d, index: %d", stackArray[ebx/4|0], ebx/4|0);
 							ebx = stackArray[ebx/4|0]
-							//eax = obj+28
-							//throw "obj+28h?";
-							eax = 0; // obj+28h, aka elevation
-							(isSub ? light_subtract_from_tile : light_add_to_tile)(edx, ebx)
+							eax = 0 // obj+28h, aka elevation
+							lightModifier(edx, ebx)
 
 						}
 					}
@@ -314,7 +364,7 @@ function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 				edx = v18
 				ebx = v18
 				ecx++ // j++
-				light_blocked[edx /* /4|0 */] = eax
+				light_blocked[edx/4|0] = eax
 
 				edx = v1c
 				ebx += 144
