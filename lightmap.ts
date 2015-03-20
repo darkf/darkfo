@@ -130,21 +130,10 @@ function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 	stackArray[0x88/4|0] = light
 	stackArray[0x8C/4|0] = light
 
-	/*
-	console.log("stackArray: %o", stackArray)
-	console.log("stackArray hex:")
-	for(var i = 0; i < stackArray.length; i++)
-		console.log("[%d] = %s", i, stackArray[i].toString(16))
-	*/
-
-	var light_blocked = new Array(40000) // ? 36?
-	//var light_distance = new Array(40000) // ? 36?
-	//var light_offsets = new Array(40000); // ?
+	var light_blocked = new Array(36)
 
 	// zero arrays
 	zeroArray(light_blocked)
-	//zeroArray(light_distance)
-	//zeroArray(light_offsets)
 
 	var ebp = 0 // i
 	var loopCnt = 0 // var_2c / v2c: loop counter from 0 to 36*4, in 4 byte increments
@@ -162,14 +151,17 @@ function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 			var v1c = eax
 
 			var v18 = loopCnt
+			var v26, v27, v28, v29, v31, v32, v33, v34 // temporaries
 
 			var ecx = 0 // loop counter (j)
 			do {
-				edx = ecx+1
-				eax = edx/6 | 0
+				//edx = ecx+1
+				//eax = edx/6 | 0
+				edx = (ecx + 1) % 6
 
 				if(ebp <= 35) {
-					switch(v20) {
+					switch(v20/4|0) {
+						/*
 						case 0*4:
 							eax = 0
 							vc = 0
@@ -267,10 +259,130 @@ function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 							//if(vc === 0)
 							//	loc_4A7500 = 1
 							break
+						*/
+
+			            case 0:
+			              vc = 0;
+			              break;
+			            case 1:
+			              vc = light_blocked[36 * ecx];
+			              break
+			            case 2:
+			              vc = light_blocked[36 * ecx + 1];
+			              break
+			            case 3:
+			              vc = light_blocked[36 * ecx + 2];
+			              break
+			            case 4:
+			              vc = light_blocked[36 * ecx + 3];
+			              break
+			            case 5:
+			              vc = light_blocked[36 * ecx + 4];
+			              break
+			            case 6:
+			              vc = light_blocked[36 * ecx + 5];
+			              break
+			            case 7:
+			              vc = light_blocked[36 * ecx + 6];
+			              break
+			            case 8:
+			              vc = light_blocked[36 * edx] & light_blocked[36 * ecx];
+			              break
+			            case 9:
+			              vc = light_blocked[36 * ecx + 1] & light_blocked[36 * ecx + 8];
+			              break
+			            case 0xA:
+			              vc = light_blocked[36 * ecx + 2] & light_blocked[36 * ecx + 9];
+			              break
+			            case 0xB:
+			              vc = light_blocked[36 * ecx + 3] & light_blocked[36 * ecx + 10];
+			              break
+			            case 0xC:
+			              vc = light_blocked[36 * ecx + 4] & light_blocked[36 * ecx + 11];
+			              break
+			            case 0xD:
+			              vc = light_blocked[36 * ecx + 5] & light_blocked[36 * ecx + 12];
+			              break
+			            case 0xE:
+			              vc = light_blocked[36 * ecx + 6] & light_blocked[36 * ecx + 13];
+			              break
+			            case 0xF:
+			              vc = light_blocked[36 * edx + 1] & light_blocked[36 * ecx + 8];
+			              break
+
+			            // 16...
+			            case 0x10:
+			              vc = light_blocked[36 * ecx + 15] & light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 8];
+			              break;
+			            case 0x11:
+			              v26 = light_blocked[36 * ecx + 10] | light_blocked[36 * ecx + 9];
+			              vc = light_blocked[36 * ecx + 9] & (light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 10]) | light_blocked[36 * ecx + 16] & v26 | v26 & light_blocked[36 * ecx + 8];
+			              break;
+			            case 0x12:
+			              vc = (light_blocked[36 * ecx + 11] | light_blocked[36 * ecx + 10] | light_blocked[36 * ecx + 9] | light_blocked[36 * ecx]) & light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 16] & light_blocked[36 * ecx + 10];
+			              break;
+			            case 0x13:
+			              vc = light_blocked[36 * ecx + 18] & light_blocked[36 * ecx + 12] | light_blocked[36 * ecx + 10] | light_blocked[36 * ecx + 9] | (light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17]) & light_blocked[36 * ecx + 11];
+			              break;
+			            case 0x14:
+			              v27 = light_blocked[36 * ecx + 12] | light_blocked[36 * ecx + 11] | light_blocked[36 * ecx + 2];
+			              vc = (light_blocked[36 * ecx + 19] | light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 16]) & light_blocked[36 * ecx + 11] | v27 & light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 9] & v27 | light_blocked[36 * ecx + 10];
+			              break;
+			            case 0x15:
+			              vc = light_blocked[36 * edx + 2] & light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8] & light_blocked[36 * edx + 1];
+			              break;
+			            case 0x16:
+			              vc = (light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15]) & light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 15] & (light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 9]) | (light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15] | light_blocked[36 * edx + 1]) & light_blocked[36 * ecx + 8];
+			              break;
+			            case 0x17:
+			              vc = light_blocked[36 * ecx + 22] & light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 15] & light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 3] | light_blocked[36 * ecx + 16];
+			              break;
+			            case 0x18:
+			              v28 = light_blocked[36 * ecx + 23];
+			              vc = v28 & light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17] & (v28 | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 15]) | light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 9] & (light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 15]) | (light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 10] | light_blocked[36 * ecx + 9] | light_blocked[36 * ecx]) & light_blocked[36 * ecx + 16];
+			              break;
+			            case 0x19:
+			              v29 = light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 8];
+			              vc = light_blocked[36 * ecx + 24] & (light_blocked[36 * ecx + 19] | light_blocked[36 * ecx]) | light_blocked[36 * ecx + 18] & (light_blocked[36 * ecx + 24] | light_blocked[36 * ecx + 23] | v29) | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 10] & (light_blocked[36 * ecx + 24] | v29 | light_blocked[36 * ecx + 17]) | light_blocked[36 * ecx + 1] & light_blocked[36 * ecx + 8] | (light_blocked[36 * ecx + 24] | light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8]) & light_blocked[36 * ecx + 9];
+			              break;
+			            case 0x1A:
+			              vc = light_blocked[36 * edx + 3] & light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 8] & light_blocked[36 * edx + 1] | light_blocked[36 * edx + 2] & light_blocked[36 * ecx + 15];
+			              break;
+			            case 0x1B:
+			              vc = light_blocked[36 * ecx + 21] & (light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 8]) | light_blocked[36 * ecx + 15] | light_blocked[36 * edx + 1] & light_blocked[36 * ecx + 8] | (light_blocked[36 * ecx + 26] | light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15] | light_blocked[36 * edx]) & light_blocked[36 * ecx + 22];
+			              break;
+			            case 0x1C:
+			              vc = light_blocked[36 * ecx + 27] & light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 22] & (light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 9]) | light_blocked[36 * ecx + 16] & (light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 21] | light_blocked[36 * edx]) | light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 15] & (light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 9]);
+			              break;
+			            case 0x1D:
+			              vc = light_blocked[36 * ecx + 28] & light_blocked[36 * ecx + 24] | light_blocked[36 * ecx + 22] & light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 15] & light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 23];
+			              break;
+			            case 0x1E:
+			              vc = light_blocked[36 * edx + 4] & light_blocked[36 * ecx + 26] | light_blocked[36 * edx + 2] & light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8] & light_blocked[36 * edx + 1] | light_blocked[36 * edx + 3] & light_blocked[36 * ecx + 21];
+			              break;
+			            case 0x1F:
+			              vc = light_blocked[36 * ecx + 30] & light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 26] & (light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 8]) | light_blocked[36 * ecx + 15] | light_blocked[36 * edx + 1] & light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 21];
+			              break;
+			            case 0x20:
+			              v30 = light_blocked[36 * edx + 1] & light_blocked[36 * ecx + 8] | (light_blocked[36 * ecx + 28] | light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 8]) & light_blocked[36 * ecx + 15];
+			              v31 = light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 8];
+			              vc = light_blocked[36 * ecx + 28] & (light_blocked[36 * ecx + 31] | light_blocked[36 * ecx]) | light_blocked[36 * ecx + 27] & (light_blocked[36 * ecx + 28] | light_blocked[36 * ecx + 23] | v31) | light_blocked[36 * ecx + 22] | v30 | light_blocked[36 * ecx + 21] & (v31 | light_blocked[36 * ecx + 28]);
+			              break;
+			            case 0x21:
+			              v32 = 36 * edx;
+			              vc = light_blocked[v32 + 5] & light_blocked[36 * ecx + 30] | light_blocked[v32 + 3] & light_blocked[36 * ecx + 21] | light_blocked[v32 + 2] & light_blocked[36 * ecx + 15] | light_blocked[v32 + 1] & light_blocked[36 * ecx + 8] | light_blocked[v32 + 4] & light_blocked[36 * ecx + 26];
+			              break;
+			            case 0x22:
+			              v33 = light_blocked[36 * ecx + 30] | light_blocked[36 * ecx + 26] | light_blocked[36 * edx + 2];
+			              vc = (light_blocked[36 * ecx + 31] | light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 16]) & light_blocked[36 * ecx + 26] | light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15] & v33 | v33 & light_blocked[36 * ecx + 8];
+			              break;
+			            case 0x23:
+			              v34 = 36 * edx;
+			              vc = light_blocked[v34 + 6] & light_blocked[36 * ecx + 33] | light_blocked[v34 + 4] & light_blocked[36 * ecx + 26] | light_blocked[v34 + 3] & light_blocked[36 * ecx + 21] | light_blocked[v34 + 2] & light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8] & light_blocked[v34 + 1] | light_blocked[v34 + 5] & light_blocked[36 * ecx + 30];
+			              break;
 
 						default:
 							console.log("UNHANDLED SWITCH: v20=" + v20 + " (case " + (v20/4|0) + ")")
-							eax = 0
 							vc = 0
 					}
 				}
@@ -303,17 +415,17 @@ function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 
 							// edx = !(curObj+27h & 0x20)
 							vc = !((curObj.flags >> 24) & 0x20) // LightThru flag?
-							console.log("vc = %o", vc)
+							//console.log("vc = %o", vc)
 
 							// ebx = (curObj+20h) & 0x0F000000 >> 24
 							if(curObj.type === "wall") {
-							    console.log("obj flags: " + curObj.flags.toString(16))
+							    //console.log("obj flags: " + curObj.flags.toString(16))
 								if(!(curObj.flags & 8)) // Flat flag?
 								{
 								    //proto_ptr(*(v37 + 100), &v43, 3, v11);
 								    //var flags = (pro+24)
 								    var flags = curObj.pro.flags // flags directly from PRO?
-								    console.log("pro flags: " + flags.toString(16))
+								    //console.log("pro flags: " + flags.toString(16))
 								    if(flags & 0x8000000 || flags & 0x40000000) {
 								    	if(ecx != 4 && ecx != 5 && (ecx || ebp >= 8) && (ecx != 3 || ebp <= 15))
 								    		edi = 0
@@ -329,7 +441,6 @@ function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 								    else if(ecx && ecx != 1 && (ecx != 5 || ebp <= 7)) {
 								    	edi = 0
 								    }
-								    console.log("edi: " + edi)
 								}
 							}
 							else { // TODO: check logic
@@ -343,6 +454,7 @@ function obj_adjust_light(obj: Obj, isSub: boolean=false) {
 										edi = 0
 								}
 							}
+						    //console.log("edi: " + edi)
 
 							//vc = 0 // hack, temporary
 							//edi = 0
