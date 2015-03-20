@@ -134,9 +134,6 @@ module Lighting {
 
 	var ambient = 0xA000 // ambient light level
 
-	// Tile lightmap
-	declare var tile_intensity: number[];
-
 	// Color look-up table by light intensity
 	export declare var intensityColorTable: number[];
 
@@ -144,7 +141,7 @@ module Lighting {
 	export var colorRGB: any = null; // palette index -> string color integer
 
 	function light_get_tile(tilenum: number): number {
-		return Math.min(65536, tile_intensity[tilenum])
+		return Math.min(65536, Lightmap.tile_intensity[tilenum])
 	}
 
 	function init(tilenum: number): boolean {
