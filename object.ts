@@ -307,13 +307,18 @@ function objectZOrder(obj: Obj, index: number): void {
 
 	gObjects.splice(oldIdx, 1) // remove the object...
 
+	var inserted = false
 	for(var i = 0; i < gObjects.length; i++) {
 		var zc = objectZCompare(obj, gObjects[i])
 		if(zc === -1) {
 			gObjects.splice(i, 0, obj) // insert at new index
+			inserted = true
 			break
 		}
 	}
+
+	if(!inserted) // couldn't find a spot, just add it in
+		gObjects.push(obj)
 }
 
 function zsort(objects: Obj[]): void {
@@ -374,6 +379,7 @@ class Obj {
 	pidID: number; // ID (not type) part of the PID
 	type: string = null; // TODO: enum // Type of object (critter, item, ...)
 	pro: any = null; // TODO: pro ref // PRO Object
+	flags: number = 0; // Flags from PRO; may be overriden by map objects
 	art: string; // TODO: Path // Art path
 	frmPID: number = null; // Art FID
 	orientation: number = null; // Direction the object is facing
@@ -414,6 +420,7 @@ class Obj {
 		obj.type = getPROTypeName(pidType)
 		obj.pid = pid
 		obj.pro = pro
+		obj.flags = obj.pro.flags
 
 		// TODO: Subclasses
 		if(pidType == 0) { // item
@@ -460,6 +467,7 @@ class Obj {
 		obj.extra = mobj.extra
 
 		obj.pro = mobj.pro || loadPRO(obj.pid, obj.pidID)
+		obj.flags = obj.pro.flags// TODO: mobj.flags // TODO: do we include PRO flags as well?
 
 		// etc? TODO: check this!
 
