@@ -997,26 +997,25 @@ function drawFloor(matrix, useColorTable: boolean=true) {
 							intensity_ = Lighting.vertices[3]
 						}
 
-						var intensity = Math.min(1.0, intensity_/65536)
-
 						// blit to the framebuffer
 						if(useColorTable) {
 							var orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
-							var palIdx = Lighting.colorLUT[orig_color.toString()] | 0
+							var palIdx = Lighting.colorLUT[orig_color] | 0
 							var tableIdx = palIdx*256 + (intensity_/512 | 0)
 							var colorPal = Lighting.intensityColorTable[tableIdx]
-							var color = Lighting.colorRGB[colorPal.toString()]
+							var color = Lighting.colorRGB[colorPal]
 
 							imageData.data[index + 0] = color[0]
 							imageData.data[index + 1] = color[1]
 							imageData.data[index + 2] = color[2]
-							imageData.data[index + 3] = 255
+							//imageData.data[index + 3] = 255
 						}
 						else {
+							var intensity = Math.min(1.0, intensity_/65536)
 							imageData.data[index + 0] = Math.floor(tileData.data[tileIndex + 0] * intensity)
 							imageData.data[index + 1] = Math.floor(tileData.data[tileIndex + 1] * intensity)
 							imageData.data[index + 2] = Math.floor(tileData.data[tileIndex + 2] * intensity)
-							imageData.data[index + 3] = 255
+							//imageData.data[index + 3] = 255
 						}
 					}
 				}
