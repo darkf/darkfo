@@ -40,6 +40,7 @@ var currentElevation = 0 // current map elevation
 var hexOverlay = null
 var tempCanvas = null // temporary canvas used for detecting single pixels
 var tempCanvasCtx = null // and the context for it
+var tileDataCache = {}
 //var cursor = {x: 10, y: 10}
 
 // position of viewport camera (will be overriden by map starts or scripts)
@@ -965,11 +966,16 @@ function drawFloor(matrix, useColorTable: boolean=true) {
 				//hexes.push(hex)
 				//hex.x = 199 - hex.x
 
-				// temp canvas to get tile framebuffer
-				var tmpCanvas = document.createElement('canvas')
-				var ctx = tmpCanvas.getContext('2d')
-				ctx.drawImage(images[img].img, 0, 0)
-				var tileData = ctx.getImageData(0, 0, images[img].img.width, images[img].img.height)
+				if(tileDataCache[img] === undefined) {
+					// temp canvas to get tile framebuffer
+					var tmpCanvas = document.createElement('canvas')
+					var ctx = tmpCanvas.getContext('2d')
+					ctx.drawImage(images[img].img, 0, 0)
+					var tileData = ctx.getImageData(0, 0, images[img].img.width, images[img].img.height)
+					tileDataCache[img] = tileData
+				}
+				else
+					tileData = tileDataCache[img]
 
 				var isTriangleLit = Lighting.initTile(hex)
 				var framebuffer
@@ -1000,7 +1006,7 @@ function drawFloor(matrix, useColorTable: boolean=true) {
 						// blit to the framebuffer
 						if(useColorTable) {
 							var orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
-							var palIdx = Lighting.colorLUT[orig_color] | 0
+							var palIdx = Lighting.colorLUT[orig_color]
 							var tableIdx = palIdx*256 + (intensity_/512 | 0)
 							var colorPal = Lighting.intensityColorTable[tableIdx]
 							var color = Lighting.colorRGB[colorPal]
@@ -1220,6 +1226,8 @@ heart.draw = function() {
 	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
 	//heart.graphics.print("mt: " + mouseTile.x + "," + mouseTile.y, 100, 15)
 	heart.graphics.print("m: " + mousePos[0] + ", " + mousePos[1], 175, 15)
+
+	heart.graphics.print("fps: " + heart.timer.getFPS(), SCREEN_WIDTH - 50, 15)
 
 	for(var i = 0; i < floatMessages.length; i++) {
 		var bbox = objectBoundingBox(floatMessages[i].obj)
