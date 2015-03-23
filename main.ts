@@ -124,6 +124,8 @@ var calledShotKey = "z"
 // the global player object
 var player = new Player()
 
+var renderer: Renderer = null
+
 function repr(obj) { return JSON.stringify(obj, null, 2) }
 
 function lazyLoadImage(art: string, callback?: (x:any) => void, isHeartImg?: boolean) {
@@ -460,6 +462,8 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 
 	load("hex_outline", function(r) { hexOverlay = r })
 	loadingAssetsTotal-- // we should know all of the assets we need by now
+
+	renderer.initData(roofMap, floorMap, gObjects)
 }
 
 function parseMapInfo() {
@@ -530,7 +534,8 @@ function loadMapID(mapID: number, startingPosition?: any, startingElevation?: an
 }
 
 heart.load = function() {
-	heart.attach("cnv")
+	renderer = new CanvasRenderer()
+	renderer.init()
 
 	uiLog("Welcome to DarkFO")
 
@@ -1039,25 +1044,6 @@ function drawFloor(matrix, useColorTable: boolean=true) {
 	})
 }
 
-function drawTileMap(matrix, offsetY) {
-	for(var i = 0; i < matrix.length; i++) {
-		for(var j = 0; j < matrix[0].length; j++) {
-			var tile = matrix[j][i]
-			if(tile === "grid000") continue
-			var img = "art/tiles/" + tile
-
-			if(images[img] !== undefined) {
-				var scr = tileToScreen(i, j)
-				scr.y += offsetY
-				if(scr.x+TILE_WIDTH < cameraX || scr.y+TILE_HEIGHT < cameraY ||
-				   scr.x >= cameraX+SCREEN_WIDTH || scr.y >= cameraY+SCREEN_HEIGHT)
-					continue
-				heart.graphics.draw(images[img], scr.x - cameraX, scr.y - cameraY)
-			}
-		}
-	}
-}
-
 // get an object's bounding box in screen-space (note: not camera-space)
 function objectBoundingBox(obj) {
 	var scr = hexToScreen(obj.position.x, obj.position.y)
@@ -1094,153 +1080,8 @@ function objectOnScreen(obj) {
 	return true
 }
 
-function drawObject(obj) {
-	var scr = hexToScreen(obj.position.x, obj.position.y)
-
-	if(images[obj.art] === undefined) {
-		lazyLoadImage(obj.art) // try to load it in
-		return
-	}
-
-	var info = imageInfo[obj.art]
-	if(info === undefined)
-		throw "No image map info for: " + obj.art
-
-	var frameIdx = 0
-	if(obj.frame !== undefined)
-		frameIdx += obj.frame
-
-	if(!(obj.orientation in info.frameOffsets))
-		obj.orientation = 0 // ...
-	var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
-	var dirOffset = info.directionOffsets[obj.orientation]
-	var offsetX = Math.floor(frameInfo.w / 2) - dirOffset.x - frameInfo.ox
-	var offsetY = frameInfo.h - dirOffset.y - frameInfo.oy
-	var scrX = scr.x - offsetX, scrY = scr.y - offsetY
-
-	if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
-	   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
-		return // out of screen bounds, no need to draw
-
-	heart.ctx.drawImage(images[obj.art].img,
-		frameInfo.sx, 0, frameInfo.w, frameInfo.h,
-		scrX - cameraX,
-		scrY - cameraY,
-		frameInfo.w, frameInfo.h
-	)
-}
-
 heart.draw = function() {
-	if(isLoading === true) {
-		heart.graphics.setColor(0, 0, 0)
-		var w = 256, h = 40
-		var w2 = (loadingAssetsLoaded / loadingAssetsTotal) * w
-		// draw a loading progress bar
-		heart.graphics.rectangle("stroke", SCREEN_WIDTH/2 - w/2, SCREEN_HEIGHT/2,
-				w, h)
-		heart.graphics.rectangle("fill", SCREEN_WIDTH/2 - w/2 + 2, SCREEN_HEIGHT/2 + 2,
-				w2 - 4, h - 4)
-		return
-	}
-	heart.graphics.setColor(255, 255, 255)
-
-	var mousePos = heart.mouse.getPosition()
-	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
-	//var mouseTile = tileFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
-
-	// draw tile grids
-	if(showFloor === true && floorMap !== null) {
-		if(doFloorLighting)
-			drawFloor(floorMap)
-		else
-			drawTileMap(floorMap, 0)
-	}
-
-	// draw hex grid overlay
-	if(showHexOverlay === true || showCoordinates === true) {
-		for(var y = 0; y < HEX_GRID_SIZE; y++) {
-			for(var x = 0; x < HEX_GRID_SIZE; x++) {
-				var scr = hexToScreen(x, y)
-				heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
-				if(showCoordinates === true) {
-					heart.graphics.print(x + "," + y, scr.x - 3 - cameraX, scr.y - 3 - cameraY)
-				}
-				if(showCoordinates === false && (x === mouseHex.x && y === mouseHex.y)) {
-					heart.graphics.print("m", scr.x - 3 - cameraX, scr.y - 3 - cameraY)
-				}
-			}
-		}
-	} else {
-		if(showCursor === true) {
-			var scr = hexToScreen(mouseHex.x, mouseHex.y)
-			heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
-		}
-
-		if(showPath === true && player.path !== null) {
-			for(var i = 0; i < player.path.path.length; i++) {
-				var scr = hexToScreen(player.path.path[i][0], player.path.path[i][1])
-				heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
-			}
-		} 
-	}
-
-	// draw objects and player
-	if(showObjects === true) {
-		for(var i = 0; i < gObjects.length; i++)
-			if(gObjects[i].visible !== false && (gObjects[i].type !== "wall" || showWalls)) {
-				drawObject(gObjects[i])
-
-				if(showBoundingBox === true) {
-					var bbox = objectBoundingBox(gObjects[i])
-					if(bbox === null) continue
-					heart.graphics.setColor(255, 0, 0)
-					heart.graphics.rectangle("stroke", bbox.x - cameraX, bbox.y - cameraY,
-						                     bbox.w, bbox.h)
-				}
-			}
-	}
-
-	if(showRoof === true && roofMap !== null)
-		drawTileMap(roofMap, -96);
-
-	/*if(floorMap[mouseTile.y] !== undefined) {
-		var tileImg = floorMap[mouseTile.y][mouseTile.x]
-		heart.graphics.print("tile: " + tileImg, 5, 60)
-	}*/
-
-	if(inCombat === true) {
-		var whose = combat.inPlayerTurn ? "player" : critterGetName(combat.combatants[combat.whoseTurn])
-		var AP = combat.inPlayerTurn ? player.AP : combat.combatants[combat.whoseTurn].AP
-		heart.graphics.print("[turn " + combat.turnNum + " of " + whose + " AP: " + AP.getAvailableMoveAP() + "]", SCREEN_WIDTH - 200, 15)
-	}
-
-	if(showSpatials === true && doSpatials !== false) {
-		for(var i = 0; i < gSpatials.length; i++) {
-			var spatial = gSpatials[i]
-			var scr = hexToScreen(spatial.position.x, spatial.position.y)
-			heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
-			heart.graphics.print(spatial.script, scr.x - 10 - cameraX, scr.y - 3 - cameraY)
-		}
-	}
-
-	heart.graphics.print("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
-	//heart.graphics.print("mt: " + mouseTile.x + "," + mouseTile.y, 100, 15)
-	heart.graphics.print("m: " + mousePos[0] + ", " + mousePos[1], 175, 15)
-
-	heart.graphics.print("fps: " + heart.timer.getFPS(), SCREEN_WIDTH - 50, 15)
-
-	for(var i = 0; i < floatMessages.length; i++) {
-		var bbox = objectBoundingBox(floatMessages[i].obj)
-		if(bbox === null) continue
-		heart.ctx.fillStyle = floatMessages[i].color
-		var centerX = bbox.x - bbox.w/2 - cameraX
-		heart.graphics.print(floatMessages[i].msg, centerX, bbox.y - cameraY - 16)
-	}
-
-	if(player.dead === true) {
-		heart.graphics.setColor(255, 0, 0, 50)
-		heart.graphics.rectangle("fill", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-	}
+	return renderer.render()
 }
 
 function dialogueReply(id) { scriptingEngine.dialogueReply(id) }
