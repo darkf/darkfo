@@ -3,7 +3,13 @@ class WebGLRenderer extends Renderer {
 	gl: any;
 	offsetLocation: any;
 	positionLocation: any;
-	uOffsetLocation: any;
+	texCoordLocation: any;
+	//uOffsetLocation: any;
+	uScaleLocation: any;
+	//uNumFramesLocation: any;
+	//uFrameLocation: any;
+	objectUVBuffer: any;
+	texCoordBuffer: any;
 	tileBuffer: any;
 	tileShader: any;
 	textures: {[key: string]: any} = {}; // WebGL texture cache
@@ -80,13 +86,17 @@ class WebGLRenderer extends Renderer {
 	    var resolutionLocation = gl.getUniformLocation(this.tileShader, "u_resolution")
 	    gl.uniform2f(resolutionLocation, this.canvas.width, this.canvas.height)
 
-	    var texCoordLocation = gl.getAttribLocation(this.tileShader, "a_texCoord")
+	    this.texCoordLocation = gl.getAttribLocation(this.tileShader, "a_texCoord")
+	    //this.uNumFramesLocation = gl.getUniformLocation(this.tileShader, "u_numFrames")
+	    //this.uFrameLocation = gl.getUniformLocation(this.tileShader, "u_frame")
 
-	    this.uOffsetLocation = gl.getUniformLocation(this.tileShader, "u_uOffset")
+	    //this.uOffsetLocation = gl.getUniformLocation(this.tileShader, "u_uOffset")
+	    this.uScaleLocation = gl.getUniformLocation(this.tileShader, "u_scale")
+
 
 	    // provide texture coordinates for the rectangle.
-	    var texCoordBuffer = gl.createBuffer();
-	    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+	    this.texCoordBuffer = gl.createBuffer();
+	    gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
 	    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
 	        0.0,  0.0,
 	        1.0,  0.0,
@@ -94,16 +104,33 @@ class WebGLRenderer extends Renderer {
 	        0.0,  1.0,
 	        1.0,  0.0,
 	        1.0,  1.0]), gl.STATIC_DRAW);
-	    gl.enableVertexAttribArray(texCoordLocation);
-	    gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+	    gl.enableVertexAttribArray(this.texCoordLocation);
+	    gl.vertexAttribPointer(this.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-	    this.tileBuffer = this.rectangleBuffer(this.gl, 0, 0, 80, 36)
+	    this.objectUVBuffer = gl.createBuffer()
+
+	    //this.tileBuffer = this.rectangleBuffer(this.gl, 0, 0, 80, 36)
+	    this.tileBuffer = this.rectangleBuffer(this.gl, 0, 0, 1, 1)
 	    gl.enableVertexAttribArray(this.positionLocation);
 	    gl.vertexAttribPointer(this.positionLocation, 2, gl.FLOAT, false, 0, 0);
 
 	    // TODO: hack
 	    // render loop
 	    //this.renderLoop()
+	}
+
+	setUVs(x: number, w: number, tw: number): void {
+		var gl = this.gl
+		var s = w/tw
+		var sx = x/tw
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.objectUVBuffer)
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+		    sx,  0.0,
+		    1.0 * s + sx,  0.0,
+		    sx,  1.0,
+		    sx,  1.0,
+		    1.0 * s + sx,  0.0,
+		    1.0 * s + sx,  1.0]), gl.STATIC_DRAW);
 	}
 
 	renderLoop(): void {
@@ -218,17 +245,30 @@ class WebGLRenderer extends Renderer {
 	}
 
 	renderRoof(roof: TileMap): void {
-		this.gl.uniform1f(this.uOffsetLocation, 0)
+		// use tile UVs
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.texCoordBuffer)
+		this.gl.enableVertexAttribArray(this.texCoordLocation)
+		this.gl.vertexAttribPointer(this.texCoordLocation, 2, this.gl.FLOAT, false, 0, 0)
+		//this.gl.uniform1f(this.uOffsetLocation, 0)
+		this.gl.uniform2f(this.uScaleLocation, 80, 36)
+		//this.gl.uniform1f(this.uNumFramesLocation, 1)
+		//this.gl.uniform1f(this.uFrameLocation, 0)
 		this.drawTileMap(roof, -96)
 	}
 
 	renderFloor(floor: TileMap): void {
-		this.gl.uniform1f(this.uOffsetLocation, 0)
+		// use tile UVs
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.texCoordBuffer)
+		this.gl.enableVertexAttribArray(this.texCoordLocation)
+		this.gl.vertexAttribPointer(this.texCoordLocation, 2, this.gl.FLOAT, false, 0, 0)
+		//this.gl.uniform1f(this.uOffsetLocation, 0)
+		this.gl.uniform2f(this.uScaleLocation, 80, 36)
+		//this.gl.uniform1f(this.uNumFramesLocation, 1)
+		//this.gl.uniform1f(this.uFrameLocation, 0)
 		this.drawTileMap(floor, 0)
 	}
 
 	renderObject(obj: Obj): void {
-		/*
 		var scr = hexToScreen(obj.position.x, obj.position.y)
 
 		if(images[obj.art] === undefined) {
@@ -252,21 +292,53 @@ class WebGLRenderer extends Renderer {
 		var offsetY = frameInfo.h - dirOffset.y - frameInfo.oy
 		var scrX = scr.x - offsetX, scrY = scr.y - offsetY
 
+		var numFrames = info.frameOffsets.length * info.frameOffsets[0].length // info.numFrames
+		//console.log(numFrames + " vs " + info.frameOffsets.length * info.frameOffsets[0].length)
+
 		if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
 		   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
 			return // out of screen bounds, no need to draw
 
 		// TODO: uses hack
 		var texture = this.getTextureFromHack(obj.art)
+		if(!texture) {
+			console.log("no texture for object")
+			return
+		}
 
-		// TODO
+		var gl = this.gl
+		// draw
+		gl.bindTexture(gl.TEXTURE_2D, texture)
+		var w = images[obj.art].getWidth()
+		//console.log( w )
+		//if(frameIdx>0) console.log(frameIdx)
+		/*if(info.frameOffsets[obj.orientation][frameIdx+1])
+			console.log(frameInfo.w + " | " +  info.frameOffsets[obj.orientation][frameIdx+1].w)*/
+		//gl.uniform1f(this.uOffsetLocation, 1.0 / (w / frameInfo.sx)) //frameInfo.sx / w) // frameInfo.sx / images[obj.art].getWidth()) //frameInfo.sx / frameInfo.w) // texture x offset
+		
+		/*this.gl.uniform1f(this.uNumFramesLocation, numFrames)
+		this.gl.uniform1f(this.uFrameLocation, frameInfo.sx / w)
+		gl.uniform2f(this.offsetLocation, scrX - cameraX, scrY - cameraY) // pos
+		gl.uniform2f(this.uScaleLocation, frameInfo.w, frameInfo.h) // size*/
 
+		gl.uniform2f(this.offsetLocation, scrX - cameraX, scrY - cameraY) // pos
+		gl.uniform2f(this.uScaleLocation, frameInfo.w, frameInfo.h) // size
+		//this.gl.uniform1f(this.uNumFramesLocation, 1)
+		//this.gl.uniform1f(this.uFrameLocation, 0)
+
+		// use object UVs
+		this.setUVs(frameInfo.sx, frameInfo.w, w)
+		gl.enableVertexAttribArray(this.texCoordLocation)
+		gl.vertexAttribPointer(this.texCoordLocation, 2, gl.FLOAT, false, 0, 0)
+
+		gl.drawArrays(gl.TRIANGLES, 0, 6)
+
+		/*
 		heart.ctx.drawImage(images[obj.art].img,
 			frameInfo.sx, 0, frameInfo.w, frameInfo.h,
 			scrX - cameraX,
 			scrY - cameraY,
 			frameInfo.w, frameInfo.h
-		)
-		*/
+		)*/
 	}
 }
