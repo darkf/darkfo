@@ -39,13 +39,56 @@ limitations under the License.
 <script src="intensityColorTable.js"></script>
 <script src="renderer.js"></script>
 <script src="canvasrenderer.js"></script>
+<script src="webglrenderer.js"></script>
 <script src="player.js"></script>
 <script src="main.js"></script>
 <link rel="stylesheet" type="text/css" href="ui.css">
+
+<!-- vertex shader -->
+<script id="2d-vertex-shader" type="x-shader/x-vertex">
+attribute vec2 a_position;
+
+attribute vec2 a_texCoord;
+varying vec2 v_texCoord;
+
+uniform vec2 u_resolution;
+
+uniform vec2 u_offset;
+
+void main() {
+   // convert the rectangle from pixels to 0.0 to 1.0
+   vec2 zeroToOne = (a_position + u_offset) / u_resolution;
+
+   // convert from 0->1 to 0->2
+   vec2 zeroToTwo = zeroToOne * 2.0;
+
+   // convert from 0->2 to -1->+1 (clipspace)
+   vec2 clipSpace = zeroToTwo - 1.0;
+
+   gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+
+   v_texCoord = a_texCoord;
+}
+</script>
+
+<!-- fragment shader -->
+<script id="2d-fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+
+uniform sampler2D u_image;
+uniform float uOffset;
+varying vec2 v_texCoord;
+
+void main() {
+   //gl_FragColor = vec4(0,1,0,1);  // green
+   gl_FragColor = texture2D(u_image, v_texCoord + vec2(uOffset, 0));
+}
+</script>
 </head>
 <body>
 <div id="game-container">
 	<canvas id="cnv" width="800" height="600">your browser doesn't support &lt;canvas&gt;</canvas>
+	<div id="overlay"></div>
 	<div id="lootBox">
 		<div id="lootBoxLeft"></div>
 		<div id="lootBoxRight"></div>
