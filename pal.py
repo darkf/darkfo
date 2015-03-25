@@ -24,9 +24,14 @@ def readPAL(f):
 	for i in range(256):
 		r,g,b = ord(f.read(1)), ord(f.read(1)), ord(f.read(1))
 
-		if r <= 63: r *= 4
-		if g <= 63: g *= 4
-		if b <= 63: b *= 4
+		if r <= 63 and g <= 63 and b <= 63: # valid palette colors are 0..63
+			r *= 4
+			g *= 4
+			b *= 4
+		else:
+			r = 0
+			g = 0
+			b = 0
 
 		palette[i] = (r, g, b)
 
