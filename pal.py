@@ -1,5 +1,5 @@
 """
-Copyright 2014 darkf
+Copyright 2014-2015 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,6 +31,10 @@ def readPAL(f):
 		palette[i] = (r, g, b)
 
 	return palette
+
+def readColorTable(f):
+	f.seek(256*3)
+	return map(ord, f.read(0x8000))
 
 def main():
 	if len(sys.argv) != 2:
