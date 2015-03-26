@@ -77,8 +77,11 @@ class CanvasRenderer extends Renderer {
 		   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
 			return // out of screen bounds, no need to draw
 
+		var spriteFrameNum = info.numFrames * obj.orientation + frameIdx
+		var sx = spriteFrameNum * info.frameWidth
+
 		heart.ctx.drawImage(images[obj.art].img,
-			frameInfo.sx, 0, frameInfo.w, frameInfo.h,
+			sx, 0, frameInfo.w, frameInfo.h,
 			scrX - cameraX,
 			scrY - cameraY,
 			frameInfo.w, frameInfo.h

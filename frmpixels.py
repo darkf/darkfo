@@ -75,6 +75,7 @@ def readFRMInfo(f, exportImage=True):
 	return {'numFrames': numFrames,
 			'fps': fps,
 			'numDirections': nDirTotal,
+			'totalFrames': numFrames * nDirTotal,
 	        'directionOffsets': [{'x': x, 'y': y} for x,y in zip(dOffsetX, dOffsetY)],
 	        'frameOffsets': frameOffset,
 	        'framePixels': framePixels}
@@ -85,22 +86,21 @@ def exportFRM(frmFile, outFile, palette, exportImage=True):
 		framePixels = frmInfo['framePixels']
 		frameOffsets = frmInfo['frameOffsets']
 
-		totalW = sum(sum(fo['w'] for fo in offset) for offset in frameOffsets)
-		#print totalW
-
+		maxW = max(max(fo['w'] for fo in offset) for offset in frameOffsets)
 		maxH = max(max(fo['h'] for fo in offset) for offset in frameOffsets)
-		#print maxH
+		totalW = maxW * frmInfo['totalFrames']
+
+		frmInfo['frameWidth'] = maxW
 
 		if exportImage:
 			finalImg = Image.new("RGBA", (totalW, maxH))
-		currentX = 0
+			currentX = 0
 
-		for nDir in range(frmInfo['numDirections']):
-			for frameNum,frame in enumerate(framePixels[nDir]):
-				offsets = frameOffsets[nDir][frameNum]
-				w,h = offsets['w'], offsets['h']
-				#print frame.shape, w, h, nDir, frameNum
-				if exportImage:
+			for nDir in range(frmInfo['numDirections']):
+				for frameNum,frame in enumerate(framePixels[nDir]):
+					offsets = frameOffsets[nDir][frameNum]
+					w,h = offsets['w'], offsets['h']
+					#print frame.shape, w, h, nDir, frameNum
 					frame = np.reshape(frame, (h, w))
 
 					pixels = np.empty((h, w, 4), dtype=int) # HxW RGBA
@@ -110,9 +110,8 @@ def exportFRM(frmFile, outFile, palette, exportImage=True):
 
 					img = Image.fromarray(pixels.astype('uint8'), "RGBA")
 					finalImg.paste(img, (currentX, 0))
-				currentX += w
+					currentX += maxW
 
-		if exportImage:
 			finalImg.save(outFile)
 
 		# build an image map
@@ -126,7 +125,7 @@ def exportFRM(frmFile, outFile, palette, exportImage=True):
 				frame['sx'] = sx
 				frame['ox'] = ox
 				frame['oy'] = oy
-				sx += frame['w']
+				sx += maxW
 
 		del frmInfo['framePixels']
 		
@@ -136,18 +135,19 @@ def flatten(l):
 	return [item for sublist in l for item in sublist]
 
 # For .FR[0-5]
+# Frames are stored as the width and height of the largest frame
+# but still retain their size and other relevant metadata.
 def exportFRMs(frmFiles, outFile, palette, exportImage=True):
-	maxH = 0
-
 	frmInfos = []
 	for frmFile in frmFiles:
 		with open(frmFile, "rb") as f:
 			frmInfos.append(readFRMInfo(f, exportImage))
 
-	totalW = sum(sum(sum(fo['w'] for fo in offset) for offset in
-		                info['frameOffsets']) for info in frmInfos)
-
+	maxW = max(max(max(fo['w'] for fo in offset) for offset in info['frameOffsets']) for info in frmInfos)
 	maxH = max(max(max(fo['h'] for fo in offset) for offset in info['frameOffsets']) for info in frmInfos)
+	totalFrames = sum(info['totalFrames'] for info in frmInfos)
+
+	totalW = maxW * totalFrames
 
 	#print totalW, maxH
 
@@ -194,7 +194,7 @@ def exportFRMs(frmFiles, outFile, palette, exportImage=True):
 
 						img = Image.fromarray(pixels.astype('uint8'), "RGBA")
 						finalImg.paste(img, (currentX, 0))
-					currentX += w
+					currentX += maxW
 
 			# build an image map
 			for direction in frmInfo['frameOffsets']:
@@ -206,7 +206,7 @@ def exportFRMs(frmFiles, outFile, palette, exportImage=True):
 					frame['sx'] = _sx
 					frame['ox'] = ox
 					frame['oy'] = oy
-					_sx += frame['w']
+					_sx += maxW
 
 			del frmInfo['framePixels']
 
@@ -219,6 +219,8 @@ def exportFRMs(frmFiles, outFile, palette, exportImage=True):
 
 	# construct new FRM info
 	return {'numFrames': _numFrames,
+	        'totalFrames': totalFrames,
+			'frameWidth': maxW,
 			'fps': _fps,
 			'numDirections': len(frmFiles),
 	        'directionOffsets': dOffsets,
