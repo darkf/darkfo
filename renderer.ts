@@ -77,7 +77,7 @@ class Renderer {
 	}
 
 	renderObjects(objs: Obj[]) {
-		objs.forEach(this.renderObject)
+		objs.forEach(this.renderObject.bind(this))
 	}
 
 	// stubs to be overriden
