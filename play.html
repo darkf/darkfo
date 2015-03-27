@@ -85,10 +85,30 @@ varying vec2 v_texCoord;
 void main() {
 	float frameWidth = 1.0 / u_numFrames;
 	vec2 coord = v_texCoord;
-	//coord.x = coord.x / u_numFrames + u_frame;
 	coord.x = coord.x / u_numFrames + frameWidth * u_frame;
 
 	gl_FragColor = texture2D(u_image, coord);
+}
+</script>
+
+<!-- floor lighting fragment shader -->
+<script id="2d-lighting-fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+
+uniform sampler2D u_image;
+uniform sampler2D u_lightBuffer;
+
+varying vec2 v_texCoord;
+
+void main() {
+	vec4 tileTexel = texture2D(u_image, v_texCoord);
+	vec4 light = texture2D(u_lightBuffer, v_texCoord);
+
+	float lightIntensity = min(1.0, light.x / 65536.0);
+
+	vec4 color = tileTexel * lightIntensity;
+	color.w = tileTexel.w;
+	gl_FragColor = color;
 }
 </script>
 </head>

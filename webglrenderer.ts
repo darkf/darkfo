@@ -2,18 +2,22 @@ class WebGLRenderer extends Renderer {
 	canvas: any;
 	gl: any;
 	offsetLocation: any;
+	litOffsetLocation: any;
 	positionLocation: any;
 	texCoordLocation: any;
 	uScaleLocation: any;
+	litScaleLocation: any;
 	uNumFramesLocation: any;
 	uFrameLocation: any;
 	objectUVBuffer: any;
 	texCoordBuffer: any;
 	tileBuffer: any;
 	tileShader: any;
+	floorLightShader: any;
+	uLightBuffer: any;
 	textures: {[key: string]: any} = {}; // WebGL texture cache
 
-	newTexture(key: string, img: any): any {
+	newTexture(key: string, img: any, doCache: boolean=true): any {
 		var gl = this.gl
 		var texture = this.gl.createTexture();
 		this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
@@ -27,7 +31,8 @@ class WebGLRenderer extends Renderer {
 		// Upload the image into the texture.
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
 
-		this.textures[key] = texture
+		if(doCache)
+			this.textures[key] = texture
 		return texture
 	}
 
@@ -64,6 +69,9 @@ class WebGLRenderer extends Renderer {
 	    }
 	    this.gl = gl
 
+	    if(!gl.getExtension("OES_texture_float"))
+	    	throw "no texture float extension"
+
 	    this.gl.clearColor(0.75, 0.75, 0.75, 1.0);
 	    this.gl.enable(this.gl.DEPTH_TEST);
 	    this.gl.depthFunc(this.gl.LEQUAL);
@@ -72,6 +80,16 @@ class WebGLRenderer extends Renderer {
 	    // enable alpha blending
 	    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 	    this.gl.enable(this.gl.BLEND);
+
+	    // set up floor light shader
+	    if(doFloorLighting) {
+	    	this.floorLightShader = this.getProgram(this.gl, "2d-vertex-shader", "2d-lighting-fragment-shader")
+		    this.litOffsetLocation = gl.getUniformLocation(this.floorLightShader, "u_offset")
+		    this.litScaleLocation = gl.getUniformLocation(this.floorLightShader, "u_scale")
+		    this.uLightBuffer = gl.getUniformLocation(this.floorLightShader, "u_lightBuffer")
+		    var litResolutionLocation = gl.getUniformLocation(this.floorLightShader, "u_resolution")
+		    var litPositionLocation = gl.getAttribLocation(this.floorLightShader, "a_position")
+		}
 
 	    // set up tile shader
 	    this.tileShader = this.getProgram(this.gl, "2d-vertex-shader", "2d-fragment-shader")
@@ -111,6 +129,19 @@ class WebGLRenderer extends Renderer {
 	    this.tileBuffer = this.rectangleBuffer(this.gl, 0, 0, 1, 1)
 	    gl.enableVertexAttribArray(this.positionLocation);
 	    gl.vertexAttribPointer(this.positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+	    if(doFloorLighting) {
+	    	gl.useProgram(this.floorLightShader)
+	    	gl.uniform2f(litResolutionLocation, this.canvas.width, this.canvas.height)
+
+		    var litTexCoordLocation = gl.getAttribLocation(this.floorLightShader, "a_texCoord")
+		    gl.enableVertexAttribArray(litTexCoordLocation);
+		    gl.vertexAttribPointer(litTexCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+		    gl.enableVertexAttribArray(litPositionLocation);
+		    gl.vertexAttribPointer(litPositionLocation, 2, gl.FLOAT, false, 0, 0);
+	    	gl.useProgram(this.tileShader)
+	    }
 
 	    // TODO: hack
 	    // render loop
@@ -211,6 +242,122 @@ class WebGLRenderer extends Renderer {
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 	}
 
+	renderLitFloor(tilemap, useColorTable: boolean=true) {
+		// iniitalize color tables if necessary (TODO: hack, should be initialized elsewhere)
+		if(useColorTable) {
+			if(Lighting.colorLUT === null) {
+				Lighting.colorLUT = getFileJSON("color_lut.json")
+				Lighting.colorRGB = getFileJSON("color_rgb.json")
+			}
+		}
+
+		var gl = this.gl
+
+		// use floor light shader
+		gl.useProgram(this.floorLightShader)
+
+		// bind buffers
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.tileBuffer)
+		gl.uniform2f(this.litScaleLocation, 80, 36)
+
+		for(var i = 0; i < tilemap.length; i++) {
+			for(var j = 0; j < tilemap[0].length; j++) {
+				var tile = tilemap[j][i]
+				if(tile === "grid000") continue
+				var img = "art/tiles/" + tile
+
+				var scr = tileToScreen(i, j)
+				if(scr.x+TILE_WIDTH < cameraX || scr.y+TILE_HEIGHT < cameraY ||
+				   scr.x >= cameraX+SCREEN_WIDTH || scr.y >= cameraY+SCREEN_HEIGHT)
+					continue
+
+				// TODO: uses hack
+				var texture = this.getTextureFromHack(img)
+				if(!texture) {
+					console.log("skipping tile without a texture: " + img)
+					continue
+				}
+				gl.bindTexture(gl.TEXTURE_2D, texture)
+
+				// compute lighting
+
+				// TODO: how correct is this?
+				var hex = hexFromScreen(scr.x - 13,
+					                    scr.y + 13)
+
+				var isTriangleLit = Lighting.initTile(hex)
+				var framebuffer
+				var intensity_
+
+				if(isTriangleLit)
+					framebuffer = Lighting.computeFrame()
+
+				// construct light buffer
+				//var lightBuffer = new Uint8Array(80*4*36)
+				var lightBuffer = new Float32Array(80*4*36)
+
+				// render tile
+				for(var y = 0; y < 36; y++) {
+					for(var x = 0; x < 80; x++) {
+						if(isTriangleLit) {
+							intensity_ = framebuffer[160 + 80*y + x]
+						}
+						else { // uniformly lit
+							intensity_ = Lighting.vertices[3]
+						}
+
+						// blit to the light buffer
+						lightBuffer[(y*80 + x) * 4] = intensity_
+
+						/*if(useColorTable) {
+							var orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
+							var palIdx = Lighting.colorLUT[orig_color]
+							var tableIdx = palIdx*256 + (intensity_/512 | 0)
+							var colorPal = Lighting.intensityColorTable[tableIdx]
+							var color = Lighting.colorRGB[colorPal]
+
+							imageData.data[index + 0] = color[0]
+							imageData.data[index + 1] = color[1]
+							imageData.data[index + 2] = color[2]
+							//imageData.data[index + 3] = 255
+						}
+						else {
+							var intensity = Math.min(1.0, intensity_/65536)
+							imageData.data[index + 0] = Math.floor(tileData.data[tileIndex + 0] * intensity)
+							imageData.data[index + 1] = Math.floor(tileData.data[tileIndex + 1] * intensity)
+							imageData.data[index + 2] = Math.floor(tileData.data[tileIndex + 2] * intensity)
+							//imageData.data[index + 3] = 255
+						}*/
+					}
+				}
+
+				// get a texture from it
+				// TODO: update texture, don't delete it
+				gl.activeTexture(gl.TEXTURE1)
+				var lightTex = gl.createTexture()
+				gl.bindTexture(gl.TEXTURE_2D, lightTex)
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+				//gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 80, 36, 0, gl.RGBA, gl.UNSIGNED_BYTE, lightBuffer)
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 80, 36, 0, gl.RGBA, gl.FLOAT, lightBuffer)
+				gl.uniform1i(this.uLightBuffer, 1) // bind the light buffer texture to the shader
+
+				gl.activeTexture(gl.TEXTURE0)
+
+				// draw
+				gl.uniform2f(this.litOffsetLocation, scr.x - cameraX, scr.y - cameraY)
+				gl.drawArrays(gl.TRIANGLES, 0, 6)
+
+				gl.deleteTexture(lightTex)
+			}
+		}
+
+		// use normal shader
+		gl.useProgram(this.tileShader)
+	}
+
 	drawTileMap(tilemap: TileMap, offsetY: number): void {
 		var gl = this.gl
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.tileBuffer)
@@ -250,7 +397,10 @@ class WebGLRenderer extends Renderer {
 	}
 
 	renderFloor(floor: TileMap): void {
-		this.drawTileMap(floor, 0)
+		if(doFloorLighting)
+			this.renderLitFloor(floor)
+		else
+			this.drawTileMap(floor, 0)
 	}
 
 	renderObject(obj: Obj): void {
