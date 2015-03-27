@@ -40,7 +40,6 @@ var currentElevation = 0 // current map elevation
 var hexOverlay = null
 var tempCanvas = null // temporary canvas used for detecting single pixels
 var tempCanvasCtx = null // and the context for it
-var tileDataCache = {}
 //var cursor = {x: 10, y: 10}
 
 // position of viewport camera (will be overriden by map starts or scripts)
@@ -934,114 +933,6 @@ heart.update = function() {
 
 function getPixelIndex(x, y, imageData) {
 	return (x + y * imageData.width) * 4
-}
-
-function drawFloor(matrix, useColorTable: boolean=true) {
-	// get the screen framebuffer
-	var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-	var hexes = []
-
-	if(useColorTable) {
-		// TODO: hack
-		if(Lighting.colorLUT === null) {
-			Lighting.colorLUT = getFileJSON("color_lut.json")
-			Lighting.colorRGB = getFileJSON("color_rgb.json")
-		}
-	}
-
-	for(var i = 0; i < matrix.length; i++) {
-		for(var j = 0; j < matrix[0].length; j++) {
-			var tile = matrix[j][i]
-			if(tile === "grid000") continue
-			var img = "art/tiles/" + tile
-
-			if(images[img] !== undefined) {
-				var scr = tileToScreen(i, j)
-				if(scr.x+TILE_WIDTH < cameraX || scr.y+TILE_HEIGHT < cameraY ||
-				   scr.x >= cameraX+SCREEN_WIDTH || scr.y >= cameraY+SCREEN_HEIGHT)
-					continue
-
-				var sx = scr.x - cameraX
-				var sy = scr.y - cameraY
-
-				// TODO: how correct is this?
-				var hex = hexFromScreen(scr.x - 13,
-					                    scr.y + 13)
-
-				//hexes.push(hex)
-				//hex.x = 199 - hex.x
-
-				if(tileDataCache[img] === undefined) {
-					// temp canvas to get tile framebuffer
-					var tmpCanvas = document.createElement('canvas')
-					var ctx = tmpCanvas.getContext('2d')
-					ctx.drawImage(images[img].img, 0, 0)
-					var tileData = ctx.getImageData(0, 0, images[img].img.width, images[img].img.height)
-					tileDataCache[img] = tileData
-				}
-				else
-					tileData = tileDataCache[img]
-
-				var isTriangleLit = Lighting.initTile(hex)
-				var framebuffer
-				var intensity_
-
-				if(isTriangleLit)
-					framebuffer = Lighting.computeFrame()
-
-				// render tile
-				var w = Math.min(SCREEN_WIDTH - sx, 80)
-				var h = Math.min(SCREEN_HEIGHT - sy, 36)
-				for(var y = 0; y < h; y++) {
-					for(var x = 0; x < w; x++) {
-						if((sx + x) < 0 || (sy + y) < 0)
-							continue
-						var tileIndex = getPixelIndex(x, y, tileData)
-						if(tileData.data[tileIndex + 3] === 0) // transparent pixel
-							continue
-						var index = getPixelIndex(sx + x, sy + y, imageData)
-
-						if(isTriangleLit) {
-							intensity_ = framebuffer[160 + 80*y + x]
-						}
-						else { // uniformly lit
-							intensity_ = Lighting.vertices[3]
-						}
-
-						// blit to the framebuffer
-						if(useColorTable) {
-							var orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
-							var palIdx = Lighting.colorLUT[orig_color]
-							var tableIdx = palIdx*256 + (intensity_/512 | 0)
-							var colorPal = Lighting.intensityColorTable[tableIdx]
-							var color = Lighting.colorRGB[colorPal]
-
-							imageData.data[index + 0] = color[0]
-							imageData.data[index + 1] = color[1]
-							imageData.data[index + 2] = color[2]
-							//imageData.data[index + 3] = 255
-						}
-						else {
-							var intensity = Math.min(1.0, intensity_/65536)
-							imageData.data[index + 0] = Math.floor(tileData.data[tileIndex + 0] * intensity)
-							imageData.data[index + 1] = Math.floor(tileData.data[tileIndex + 1] * intensity)
-							imageData.data[index + 2] = Math.floor(tileData.data[tileIndex + 2] * intensity)
-							//imageData.data[index + 3] = 255
-						}
-					}
-				}
-			}
-		}
-	}
-
-	// write the framebuffer back
-	heart.ctx.putImageData(imageData, 0, 0)
-
-	// draw hexes
-	hexes.forEach(hex => {
-		var hscr = hexToScreen(hex.x, hex.y)
-		heart.graphics.draw(hexOverlay, hscr.x - 16 - cameraX, hscr.y - 12 - cameraY)
-	})
 }
 
 // get an object's bounding box in screen-space (note: not camera-space)
