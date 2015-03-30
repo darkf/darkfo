@@ -2,19 +2,24 @@ class WebGLRenderer extends Renderer {
 	canvas: any;
 	gl: any;
 	offsetLocation: any;
-	litOffsetLocation: any;
 	positionLocation: any;
 	texCoordLocation: any;
 	uScaleLocation: any;
-	litScaleLocation: any;
 	uNumFramesLocation: any;
 	uFrameLocation: any;
 	objectUVBuffer: any;
 	texCoordBuffer: any;
 	tileBuffer: any;
 	tileShader: any;
-	floorLightShader: any;
+
 	uLightBuffer: any;
+	litOffsetLocation: any;
+	litScaleLocation: any;
+	u_colorTable: any; // [0x8000];
+	u_intensityColorTable: any; // [65536];
+	u_paletteRGB: any; // vec3 [256];
+	floorLightShader: any;
+
 	textures: {[key: string]: any} = {}; // WebGL texture cache
 
 	newTexture(key: string, img: any, doCache: boolean=true): any {
@@ -55,6 +60,38 @@ class WebGLRenderer extends Renderer {
 		return this.textures[name]
 	}
 
+	// create a texture from an array-like thing into a 3-component Float32Array using only the R component
+	// TODO: find a better format to store data in textures
+	textureFromArray(arr: any, size: number=256): any {
+		var buf = new Float32Array(size*size*3)
+		for(var i = 0; i < arr.length; i++) {
+			buf[i*3] = arr[i]
+		}
+
+		var gl = this.gl
+		var texture = gl.createTexture()
+		gl.bindTexture(gl.TEXTURE_2D, texture)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, size, size, 0, gl.RGB, gl.FLOAT, buf)
+		return texture
+	}
+
+	// create a texture from a Uint8Array with RGB components
+	textureFromColorArray(arr: any, width: number): any {
+		var gl = this.gl
+		var texture = gl.createTexture()
+		gl.bindTexture(gl.TEXTURE_2D, texture)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, arr)
+		return texture
+	}
+
 	init(): void {
 	    this.canvas = document.getElementById("cnv")
 
@@ -80,16 +117,6 @@ class WebGLRenderer extends Renderer {
 	    // enable alpha blending
 	    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 	    this.gl.enable(this.gl.BLEND);
-
-	    // set up floor light shader
-	    if(doFloorLighting) {
-	    	this.floorLightShader = this.getProgram(this.gl, "2d-vertex-shader", "2d-lighting-fragment-shader")
-		    this.litOffsetLocation = gl.getUniformLocation(this.floorLightShader, "u_offset")
-		    this.litScaleLocation = gl.getUniformLocation(this.floorLightShader, "u_scale")
-		    this.uLightBuffer = gl.getUniformLocation(this.floorLightShader, "u_lightBuffer")
-		    var litResolutionLocation = gl.getUniformLocation(this.floorLightShader, "u_resolution")
-		    var litPositionLocation = gl.getAttribLocation(this.floorLightShader, "a_position")
-		}
 
 	    // set up tile shader
 	    this.tileShader = this.getProgram(this.gl, "2d-vertex-shader", "2d-fragment-shader")
@@ -130,8 +157,16 @@ class WebGLRenderer extends Renderer {
 	    gl.enableVertexAttribArray(this.positionLocation);
 	    gl.vertexAttribPointer(this.positionLocation, 2, gl.FLOAT, false, 0, 0);
 
+	    // set up floor light shader
 	    if(doFloorLighting) {
+        	this.floorLightShader = this.getProgram(this.gl, "2d-vertex-shader", "2d-lighting-fragment-shader")
 	    	gl.useProgram(this.floorLightShader)
+    	    this.litOffsetLocation = gl.getUniformLocation(this.floorLightShader, "u_offset")
+    	    this.litScaleLocation = gl.getUniformLocation(this.floorLightShader, "u_scale")
+    	    this.uLightBuffer = gl.getUniformLocation(this.floorLightShader, "u_lightBuffer")
+    	    var litResolutionLocation = gl.getUniformLocation(this.floorLightShader, "u_resolution")
+    	    var litPositionLocation = gl.getAttribLocation(this.floorLightShader, "a_position")
+
 	    	gl.uniform2f(litResolutionLocation, this.canvas.width, this.canvas.height)
 
 		    var litTexCoordLocation = gl.getAttribLocation(this.floorLightShader, "a_texCoord")
@@ -140,12 +175,44 @@ class WebGLRenderer extends Renderer {
 
 		    gl.enableVertexAttribArray(litPositionLocation);
 		    gl.vertexAttribPointer(litPositionLocation, 2, gl.FLOAT, false, 0, 0);
+
+		    // upload ancillery textures
+
+    	    this.u_colorTable = gl.getUniformLocation(this.floorLightShader, "u_colorTable")
+    	    this.u_intensityColorTable = gl.getUniformLocation(this.floorLightShader, "u_intensityColorTable")
+    	    this.u_paletteRGB = gl.getUniformLocation(this.floorLightShader, "u_paletteRGB")
+
+    	    // upload color tables
+    	    // TODO: have it in a typed array anyway
+    	    var _colorTable = getFileJSON("colorTable.json")
+    	    gl.activeTexture(gl.TEXTURE2)
+    	    this.textureFromArray(_colorTable)
+    	    gl.uniform1i(this.u_colorTable, 2)
+
+    	    // intensityColorTable
+    	    var _intensityColorTable = Lighting.intensityColorTable
+    	    var intensityColorTable = new Uint8Array(65536)
+    	    for(var i = 0; i < 65536; i++)
+    	    	intensityColorTable[i] = _intensityColorTable[i]
+    	    gl.activeTexture(gl.TEXTURE3)
+    	    this.textureFromArray(intensityColorTable)
+    	    gl.uniform1i(this.u_intensityColorTable, 3)
+
+    	    // paletteRGB
+    	    var _colorRGB = getFileJSON("color_rgb.json")
+    	    var paletteRGB = new Uint8Array(256*3)
+    	    for(var i = 0; i < 256; i++) {
+    	    	paletteRGB[i*3 + 0] = _colorRGB[i][0]
+    	    	paletteRGB[i*3 + 1] = _colorRGB[i][1]
+    	    	paletteRGB[i*3 + 2] = _colorRGB[i][2]
+    	    }
+    	    gl.activeTexture(gl.TEXTURE4)
+    	    this.textureFromColorArray(paletteRGB, 256)
+    	    gl.uniform1i(this.u_paletteRGB, 4)
+
+    	    gl.activeTexture(gl.TEXTURE0)
 	    	gl.useProgram(this.tileShader)
 	    }
-
-	    // TODO: hack
-	    // render loop
-	    //this.renderLoop()
 	}
 
 	setUVs(x: number, w: number, tw: number): void {
@@ -255,6 +322,7 @@ class WebGLRenderer extends Renderer {
 
 		// use floor light shader
 		gl.useProgram(this.floorLightShader)
+		gl.activeTexture(gl.TEXTURE0)
 
 		// bind buffers
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.tileBuffer)
