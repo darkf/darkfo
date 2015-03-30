@@ -322,11 +322,23 @@ class WebGLRenderer extends Renderer {
 
 		// use floor light shader
 		gl.useProgram(this.floorLightShader)
-		gl.activeTexture(gl.TEXTURE0)
 
 		// bind buffers
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.tileBuffer)
 		gl.uniform2f(this.litScaleLocation, 80, 36)
+
+		// set up light buffer texture
+		gl.activeTexture(gl.TEXTURE1)
+		var lightTex = gl.createTexture()
+		gl.bindTexture(gl.TEXTURE_2D, lightTex)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+		gl.uniform1i(this.uLightBuffer, 1) // bind the light buffer texture to the shader
+
+		// use tile texture unit
+		gl.activeTexture(gl.TEXTURE0)
 
 		for(var i = 0; i < tilemap.length; i++) {
 			for(var j = 0; j < tilemap[0].length; j++) {
@@ -376,51 +388,23 @@ class WebGLRenderer extends Renderer {
 
 						// blit to the light buffer
 						lightBuffer[(y*80 + x) * 4] = intensity_
-
-						/*if(useColorTable) {
-							var orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
-							var palIdx = Lighting.colorLUT[orig_color]
-							var tableIdx = palIdx*256 + (intensity_/512 | 0)
-							var colorPal = Lighting.intensityColorTable[tableIdx]
-							var color = Lighting.colorRGB[colorPal]
-
-							imageData.data[index + 0] = color[0]
-							imageData.data[index + 1] = color[1]
-							imageData.data[index + 2] = color[2]
-							//imageData.data[index + 3] = 255
-						}
-						else {
-							var intensity = Math.min(1.0, intensity_/65536)
-							imageData.data[index + 0] = Math.floor(tileData.data[tileIndex + 0] * intensity)
-							imageData.data[index + 1] = Math.floor(tileData.data[tileIndex + 1] * intensity)
-							imageData.data[index + 2] = Math.floor(tileData.data[tileIndex + 2] * intensity)
-							//imageData.data[index + 3] = 255
-						}*/
 					}
 				}
 
-				// get a texture from it
-				// TODO: update texture, don't delete it
+				// update light buffer texture
 				gl.activeTexture(gl.TEXTURE1)
-				var lightTex = gl.createTexture()
-				gl.bindTexture(gl.TEXTURE_2D, lightTex)
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 				//gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 80, 36, 0, gl.RGBA, gl.UNSIGNED_BYTE, lightBuffer)
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 80, 36, 0, gl.RGBA, gl.FLOAT, lightBuffer)
-				gl.uniform1i(this.uLightBuffer, 1) // bind the light buffer texture to the shader
-
 				gl.activeTexture(gl.TEXTURE0)
 
 				// draw
 				gl.uniform2f(this.litOffsetLocation, scr.x - cameraX, scr.y - cameraY)
 				gl.drawArrays(gl.TRIANGLES, 0, 6)
-
-				gl.deleteTexture(lightTex)
 			}
 		}
+
+		// dispose of light buffer texture
+		gl.deleteTexture(lightTex)
 
 		// use normal shader
 		gl.useProgram(this.tileShader)
