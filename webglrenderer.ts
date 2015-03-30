@@ -18,6 +18,7 @@ class WebGLRenderer extends Renderer {
 	u_colorTable: any; // [0x8000];
 	u_intensityColorTable: any; // [65536];
 	u_paletteRGB: any; // vec3 [256];
+	lightBufferTexture: any;
 	floorLightShader: any;
 
 	textures: {[key: string]: any} = {}; // WebGL texture cache
@@ -210,6 +211,16 @@ class WebGLRenderer extends Renderer {
     	    this.textureFromColorArray(paletteRGB, 256)
     	    gl.uniform1i(this.u_paletteRGB, 4)
 
+    	    // set up light buffer texture
+    	    gl.activeTexture(gl.TEXTURE1)
+    	    this.lightBufferTexture = gl.createTexture()
+    	    gl.bindTexture(gl.TEXTURE_2D, this.lightBufferTexture)
+    	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+    	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    	    gl.uniform1i(this.uLightBuffer, 1) // bind the light buffer texture to the shader
+
     	    gl.activeTexture(gl.TEXTURE0)
 	    	gl.useProgram(this.tileShader)
 	    }
@@ -327,15 +338,9 @@ class WebGLRenderer extends Renderer {
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.tileBuffer)
 		gl.uniform2f(this.litScaleLocation, 80, 36)
 
-		// set up light buffer texture
+		// bind light buffer texture in texture unit 0
 		gl.activeTexture(gl.TEXTURE1)
-		var lightTex = gl.createTexture()
-		gl.bindTexture(gl.TEXTURE_2D, lightTex)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-		gl.uniform1i(this.uLightBuffer, 1) // bind the light buffer texture to the shader
+		gl.bindTexture(gl.TEXTURE_2D, this.lightBufferTexture)
 
 		// use tile texture unit
 		gl.activeTexture(gl.TEXTURE0)
@@ -402,9 +407,6 @@ class WebGLRenderer extends Renderer {
 				gl.drawArrays(gl.TRIANGLES, 0, 6)
 			}
 		}
-
-		// dispose of light buffer texture
-		gl.deleteTexture(lightTex)
 
 		// use normal shader
 		gl.useProgram(this.tileShader)
