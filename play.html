@@ -122,7 +122,8 @@ int colorToColorTableRGB(const vec3 color) {
 
 vec4 atIndex(sampler2D tex, int index) {
 	const int size = 256; // max size of texture
-	return texture2D(tex, vec2(float(index % size) / float(size),
+	float x = mod(float(index), float(size));
+	return texture2D(tex, vec2(x / float(size),
 		                       /* 1.0 - */ (float(index / size) / float(size)))); // use upside-down V coordinates because OpenGL likes textures bottom-to-top but we don't play their game
 }
 
