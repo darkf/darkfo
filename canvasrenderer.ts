@@ -174,23 +174,31 @@ class CanvasRenderer extends Renderer {
 		if(info === undefined)
 			throw "No image map info for: " + obj.art
 
-		var frameIdx = 0
-		if(obj.frame !== undefined)
-			frameIdx += obj.frame
-
 		if(!(obj.orientation in info.frameOffsets))
 			obj.orientation = 0 // ...
-		var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
+		var frameInfo = info.frameOffsets[obj.orientation][obj.frame]
 		var dirOffset = info.directionOffsets[obj.orientation]
-		var offsetX = Math.floor(frameInfo.w / 2) - dirOffset.x - frameInfo.ox
-		var offsetY = frameInfo.h - dirOffset.y - frameInfo.oy
-		var scrX = scr.x - offsetX, scrY = scr.y - offsetY
+
+		// Anchored from the bottom center
+		var offsetX = -(frameInfo.w / 2 | 0) + dirOffset.x
+		var offsetY = -frameInfo.h + dirOffset.y
+
+		if(obj.shift) {
+			offsetX += obj.shift.x
+			offsetY += obj.shift.y
+		}
+		else {
+			offsetX += frameInfo.ox
+			offsetY += frameInfo.oy
+		}
+
+		var scrX = scr.x + offsetX, scrY = scr.y + offsetY
 
 		if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
 		   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
 			return // out of screen bounds, no need to draw
 
-		var spriteFrameNum = info.numFrames * obj.orientation + frameIdx
+		var spriteFrameNum = info.numFrames * obj.orientation + obj.frame
 		var sx = spriteFrameNum * info.frameWidth
 
 		heart.ctx.drawImage(images[obj.art].img,

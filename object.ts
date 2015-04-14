@@ -400,10 +400,17 @@ class Obj {
 	frame: number = 0; // Animation frame index
 	lastFrameTime: number = 0; // Time since last animation frame played
 
+	// Frame shift/offset
+	// For static animations, this is just null (effectively just the frame offset as declared in the .FRM),
+	// but for walk/run animations it is the sum of frame offsets between the last action frame
+	// and the current frame.
+	shift: Point = null;
+
 	amount: number = 1; // TODO: Where does this belong? Items and misc seem to have it, or is Money an Item?
 	position: Point = {x: -1, y: -1};
 	inventory: Obj[] = [];
 
+	// TODO: verify
 	lightRadius: number = 0;
 	lightIntensity: number = 655;
 
@@ -539,7 +546,7 @@ class Obj {
 		if(!this.anim) return
 		var time = heart.timer.getTime()
 		var fps = imageInfo[this.art].fps
-		if(fps === 0) fps = 10 // ?
+		if(fps === 0) fps = 10 // XXX: ?
 
 		if(time - this.lastFrameTime >= 1000/fps) {
 			if(this.anim === "reverse") this.frame--
@@ -578,6 +585,7 @@ class Obj {
 		this.frame = 0
 		this.animCallback = null
 		this.anim = null
+		this.shift = null
 	}
 
 	// Are two objects approximately (not necessarily strictly) equal?

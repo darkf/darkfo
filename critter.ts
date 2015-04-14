@@ -342,6 +342,13 @@ function critterStaticAnim(obj: Critter, anim: string, callback: () => void, wai
 	}
 }
 
+function getDirectionalOffset(obj: Critter): Point {
+	var info = imageInfo[obj.art]
+	if(info === undefined)
+		throw "No image map info for: " + obj.art
+	return info.directionOffsets[obj.orientation]
+}
+
 function critterAdvancePath(obj: Critter): boolean {
 	if(obj.path.seqLength !== undefined && obj.path.seqLength !== null)
 		obj.path.index += obj.path.seqLength
@@ -358,6 +365,8 @@ function critterAdvancePath(obj: Critter): boolean {
 	obj.path.target = seq.lastPosition
 	obj.path.seqLength = seq.seq
 	obj.path.distance = seq.seq
+	obj.shift = {x: 0, y: 0}
+
 	return true
 }
 
@@ -427,6 +436,7 @@ function getAnimPartialActions(art, anim) {
 	// extend last partial action to the last frame
 	partialActions.actions[partialActions.actions.length-1].endFrame = imageInfo[art].numFrames
 
+	//console.log("partials: %o", partialActions)
 	return partialActions
 }
 
@@ -641,49 +651,61 @@ class Critter extends Obj {
 		var fps = imageInfo[this.art].fps
 		var targetScreen = hexToScreen(this.path.target.x, this.path.target.y)
 		var moveDistance = getAnimDistance(this.art)
-		var tilePerFrame = Math.floor(imageInfo[this.art].numFrames / moveDistance)
 
 		var partials = getAnimPartialActions(this.art, this.anim)
 		if(this.path.partial === undefined)
 			this.path.partial = 0
-		//console.log("partial: " + this.path.partial + " | distance: " + this.path.distance +
-		//	" | frame: " + this.frame)
 		var currentPartial = partials.actions[this.path.partial]
 
 		if(time - this.lastFrameTime >= 1000/fps) {
 			// advance frame
-			this.frame++
 			this.lastFrameTime = time
 
-			if(this.frame === currentPartial.endFrame) {
-				var partialsLeft = this.path.distance - this.path.partial - 1
+			if(this.frame === currentPartial.endFrame || this.frame+1 >= imageInfo[this.art].numFrames) {
+				// completed an action frame (partial action)
 
-				if(partialsLeft > 0 && partials.actions[this.path.partial+1] !== undefined) {
+				// Do we have another partial action?
+				if(partials.actions[this.path.partial+1] !== undefined) {
 					// proceed to next partial
 					this.path.partial++
-					this.frame = partials.actions[this.path.partial].startFrame
 				} else {
 					// we're done animating this, loop
 					this.path.partial = 0
-					this.frame = partials.actions[this.path.partial].startFrame
-
-					var distMoved = Math.min(moveDistance, this.path.distance)
-					//console.log("end partial, moved " + distMoved + " hexes, " + (this.path.distance-distMoved) + " hexes left")
-					var h = hexInDirection(this.position, this.orientation)
-					this.position = h
-					if(critterWalkCallback(this)) return
-					for(var i = 0; i < distMoved-1; i++) {
-						h = hexInDirection(h, this.orientation)
-						this.position = h
-						if(critterWalkCallback(this)) return
-					}
-					this.move(h)
-					this.path.distance -= distMoved
+					this.frame = 0
 				}
+				
+				this.frame = partials.actions[this.path.partial].startFrame
+
+				// reset shift
+				this.shift = {x: 0, y: 0}
+
+				if(this.path.foo === undefined)
+					this.path.foo = 0
+				var pos = this.path.path[this.path.index + this.path.foo]
+				this.path.foo++
+				//var pos = this.path.path[this.path.foo++]
+				var h = {x: pos[0], y: pos[1]}
+				//console.log("h: %o", h)
+				if(critterWalkCallback(this)) return
+				this.move(h)
+			}
+			else {
+				this.frame++
+				var info = imageInfo[this.art]
+				if(info === undefined)
+					throw "No image map info for: " + this.art;
+				var frameInfo = info.frameOffsets[this.orientation][this.frame]
+				//console.log("frameInfo: %o", frameInfo)
+				this.shift.x += frameInfo.x
+				this.shift.y += frameInfo.y
+				//console.log("sx: %o, sy: %o", this.shift.x, this.shift.y);
 			}
 
 			if(this.position.x === this.path.target.x && this.position.y === this.path.target.y) {
 				// reached target
+				this.path.foo = 0
+				this.path.partial = 0
+				this.frame = 0
 				if(DEBUG) console.log("target reached")
 				if(critterAdvancePath(this) === false)
 					if(this.animCallback)
