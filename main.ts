@@ -353,8 +353,8 @@ function changeElevation(level: number, updateScripts?: boolean) {
 
 function centerCamera(around) {
 	var scr = hexToScreen(around.x, around.y)
-	cameraX = Math.max(0, scr.x - SCREEN_WIDTH/2)
-	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2)
+	cameraX = Math.max(0, scr.x - SCREEN_WIDTH/2 | 0)
+	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2 | 0)
 }
 
 function loadMap(mapName: string, startingPosition?: any, startingElevation?: any, loadedCallback?: () => void) {

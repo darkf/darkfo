@@ -406,8 +406,8 @@ function uiStartDialogue(force, target?: any) {
 	if(bbox !== null) {
 		var dc = $("#dialogueContainer")
 		// alternatively: dc.offset().left - $(heart.canvas).offset().left
-		var dx = dc.width() / 2 + dc[0].offsetLeft
-		var dy = dc.height() / 4 + dc[0].offsetTop - (bbox.h / 2)
+		var dx = (dc.width() / 2 | 0) + dc[0].offsetLeft
+		var dy = (dc.height() / 4 | 0) + dc[0].offsetTop - (bbox.h / 2 | 0)
 		cameraX = bbox.x - dx
 		cameraY = bbox.y - dy
 	}
