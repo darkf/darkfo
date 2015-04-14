@@ -271,31 +271,6 @@ function getAnimDistance(art: string): number {
 	return Math.floor((lastShift - firstShift + 16) / 32)
 }
 
-function longestSequenceWithoutTurning(start: Point, path, index: number) {
-	// todo: make logic less complex
-	var firstDir = directionOfDelta(start.x, start.y, path[index][0], path[index][1])
-	if(index+1 >= path.length)
-		return {seq: 1, lastPosition: {x: path[index][0], y: path[index][1]}, firstDirection: firstDir}
-
-	var pos = path[index]
-	var dir = firstDir
-	var n = 1
-	for(var i = index+1; i < path.length; i++) {
-		//console.log("i " + i)
-		var deltaDir = directionOfDelta(pos[0], pos[1], path[i][0], path[i][1])
-		//console.log("deltaDir: " + deltaDir)
-			         
-		if(deltaDir !== dir) {
-			//console.log("bad deltaDir: " + deltaDir)
-			return {seq: n, lastPosition: {x: path[i-1][0], y: path[i-1][1]}, firstDirection: firstDir}
-		}
-		n++
-		pos = path[i]
-	}
-
-	return {seq: n, lastPosition: {x: pos[0], y: pos[1]}, firstDirection: firstDir}
-}
-
 function critterWalkTo(obj: Critter, target: Point, running?: boolean, callback?: () => void, maxLength?: number, path?: any): boolean {
 	// pathfind and set walking to target
 	if(obj.position.x === target.x && obj.position.y === target.y) {
@@ -315,13 +290,16 @@ function critterWalkTo(obj: Critter, target: Point, running?: boolean, callback?
 		path = path.slice(0, maxLength + 1)
 	}
 
-	obj.path = {path: path, index: 0, target: null, seqLength: null, distance: null}
+	// set up animation properties
+	obj.path = {path: path, index: 1, target: target, partial: 0}
 	obj.anim = (running === true) ? "run" : "walk"
 	obj.art = critterGetAnim(obj, obj.anim)
 	obj.animCallback = callback || (() => obj.clearAnim())
 	obj.frame = 0
 	obj.lastFrameTime = 0
-	critterAdvancePath(obj)
+	obj.shift = {x: 0, y: 0}
+	obj.orientation = directionOfDelta(obj.position.x, obj.position.y, path[1][0], path[1][1])
+	//console.log("start dir: %o", obj.orientation)
 	return true
 }
 
@@ -347,27 +325,6 @@ function getDirectionalOffset(obj: Critter): Point {
 	if(info === undefined)
 		throw "No image map info for: " + obj.art
 	return info.directionOffsets[obj.orientation]
-}
-
-function critterAdvancePath(obj: Critter): boolean {
-	if(obj.path.seqLength !== undefined && obj.path.seqLength !== null)
-		obj.path.index += obj.path.seqLength
-	else
-		obj.path.index++
-
-	if(obj.path.index >= obj.path.path.length)
-		return false
-	//console.log("advancing to path index " + obj.path.index)
-	var seq = longestSequenceWithoutTurning(obj.position, obj.path.path, obj.path.index)
-	//console.log("longest seq: " + JSON.stringify(seq))
-
-	obj.orientation = seq.firstDirection
-	obj.path.target = seq.lastPosition
-	obj.path.seqLength = seq.seq
-	obj.path.distance = seq.seq
-	obj.shift = {x: 0, y: 0}
-
-	return true
 }
 
 // This checks if a critter (such as the player) entered an exit grid
@@ -653,8 +610,6 @@ class Critter extends Obj {
 		var moveDistance = getAnimDistance(this.art)
 
 		var partials = getAnimPartialActions(this.art, this.anim)
-		if(this.path.partial === undefined)
-			this.path.partial = 0
 		var currentPartial = partials.actions[this.path.partial]
 
 		if(time - this.lastFrameTime >= 1000/fps) {
@@ -664,52 +619,53 @@ class Critter extends Obj {
 			if(this.frame === currentPartial.endFrame || this.frame+1 >= imageInfo[this.art].numFrames) {
 				// completed an action frame (partial action)
 
-				// Do we have another partial action?
-				if(partials.actions[this.path.partial+1] !== undefined) {
-					// proceed to next partial
+				// do we have another partial action?
+				if(this.path.partial+1 < partials.actions.length) {
+					// then proceed to next partial action
 					this.path.partial++
 				} else {
-					// we're done animating this, loop
+					// otherwise we're done animating this, loop
 					this.path.partial = 0
 					this.frame = 0
 				}
 				
+				// move to the start of the next partial action
 				this.frame = partials.actions[this.path.partial].startFrame
 
 				// reset shift
 				this.shift = {x: 0, y: 0}
 
-				if(this.path.foo === undefined)
-					this.path.foo = 0
-				var pos = this.path.path[this.path.index + this.path.foo]
-				this.path.foo++
-				//var pos = this.path.path[this.path.foo++]
-				var h = {x: pos[0], y: pos[1]}
-				//console.log("h: %o", h)
-				if(critterWalkCallback(this)) return
-				this.move(h)
+				// move to new path hex
+				var pos = this.path.path[this.path.index++]
+				var hex = {x: pos[0], y: pos[1]}
+				this.move(hex)
+
+				// set orientation towards new path hex
+				pos = this.path.path[this.path.index]
+				if(pos)
+					this.orientation = directionOfDelta(this.position.x, this.position.y, pos[0], pos[1])
 			}
 			else {
+				// advance frame
 				this.frame++
+
 				var info = imageInfo[this.art]
 				if(info === undefined)
-					throw "No image map info for: " + this.art;
+					throw "No image map info for: " + this.art
+
+				// add the new frame's offset to our shift
 				var frameInfo = info.frameOffsets[this.orientation][this.frame]
-				//console.log("frameInfo: %o", frameInfo)
 				this.shift.x += frameInfo.x
 				this.shift.y += frameInfo.y
-				//console.log("sx: %o, sy: %o", this.shift.x, this.shift.y);
 			}
 
 			if(this.position.x === this.path.target.x && this.position.y === this.path.target.y) {
-				// reached target
-				this.path.foo = 0
-				this.path.partial = 0
-				this.frame = 0
+				// reached target position
+				this.clearAnim()
+
 				if(DEBUG) console.log("target reached")
-				if(critterAdvancePath(this) === false)
-					if(this.animCallback)
-						this.animCallback()
+				if(this.animCallback)
+					this.animCallback()
 			}
 		}
 	}
@@ -721,6 +677,9 @@ class Critter extends Obj {
 	move(position: Point, curIdx?: number): void {
 		super.move(position, curIdx)
 
+		if(critterWalkCallback(this))
+			return
+
 		if(doSpatials !== false) {
 			var hitSpatials = hitSpatialTrigger(position)
 			for(var i = 0; i < hitSpatials.length; i++) {
@@ -730,6 +689,7 @@ class Critter extends Obj {
 				scriptingEngine.spatial(spatial, this)
 			}
 		}
+
 	}
 
 	clearAnim(): void {
