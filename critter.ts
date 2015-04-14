@@ -327,44 +327,6 @@ function getDirectionalOffset(obj: Critter): Point {
 	return info.directionOffsets[obj.orientation]
 }
 
-// This checks if a critter (such as the player) entered an exit grid
-// It could also check if a trap is ran into
-function critterWalkCallback(obj: Critter): boolean {
-	if(obj.isPlayer !== true) return
-	var objs = objectsAtPosition(obj.position)
-	for(var i = 0; i < objs.length; i++) {
-		if(objs[i].type === "misc" && objs[i].extra && objs[i].extra.exitMapID !== undefined) {
-			// walking on an exit grid
-			// todo: exit grids are likely multi-hex (maybe have a set?)
-			var exitMapID = objs[i].extra.exitMapID
-			var startingPosition = fromTileNum(objs[i].extra.startingPosition)
-			var startingElevation = objs[i].extra.startingElevation
-			obj.clearAnim()
-
-			if(startingPosition.x === -1 || startingPosition.y === -1 ||
-			   exitMapID < 0) { // world map
-				console.log("exit grid -> worldmap")
-				uiWorldMap()
-			}
-			else { // another map
-				console.log("exit grid -> map " + exitMapID + " elevation " + startingElevation +
-					" @ " + startingPosition.x + ", " + startingPosition.y)
-				if(exitMapID === gMap.mapID) {
-					// same map, different elevation
-					player.move(startingPosition)
-					changeElevation(startingElevation, true)
-				}
-				else
-					loadMapID(exitMapID, startingPosition, startingElevation)
-			}
-
-			return true
-		}
-	}
-
-	return false
-}
-
 function getAnimPartialActions(art, anim) {
 	var partialActions = {movement: null, actions: []}
 	var numPartials = 1
@@ -638,7 +600,9 @@ class Critter extends Obj {
 				// move to new path hex
 				var pos = this.path.path[this.path.index++]
 				var hex = {x: pos[0], y: pos[1]}
-				this.move(hex)
+				
+				if(!this.move(hex))
+					return
 
 				// set orientation towards new path hex
 				pos = this.path.path[this.path.index]
@@ -674,11 +638,9 @@ class Critter extends Obj {
 		return !!(this.path || this.animCallback)
 	}
 
-	move(position: Point, curIdx?: number): void {
-		super.move(position, curIdx)
-
-		if(critterWalkCallback(this))
-			return
+	move(position: Point, curIdx?: number): boolean {
+		if(!super.move(position, curIdx))
+			return false
 
 		if(doSpatials !== false) {
 			var hitSpatials = hitSpatialTrigger(position)
@@ -690,6 +652,7 @@ class Critter extends Obj {
 			}
 		}
 
+		return true
 	}
 
 	clearAnim(): void {

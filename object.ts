@@ -325,10 +325,6 @@ function zsort(objects: Obj[]): void {
 	objects.sort(objectZCompare)
 }
 
-function objectMove(obj: Obj, position: Point, curIdx?: number): void {
-	return obj.move(position, curIdx)
-}
-
 function useElevator(): void {
 	// Player walked into an elevator
 	//
@@ -530,7 +526,9 @@ class Obj {
 		return this
 	}
 
-	move(position: Point, curIdx?: number): void {
+	// Moves the object; returns `true` if successfully moved,
+	// or `false` if interrupted (such as by an exit grid).
+	move(position: Point, curIdx?: number): boolean {
 		this.position = position
 
 		// rebuild the lightmap
@@ -540,6 +538,8 @@ class Obj {
 		// give us a new z-order
 		if(doZOrder !== false)
 			objectZOrder(this, curIdx)
+
+		return true
 	}
 
 	updateAnim(): void {

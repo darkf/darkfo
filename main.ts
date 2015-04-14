@@ -285,7 +285,7 @@ function dropObject(source, obj) {
 
 	gObjects.push(obj) // add to objects
 	var idx = gObjects.length - 1 // our new index
-	objectMove(obj, {x: source.position.x, y: source.position.y}, idx)
+	obj.move({x: source.position.x, y: source.position.y}, idx)
 }
 
 // Draws a line between a and b, returning the first object hit

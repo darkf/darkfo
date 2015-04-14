@@ -52,4 +52,43 @@ class Player extends Critter {
 	          	   {type: "misc", name: "Money", pid: 41, pidID: 41, amount: 1337, pro: {textID: 4100, extra: {cost: 1}, invFRM: 117440552}, invArt: 'art/inven/cap2'}
 	          	   ], stats: null, skills: null, tempChanges: null}
 	*/
+
+	move(position: Point, curIdx?: number): boolean {
+		if(!super.move(position, curIdx))
+			return false
+
+		// check if the player has entered an exit grid
+		var objs = objectsAtPosition(this.position)
+		for(var i = 0; i < objs.length; i++) {
+			if(objs[i].type === "misc" && objs[i].extra && objs[i].extra.exitMapID !== undefined) {
+				// walking on an exit grid
+				// todo: exit grids are likely multi-hex (maybe have a set?)
+				var exitMapID = objs[i].extra.exitMapID
+				var startingPosition = fromTileNum(objs[i].extra.startingPosition)
+				var startingElevation = objs[i].extra.startingElevation
+				this.clearAnim()
+
+				if(startingPosition.x === -1 || startingPosition.y === -1 ||
+				   exitMapID < 0) { // world map
+					console.log("exit grid -> worldmap")
+					uiWorldMap()
+				}
+				else { // another map
+					console.log("exit grid -> map " + exitMapID + " elevation " + startingElevation +
+						" @ " + startingPosition.x + ", " + startingPosition.y)
+					if(exitMapID === gMap.mapID) {
+						// same map, different elevation
+						changeElevation(startingElevation, true)
+						player.move(startingPosition)
+					}
+					else
+						loadMapID(exitMapID, startingPosition, startingElevation)
+				}
+
+				return false
+			}
+		}
+
+		return true
+	}
 }
