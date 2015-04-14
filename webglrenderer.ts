@@ -64,9 +64,9 @@ class WebGLRenderer extends Renderer {
 	// create a texture from an array-like thing into a 3-component Float32Array using only the R component
 	// TODO: find a better format to store data in textures
 	textureFromArray(arr: any, size: number=256): any {
-		var buf = new Float32Array(size*size*3)
+		var buf = new Float32Array(size*size*4)
 		for(var i = 0; i < arr.length; i++) {
-			buf[i*3] = arr[i]
+			buf[i*4] = arr[i]
 		}
 
 		var gl = this.gl
@@ -76,7 +76,7 @@ class WebGLRenderer extends Renderer {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, size, size, 0, gl.RGB, gl.FLOAT, buf)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.FLOAT, buf)
 		return texture
 	}
 
@@ -392,7 +392,7 @@ class WebGLRenderer extends Renderer {
 						}
 
 						// blit to the light buffer
-						lightBuffer[(y*80 + x) * 4] = intensity_
+						lightBuffer[(y*80 + x) * 4] = intensity_ //(x%2 && y%2) ? 0.5 : 0.25 //Math.max(0.25, intensity_/65536)
 					}
 				}
 
@@ -458,34 +458,9 @@ class WebGLRenderer extends Renderer {
 	}
 
 	renderObject(obj: Obj): void {
-		var scr = hexToScreen(obj.position.x, obj.position.y)
-
-		if(images[obj.art] === undefined) {
-			lazyLoadImage(obj.art) // try to load it in
+		var renderInfo = this.objectRenderInfo(obj)
+		if(!renderInfo || !renderInfo.visible)
 			return
-		}
-
-		var info = imageInfo[obj.art]
-		if(info === undefined)
-			throw "No image map info for: " + obj.art
-
-		var frameIdx = 0
-		if(obj.frame !== undefined)
-			frameIdx += obj.frame
-
-		if(!(obj.orientation in info.frameOffsets))
-			obj.orientation = 0 // ...
-		var frameInfo = info.frameOffsets[obj.orientation][frameIdx]
-		var dirOffset = info.directionOffsets[obj.orientation]
-		var offsetX = Math.floor(frameInfo.w / 2) - dirOffset.x - frameInfo.ox
-		var offsetY = frameInfo.h - dirOffset.y - frameInfo.oy
-		var scrX = scr.x - offsetX, scrY = scr.y - offsetY
-
-		var spriteFrameNum = info.numFrames * obj.orientation + frameIdx
-
-		if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
-		   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
-			return // out of screen bounds, no need to draw
 
 		// TODO: uses hack
 		var texture = this.getTextureFromHack(obj.art)
@@ -499,11 +474,11 @@ class WebGLRenderer extends Renderer {
 		// draw
 		gl.bindTexture(gl.TEXTURE_2D, texture)
 
-		gl.uniform1f(this.uNumFramesLocation, info.totalFrames)
-		gl.uniform1f(this.uFrameLocation, spriteFrameNum)
+		gl.uniform1f(this.uNumFramesLocation, renderInfo.artInfo.totalFrames)
+		gl.uniform1f(this.uFrameLocation, renderInfo.spriteFrameNum)
 
-		gl.uniform2f(this.offsetLocation, scrX - cameraX, scrY - cameraY) // pos
-		gl.uniform2f(this.uScaleLocation, info.frameWidth, frameInfo.h) // size
+		gl.uniform2f(this.offsetLocation, renderInfo.x - cameraX, renderInfo.y - cameraY) // pos
+		gl.uniform2f(this.uScaleLocation, renderInfo.uniformFrameWidth, renderInfo.frameHeight) // size
 
 		gl.drawArrays(gl.TRIANGLES, 0, 6)
 	}

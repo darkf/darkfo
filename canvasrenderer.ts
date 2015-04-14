@@ -101,9 +101,11 @@ class CanvasRenderer extends Renderer {
 								var colorPal = Lighting.intensityColorTable[tableIdx]
 								var color = Lighting.colorRGB[colorPal]
 
-								imageData.data[index + 0] = color[0]
-								imageData.data[index + 1] = color[1]
-								imageData.data[index + 2] = color[2]
+								var intensity = Math.min(1.0, intensity_/65536)
+								var tcolor = Lighting.colorRGB[palIdx]
+								imageData.data[index + 0] = tcolor[0]//intensity*255 //color[0]
+								imageData.data[index + 1] = tcolor[1]//intensity*255 //color[1]
+								imageData.data[index + 2] = tcolor[2]//intensity*255 //color[2]
 								//imageData.data[index + 3] = 255
 							}
 							else {
@@ -160,52 +162,15 @@ class CanvasRenderer extends Renderer {
 	}
 
 	renderObject(obj: Obj): void {
-		//heart.graphics.setColor(255, 0, 0)
-		//heart.graphics.rectangle("fill", 0, 0, 64, 64)
-
-		var scr = hexToScreen(obj.position.x, obj.position.y)
-
-		if(images[obj.art] === undefined) {
-			lazyLoadImage(obj.art) // try to load it in
+		var renderInfo = this.objectRenderInfo(obj)
+		if(!renderInfo || !renderInfo.visible)
 			return
-		}
-
-		var info = imageInfo[obj.art]
-		if(info === undefined)
-			throw "No image map info for: " + obj.art
-
-		if(!(obj.orientation in info.frameOffsets))
-			obj.orientation = 0 // ...
-		var frameInfo = info.frameOffsets[obj.orientation][obj.frame]
-		var dirOffset = info.directionOffsets[obj.orientation]
-
-		// Anchored from the bottom center
-		var offsetX = -(frameInfo.w / 2 | 0) + dirOffset.x
-		var offsetY = -frameInfo.h + dirOffset.y
-
-		if(obj.shift) {
-			offsetX += obj.shift.x
-			offsetY += obj.shift.y
-		}
-		else {
-			offsetX += frameInfo.ox
-			offsetY += frameInfo.oy
-		}
-
-		var scrX = scr.x + offsetX, scrY = scr.y + offsetY
-
-		if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
-		   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
-			return // out of screen bounds, no need to draw
-
-		var spriteFrameNum = info.numFrames * obj.orientation + obj.frame
-		var sx = spriteFrameNum * info.frameWidth
 
 		heart.ctx.drawImage(images[obj.art].img,
-			sx, 0, frameInfo.w, frameInfo.h,
-			scrX - cameraX,
-			scrY - cameraY,
-			frameInfo.w, frameInfo.h
+			renderInfo.spriteX, 0, renderInfo.frameWidth, renderInfo.frameHeight,
+			renderInfo.x - cameraX,
+			renderInfo.y - cameraY,
+			renderInfo.frameWidth, renderInfo.frameHeight
 		)
 	}
 }

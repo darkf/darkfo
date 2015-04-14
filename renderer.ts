@@ -1,5 +1,12 @@
 type TileMap = string[][]
 
+type ObjectRenderInfo = {x: number; y: number; spriteX: number;
+	                     frameWidth: number; frameHeight: number;
+	                     uniformFrameWidth: number;
+	                     spriteFrameNum: number;
+	                     artInfo: any;
+	                     visible: boolean}
+
 class Renderer {
 	objects: Obj[];
 	roofTiles: TileMap;
@@ -74,6 +81,54 @@ class Renderer {
 			this.color(255, 0, 0, 50)
 			this.rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 		}
+	}
+
+	objectRenderInfo(obj: Obj): ObjectRenderInfo {
+		var scr = hexToScreen(obj.position.x, obj.position.y)
+		var visible = true
+
+		if(images[obj.art] === undefined) {
+			lazyLoadImage(obj.art) // try to load it in
+			return null
+		}
+
+		var info = imageInfo[obj.art]
+		if(info === undefined)
+			throw "No image map info for: " + obj.art
+
+		if(!(obj.orientation in info.frameOffsets))
+			obj.orientation = 0 // ...
+		var frameInfo = info.frameOffsets[obj.orientation][obj.frame]
+		var dirOffset = info.directionOffsets[obj.orientation]
+
+		// Anchored from the bottom center
+		var offsetX = -(frameInfo.w / 2 | 0) + dirOffset.x
+		var offsetY = -frameInfo.h + dirOffset.y
+
+		if(obj.shift) {
+			offsetX += obj.shift.x
+			offsetY += obj.shift.y
+		}
+		else {
+			offsetX += frameInfo.ox
+			offsetY += frameInfo.oy
+		}
+
+		var scrX = scr.x + offsetX, scrY = scr.y + offsetY
+
+		if(scrX + frameInfo.w < cameraX || scrY + frameInfo.h < cameraY ||
+		   scrX >= cameraX+SCREEN_WIDTH || scrY >= cameraY+SCREEN_HEIGHT)
+			visible = false // out of screen bounds, no need to draw
+
+		var spriteFrameNum = info.numFrames * obj.orientation + obj.frame
+		var sx = spriteFrameNum * info.frameWidth
+
+		return {x: scrX, y: scrY, spriteX: sx,
+			   frameWidth: frameInfo.w, frameHeight: frameInfo.h,
+			   uniformFrameWidth: info.frameWidth,
+			   spriteFrameNum: spriteFrameNum,
+			   artInfo: info,
+			   visible: visible}
 	}
 
 	renderObjects(objs: Obj[]) {
