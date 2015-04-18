@@ -41,25 +41,6 @@ module scriptingEngine {
 	var currentDialogueObject = null
 	export var timeEventList = []
 
-	var debugLogShowType = {
-		stub: true,
-		log: false,
-		timer: false,
-		load: false,
-		debugMessage: true,
-		displayMessage: true,
-		floatMessage: false,
-		gvars: false,
-		lvars: false,
-		mvars: false,
-		tiles: true,
-		animation: false,
-		movement: false,
-		inventory: true,
-		party: false,
-		dialogue: false,
-	}
-
 	var statMap = {
 		0: "STR", 1: "PER", 2: "END", 3: "CHA", 4: "INT",
 		5: "AGI", 6: "LUK",
@@ -67,7 +48,7 @@ module scriptingEngine {
 	}
 
 	function stub(name, args, type?) {
-		if(debugLogShowType.stub === false || debugLogShowType[type] === false) return
+		if(Config.scripting.debugLogShowType.stub === false || Config.scripting.debugLogShowType[type] === false) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
 			if(i === args.length-1) a += args[i]
@@ -76,7 +57,7 @@ module scriptingEngine {
 	}
 
 	function log(name, args, type?) {
-		if(debugLogShowType.log === false || debugLogShowType[type] === false) return
+		if(Config.scripting.debugLogShowType.log === false || Config.scripting.debugLogShowType[type] === false) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
 			if(i === args.length-1) a += args[i]
@@ -85,12 +66,12 @@ module scriptingEngine {
 	}
 
 	function warn(msg, type?) {
-		if(type !== undefined && debugLogShowType[type] === false) return
+		if(type !== undefined && Config.scripting.debugLogShowType[type] === false) return
 		console.log("WARNING: " + msg)
 	}
 
 	export function info(msg, type?) {
-		if(type !== undefined && debugLogShowType[type] === false) return
+		if(type !== undefined && Config.scripting.debugLogShowType[type] === false) return
 		console.log("INFO: " + msg)
 	}
 

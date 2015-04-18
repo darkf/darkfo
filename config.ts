@@ -61,5 +61,23 @@ var Config = {
 	},
 
 	scripting: {
+		debugLogShowType: {
+				stub: true,
+				log: false,
+				timer: false,
+				load: false,
+				debugMessage: true,
+				displayMessage: true,
+				floatMessage: false,
+				gvars: false,
+				lvars: false,
+				mvars: false,
+				tiles: true,
+				animation: false,
+				movement: false,
+				inventory: true,
+				party: false,
+				dialogue: false
+		}
 	}
 }
