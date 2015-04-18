@@ -600,7 +600,7 @@ class Critter extends Obj {
 				// move to new path hex
 				var pos = this.path.path[this.path.index++]
 				var hex = {x: pos[0], y: pos[1]}
-				
+
 				if(!this.move(hex))
 					return
 
@@ -625,11 +625,12 @@ class Critter extends Obj {
 
 			if(this.position.x === this.path.target.x && this.position.y === this.path.target.y) {
 				// reached target position
-				this.clearAnim()
-
 				if(DEBUG) console.log("target reached")
+
 				if(this.animCallback)
 					this.animCallback()
+				
+				this.clearAnim()
 			}
 		}
 	}
