@@ -64,7 +64,7 @@ function initUI() {
 	$("#lootBoxDoneButton").click(uiEndLoot)
 
 	$("#attackButtonContainer").click(function() {
-		if(!doCombat) return
+		if(!Config.engine.doCombat) return
 		if(inCombat === true) {
 			// TODO: targeting reticle for attacks
 		}

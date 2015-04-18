@@ -214,7 +214,7 @@ function critterGetAnim(obj: Critter, anim: string): string {
 
 	// try weapon animation first
 	var weaponObj = critterGetEquippedWeapon(obj)
-	if(weaponObj !== null && doUseWeaponModel === true) {
+	if(weaponObj !== null && Config.engine.doUseWeaponModel === true) {
 		var wepAnim = weaponObj.weapon.getAnim(anim)
 		if(wepAnim)
 			return base + wepAnim
@@ -642,7 +642,7 @@ class Critter extends Obj {
 		if(!super.move(position, curIdx))
 			return false
 
-		if(doSpatials !== false) {
+		if(Config.engine.doSpatials !== false) {
 			var hitSpatials = hitSpatialTrigger(position)
 			for(var i = 0; i < hitSpatials.length; i++) {
 				var spatial = hitSpatials[i]

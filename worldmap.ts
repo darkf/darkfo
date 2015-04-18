@@ -328,7 +328,7 @@ module Worldmap {
 			})
 
 			// player was ambushed, so begin combat
-			if(enc.encounterType === "ambush" && doCombat === true)
+			if(enc.encounterType === "ambush" && Config.engine.doCombat === true)
 				Combat.start()
 		})
 	}
@@ -546,7 +546,7 @@ module Worldmap {
 
 		    // check for encounters
 		    var time = heart.timer.getTime()
-		    if(doEncounters === true && (time >= lastEncounterCheck + WORLDMAP_ENCOUNTER_CHECK_RATE)) {
+		    if(Config.engine.doEncounters === true && (time >= lastEncounterCheck + WORLDMAP_ENCOUNTER_CHECK_RATE)) {
 		    	lastEncounterCheck = time
 
 			    var hadEncounter = didEncounter()

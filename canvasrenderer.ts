@@ -155,7 +155,7 @@ class CanvasRenderer extends Renderer {
 	}
 
 	renderFloor(floor: TileMap): void {
-		if(doFloorLighting)
+		if(Config.engine.doFloorLighting)
 			this.renderLitFloor(floor)
 		else
 			this.drawTileMap(floor, 0)

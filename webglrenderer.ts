@@ -159,7 +159,7 @@ class WebGLRenderer extends Renderer {
 	    gl.vertexAttribPointer(this.positionLocation, 2, gl.FLOAT, false, 0, 0);
 
 	    // set up floor light shader
-	    if(doFloorLighting) {
+	    if(Config.engine.doFloorLighting) {
         	this.floorLightShader = this.getProgram(this.gl, "2d-vertex-shader", "2d-lighting-fragment-shader")
 	    	gl.useProgram(this.floorLightShader)
     	    this.litOffsetLocation = gl.getUniformLocation(this.floorLightShader, "u_offset")
@@ -451,7 +451,7 @@ class WebGLRenderer extends Renderer {
 	}
 
 	renderFloor(floor: TileMap): void {
-		if(doFloorLighting)
+		if(Config.engine.doFloorLighting)
 			this.renderLitFloor(floor)
 		else
 			this.drawTileMap(floor, 0)

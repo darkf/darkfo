@@ -40,43 +40,13 @@ var currentElevation = 0 // current map elevation
 var hexOverlay = null
 var tempCanvas = null // temporary canvas used for detecting single pixels
 var tempCanvasCtx = null // and the context for it
-//var cursor = {x: 10, y: 10}
 
 // position of viewport camera (will be overriden by map starts or scripts)
 var cameraX = 3580
 var cameraY = 1020
 
-// geometry constants
-var TILE_WIDTH = 80
-var TILE_HEIGHT = 36
-var HEX_GRID_SIZE = 200 // hex grid is 200x200
-var SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600
-var SCROLL_PADDING = 20 // how far the mouse has to be from an edge to scroll
-var FLOAT_MSG_DURATION = 3 // in seconds
-
-var showHexOverlay = false // show hex grid?
-var showCoordinates = false // show coordinates on hex grid?
-var showCursor = true // show hex cursor?
-var showPath = false // show player's path?
-var showFloor = true // show floor tiles?
-var showRoof = true // show roof tiles?
-var showObjects = true // show objects?
-var showWalls = true // show walls?
-var showBoundingBox = false // show bounding boxes around objects?
-var showSpatials = true // show spatial script triggers?
-
-var doLoadScripts = true // should we load scripts?
-var doUpdateCritters = true // should we give critters heartbeats?
-var doTimedEvents = true // should we handle registered timed events?
-var doSpatials = true // should we handle spatial triggers?
-var doCombat = true // allow combat?
-var doUseWeaponModel = true // use weapon model for NPC models?
-var doLoadItemInfo = true // load item information (such as inventory images)?
-var doAlwaysRun = true // always run instead of walk?
-var doZOrder = true // Z-order objects?
-var doEncounters = true // allow random encounters?
-var doInfiniteUse = false // allow infinite-range object usage?
-var doFloorLighting = true // use FO2-realistic floor lighting?
+var SCREEN_WIDTH = Config.ui.screenWidth
+var SCREEN_HEIGHT = Config.ui.screenHeight
 
 var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick = 0 // real time of the last game tick
@@ -96,29 +66,6 @@ var loadingLoadedCallback = null // loaded callback
 var lazyAssetLoadingQueue = {} // set of lazily-loaded assets being loaded
 
 var floatMessages = []
-
-var cameraDownKey = "down"
-var cameraUpKey = "up"
-var cameraLeftKey = "left"
-var cameraRightKey = "right"
-var elevationDownKey = "q"
-var elevationUpKey = "e"
-var showRoofKey = "r"
-var showFloorKey = "f"
-var showObjectsKey = "o"
-var showWallsKey = "w"
-var talkToKey = "t"
-var inspectKey = "i"
-var moveToKey = "m"
-var runToKey = "j"
-var attackKey = "g"
-var combatKey = "c"
-var playerToTargetRaycastKey = "y"
-var showTargetInventoryKey = "v"
-var useKey = "u"
-var killKey = "k"
-var worldmapKey = "p"
-var calledShotKey = "z"
 
 // the global player object
 var player = new Player()
@@ -343,7 +290,7 @@ function changeElevation(level: number, updateScripts?: boolean) {
 	}
 
 	// rebuild the lightmap
-	if(doFloorLighting) {
+	if(Config.engine.doFloorLighting) {
 		Lightmap.resetLight()
 		Lightmap.rebuildLight()
 	}
@@ -386,7 +333,7 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 	player.frame = 0
 	player.anim = "idle"
 
-	if(doUseWeaponModel)
+	if(Config.engine.doUseWeaponModel)
 		player.art = critterGetAnim(player, "idle")
 
 	console.log("loading map " + mapName)
@@ -410,7 +357,7 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 		gMapObjects[level] = gMap.levels[level]["objects"].map(objFromMapObject)
 	}
 
-	if(doLoadScripts === true) {
+	if(Config.engine.doLoadScripts === true) {
 		scriptingEngine.init(player, mapName)
 		gMapScript = scriptingEngine.loadScript(mapName)
 
@@ -419,7 +366,7 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 		player.orientation = gMap.startOrientation
 
 		// load spatial scripts
-		if(doSpatials !== false) {
+		if(Config.engine.doSpatials !== false) {
 			for(var level = 0; level < gMap.levels.length; level++) {
 				var spatials = gMap.levels[level]["spatials"]
 				for(var i = 0; i < spatials.length; i++) {
@@ -545,7 +492,7 @@ heart.load = function() {
 	else
 		loadMap(MAP_NAME) // load initial map
 
-	if(doCombat === true)
+	if(Config.engine.doCombat === true)
 		CriticalEffects.loadTable()
 
 	$("#cnv").mouseenter(function() { gameHasFocus = true }).
@@ -571,7 +518,7 @@ function critterMoveInFrontOf(obj, targetPos, callback) {
 	var target = path[path.length - 1]
 	targetPos = {x: target[0], y: target[1]}
 
-	var running = doAlwaysRun
+	var running = Config.engine.doAlwaysRun
 	if(hexDistance(obj.position, targetPos) > 5)
 		running = true
 
@@ -589,7 +536,7 @@ function playerUse() {
 	var who = <Critter>obj
 
 	if(obj === null) { // walk to the destination if there is no usable object
-		if(critterWalkTo(player, mouseHex, doAlwaysRun) === false)
+		if(critterWalkTo(player, mouseHex, Config.engine.doAlwaysRun) === false)
 			console.log("Cannot walk there")
 		return
 	}
@@ -662,7 +609,7 @@ function playerUse() {
 			useObject(obj, player)
 	}
 
-	if(doInfiniteUse === true)
+	if(Config.engine.doInfiniteUse === true)
 		callback()
 	else
 		critterMoveInFrontOf(player, obj.position, callback)
@@ -679,17 +626,17 @@ heart.keydown = function(k) {
 	var mousePos = heart.mouse.getPosition()
 	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
-	if(k == cameraDownKey) cameraY += 15
-	if(k == cameraRightKey) cameraX += 15
-	if(k == cameraLeftKey) cameraX -= 15
-	if(k == cameraUpKey) cameraY -= 15
-	if(k == elevationDownKey) { if(currentElevation-1 >= 0) changeElevation(currentElevation-1) }
-	if(k == elevationUpKey) { if(currentElevation+1 < gMap.levels.length) changeElevation(currentElevation+1) }
-	if(k == showRoofKey) { showRoof = !showRoof }
-	if(k == showFloorKey) { showFloor = !showFloor }
-	if(k == showObjectsKey) { showObjects = !showObjects }
-	if(k == showWallsKey) showWalls = !showWalls
-	if(k == talkToKey) {
+	if(k === Config.controls.cameraDown) cameraY += 15
+	if(k === Config.controls.cameraRight) cameraX += 15
+	if(k === Config.controls.cameraLeft) cameraX -= 15
+	if(k === Config.controls.cameraUp) cameraY -= 15
+	if(k === Config.controls.elevationDown) { if(currentElevation-1 >= 0) changeElevation(currentElevation-1) }
+	if(k === Config.controls.elevationUp) { if(currentElevation+1 < gMap.levels.length) changeElevation(currentElevation+1) }
+	if(k === Config.controls.showRoof) { Config.ui.showRoof = !Config.ui.showRoof }
+	if(k === Config.controls.showFloor) { Config.ui.showFloor = !Config.ui.showFloor }
+	if(k === Config.controls.showObjects) { Config.ui.showObjects = !Config.ui.showObjects }
+	if(k === Config.controls.showWalls) Config.ui.showWalls = !Config.ui.showWalls
+	if(k === Config.controls.talkTo) {
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
 				console.log("object at index " + i)
@@ -701,7 +648,7 @@ heart.keydown = function(k) {
 			}
 		}
 	}
-	if(k == inspectKey) {
+	if(k === Config.controls.inspect) {
 		for(var i = 0; i < gObjects.length; i++) {
 			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
 				var hasScripts = (gObjects[i].script !== undefined ? ("yes (" + gObjects[i].script + ")") : "no") + " " + (gObjects[i]._script === undefined ? "and is NOT loaded" : "and is loaded")
@@ -709,13 +656,13 @@ heart.keydown = function(k) {
 			}
 		}
 	}
-	if(k == moveToKey) {
+	if(k === Config.controls.moveTo) {
 		critterWalkTo(player, mouseHex)
 	}
-	if(k == runToKey) {
+	if(k === Config.controls.runTo) {
 		critterWalkTo(player, mouseHex, true)
 	}
-	if(k == attackKey) {
+	if(k === Config.controls.attack) {
 		if(!inCombat || !combat.inPlayerTurn || player.anim !== "idle") {
 			console.log("You can't do that yet.")
 			return
@@ -736,8 +683,8 @@ heart.keydown = function(k) {
 		}
 	}
 
-	if(k == combatKey) {
-		if(!doCombat) return
+	if(k === Config.controls.combat) {
+		if(!Config.engine.doCombat) return
 		if(inCombat === true && combat.inPlayerTurn === true) {
 			console.log("[TURN]")
 			combat.nextTurn()
@@ -753,7 +700,7 @@ heart.keydown = function(k) {
 		}
 	}
 
-	if(k == playerToTargetRaycastKey) {
+	if(k === Config.controls.playerToTargetRaycast) {
 		var obj = objectsAtPosition(mouseHex)[0]
 		if(obj !== undefined) {
 			var hit = hexLinecast(player.position, obj.position)
@@ -761,7 +708,7 @@ heart.keydown = function(k) {
 		}
 	}
 
-	if(k == showTargetInventoryKey) {
+	if(k === Config.controls.showTargetInventory) {
 		var obj = objectsAtPosition(mouseHex)[0]
 		if(obj !== undefined) {
 			console.log("PID: " + obj.pid)
@@ -770,17 +717,17 @@ heart.keydown = function(k) {
 		}
 	}
 
-	if(k == useKey) {
+	if(k === Config.controls.use) {
 		var objs = objectsAtPosition(mouseHex)
 		for(var i = 0; i < objs.length; i++) {
 			useObject(objs[i])
 		}
 	}
 
-	if(k == 'h')
+	if(k === 'h')
 		player.move(mouseHex)
 
-	if(k == killKey) {
+	if(k === Config.controls.kill) {
 		var objs = objectsAtPosition(mouseHex)
 		for(var i = 0; i < objs.length; i++) {
 			if(objs[i].type === "critter") {
@@ -790,7 +737,7 @@ heart.keydown = function(k) {
 		}
 	}
 
-	if(k == worldmapKey)
+	if(k === Config.controls.worldmap)
 		uiWorldMap()
 
 	//if(k == calledShotKey)
@@ -870,11 +817,11 @@ heart.update = function() {
 
 	if(gameHasFocus) {
 		var mousePos = heart.mouse.getPosition()
-		if(mousePos[0] <= SCROLL_PADDING) cameraX -= 15
-		if(mousePos[0] >= SCREEN_WIDTH-SCROLL_PADDING) cameraX += 15
+		if(mousePos[0] <= Config.ui.scrollPadding) cameraX -= 15
+		if(mousePos[0] >= SCREEN_WIDTH-Config.ui.scrollPadding) cameraX += 15
 
-		if(mousePos[1] <= SCROLL_PADDING) cameraY -= 15
-		if(mousePos[1] >= SCREEN_HEIGHT-SCROLL_PADDING) cameraY += 15
+		if(mousePos[1] <= Config.ui.scrollPadding) cameraY -= 15
+		if(mousePos[1] >= SCREEN_HEIGHT-Config.ui.scrollPadding) cameraY += 15
 
 		if(time >= lastMousePickTime + 750) { // every .75 seconds, check the object under the cursor
 			lastMousePickTime = time
@@ -886,7 +833,7 @@ heart.update = function() {
 		}
 
 		for(var i = 0; i < floatMessages.length; i++) {
-			if(time >= floatMessages[i].startTime + 1000*FLOAT_MSG_DURATION) {
+			if(time >= floatMessages[i].startTime + 1000*Config.ui.floatMessageDuration) {
 				floatMessages.splice(i--, 1)
 				continue
 			}
@@ -898,7 +845,7 @@ heart.update = function() {
 		lastGameTick = time
 		gameTickTime++
 
-		if(doTimedEvents === true && inCombat !== true) {
+		if(Config.engine.doTimedEvents === true && inCombat !== true) {
 			// check and update timed events
 			var timedEvents = scriptingEngine.timeEventList
 			var numEvents = timedEvents.length
@@ -924,7 +871,7 @@ heart.update = function() {
 
 	for(var i = 0; i < gObjects.length; i++) {
 		if(gObjects[i].type == "critter") {
-			if(didTick && doUpdateCritters && inCombat !== true && !(<Critter>gObjects[i]).dead &&
+			if(didTick && Config.engine.doUpdateCritters && inCombat !== true && !(<Critter>gObjects[i]).dead &&
 				!gObjects[i].inAnim() && gObjects[i]._script)
 				scriptingEngine.updateCritter(gObjects[i]._script, gObjects[i])
 		}

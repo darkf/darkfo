@@ -370,7 +370,7 @@ class Combat {
 		var AP = obj.AP
 		var messageRoll = rollSkillCheck(obj.ai.info.chance, 0, false)
 
-		if(doLoadScripts === true && obj._script !== undefined) {
+		if(Config.engine.doLoadScripts === true && obj._script !== undefined) {
 			// notify the critter script of a combat event
 			if(scriptingEngine.combatEvent(obj, "turnBegin") === true)
 				return // end of combat (script override)

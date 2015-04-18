@@ -39,13 +39,13 @@ class Renderer {
 		var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 		//var mouseTile = tileFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
-		if(showFloor)   this.renderFloor(this.floorTiles)
-		if(showCursor) {
+		if(Config.ui.showFloor)   this.renderFloor(this.floorTiles)
+		if(Config.ui.showCursor) {
 			var scr = hexToScreen(mouseHex.x, mouseHex.y)
 			this.image(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
 		}
-		if(showObjects) this.renderObjects(this.objects)
-		if(showRoof)    this.renderRoof(this.roofTiles)
+		if(Config.ui.showObjects) this.renderObjects(this.objects)
+		if(Config.ui.showRoof)    this.renderRoof(this.roofTiles)
 
 
 		if(inCombat) {
@@ -54,7 +54,7 @@ class Renderer {
 			this.text("[turn " + combat.turnNum + " of " + whose + " AP: " + AP.getAvailableMoveAP() + "]", SCREEN_WIDTH - 200, 15)
 		}
 
-		if(showSpatials && doSpatials !== false) {
+		if(Config.ui.showSpatials && Config.engine.doSpatials !== false) {
 			for(var i = 0; i < gSpatials.length; i++) {
 				var spatial = gSpatials[i]
 				var scr = hexToScreen(spatial.position.x, spatial.position.y)

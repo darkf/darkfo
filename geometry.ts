@@ -16,6 +16,11 @@ limitations under the License.
 
 // Geometry-related functions, for the hex and isometric grids
 
+// geometry constants
+var TILE_WIDTH = 80
+var TILE_HEIGHT = 36
+var HEX_GRID_SIZE = 200 // hex grid is 200x200
+
 function toTileNum(position: Point): number {
 	return position.y * 200 + position.x
 }

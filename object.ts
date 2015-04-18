@@ -532,11 +532,11 @@ class Obj {
 		this.position = position
 
 		// rebuild the lightmap
-		if(doFloorLighting)
+		if(Config.engine.doFloorLighting)
 			Lightmap.rebuildLight()
 		
 		// give us a new z-order
-		if(doZOrder !== false)
+		if(Config.engine.doZOrder !== false)
 			objectZOrder(this, curIdx)
 
 		return true
