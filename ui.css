@@ -37,6 +37,28 @@ body {
   background-color: black;
 }
 
+/* canvas overlay */
+#overlay-container {
+  position: absolute;
+  left: 0; top: 0;
+  color: white;
+  font-family: monospace;
+  font-size: 8pt;
+  width: 100%;
+
+  /* don't affect the cursor at all */
+  pointer-events: none;
+}
+
+#overlay {
+  position: relative;
+}
+
+#fpsOverlay {
+  position: absolute;
+  right: 10; top: 5;
+}
+
 #bar {
   position: absolute;
   left: 80; /* (canvas width - 640) / 2 */

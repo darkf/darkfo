@@ -866,6 +866,8 @@ heart.update = function() {
 		return
 	var time = heart.timer.getTime()
 
+	$("#fpsOverlay").text("fps: " + heart.timer.getFPS())
+
 	if(gameHasFocus) {
 		var mousePos = heart.mouse.getPosition()
 		if(mousePos[0] <= SCROLL_PADDING) cameraX -= 15

@@ -67,7 +67,7 @@ class Renderer {
 		//heart.graphics.print("mt: " + mouseTile.x + "," + mouseTile.y, 100, 15)
 		this.text("m: " + mousePos[0] + ", " + mousePos[1], 175, 15)
 
-		this.text("fps: " + heart.timer.getFPS(), SCREEN_WIDTH - 50, 15)
+		//this.text("fps: " + heart.timer.getFPS(), SCREEN_WIDTH - 50, 15)
 
 		for(var i = 0; i < floatMessages.length; i++) {
 			var bbox = objectBoundingBox(floatMessages[i].obj)
