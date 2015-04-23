@@ -33,6 +33,7 @@ var Config = {
 		doEncounters: true, // allow random encounters?
 		doInfiniteUse: false, // allow infinite-range object usage?
 		doFloorLighting: false, // use FO2-realistic floor lighting?
+		doAudio: false, // enable audio?
 	},
 
 	controls: {

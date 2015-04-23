@@ -71,6 +71,7 @@ var floatMessages = []
 var player = new Player()
 
 var renderer: Renderer = null
+var audioEngine: AudioEngine = null
 
 function repr(obj) { return JSON.stringify(obj, null, 2) }
 
@@ -409,6 +410,15 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 	load("hex_outline", function(r) { hexOverlay = r })
 	loadingAssetsTotal-- // we should know all of the assets we need by now
 
+	// clear audio and use the map music
+	if(Config.engine.doAudio) {
+		var curMapInfo = getCurrentMapInfo()
+		audioEngine.stopAll()
+		if(curMapInfo && curMapInfo.music)
+			audioEngine.playMusic(curMapInfo.music)
+	}
+
+	// set up renderer data
 	renderer.initData(roofMap, floorMap, gObjects)
 }
 
@@ -436,8 +446,21 @@ function parseMapInfo() {
 			}
 		}
 
+		// parse ambient sfx list
+		var ambientSfx = []
+		var ambient_sfx = ini[category].ambient_sfx
+		if(ambient_sfx) {
+			var s = ambient_sfx.split(",")
+			for(var i = 0; i < s.length; i++) {
+				var kv = s[i].trim().split(":")
+				ambientSfx.push([kv[0].toLowerCase(), parseInt(kv[1].toLowerCase())])
+			}
+		}
+
 		mapInfo[id] = {name: ini[category].map_name,
 			           lookupName: ini[category].lookup_name,
+			           ambientSfx: ambientSfx,
+			           music: (ini[category].music || "").trim().toLowerCase(),
 			           randomStartPoints: randomStartPoints}
 	}
 }
@@ -471,6 +494,21 @@ function lookupMapName(mapID) {
 	return mapInfo[mapID].name || null
 }
 
+function getMapInfo(mapName: string) {
+	if(mapInfo === null)
+		parseMapInfo()
+
+	for(var mapID in mapInfo) {
+		if(mapInfo[mapID].name.toLowerCase() === mapName.toLowerCase())
+			return mapInfo[mapID]
+	}
+	return null
+}
+
+function getCurrentMapInfo() {
+	return getMapInfo(MAP_NAME)
+}
+
 function loadMapID(mapID: number, startingPosition?: any, startingElevation?: any) { // TODO: any
 	var mapName = lookupMapName(mapID)
 	if(mapName !== null)
@@ -482,6 +520,9 @@ function loadMapID(mapID: number, startingPosition?: any, startingElevation?: an
 heart.load = function() {
 	renderer = new CanvasRenderer()
 	renderer.init()
+
+	if(Config.engine.doAudio)
+		audioEngine = new AudioEngine()
 
 	uiLog("Welcome to DarkFO")
 
@@ -845,13 +886,13 @@ heart.update = function() {
 		lastGameTick = time
 		gameTickTime++
 
-		if(Config.engine.doTimedEvents === true && inCombat !== true) {
+		if(Config.engine.doTimedEvents && !inCombat) {
 			// check and update timed events
 			var timedEvents = scriptingEngine.timeEventList
 			var numEvents = timedEvents.length
 			for(var i = 0; i < numEvents; i++) {
-				if(timedEvents[i].obj &&
-				   timedEvents[i].obj.dead === true) { // remove events for dead objects
+				// remove events for dead objects
+				if(timedEvents[i].obj && timedEvents[i].obj.dead) {
 				   	console.log("removing timed event for dead object")
 				   	timedEvents.splice(i--, 1)
 				   	numEvents--
@@ -867,6 +908,9 @@ heart.update = function() {
 				}
 			}
 		}
+
+		if(Config.engine.doAudio)
+			audioEngine.tick()
 	}
 
 	for(var i = 0; i < gObjects.length; i++) {
