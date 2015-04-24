@@ -47,14 +47,13 @@ class Renderer {
 		if(Config.ui.showObjects) this.renderObjects(this.objects)
 		if(Config.ui.showRoof)    this.renderRoof(this.roofTiles)
 
-
 		if(inCombat) {
 			var whose = combat.inPlayerTurn ? "player" : critterGetName(combat.combatants[combat.whoseTurn])
 			var AP = combat.inPlayerTurn ? player.AP : combat.combatants[combat.whoseTurn].AP
 			this.text("[turn " + combat.turnNum + " of " + whose + " AP: " + AP.getAvailableMoveAP() + "]", SCREEN_WIDTH - 200, 15)
 		}
 
-		if(Config.ui.showSpatials && Config.engine.doSpatials !== false) {
+		if(Config.ui.showSpatials && Config.engine.doSpatials) {
 			for(var i = 0; i < gSpatials.length; i++) {
 				var spatial = gSpatials[i]
 				var scr = hexToScreen(spatial.position.x, spatial.position.y)
@@ -132,7 +131,11 @@ class Renderer {
 	}
 
 	renderObjects(objs: Obj[]) {
-		objs.forEach(this.renderObject.bind(this))
+		objs.forEach(obj => {
+			if(!Config.ui.showWalls && obj.type === "wall")
+				return
+			this.renderObject.call(this, obj)
+		})
 	}
 
 	// stubs to be overriden
