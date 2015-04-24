@@ -291,7 +291,8 @@ function critterWalkTo(obj: Critter, target: Point, running?: boolean, callback?
 	}
 
 	// set up animation properties
-	obj.path = {path: path, index: 1, target: target, partial: 0}
+	var actualTarget = {x: path[path.length-1][0], y: path[path.length-1][1]}
+	obj.path = {path: path, index: 1, target: actualTarget, partial: 0}
 	obj.anim = (running === true) ? "run" : "walk"
 	obj.art = critterGetAnim(obj, obj.anim)
 	obj.animCallback = callback || (() => obj.clearAnim())
