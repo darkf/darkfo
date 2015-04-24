@@ -842,6 +842,7 @@ module scriptingEngine {
 				return
 			}
 		},
+		reg_anim_obj_move_to_tile: function(obj, tileNum, delay) { stub("reg_anim_obj_move_to_tile", arguments, "movement") },
 		explosion: function(tile, elevation, damage) { stub("explosion", arguments) },
 
 		gfade_out: function(time) { stub("gfade_out", arguments) },
@@ -1161,9 +1162,10 @@ module scriptingEngine {
 			mapScript.map_enter_p_proc()
 		}
 
-		for(var i = 0; i < gameObjects.length; i++) {
+		// XXX: caller should do this for all objects, which is better?
+		/*for(var i = 0; i < gameObjects.length; i++) {
 			objectEnterMap(gameObjects[i], elevation, mapID)			
-		}
+		}*/
 	}
 
 	export function objectEnterMap(obj: Obj, elevation: number, mapID: number) {
