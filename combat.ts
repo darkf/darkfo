@@ -17,55 +17,60 @@ limitations under the License.
 
 // Turn-based combat system
 
-var ActionPoints = function(obj: Critter) {
-	this.combat = 0
-	this.move = 0
-	this.attachedObject = obj
-	this.resetAP()
-}
+class ActionPoints {
+	combat: number = 0; // Combat AP
+	move: number = 0; // Move AP
+	attachedCritter: Critter;
 
-ActionPoints.prototype.getMaxAP = function() {
-	var bonusCombatAP = 0 //todo: replace with get function
-	var bonusMoveAP = 0 //todo: replace with get function
-	return {combat: 5 + Math.floor(critterGetStat(this.attachedObject,'AGI')/2) + bonusCombatAP, move: bonusMoveAP}
-}
-
-ActionPoints.prototype.resetAP = function() {
-	var AP = this.getMaxAP()
-	this.combat = AP.combat
-	this.move = AP.move
-}
-
-ActionPoints.prototype.getAvailableMoveAP = function() {
-	return this.combat + this.move
-}
-
-ActionPoints.prototype.getAvailableCombatAP = function() {
-	return this.combat
-}
-
-ActionPoints.prototype.subtractMoveAP = function(value: number) {
-	if(this.getAvailableMoveAP() < value)
-		return false
-
-	this.move -= value
-	if(this.move < 0) {
-		if(this.subtractCombatAP(-this.move)) {
-			this.move = 0
-			return true
-		}
-		return false
+	constructor(obj: Critter) {
+		this.attachedCritter = obj
+		this.resetAP()
 	}
 
-	return true
-}
+	resetAP() {
+		var AP = this.getMaxAP()
+		this.combat = AP.combat
+		this.move = AP.move
+	}
 
-ActionPoints.prototype.subtractCombatAP = function(value: number) {
-	if(this.combat < value)
-		return false
+	getMaxAP(): {combat: number; move: number} {
+		var bonusCombatAP = 0 // TODO: replace with get function
+		var bonusMoveAP = 0 // TODO: replace with get function
 
-	this.combat -= value
-	return true
+		return {combat: 5 + Math.floor(critterGetStat(this.attachedCritter, "AGI") / 2) + bonusCombatAP, move: bonusMoveAP}
+	}
+
+	getAvailableMoveAP(): number {
+		return this.combat + this.move
+	}
+
+	getAvailableCombatAP() {
+		return this.combat
+	}
+
+	subtractMoveAP(value: number): boolean {
+		if(this.getAvailableMoveAP() < value)
+			return false
+
+		this.move -= value
+		if(this.move < 0) {
+			if(this.subtractCombatAP(-this.move)) {
+				this.move = 0
+				return true
+			}
+			return false
+		}
+
+		return true
+	}
+
+	subtractCombatAP(value: number): boolean {
+		if(this.combat < value)
+			return false
+
+		this.combat -= value
+		return true
+	}
 }
 
 class AI {
@@ -387,7 +392,7 @@ class Combat {
 			// todo: pick the closest edge of the map
 			this.maybeTaunt(obj, "run", messageRoll)
 			var targetPos = {x: 128, y: obj.position.y} // left edge
-			if(this.walkUpTo(obj, idx, targetPos, AP, function() {
+			if(this.walkUpTo(obj, idx, targetPos, AP.getAvailableMoveAP(), function() {
 				obj.clearAnim()
 				that.doAITurn(obj, idx) // if we can, do another turn
 			}) === false)

@@ -489,7 +489,7 @@ class Critter extends Obj {
 	type = "critter";
 	anim = "idle";
 	path: any = null; // Holds pathfinding objects
-	AP: any = null; // TODO: AP class
+	AP: ActionPoints = null;
 
 	aiNum: number = -1; // AI packet number
 	teamNum: number = -1; // AI team number (TODO: implement this)
