@@ -289,8 +289,7 @@ class GameMap {
 
 	mapScript: any = null; // Current map script object
 	objects: Obj[][] = null; // Map objects on all levels
-
-	spatials: any[] = null;
+	spatials: any[][] = null; // Spatials on all levels
 
 	mapObj: any = null;
 	mapID: number;
@@ -299,14 +298,23 @@ class GameMap {
 		return this.objects[level === undefined ? this.currentElevation : level]
 	}
 
+	getSpatials(level?: number): any[] {
+		return this.spatials[level === undefined ? this.currentElevation : level]
+	}
+
+	getObjectsAndSpatials(level?: number): Obj[] {
+		return this.getObjects().concat(this.getSpatials())
+	}
+
 	changeElevation(level: number, updateScripts?: boolean) {
+		var oldElevation = this.currentElevation
 		this.currentElevation = level
 		this.floorMap = this.mapObj.levels[level]["tiles"]["floor"]
 		this.roofMap  = this.mapObj.levels[level]["tiles"]["roof"]
-		this.spatials = this.mapObj.levels[level]["spatials"]
+		//this.spatials = this.mapObj.levels[level]["spatials"]
 
 		// temporary
-		gSpatials = this.spatials
+		gSpatials = this.getSpatials(level)
 		gObjects = this.getObjects(level)
 		gMapScript = this.mapScript
 		floorMap = this.floorMap
@@ -316,15 +324,17 @@ class GameMap {
 
 		player.clearAnim()
 
-		// TODO: remove this from the old gObjects if necessary
-		gObjects.push(player)
+		// remove the player from the old objects
+		_.pull(this.objects[oldElevation], player)
 
-		if(updateScripts !== false) {
-			var objectsAndSpatials = gObjects.concat(gSpatials)
+		// and add the player to the new one
+		this.objects[level].push(player)
+
+		if(updateScripts) {
 			// TODO: we need some kind of active/inactive flag on scripts to toggle here,
 			// since scripts should already be loaded
 			//loadObjectScripts(gObjects)
-			scriptingEngine.updateMap(this.mapScript, objectsAndSpatials, currentElevation)
+			scriptingEngine.updateMap(this.mapScript, this.getObjectsAndSpatials(), currentElevation)
 		}
 
 		// rebuild the lightmap
@@ -359,13 +369,8 @@ class GameMap {
 		this.mapScript = null
 		scriptingEngine.reset(player, this.name)
 
-		// reset player animation status
-		player.path = null
-		player.frame = 0
-		player.anim = "idle"
-
-		if(Config.engine.doUseWeaponModel)
-			player.art = critterGetAnim(player, "idle")
+		// reset player animation status (to idle)
+		player.clearAnim()
 
 		console.log("loading map " + mapName)
 
@@ -373,9 +378,6 @@ class GameMap {
 		for(var i = 0; i < mapImages.length; i++)
 			load(mapImages[i])
 		console.log("loading " + mapImages.length + " images")
-
-		if(imageInfo === null)
-			imageInfo = getFileJSON("art/imageMap.json")
 
 		var map = getFileJSON("maps/"+mapName+".json")
 		this.mapObj = map
@@ -388,10 +390,10 @@ class GameMap {
 		// load map objects
 		this.objects = new Array(map.levels.length)
 		for(var level = 0; level < map.levels.length; level++) {
-			this.objects[level] = map.levels[level]["objects"].map(objFromMapObject)
+			this.objects[level] = map.levels[level].objects.map(objFromMapObject)
 		}
 
-		if(Config.engine.doLoadScripts === true) {
+		if(Config.engine.doLoadScripts) {
 			scriptingEngine.init(player, mapName)
 			this.mapScript = scriptingEngine.loadScript(mapName)
 
@@ -399,49 +401,53 @@ class GameMap {
 			player.position = startingPosition || map.startPosition
 			player.orientation = map.startOrientation
 
-			// load spatial scripts
-			if(Config.engine.doSpatials !== false) {
-				for(var level = 0; level < map.levels.length; level++) {
-					var spatials = map.levels[level]["spatials"]
-					for(var i = 0; i < spatials.length; i++) {
-						var spatial = spatials[i]
-						var script = scriptingEngine.loadScript(spatial.script)
-						if(script === null)
-							console.log("load script failed for spatial " + spatial.script)
-						else {
-							spatial._script = script
-							// no need to initialize here because spatials only use spatial_p_proc
-						}
+			if(Config.engine.doSpatials) {
+				this.spatials = map.levels.map(level => level.spatials)
 
-						spatial.isSpatial = true
-						spatial.position = fromTileNum(spatial.tileNum)
+				// initialize spatial scripts
+				this.spatials.forEach(level => level.forEach(spatial => {
+					var script = scriptingEngine.loadScript(spatial.script)
+					if(script === null)
+						console.log("load script failed for spatial " + spatial.script)
+					else {
+						spatial._script = script
+						// no need to initialize here because spatials only use spatial_p_proc
 					}
-				}
+
+					spatial.isSpatial = true
+					spatial.position = fromTileNum(spatial.tileNum)
+				}))
+
 			}
+			else
+				this.spatials = map.levels.map(_ => [])
 
 			this.changeElevation(elevation, false)
 
 			// TODO: when exactly are these called?
 			// TODO: when objectsAndSpatials is updated, the scripting engine won't know
-			var objectsAndSpatials = this.getObjects().concat(this.spatials)
-			scriptingEngine.enterMap(this.mapScript, objectsAndSpatials, elevation, map.mapID, true)
-			scriptingEngine.updateMap(this.mapScript, objectsAndSpatials, elevation)
+			var objectsAndSpatials = this.getObjectsAndSpatials()
+			scriptingEngine.enterMap(this.mapScript, objectsAndSpatials, this.currentElevation, this.mapID, true)
 
 			// tell objects that they're now on the map
-			for(var level = 0; level < map.levels.length; level++) {
-				this.objects[level].forEach(obj => obj.enterMap())
-			}
+			this.objects.forEach(level => level.forEach(obj => obj.enterMap()))
+			this.spatials.forEach(level => level.forEach(spatial => scriptingEngine.objectEnterMap(spatial, this.currentElevation, this.mapID)))
+
+			scriptingEngine.updateMap(this.mapScript, objectsAndSpatials, elevation)
 		}
 		else
 			this.changeElevation(elevation, false)
+
+		// change elevation with script updates
+		this.changeElevation(elevation, true)
 
 		// TODO: is map_enter_p_proc called on elevation change?
 		console.log("loaded (" + map.levels.length + " levels, level 0: " + floorMap.length + " tiles, " + this.getObjects().length + " objects on elevation)")
 
 		// load some testing art
 		load("art/critters/hmjmpsat")
+		load("hex_outline", r => { hexOverlay = r })
 
-		load("hex_outline", function(r) { hexOverlay = r })
 		loadingAssetsTotal-- // we should know all of the assets we need by now
 
 		// clear audio and use the map music
@@ -560,14 +566,20 @@ function loadMapID(mapID: number, startingPosition?: Point, startingElevation?: 
 }
 
 heart.load = function() {
+	// load image map
+	imageInfo = getFileJSON("art/imageMap.json")
+
+	// initialize renderer
 	renderer = new CanvasRenderer()
 	renderer.init()
 
+	// initialize audio engine
 	if(Config.engine.doAudio)
 		audioEngine = new HTMLAudioEngine()
 	else
 		audioEngine = new NullAudioEngine()
 
+	// initialize map
 	gMap = new GameMap()
 
 	uiLog("Welcome to DarkFO")
