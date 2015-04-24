@@ -305,7 +305,7 @@ function centerCamera(around) {
 	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2 | 0)
 }
 
-function loadMap(mapName: string, startingPosition?: any, startingElevation?: any, loadedCallback?: () => void) {
+function loadMap(mapName: string, startingPosition?: Point, startingElevation?: number, loadedCallback?: () => void) {
 	function load(file: string, callback?: (x:any) => void) {
 		if(images[file] !== undefined) return // don't load more than once
 		loadingAssetsTotal++
@@ -411,12 +411,10 @@ function loadMap(mapName: string, startingPosition?: any, startingElevation?: an
 	loadingAssetsTotal-- // we should know all of the assets we need by now
 
 	// clear audio and use the map music
-	if(Config.engine.doAudio) {
-		var curMapInfo = getCurrentMapInfo()
-		audioEngine.stopAll()
-		if(curMapInfo && curMapInfo.music)
-			audioEngine.playMusic(curMapInfo.music)
-	}
+	var curMapInfo = getCurrentMapInfo()
+	audioEngine.stopAll()
+	if(curMapInfo && curMapInfo.music)
+		audioEngine.playMusic(curMapInfo.music)
 
 	// set up renderer data
 	renderer.initData(roofMap, floorMap, gObjects)
@@ -509,7 +507,7 @@ function getCurrentMapInfo() {
 	return getMapInfo(MAP_NAME)
 }
 
-function loadMapID(mapID: number, startingPosition?: any, startingElevation?: any) { // TODO: any
+function loadMapID(mapID: number, startingPosition?: Point, startingElevation?: number) {
 	var mapName = lookupMapName(mapID)
 	if(mapName !== null)
 		loadMap(mapName, startingPosition, startingElevation)
@@ -522,7 +520,9 @@ heart.load = function() {
 	renderer.init()
 
 	if(Config.engine.doAudio)
-		audioEngine = new AudioEngine()
+		audioEngine = new HTMLAudioEngine()
+	else
+		audioEngine = new NullAudioEngine()
 
 	uiLog("Welcome to DarkFO")
 
@@ -909,8 +909,7 @@ heart.update = function() {
 			}
 		}
 
-		if(Config.engine.doAudio)
-			audioEngine.tick()
+		audioEngine.tick()
 	}
 
 	for(var i = 0; i < gObjects.length; i++) {

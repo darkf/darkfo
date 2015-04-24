@@ -1,4 +1,22 @@
-class AudioEngine {
+interface AudioEngine {
+	playSfx(sfx: string): void;
+	playMusic(music: string): void;
+	playSound(soundName: string): HTMLAudioElement;
+	stopMusic(): void;
+	stopAll(): void;
+	tick(): void;
+}
+
+class NullAudioEngine implements AudioEngine {
+	playSfx(sfx: string): void {}
+	playMusic(music: string): void {}
+	playSound(soundName: string): HTMLAudioElement { return null }
+	stopMusic(): void {}
+	stopAll(): void {}
+	tick(): void {}
+}
+
+class HTMLAudioEngine implements AudioEngine {
 	//lastSfxTime: number = 0
 	nextSfxTime: number = 0
 	nextSfx: string = null
