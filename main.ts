@@ -27,12 +27,12 @@ declare var PF;
 var MAP_NAME = "ctest" // name of the current map
 var DEBUG = false // debug mode
 
+var gMap: GameMap = null
 var gMapScript = null // Current map script object
 var floorMap: string[][] = null // Floor tilemap
 var roofMap: string[][] = null // Roof tilemap
 var images = {} // Image cache
 var imageInfo = null // Metadata about images (Number of frames, FPS, etc)
-var gMap: any = null // Current map object
 var gObjects: Obj[] = null // Map objects on current level
 var gMapObjects: Obj[][] = null // Map objects on all levels
 var gSpatials = null
@@ -270,154 +270,198 @@ function critterAtPosition(position: Point) {
 	return null
 }
 
-function changeElevation(level: number, updateScripts?: boolean) {
-	currentElevation = level
-	floorMap = gMap.levels[level]["tiles"]["floor"]
-	roofMap  = gMap.levels[level]["tiles"]["roof"]
-	gObjects = gMapObjects[level]
-	gSpatials = gMap.levels[level]["spatials"]
-
-	player.clearAnim()
-
-	// TODO: remove this from the old gObjects if necessary
-	gObjects.push(player)
-
-	if(updateScripts !== false) {
-		var objectsAndSpatials = gObjects.concat(gSpatials)
-		// TODO: we need some kind of active/inactive flag on scripts to toggle here,
-		// since scripts should already be loaded
-		//loadObjectScripts(gObjects)
-		scriptingEngine.updateMap(gMapScript, objectsAndSpatials, currentElevation)
-	}
-
-	// rebuild the lightmap
-	if(Config.engine.doFloorLighting) {
-		Lightmap.resetLight()
-		Lightmap.rebuildLight()
-	}
-
-	centerCamera(player.position)
-}
-
 function centerCamera(around) {
 	var scr = hexToScreen(around.x, around.y)
 	cameraX = Math.max(0, scr.x - SCREEN_WIDTH/2 | 0)
 	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2 | 0)
 }
 
-function loadMap(mapName: string, startingPosition?: Point, startingElevation?: number, loadedCallback?: () => void) {
-	function load(file: string, callback?: (x:any) => void) {
-		if(images[file] !== undefined) return // don't load more than once
-		loadingAssetsTotal++
-		heart.graphics.newImage(file+".png", function(r) {
-			images[file] = r
-			loadingAssetsLoaded++
-			if(callback) callback(r)
-		})
+class GameMap {
+	name: string;
+	startingPosition: Point;
+	startingElevation: number;
+	numLevels: number;
+
+	currentElevation: number = 0 // current map elevation
+
+	floorMap: string[][] = null // Floor tilemap
+	roofMap: string[][] = null // Roof tilemap
+
+	mapScript: any = null; // Current map script object
+	objects: Obj[][] = null; // Map objects on all levels
+
+	spatials: any[] = null;
+
+	mapObj: any = null;
+	mapID: number;
+
+	getObjects(level?: number): Obj[] {
+		return this.objects[level === undefined ? this.currentElevation : level]
 	}
 
-	mapName = mapName.toLowerCase()
+	changeElevation(level: number, updateScripts?: boolean) {
+		this.currentElevation = level
+		this.floorMap = this.mapObj.levels[level]["tiles"]["floor"]
+		this.roofMap  = this.mapObj.levels[level]["tiles"]["roof"]
+		this.spatials = this.mapObj.levels[level]["spatials"]
 
-	isLoading = true
-	loadingAssetsTotal = 1 // this will remain +1 until we load the map, preventing it from exiting early
-	loadingAssetsLoaded = 0
-	loadingLoadedCallback = loadedCallback || null
+		// temporary
+		gSpatials = this.spatials
+		gObjects = this.getObjects(level)
+		gMapScript = this.mapScript
+		floorMap = this.floorMap
+		roofMap = this.roofMap
+		gMapObjects = this.objects
+		currentElevation = this.currentElevation
 
-	// clear any previous objects/events
-	gMap = null
-	gObjects = null
-	gMapScript = null
-	scriptingEngine.reset(player, mapName)
+		player.clearAnim()
 
-	// reset player animation status
-	player.path = null
-	player.frame = 0
-	player.anim = "idle"
+		// TODO: remove this from the old gObjects if necessary
+		gObjects.push(player)
 
-	if(Config.engine.doUseWeaponModel)
-		player.art = critterGetAnim(player, "idle")
+		if(updateScripts !== false) {
+			var objectsAndSpatials = gObjects.concat(gSpatials)
+			// TODO: we need some kind of active/inactive flag on scripts to toggle here,
+			// since scripts should already be loaded
+			//loadObjectScripts(gObjects)
+			scriptingEngine.updateMap(this.mapScript, objectsAndSpatials, currentElevation)
+		}
 
-	console.log("loading map " + mapName)
+		// rebuild the lightmap
+		if(Config.engine.doFloorLighting) {
+			Lightmap.resetLight()
+			Lightmap.rebuildLight()
+		}
 
-	var mapImages = getFileJSON("maps/" + mapName + ".images.json")
-	for(var i = 0; i < mapImages.length; i++)
-		load(mapImages[i])
-	console.log("loading " + mapImages.length + " images")
-
-	if(imageInfo === null)
-		imageInfo = getFileJSON("art/imageMap.json")
-
-	var map = getFileJSON("maps/"+mapName+".json")
-	MAP_NAME = mapName
-	gMap = map
-	var elevation = (startingElevation !== undefined) ? startingElevation : 0
-
-	// load map objects
-	gMapObjects = new Array(gMap.levels.length)
-	for(var level = 0; level < gMap.levels.length; level++) {
-		gMapObjects[level] = gMap.levels[level]["objects"].map(objFromMapObject)
+		centerCamera(player.position)
 	}
 
-	if(Config.engine.doLoadScripts === true) {
-		scriptingEngine.init(player, mapName)
-		gMapScript = scriptingEngine.loadScript(mapName)
+	loadMap(mapName: string, startingPosition?: Point, startingElevation?: number, loadedCallback?: () => void) {
+		function load(file: string, callback?: (x:any) => void) {
+			if(images[file] !== undefined) return // don't load more than once
+			loadingAssetsTotal++
+			heart.graphics.newImage(file+".png", function(r) {
+				images[file] = r
+				loadingAssetsLoaded++
+				if(callback) callback(r)
+			})
+		}
 
-		// warp to the default position (may be overridden by map script)
-		player.position = startingPosition || gMap.startPosition
-		player.orientation = gMap.startOrientation
+		this.name = mapName.toLowerCase()
 
-		// load spatial scripts
-		if(Config.engine.doSpatials !== false) {
-			for(var level = 0; level < gMap.levels.length; level++) {
-				var spatials = gMap.levels[level]["spatials"]
-				for(var i = 0; i < spatials.length; i++) {
-					var spatial = spatials[i]
-					var script = scriptingEngine.loadScript(spatial.script)
-					if(script === null)
-						console.log("load script failed for spatial " + spatial.script)
-					else {
-						spatial._script = script
-						// no need to initialize here because spatials only use spatial_p_proc
+		isLoading = true
+		loadingAssetsTotal = 1 // this will remain +1 until we load the map, preventing it from exiting early
+		loadingAssetsLoaded = 0
+		loadingLoadedCallback = loadedCallback || null
+
+		// clear any previous objects/events
+		this.objects = null
+		this.mapScript = null
+		scriptingEngine.reset(player, this.name)
+
+		// reset player animation status
+		player.path = null
+		player.frame = 0
+		player.anim = "idle"
+
+		if(Config.engine.doUseWeaponModel)
+			player.art = critterGetAnim(player, "idle")
+
+		console.log("loading map " + mapName)
+
+		var mapImages = getFileJSON("maps/" + mapName + ".images.json")
+		for(var i = 0; i < mapImages.length; i++)
+			load(mapImages[i])
+		console.log("loading " + mapImages.length + " images")
+
+		if(imageInfo === null)
+			imageInfo = getFileJSON("art/imageMap.json")
+
+		var map = getFileJSON("maps/"+mapName+".json")
+		this.mapObj = map
+		this.mapID = map.mapID
+		this.numLevels = map.levels.length
+
+		MAP_NAME = this.name
+		var elevation = (startingElevation !== undefined) ? startingElevation : 0
+
+		// load map objects
+		this.objects = new Array(map.levels.length)
+		for(var level = 0; level < map.levels.length; level++) {
+			this.objects[level] = map.levels[level]["objects"].map(objFromMapObject)
+		}
+
+		if(Config.engine.doLoadScripts === true) {
+			scriptingEngine.init(player, mapName)
+			this.mapScript = scriptingEngine.loadScript(mapName)
+
+			// warp to the default position (may be overridden by map script)
+			player.position = startingPosition || map.startPosition
+			player.orientation = map.startOrientation
+
+			// load spatial scripts
+			if(Config.engine.doSpatials !== false) {
+				for(var level = 0; level < map.levels.length; level++) {
+					var spatials = map.levels[level]["spatials"]
+					for(var i = 0; i < spatials.length; i++) {
+						var spatial = spatials[i]
+						var script = scriptingEngine.loadScript(spatial.script)
+						if(script === null)
+							console.log("load script failed for spatial " + spatial.script)
+						else {
+							spatial._script = script
+							// no need to initialize here because spatials only use spatial_p_proc
+						}
+
+						spatial.isSpatial = true
+						spatial.position = fromTileNum(spatial.tileNum)
 					}
-
-					spatial.isSpatial = true
-					spatial.position = fromTileNum(spatial.tileNum)
 				}
 			}
+
+			this.changeElevation(elevation, false)
+
+			// TODO: when exactly are these called?
+			// TODO: when objectsAndSpatials is updated, the scripting engine won't know
+			var objectsAndSpatials = this.getObjects().concat(this.spatials)
+			scriptingEngine.enterMap(this.mapScript, objectsAndSpatials, elevation, map.mapID, true)
+			scriptingEngine.updateMap(this.mapScript, objectsAndSpatials, elevation)
+
+			// tell objects that they're now on the map
+			for(var level = 0; level < map.levels.length; level++) {
+				this.objects[level].forEach(obj => obj.enterMap())
+			}
 		}
+		else
+			this.changeElevation(elevation, false)
 
-		changeElevation(elevation, false)
+		// TODO: is map_enter_p_proc called on elevation change?
+		console.log("loaded (" + map.levels.length + " levels, level 0: " + floorMap.length + " tiles, " + this.getObjects().length + " objects on elevation)")
 
-		// TODO: when exactly are these called?
-		// TODO: when objectsAndSpatials is updated, the scripting engine won't know
-		var objectsAndSpatials = gObjects.concat(gSpatials)
-		scriptingEngine.enterMap(gMapScript, objectsAndSpatials, elevation, gMap.mapID, true)
-		scriptingEngine.updateMap(gMapScript, objectsAndSpatials, elevation)
+		// load some testing art
+		load("art/critters/hmjmpsat")
 
-		// tell objects that they're now on the map
-		for(var level = 0; level < gMap.levels.length; level++) {
-			gMapObjects[level].forEach(obj => obj.enterMap())
-		}
+		load("hex_outline", function(r) { hexOverlay = r })
+		loadingAssetsTotal-- // we should know all of the assets we need by now
+
+		// clear audio and use the map music
+		var curMapInfo = getCurrentMapInfo()
+		audioEngine.stopAll()
+		if(curMapInfo && curMapInfo.music)
+			audioEngine.playMusic(curMapInfo.music)
+
+		// set up renderer data
+		renderer.initData(roofMap, floorMap, this.getObjects())
 	}
-	else changeElevation(elevation, false)
+}
 
-	// todo: is map_enter_p_proc called on elevation change?
-	console.log("loaded (" + map.levels.length + " levels, level 0: " + floorMap.length + " tiles, " + gObjects.length + " objects on elevation)")
+// temporary
+function changeElevation(level: number, updateScripts?: boolean) {
+	gMap.changeElevation(level, updateScripts)
+}
 
-	// load some testing art
-	load("art/critters/hmjmpsat")
-
-	load("hex_outline", function(r) { hexOverlay = r })
-	loadingAssetsTotal-- // we should know all of the assets we need by now
-
-	// clear audio and use the map music
-	var curMapInfo = getCurrentMapInfo()
-	audioEngine.stopAll()
-	if(curMapInfo && curMapInfo.music)
-		audioEngine.playMusic(curMapInfo.music)
-
-	// set up renderer data
-	renderer.initData(roofMap, floorMap, gObjects)
+function loadMap(mapName: string, startingPosition?: Point, startingElevation?: number, loadedCallback?: () => void) {
+	gMap.loadMap(mapName, startingPosition, startingElevation, loadedCallback)
 }
 
 function parseMapInfo() {
@@ -510,7 +554,7 @@ function getCurrentMapInfo() {
 function loadMapID(mapID: number, startingPosition?: Point, startingElevation?: number) {
 	var mapName = lookupMapName(mapID)
 	if(mapName !== null)
-		loadMap(mapName, startingPosition, startingElevation)
+		gMap.loadMap(mapName, startingPosition, startingElevation)
 	else
 		console.log("couldn't lookup map name for map ID " + mapID)
 }
@@ -524,14 +568,16 @@ heart.load = function() {
 	else
 		audioEngine = new NullAudioEngine()
 
+	gMap = new GameMap()
+
 	uiLog("Welcome to DarkFO")
 
 	if(location.search !== "") {
 		// load map from query string (e.g. URL ending in ?modmain)
-		loadMap(location.search.slice(1))
+		gMap.loadMap(location.search.slice(1))
 	}
-	else
-		loadMap(MAP_NAME) // load initial map
+	else // load starting map
+		gMap.loadMap("artemple")
 
 	if(Config.engine.doCombat === true)
 		CriticalEffects.loadTable()
@@ -671,8 +717,8 @@ heart.keydown = function(k) {
 	if(k === Config.controls.cameraRight) cameraX += 15
 	if(k === Config.controls.cameraLeft) cameraX -= 15
 	if(k === Config.controls.cameraUp) cameraY -= 15
-	if(k === Config.controls.elevationDown) { if(currentElevation-1 >= 0) changeElevation(currentElevation-1) }
-	if(k === Config.controls.elevationUp) { if(currentElevation+1 < gMap.levels.length) changeElevation(currentElevation+1) }
+	if(k === Config.controls.elevationDown) { if(currentElevation-1 >= 0) gMap.changeElevation(currentElevation-1) }
+	if(k === Config.controls.elevationUp) { if(currentElevation+1 < gMap.numLevels) gMap.changeElevation(currentElevation+1) }
 	if(k === Config.controls.showRoof) { Config.ui.showRoof = !Config.ui.showRoof }
 	if(k === Config.controls.showFloor) { Config.ui.showFloor = !Config.ui.showFloor }
 	if(k === Config.controls.showObjects) { Config.ui.showObjects = !Config.ui.showObjects }
