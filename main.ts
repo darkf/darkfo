@@ -330,6 +330,9 @@ class GameMap {
 		// and add the player to the new one
 		this.objects[level].push(player)
 
+		// set up renderer data
+		renderer.initData(roofMap, floorMap, this.getObjects())
+
 		if(updateScripts) {
 			// TODO: we need some kind of active/inactive flag on scripts to toggle here,
 			// since scripts should already be loaded
@@ -455,9 +458,6 @@ class GameMap {
 		audioEngine.stopAll()
 		if(curMapInfo && curMapInfo.music)
 			audioEngine.playMusic(curMapInfo.music)
-
-		// set up renderer data
-		renderer.initData(roofMap, floorMap, this.getObjects())
 	}
 }
 
