@@ -394,7 +394,7 @@ object_ = Struct("object",
 	UBInt32("frameNum"), # index into FRM file
 	UBInt32("orientation"),
 	UBInt32("frmPID"),
-	Padding(4), # unknown flags
+	UBInt32("flags"),
 	UBInt32("elevation"),
 	UBInt32("protoPID"),
 	Padding(4), # unknown
@@ -537,6 +537,7 @@ def convertMap(data, mapName, outDir, verbose=True):
 					   "pid": object_.protoPID,
 					   "pidID": (object_.protoPID & 0xffff),
 					   "frmPID": object_.frmPID,
+					   "flags": object_.flags,
 					   "position": tileNumToPos(object_.position),
 					   "orientation": object_.orientation,
 					   "lightRadius": object_.lightRadius,

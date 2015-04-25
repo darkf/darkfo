@@ -470,7 +470,7 @@ class Obj {
 		obj.extra = mobj.extra
 
 		obj.pro = mobj.pro || loadPRO(obj.pid, obj.pidID)
-		obj.flags = obj.pro.flags// TODO: mobj.flags // TODO: do we include PRO flags as well?
+		obj.flags = mobj.flags // NOTE: Tested with two objects in Mapper, map object flags seem to inherit PROs already and should thus use them
 
 		// etc? TODO: check this!
 
