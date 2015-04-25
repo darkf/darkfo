@@ -1,5 +1,5 @@
 """
-Copyright 2014 darkf
+Copyright 2014-2015 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,15 +25,19 @@ mapScriptPIDs = [{} for _ in range(5)]
 def pidType(pid):
 	return (pid >> 24) & 0xff
 
-class ScriptsIgnore(Construct):
+class MapScripts(Construct):
     def _parse(self, stream, context):
         totalScriptCount = 0
         spatials = []
         #scripts = []
 
+        scriptTypes = ["s_system", "s_spatial", "s_time", "s_item", "s_critter"]
+
         for scriptType in range(5):
         	scriptCount = SBInt32("")._parse(stream, context)
         	#print "script type", scriptType, "count:", scriptCount
+
+        	print "%d %s scripts" % (scriptCount, scriptTypes[scriptType])
 
         	totalScriptCount += scriptCount
 
@@ -42,77 +46,73 @@ class ScriptsIgnore(Construct):
         		if loop % 16:
         			loop = scriptCount + (16 - scriptCount % 16)
 
-        		checkCount = 0
+        		check = 0
+        		#checkCount = 0
         		for i in range(loop):
-        			pid = SBInt32("")._parse(stream, context)
+        			pid = UBInt32("")._parse(stream, context)
         			pid_type = pidType(pid)
+
+        			#print "pid_type:", pid_type
 
         			# TODO: find out more about this
         			#print "!!! PID:", hex(pid & 0xffff)
-        			script = Peek(Struct("",
+        			script = Struct("",
         				UBInt32("unk1"),
         				#Padding(0 if pid_type not in (1, 2) else 4),
         				IfThenElse("tileNum", lambda _: pid_type in (1, 2),
         					UBInt32(""),
         					Padding(0)),
-        				IfThenElse("unk3", lambda _: pid_type == 2,
+        				IfThenElse("range", lambda _: pid_type == 1,
         					UBInt32("unk3_value"),
         					Padding(0)),
-        				UBInt32("range"),
+        				UBInt32("unk"),
         				UBInt32("id"),
-        				IfThenElse("spatialScriptID", lambda _: pid_type == 1,
-        					UBInt32(""),
-        					Padding(0))
-        			))._parse(stream, context)
+        				UBInt32("unk2"),
+        				Padding(4 * 11)
+        			)._parse(stream, context)
 
         			script_id = script.id
         			#print "script_id:", script_id
         			pidID = pid & 0xffff
 
-        			if pid_type == 1: # spatial scripts
-	        			if script.range > 50:
-	        				# this is a hack because, presumably due to this entire
-	        				# procedure being undocumented hacks that need better
-	        				# reverse engineering, we get garbage that is not
-	        				# actually a valid script.
-	        				# filter them out here.
+        			#print "SCRIPT:", script
+        			#print "also tilenum:", script.tileNum & 0xffff
 
-	        				print "invalid spatial script range:", script.range
-	        			else:
-		        			#print "script id:", script.spatialScriptID, "or", (script.spatialScriptID & 0xffff)
-		        			scriptName = stripExt(getProFile(scriptLst, script.spatialScriptID).split()[0])
-	        				spatials.append({"tileNum": script.tileNum & 0xffff,
-	        					             "elevation": ((script.tileNum >> 28) & 0xf) >> 1,
-	        					             "range": script.range,
-	        					             "scriptID": script.spatialScriptID,
-	        					             "script": scriptName})
+        			if i < scriptCount:
+        				# we're in the range of valid scripts
 
-        			#scripts.append({"type": pid_type, "pidID": pidID, "script": script})
-        			#if pid_ > 16:
-        			#	print "ignoring script pid:", hex(pid), "(", pid_, ")"
-        			#else:
-        			if script_id > 0 and script_id < len(scriptLst):
-	    				scriptName = stripExt(getProFile(scriptLst, script_id).split()[0])
-	    				#print "Map script PID %d type %d is %d (%s)" % (pidID, scriptType, script_id, scriptName)
-	        			mapScriptPIDs[scriptType][pidID] = scriptName
-	        			#print "name:", scriptName
+	        			if pid_type == 1: # spatial scripts
+		        			if script.range > 50:
+		        				# this is a hack because, presumably due to this entire
+		        				# procedure being undocumented hacks that need better
+		        				# reverse engineering, we get garbage that is not
+		        				# actually a valid script.
+		        				# filter them out here.
 
-        			move = 15
-        			if pid_type == 1:
-        				move += 2
-        			elif pid_type == 2:
-        				move += 1
+		        				print "invalid spatial script range:", script.range, " i=", i
+		        				print "script:", script
+		        			else:
+			        			#print "script id:", script.spatialScriptID, "or", (script.spatialScriptID & 0xffff)
+			        			scriptName = stripExt(getProFile(scriptLst, script.id).split()[0])
+		        				spatials.append({"tileNum": script.tileNum & 0xffff,
+		        					             "elevation": ((script.tileNum >> 28) & 0xf) >> 1,
+		        					             "range": script.range,
+		        					             "scriptID": script.id,
+		        					             "script": scriptName})
+		        				print "spatial:", spatials[-1]
 
-        			if scriptType == pid_type:
-        				checkCount += 1
+	        			if script_id > 0 and script_id < len(scriptLst):
+		    				scriptName = stripExt(getProFile(scriptLst, script_id).split()[0])
+		    				#print "Map script PID %d type %d is %d (%s)" % (pidID, scriptType, script_id, scriptName)
+		        			mapScriptPIDs[scriptType][pidID] = scriptName
+		        			#print "%s script: %d -> %s" % (scriptTypes[scriptType], pidID, scriptName)
 
-        			Padding(move * 4)._parse(stream, context)
         			if (i % 16) == 15:
-        				check = SBInt32("")._parse(stream, context)
+        				check += UBInt32("")._parse(stream, context)
         				SBInt32("")._parse(stream, context) # unknown
 
-        				if checkCount < check:
-        					raise Exception("script check failed")
+			if check != scriptCount:
+				raise Exception("script check failed (check=%d, scriptCount=%d)" % (check, scriptCount))
 
         return {"count": totalScriptCount, "spatials": spatials}
 
@@ -447,7 +447,7 @@ fomap = Struct("map",
 	),
 	#Padding(10000 * 4),
 
-	ScriptsIgnore("scripts"),
+	MapScripts("scripts"),
 
 	# map
 	SBInt32("totalObjects"),
@@ -561,8 +561,7 @@ def convertMap(data, mapName, outDir, verbose=True):
 					obj["script"] = scriptName
 					scriptCounter[scriptName] += 1
 				elif object_.scriptID == -1 and object_.mapPID != 0xFFFFFFFF:
-					# this is some funky stuff... let's try to use the script IDs we got from
-					# the weird script ignore step
+					# try to use the script IDs mapped in the MapScripts section
 					scriptType = (object_.mapPID >> 24) & 0xff
 					scriptPID = object_.mapPID & 0xffff
 					if verbose: print "using map script for %s (script PID %d)" % (object_.extra.artPath, scriptPID)
