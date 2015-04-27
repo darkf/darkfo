@@ -27,7 +27,6 @@ declare var PF;
 var gMap: GameMap = null
 var images = {} // Image cache
 var imageInfo = null // Metadata about images (Number of frames, FPS, etc)
-var gObjects: Obj[] = null // Map objects on current level
 var currentElevation = 0 // current map elevation
 var hexOverlay = null
 var tempCanvas: HTMLCanvasElement = null // temporary canvas used for detecting single pixels
@@ -223,8 +222,8 @@ function dropObject(source, obj) {
 	}
 	if(!removed) throw "dropObject: couldn't find object"
 
-	gObjects.push(obj) // add to objects
-	var idx = gObjects.length - 1 // our new index
+	gMap.addObject(obj) // add to objects
+	var idx = gMap.getObjects().length - 1 // our new index
 	obj.move({x: source.position.x, y: source.position.y}, idx)
 }
 
@@ -244,22 +243,11 @@ function hexLinecast(a, b) {
 }
 
 function objectsAtPosition(position: Point) {
-	var ret = []
-	for(var i = 0; i < gObjects.length; i++) {
-		if(gObjects[i].position.x === position.x && gObjects[i].position.y === position.y) {
-			ret.push(gObjects[i])
-		}
-	}
-	return ret
+	return gMap.getObjects().filter(obj => obj.position.x === position.x && obj.position.y === position.y)
 }
 
 function critterAtPosition(position: Point) {
-	var objects = objectsAtPosition(position)
-	for(var i = 0; i < objects.length; i++) {
-		if(objects[i].type === "critter")
-			return objects[i]
-	}
-	return null
+	return _.find(objectsAtPosition(position), obj => obj.type === "critter") || null
 }
 
 function centerCamera(around) {
@@ -328,7 +316,7 @@ class GameMap {
 
 	destroyObject(obj: Obj): void {
 		this.removeObject(obj)
-		
+
 		// TODO: notify scripts with destroy_p_proc
 	}
 
@@ -340,7 +328,6 @@ class GameMap {
 		//this.spatials = this.mapObj.levels[level]["spatials"]
 
 		// temporary
-		gObjects = this.getObjects(level)
 		currentElevation = this.currentElevation
 
 		player.clearAnim()
@@ -756,24 +743,21 @@ heart.keydown = function(k) {
 	if(k === Config.controls.showObjects) { Config.ui.showObjects = !Config.ui.showObjects }
 	if(k === Config.controls.showWalls) Config.ui.showWalls = !Config.ui.showWalls
 	if(k === Config.controls.talkTo) {
-		for(var i = 0; i < gObjects.length; i++) {
-			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
-				console.log("object at index " + i)
-				if(gObjects[i]._script && gObjects[i]._script.talk_p_proc !== undefined) {
-					console.log("talking to " + gObjects[i].name)
-					scriptingEngine.talk(gObjects[i]._script, gObjects[i])
-					break
-				}
+		var critter = critterAtPosition(mouseHex)
+		if(critter) {
+			if(critter._script && critter._script.talk_p_proc !== undefined) {
+				console.log("talking to " + critter.name)
+				scriptingEngine.talk(critter._script, critter)
 			}
 		}
 	}
 	if(k === Config.controls.inspect) {
-		for(var i = 0; i < gObjects.length; i++) {
-			if(gObjects[i].position.x === mouseHex.x && gObjects[i].position.y === mouseHex.y) {
-				var hasScripts = (gObjects[i].script !== undefined ? ("yes (" + gObjects[i].script + ")") : "no") + " " + (gObjects[i]._script === undefined ? "and is NOT loaded" : "and is loaded")
-				console.log("object is at index " + i + ", of type " + gObjects[i].type + ", has art " + gObjects[i].art + ", and has scripts? " + hasScripts + " -> %o", gObjects[i])
+		gMap.getObjects().forEach(obj => {
+			if(obj.position.x === mouseHex.x && obj.position.y === mouseHex.y) {
+				var hasScripts = (obj.script !== undefined ? ("yes (" + obj.script + ")") : "no") + " " + (obj._script === undefined ? "and is NOT loaded" : "and is loaded")
+				console.log("object is at index " + i + ", of type " + obj.type + ", has art " + obj.art + ", and has scripts? " + hasScripts + " -> %o", obj)
 			}
-		}
+		})
 	}
 	if(k === Config.controls.moveTo) {
 		critterWalkTo(player, mouseHex)
@@ -814,7 +798,7 @@ heart.keydown = function(k) {
 		else {
 			console.log("[COMBAT BEGIN]")
 			inCombat = true
-			combat = new Combat(gObjects)
+			combat = new Combat(gMap.getObjects())
 			combat.nextTurn()
 		}
 	}
@@ -847,13 +831,8 @@ heart.keydown = function(k) {
 		player.move(mouseHex)
 
 	if(k === Config.controls.kill) {
-		var objs = objectsAtPosition(mouseHex)
-		for(var i = 0; i < objs.length; i++) {
-			if(objs[i].type === "critter") {
-				critterKill(objs[i], player)
-				break
-			}
-		}
+		var critter = critterAtPosition(mouseHex)
+		critterKill(critter, player)
 	}
 
 	if(k === Config.controls.worldmap)
@@ -872,11 +851,10 @@ function recalcPath(start: Point, goal: Point, isGoalBlocking?: boolean) {
 	for(var y = 0; y < HEX_GRID_SIZE; y++)
 		matrix[y] = new Array(HEX_GRID_SIZE)
 
-	for(var i = 0; i < gObjects.length; i++) {
-		// if there are multiple, any blocking one will block
-		var obj = gObjects[i]
-		matrix[obj.position.y][obj.position.x] |= <any>obj.blocks()
-	}
+	gMap.getObjects().forEach(obj => {
+			// if there are multiple, any blocking one will block
+			matrix[obj.position.y][obj.position.x] |= <any>obj.blocks()
+	})
 
 	if(isGoalBlocking === false)
 		matrix[goal.y][goal.x] = 0
@@ -906,14 +884,15 @@ function getObjectUnderCursor(p) {
 	mouse = {x: mouse[0] + cameraX, y: mouse[1] + cameraY}
 
 	// reverse z-ordered search
-	for(var i = gObjects.length - 1; i > 0; i--) {
-		var bbox = objectBoundingBox(gObjects[i])
+	var objects = gMap.getObjects()
+	for(var i = objects.length - 1; i > 0; i--) {
+		var bbox = objectBoundingBox(objects[i])
 		if(bbox === null) continue
 		if(pointInBoundingBox(mouse, bbox))
-			if(p === undefined || p(gObjects[i]) === true) {
+			if(p === undefined || p(objects[i]) === true) {
 				var mouseRel = {x: mouse.x - bbox.x, y: mouse.y - bbox.y}
-				if(!objectTransparentAt(gObjects[i], mouseRel, bbox))
-					return gObjects[i]
+				if(!objectTransparentAt(objects[i], mouseRel, bbox))
+					return objects[i]
 			}
 	}
 
@@ -990,15 +969,15 @@ heart.update = function() {
 		audioEngine.tick()
 	}
 
-	for(var i = 0; i < gObjects.length; i++) {
-		if(gObjects[i].type == "critter") {
-			if(didTick && Config.engine.doUpdateCritters && inCombat !== true && !(<Critter>gObjects[i]).dead &&
-				!gObjects[i].inAnim() && gObjects[i]._script)
-				scriptingEngine.updateCritter(gObjects[i]._script, gObjects[i])
+	gMap.getObjects().forEach(obj => {
+		if(obj.type == "critter") {
+			if(didTick && Config.engine.doUpdateCritters && inCombat !== true && !(<Critter>obj).dead &&
+				!obj.inAnim() && obj._script)
+				scriptingEngine.updateCritter(obj._script, obj)
 		}
 
-		gObjects[i].updateAnim()
-	}
+		obj.updateAnim()
+	})
 }
 
 function getPixelIndex(x, y, imageData) {

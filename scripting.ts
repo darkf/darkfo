@@ -252,7 +252,7 @@ module scriptingEngine {
 				default: stub("metarule", arguments)
 			}
 		},
-		metarule3: function(id, obj, userdata, radius) {
+		metarule3: function(id, obj, userdata, radius): any {
 			if(id === 100) { // METARULE3_CLR_FIXED_TIMED_EVENTS
 				for(var i = 0; i < timeEventList.length; i++) {
 					if(timeEventList[i].obj === obj && 
@@ -269,7 +269,7 @@ module scriptingEngine {
 				var objs = objectsAtPosition(fromTileNum(tile))
 				log("metarule3 106 (tile_get_next_critter)", arguments)
 				for(var i = 0; i < objs.length; i++) {
-					if(objs[i].type === "critter" && !objs[i].isPlayer)
+					if(objs[i].type === "critter" && !(<Critter>objs[i]).isPlayer)
 						return objs[i]
 				}
 				return 0 // no critter found at that position (TODO: test)

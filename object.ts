@@ -131,7 +131,7 @@ function objectExplode(obj: Obj, source: Obj, minDmg: number, maxDmg: number): v
 				var objs = objectsAtPosition(hexes[i])
 				for(var j = 0; j < objs.length; j++) {
 					if(objs[j].type === "critter")
-						console.log("todo: damage " + critterGetName(objs[j]))
+						console.log("todo: damage", (<Critter>objs[i]).name)
 
 					scriptingEngine.damage(objs[j], obj, obj /*source*/, damage)
 				}
