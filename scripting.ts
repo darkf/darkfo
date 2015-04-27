@@ -527,7 +527,7 @@ module scriptingEngine {
 
 			// add it to the map
 			//gObjects.push(obj)
-			gMapObjects[elev].push(obj)
+			gMap.getObjects(elev).push(obj)
 
 			return obj
 		},
@@ -644,7 +644,7 @@ module scriptingEngine {
 		tile_contains_pid_obj: function(tile, elevation, pid): any {
 			stub("tile_contains_pid_obj", arguments, "tiles")
 			var pos = fromTileNum(tile)
-			var objects = gMapObjects[elevation]
+			var objects = gMap.getObjects(elevation)
 			for(var i = 0; i < objects.length; i++) {
 				if(objects[i].position.x === pos.x && objects[i].position.y === pos.y &&
 				   objects[i].pid === pid) {
@@ -697,7 +697,7 @@ module scriptingEngine {
 			if(elevation !== currentElevation) {
 				info("move_to: moving to elevation " + elevation)
 				objectRemove(obj)
-				gMapObjects[elevation].push(obj)
+				gMap.getObjects(elevation).push(obj)
 			}
 			obj.position = fromTileNum(tileNum)
 		},

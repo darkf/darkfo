@@ -25,14 +25,9 @@ declare var heart;
 declare var PF;
 
 var gMap: GameMap = null
-var gMapScript = null // Current map script object
-var floorMap: string[][] = null // Floor tilemap
-var roofMap: string[][] = null // Roof tilemap
 var images = {} // Image cache
 var imageInfo = null // Metadata about images (Number of frames, FPS, etc)
 var gObjects: Obj[] = null // Map objects on current level
-var gMapObjects: Obj[][] = null // Map objects on all levels
-var gSpatials = null
 var currentElevation = 0 // current map elevation
 var hexOverlay = null
 var tempCanvas = null // temporary canvas used for detecting single pixels
@@ -306,17 +301,12 @@ class GameMap {
 	changeElevation(level: number, updateScripts?: boolean) {
 		var oldElevation = this.currentElevation
 		this.currentElevation = level
-		this.floorMap = this.mapObj.levels[level]["tiles"]["floor"]
-		this.roofMap  = this.mapObj.levels[level]["tiles"]["roof"]
+		this.floorMap = this.mapObj.levels[level].tiles.floor
+		this.roofMap  = this.mapObj.levels[level].tiles.roof
 		//this.spatials = this.mapObj.levels[level]["spatials"]
 
 		// temporary
-		gSpatials = this.getSpatials(level)
 		gObjects = this.getObjects(level)
-		gMapScript = this.mapScript
-		floorMap = this.floorMap
-		roofMap = this.roofMap
-		gMapObjects = this.objects
 		currentElevation = this.currentElevation
 
 		player.clearAnim()
@@ -328,7 +318,7 @@ class GameMap {
 		this.objects[level].push(player)
 
 		// set up renderer data
-		renderer.initData(roofMap, floorMap, this.getObjects())
+		renderer.initData(this.roofMap, this.floorMap, this.getObjects())
 
 		if(updateScripts) {
 			// TODO: we need some kind of active/inactive flag on scripts to toggle here,
@@ -441,7 +431,7 @@ class GameMap {
 		this.changeElevation(elevation, true)
 
 		// TODO: is map_enter_p_proc called on elevation change?
-		console.log("loaded (" + map.levels.length + " levels, level 0: " + floorMap.length + " tiles, " + this.getObjects().length + " objects on elevation)")
+		console.log("loaded (" + map.levels.length + " levels, " +this.getObjects().length + " objects on elevation " + elevation + ")")
 
 		// load some testing art
 		load("art/critters/hmjmpsat")

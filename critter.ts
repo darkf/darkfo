@@ -364,14 +364,7 @@ function getAnimPartialActions(art, anim) {
 }
 
 function hitSpatialTrigger(position: Point): any { // TODO: return type (SpatialTrigger)
-	if(gSpatials === null) return null
-	var hit = []
-	for(var i = 0; i < gSpatials.length; i++) {
-		var spatial = gSpatials[i]
-		if(hexDistance(position, spatial.position) <= spatial.range)
-			hit.push(spatial)
-	}
-	return hit
+	return gMap.getSpatials().filter(spatial => hexDistance(position, spatial.position) <= spatial.range)
 }
 
 function critterKill(obj: Critter, source: Critter, useScript?: boolean, useAnim?: boolean, callback?: () => void) {

@@ -54,12 +54,11 @@ class Renderer {
 		}
 
 		if(Config.ui.showSpatials && Config.engine.doSpatials) {
-			for(var i = 0; i < gSpatials.length; i++) {
-				var spatial = gSpatials[i]
+			gMap.getSpatials().forEach(spatial => {
 				var scr = hexToScreen(spatial.position.x, spatial.position.y)
 				//heart.graphics.draw(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
 				this.text(spatial.script, scr.x - 10 - cameraX, scr.y - 3 - cameraY)
-			}
+			})
 		}
 
 		this.text("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
