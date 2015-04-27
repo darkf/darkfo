@@ -629,7 +629,8 @@ class Critter extends Obj {
 
 			if(this.position.x === this.path.target.x && this.position.y === this.path.target.y) {
 				// reached target position
-				if(DEBUG) console.log("target reached")
+				// TODO: better logging system
+				//console.log("target reached")
 
 				if(this.animCallback)
 					this.animCallback()

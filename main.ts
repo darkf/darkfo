@@ -24,9 +24,6 @@ declare var _;
 declare var heart;
 declare var PF;
 
-var MAP_NAME = "ctest" // name of the current map
-var DEBUG = false // debug mode
-
 var gMap: GameMap = null
 var gMapScript = null // Current map script object
 var floorMap: string[][] = null // Floor tilemap
@@ -387,7 +384,6 @@ class GameMap {
 		this.mapID = map.mapID
 		this.numLevels = map.levels.length
 
-		MAP_NAME = this.name
 		var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
 		// load map objects
@@ -554,7 +550,7 @@ function getMapInfo(mapName: string) {
 }
 
 function getCurrentMapInfo() {
-	return getMapInfo(MAP_NAME)
+	return getMapInfo(gMap.name)
 }
 
 function loadMapID(mapID: number, startingPosition?: Point, startingElevation?: number) {

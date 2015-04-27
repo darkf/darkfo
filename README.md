@@ -1,12 +1,12 @@
 **DarkFO**, a post-apocalyptic nuclear RPG remake
 
-This is a clone of the video game [Fallout 2](http://en.wikipedia.org/wiki/Fallout_2), as well as a personal research project into the feasibility of doing such.
+This is a modern reimplementation of the engine of the video game [Fallout 2](http://en.wikipedia.org/wiki/Fallout_2), as well as a personal research project into the feasibility of doing such.
 
 To use this, you'll need a few things:
 
 - A copy of Fallout 2
 
-- Extracted Fallout 2 game data (you might want to use [this tool](http://www.nma-fallout.com/downloads.php?do=file&id=661), extract `master.dat` and `critters.dat` into a directory called `data/`.)
+- Extracted Fallout 2 game data (you might want to use [this tool](http://www.nma-fallout.com/downloads.php?do=file&id=661), extract `master.dat` and `critters.dat` into a directory called `data/`, also `sound/` if you want music.)
 
 - Python 2.7 and `pip`
 
@@ -24,10 +24,12 @@ Once you've got all that, you can start trying it out. I'll assume you're in a c
 
 - Run `python buildPRO.py`
 
+- If you want sound, run `python convertAudio.py`. You'll need the `acm2wav` tool. 
+
 - Copy over a map from `data/maps/` such as `GECKSETL.map` into `maps/`
 
 - Run `python fo2map.py maps/GECKSETL.map` (or whichever map you've chosen.)
 
-- Edit the `MAP_NAME` in `play.html` to the name of your map (sans the `.map` extension.)
+- Browse to `http://localhost/play.html?mapname`, where `mapname` is the extensionless name of a converted map (e.g. `gecksetl`). If all went well, it should display your map. If not, check the JavaScript console for errors.
 
-- Browse to `http://localhost/play.html`. If all went well, it should display your map. If not, check the JavaScript console for errors.
+Review `config.ts` for engine options.

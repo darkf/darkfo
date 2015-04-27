@@ -46,7 +46,7 @@ function initUI() {
 		if(onAreaMap)
 			uiWorldMapWorldView()
 		else {
-			var currentArea = areaContainingMap(MAP_NAME)
+			var currentArea = areaContainingMap(gMap.name)
 			if(currentArea !== null)
 				uiWorldMapShowArea(currentArea)
 			else
