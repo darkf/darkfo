@@ -105,36 +105,6 @@ function objectSwapItem(a: Obj, item: Obj, b: Obj, amount: number) {
 	}
 }
 
-function objectRemove(obj: Obj): void {
-	// remove `obj` from the world
-	// it would be pretty hard to remove it anywhere else without either
-	// a walk of the object graph or a `parent` reference.
-	//
-	// so we're only going to remove it from the global object list, if present.
-
-	// TODO: use a removal queue instead of removing directory (indexing problems)
-
-	// TODO: better object equality testing
-	for(var i = 0; i < gObjects.length; i++) {
-		//if(gObjects[i].pid === obj.pid && gObjects[i].amount === obj.amount) {
-		if(gObjects[i] === obj) {
-			console.log("objectRemove: destroying index " + i + " (" + obj.art + ") @ " +
-				        gObjects[i].position.x + ", " + gObjects[i].position.y + " vs " +
-				        obj.position.x + ", " + obj.position.y)
-			gObjects.splice(i, 1)
-			return
-		}
-	}
-
-	console.log("objectRemove: couldn't find object in global list")
-}
-
-function objectDestroy(obj: Obj): void {
-	objectRemove(obj)
-	
-	// TODO: notify scripts with destroy_p_proc
-}
-
 function objectGetDamageType(obj: any): string { // TODO: any (where does dmgType go? WeaponObj?)
 	if(obj.dmgType !== undefined)
 		return obj.dmgType
@@ -149,11 +119,11 @@ function objectExplode(obj: Obj, source: Obj, minDmg: number, maxDmg: number): v
 	(<any>obj).dmgType = "explosion" // TODO: any (WeaponObj?)
 
 	lazyLoadImage(explosion.art, function() {
-		gObjects.push(explosion)
+		gMap.addObject(explosion)
 
 		console.log("adding explosion")
 		objectSingleAnim(explosion, false, function() {
-			objectDestroy(explosion)
+			gMap.destroyObject(explosion)
 
 			// damage critters in a radius
 			var hexes = hexesInRadius(obj.position, 8 /* explosion radius */) // TODO: radius
@@ -168,7 +138,7 @@ function objectExplode(obj: Obj, source: Obj, minDmg: number, maxDmg: number): v
 			}
 
 			// remove explosive
-			objectDestroy(obj)
+			gMap.destroyObject(obj)
 		})
 	})
 }
@@ -203,7 +173,7 @@ function useExplosive(obj: Obj, source: Critter): void {
 	}})
 }
 
-function useObject(obj: any, source?: Critter, useScript?: boolean): boolean { // TODO: any
+function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean { // TODO: any
 	if(canUseObject(obj, source) === false) {
 		console.log("can't use object")
 		return false
@@ -227,12 +197,13 @@ function useObject(obj: any, source?: Critter, useScript?: boolean): boolean { /
 
 	if(objectIsDoor(obj) || objectIsContainer(obj)) {
 		// open/closable doors/containers
-		// todo: check lock status
-		if(!obj.open) obj.open = true
-		else obj.open = false
-		objectSingleAnim(obj, !obj.open, function() {
+		// TODO: check lock status
+		// TODO: Door subclass
+		if(!(<any>obj).open) (<any>obj).open = true
+		else (<any>obj).open = false
+		objectSingleAnim(obj, !(<any>obj).open, function() {
 			obj.anim = null
-			if(objectIsContainer(obj) && obj.open === true) {
+			if(objectIsContainer(obj) && (<any>obj).open === true) {
 				// loot a container
 				uiLoot(obj)
 			}
@@ -271,10 +242,7 @@ function useObject(obj: any, source?: Critter, useScript?: boolean): boolean { /
 }
 
 function objectFindIndex(obj: Obj): number {
-	for(var i = 0; i < gObjects.length; i++)
-		if(gObjects[i] === obj)
-			return i
-	return -1
+	return _.findIndex(gMap.getObjects(), object => object === obj)
 }
 
 function objectZCompare(a: Obj, b: Obj): number {
@@ -305,20 +273,23 @@ function objectZOrder(obj: Obj, index: number): void {
 		return
 	}
 
-	gObjects.splice(oldIdx, 1) // remove the object...
+	// TOOD: mutable/potentially unsafe usage of getObjects
+	var objects = gMap.getObjects()
+
+	objects.splice(oldIdx, 1) // remove the object...
 
 	var inserted = false
-	for(var i = 0; i < gObjects.length; i++) {
-		var zc = objectZCompare(obj, gObjects[i])
+	for(var i = 0; i < objects.length; i++) {
+		var zc = objectZCompare(obj, objects[i])
 		if(zc === -1) {
-			gObjects.splice(i, 0, obj) // insert at new index
+			objects.splice(i, 0, obj) // insert at new index
 			inserted = true
 			break
 		}
 	}
 
 	if(!inserted) // couldn't find a spot, just add it in
-		gObjects.push(obj)
+		objects.push(obj)
 }
 
 function zsort(objects: Obj[]): void {
@@ -514,7 +485,7 @@ class Obj {
 	enterMap(): void {
 		// TODO: do we updateMap?
 		// TODO: is this correct?
-		// TODO: gObjects should be a registry, and this should be activated when objects
+		// TODO: map objects should be a registry, and this should be activated when objects
 		// are added in. @important
 		
 		if(this._script)

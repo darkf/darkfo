@@ -606,7 +606,7 @@ module scriptingEngine {
 		},
 		destroy_object: function(obj) { // destroy object from world
 			log("destroy_object", arguments)
-			objectDestroy(obj)
+			gMap.destroyObject(obj)
 		},
 		set_exit_grids: function(onElev, mapID, elevation, tileNum, rotation) {
 			stub("set_exit_grids", arguments)
@@ -695,7 +695,7 @@ module scriptingEngine {
 			}
 			if(elevation !== currentElevation) {
 				info("move_to: moving to elevation " + elevation)
-				objectRemove(obj)
+				gMap.removeObject(obj)
 				gMap.addObject(obj, elevation)
 			}
 			obj.position = fromTileNum(tileNum)

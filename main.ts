@@ -302,6 +302,36 @@ class GameMap {
 		this.objects[level === undefined ? this.currentElevation : level].push(obj)
 	}
 
+	removeObject(obj: Obj): void {
+		// remove `obj` from the map
+		// it would be pretty hard to remove it anywhere else without either
+		// a walk of the object graph or a `parent` reference.
+		//
+		// so we're only going to remove it from the global object list, if present.
+
+		// TODO: use a removal queue instead of removing directory (indexing problems)
+
+		// TODO: better object equality testing
+		for(var level = 0; level < this.numLevels; level++) {
+			var objects = this.objects[level]
+			for(var i = 0; i < objects.length; i++) {
+				if(objects[i] === obj) {
+					console.log("removeObject: destroying index %d (%o/%o)", i, obj, objects[i])
+					this.objects[level].splice(i, 1)
+					return
+				}
+			}
+		}
+
+		console.log("removeObject: couldn't find object on map")
+	}
+
+	destroyObject(obj: Obj): void {
+		this.removeObject(obj)
+		
+		// TODO: notify scripts with destroy_p_proc
+	}
+
 	changeElevation(level: number, updateScripts?: boolean) {
 		var oldElevation = this.currentElevation
 		this.currentElevation = level
