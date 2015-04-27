@@ -452,7 +452,7 @@ class Combat {
 		else this.nextTurn()
 	}
 
-	static start(forceTurn?: boolean): void {
+	static start(forceTurn?: Critter): void {
 		// begin combat
 		inCombat = true
 		combat = new Combat(gObjects)

@@ -30,31 +30,31 @@ var imageInfo = null // Metadata about images (Number of frames, FPS, etc)
 var gObjects: Obj[] = null // Map objects on current level
 var currentElevation = 0 // current map elevation
 var hexOverlay = null
-var tempCanvas = null // temporary canvas used for detecting single pixels
+var tempCanvas: HTMLCanvasElement = null // temporary canvas used for detecting single pixels
 var tempCanvasCtx = null // and the context for it
 
 // position of viewport camera (will be overriden by map starts or scripts)
-var cameraX = 3580
-var cameraY = 1020
+var cameraX: number = 3580
+var cameraY: number = 1020
 
-var SCREEN_WIDTH = Config.ui.screenWidth
-var SCREEN_HEIGHT = Config.ui.screenHeight
+var SCREEN_WIDTH: number = Config.ui.screenWidth
+var SCREEN_HEIGHT: number = Config.ui.screenHeight
 
-var gameTickTime = 0 // in Fallout 2 ticks (elapsed seconds * 10)
-var lastGameTick = 0 // real time of the last game tick
-var combat = null // combat object
-var inCombat = false // are we currently in combat?
-var gameHasFocus = false // do we have input focus?
-var lastMousePickTime = 0 // time when we last checked what's under the mouse cursor
+var gameTickTime: number = 0 // in Fallout 2 ticks (elapsed seconds * 10)
+var lastGameTick: number = 0 // real time of the last game tick
+var combat: Combat = null // combat object
+var inCombat: boolean = false // are we currently in combat?
+var gameHasFocus: boolean = false // do we have input focus?
+var lastMousePickTime: number = 0 // time when we last checked what's under the mouse cursor
 var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3,
     UI_MODE_INVENTORY = 4, UI_MODE_WORLDMAP = 5, UI_MODE_ELEVATOR = 6,
     UI_MODE_CALLED_SHOT = 7
-var uiMode = UI_MODE_NONE
+var uiMode: number = UI_MODE_NONE
 
-var isLoading = true // are we currently loading a map?
-var loadingAssetsLoaded = 0 // how many images we've loaded
-var loadingAssetsTotal = 0 // out of this total
-var loadingLoadedCallback = null // loaded callback
+var isLoading: boolean = true // are we currently loading a map?
+var loadingAssetsLoaded: number = 0 // how many images we've loaded
+var loadingAssetsTotal: number = 0 // out of this total
+var loadingLoadedCallback: () => void = null // loaded callback
 var lazyAssetLoadingQueue = {} // set of lazily-loaded assets being loaded
 
 var floatMessages = []
@@ -659,14 +659,14 @@ function playerUse() {
 				uiCalledShot(art, who, function(region) {
 					player.AP.subtractCombatAP(4)
 					console.log("Attacking %s...", region)
-					combat.attack(player, obj, region)
+					combat.attack(player, <Critter>obj, region)
 					uiCloseCalledShot()
 				})
 			}
 			else {
 				player.AP.subtractCombatAP(4)
 				console.log("Attacking the torso...")
-				combat.attack(player, obj, "torso")
+				combat.attack(player, <Critter>obj, "torso")
 			}
 
 			return
