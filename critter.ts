@@ -625,10 +625,11 @@ class Critter extends Obj {
 				// TODO: better logging system
 				//console.log("target reached")
 
-				if(this.animCallback)
-					this.animCallback()
-				
+				var callback = this.animCallback				
 				this.clearAnim()
+
+				if(callback)
+					callback()
 			}
 		}
 	}
