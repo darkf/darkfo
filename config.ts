@@ -32,7 +32,7 @@ var Config = {
 		doZOrder: true, // Z-order objects?
 		doEncounters: true, // allow random encounters?
 		doInfiniteUse: false, // allow infinite-range object usage?
-		doFloorLighting: false, // use FO2-realistic floor lighting?
+		doFloorLighting: true, // use FO2-realistic floor lighting?
 		doAudio: false, // enable audio?
 	},
 

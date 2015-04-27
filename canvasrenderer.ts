@@ -102,7 +102,7 @@ class CanvasRenderer extends Renderer {
 								var color = Lighting.colorRGB[colorPal]
 
 								var intensity = Math.min(1.0, intensity_/65536)
-								var tcolor = Lighting.colorRGB[palIdx]
+								var tcolor = Lighting.colorRGB[colorPal]
 								imageData.data[index + 0] = tcolor[0]//intensity*255 //color[0]
 								imageData.data[index + 1] = tcolor[1]//intensity*255 //color[1]
 								imageData.data[index + 2] = tcolor[2]//intensity*255 //color[2]

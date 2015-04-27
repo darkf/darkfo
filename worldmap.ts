@@ -322,7 +322,7 @@ module Worldmap {
 					//console.log("obj: %o", obj)
 
 					// TODO: items & equipping
-					gObjects.push(obj)
+					gMap.addObject(obj)
 					obj.move(critter.position)
 				})
 			})

@@ -298,6 +298,10 @@ class GameMap {
 		return this.getObjects().concat(this.getSpatials())
 	}
 
+	addObject(obj: Obj, level?: number): void {
+		this.objects[level === undefined ? this.currentElevation : level].push(obj)
+	}
+
 	changeElevation(level: number, updateScripts?: boolean) {
 		var oldElevation = this.currentElevation
 		this.currentElevation = level

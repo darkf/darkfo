@@ -455,7 +455,7 @@ class Combat {
 	static start(forceTurn?: Critter): void {
 		// begin combat
 		inCombat = true
-		combat = new Combat(gObjects)
+		combat = new Combat(gMap.getObjects())
 		if(forceTurn !== undefined)
 			combat.forceTurn(forceTurn)
 		combat.nextTurn()

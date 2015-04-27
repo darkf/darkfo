@@ -526,8 +526,7 @@ module scriptingEngine {
 
 
 			// add it to the map
-			//gObjects.push(obj)
-			gMap.getObjects(elev).push(obj)
+			gMap.addObject(obj, elev)
 
 			return obj
 		},
@@ -697,7 +696,7 @@ module scriptingEngine {
 			if(elevation !== currentElevation) {
 				info("move_to: moving to elevation " + elevation)
 				objectRemove(obj)
-				gMap.getObjects(elevation).push(obj)
+				gMap.addObject(obj, elevation)
 			}
 			obj.position = fromTileNum(tileNum)
 		},

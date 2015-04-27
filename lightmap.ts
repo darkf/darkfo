@@ -55,12 +55,7 @@ module Lightmap {
 	}
 
 	function objectAt(pos: Point) {
-		for(var i = 0; i < gObjects.length; i++) {
-			if(gObjects[i].position.x === pos.x && gObjects[i].position.y === pos.y) {
-				return gObjects[i]
-			}
-		}
-		return null
+		return _.find(gMap.getObjects(), obj => obj.position.x === pos.x && obj.position.y === pos.y) || null
 	}
 
 	// obj_adjust_light(eax=obj_ptr, ebx=0, edx=0)
@@ -695,7 +690,7 @@ module Lightmap {
 	function obj_rebuild_all_light(): void {
 		light_reset()
 
-		gObjects.forEach(obj => {
+		gMap.getObjects().forEach(obj => {
 			obj_adjust_light(obj, false)
 		})
 	}
