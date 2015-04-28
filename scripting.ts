@@ -836,7 +836,7 @@ module scriptingEngine {
 				console.trace()
 				return
 			}
-			if(critterWalkTo(obj, tile, !!isRun) === false) {
+			if(!obj.walkTo(tile, !!isRun)) {
 				warn("animate_move_obj_to_tile: no path", "movement")
 				return
 			}

@@ -357,7 +357,7 @@ class Combat {
 
 	walkUpTo(obj: Critter, idx: number, target: Point, maxDistance: number, callback: () => void): boolean {
 		// Walk up to `maxDistance` hexes, adjusting AP to fit
-		if(critterWalkTo(obj, target, false, callback, maxDistance) !== false) {
+		if(obj.walkTo(target, false, callback, maxDistance)) {
 			// OK
 			if(obj.AP.subtractMoveAP(obj.path.path.length - 1) === false)
 				throw "subtraction issue: has AP: " + obj.AP.getAvailableMoveAP() +
@@ -418,7 +418,7 @@ class Combat {
 			// todo: check nearest direction first
 			var didCreep = false
 			for(var i = 0; i < neighbors.length; i++) {
-				if(critterWalkTo(obj, neighbors[i], false, function() {
+				if(obj.walkTo(neighbors[i], false, function() {
 					obj.clearAnim()
 					that.doAITurn(obj, idx) // if we can, do another turn
 				}, maxDistance) !== false) {

@@ -601,27 +601,6 @@ heart.load = function() {
 	initUI()
 }
 
-function critterMoveInFrontOf(obj, targetPos, callback) {
-	var path = recalcPath(obj.position, targetPos, false)
-	if(path.length === 0) // invalid path
-		return false
-	else if(path.length <= 2) { // we're already infront of or on it
-		if(callback !== undefined)
-			callback()
-		return true
-	}
-	path.pop() // we don't want targetPos in the path
-
-	var target = path[path.length - 1]
-	targetPos = {x: target[0], y: target[1]}
-
-	var running = Config.engine.doAlwaysRun
-	if(hexDistance(obj.position, targetPos) > 5)
-		running = true
-
-	//console.log("path: %o, callback %o", path, callback)
-	return critterWalkTo(obj, targetPos, running, callback, undefined, path)
-}
 function isSelectableObject(obj: any) {
 	return obj.visible !== false && (canUseObject(obj) || obj.type === "critter")
 }
@@ -633,7 +612,7 @@ function playerUse() {
 	var who = <Critter>obj
 
 	if(obj === null) { // walk to the destination if there is no usable object
-		if(critterWalkTo(player, mouseHex, Config.engine.doAlwaysRun) === false)
+		if(!player.walkTo(mouseHex, Config.engine.doAlwaysRun))
 			console.log("Cannot walk there")
 		return
 	}
@@ -709,7 +688,7 @@ function playerUse() {
 	if(Config.engine.doInfiniteUse === true)
 		callback()
 	else
-		critterMoveInFrontOf(player, obj.position, callback)
+		player.walkInFrontOf(obj.position, callback)
 }
 
 heart.mousepressed = function(x, y, btn) {
@@ -751,10 +730,10 @@ heart.keydown = function(k) {
 		})
 	}
 	if(k === Config.controls.moveTo) {
-		critterWalkTo(player, mouseHex)
+		player.walkTo(mouseHex)
 	}
 	if(k === Config.controls.runTo) {
-		critterWalkTo(player, mouseHex, true)
+		player.walkTo(mouseHex, true)
 	}
 	if(k === Config.controls.attack) {
 		if(!inCombat || !combat.inPlayerTurn || player.anim !== "idle") {

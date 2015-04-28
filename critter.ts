@@ -271,42 +271,6 @@ function getAnimDistance(art: string): number {
 	return Math.floor((lastShift - firstShift + 16) / 32)
 }
 
-function critterWalkTo(obj: Critter, target: Point, running?: boolean, callback?: () => void, maxLength?: number, path?: any): boolean {
-	// pathfind and set walking to target
-	if(obj.position.x === target.x && obj.position.y === target.y) {
-		// can't walk to the same tile
-		return false
-	}
-
-	if(path === undefined)
-		path = recalcPath(obj.position, target)
-	if(path.length === 0) {
-		// no path
-		//console.log("not a valid path")
-		return false
-	}
-	if(maxLength !== undefined && path.length > maxLength) {
-		console.log("truncating path (to length " + maxLength + ")")
-		path = path.slice(0, maxLength + 1)
-	}
-
-	if(running && !obj.canRun())
-		running = false
-
-	// set up animation properties
-	var actualTarget = {x: path[path.length-1][0], y: path[path.length-1][1]}
-	obj.path = {path: path, index: 1, target: actualTarget, partial: 0}
-	obj.anim = running ? "run" : "walk"
-	obj.art = critterGetAnim(obj, obj.anim)
-	obj.animCallback = callback || (() => obj.clearAnim())
-	obj.frame = 0
-	obj.lastFrameTime = 0
-	obj.shift = {x: 0, y: 0}
-	obj.orientation = directionOfDelta(obj.position.x, obj.position.y, path[1][0], path[1][1])
-	//console.log("start dir: %o", obj.orientation)
-	return true
-}
-
 function critterStaticAnim(obj: Critter, anim: string, callback: () => void, waitForLoad: boolean=true): void {
 	obj.art = critterGetAnim(obj, anim)
 	obj.frame = 0
@@ -666,5 +630,67 @@ class Critter extends Obj {
 		// reset to idle pose
 		this.anim = "idle"
 		this.art = critterGetAnim(this, "idle")
+	}
+
+	walkTo(target: Point, running?: boolean, callback?: () => void, maxLength?: number, path?: any): boolean {
+		// pathfind and set walking to target
+		if(this.position.x === target.x && this.position.y === target.y) {
+			// can't walk to the same tile
+			return false
+		}
+
+		if(path === undefined)
+			path = recalcPath(this.position, target)
+
+		if(path.length === 0) {
+			// no path
+			//console.log("not a valid path")
+			return false
+		}
+
+		if(maxLength !== undefined && path.length > maxLength) {
+			console.log("truncating path (to length " + maxLength + ")")
+			path = path.slice(0, maxLength + 1)
+		}
+
+		// some critters can't run
+		if(running && !this.canRun())
+			running = false
+
+		// set up animation properties
+		var actualTarget = {x: path[path.length-1][0], y: path[path.length-1][1]}
+		this.path = {path: path, index: 1, target: actualTarget, partial: 0}
+		this.anim = running ? "run" : "walk"
+		this.art = critterGetAnim(this, this.anim)
+		this.animCallback = callback || (() => this.clearAnim())
+		this.frame = 0
+		this.lastFrameTime = 0
+		this.shift = {x: 0, y: 0}
+		this.orientation = directionOfDelta(this.position.x, this.position.y, path[1][0], path[1][1])
+		//console.log("start dir: %o", this.orientation)
+
+		return true
+	}
+
+	walkInFrontOf(targetPos: Point, callback?: () => void): boolean {
+		var path = recalcPath(this.position, targetPos, false)
+		if(path.length === 0) // invalid path
+			return false
+		else if(path.length <= 2) { // we're already infront of or on it
+			if(callback)
+				callback()
+			return true
+		}
+		path.pop() // we don't want targetPos in the path
+
+		var target = path[path.length - 1]
+		targetPos = {x: target[0], y: target[1]}
+
+		var running = Config.engine.doAlwaysRun
+		if(hexDistance(this.position, targetPos) > 5)
+			running = true
+
+		//console.log("path: %o, callback %o", path, callback)
+		return this.walkTo(targetPos, running, callback, undefined, path)
 	}
 }
