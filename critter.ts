@@ -53,12 +53,18 @@ var weaponSkillMap = {'uzi': 'Small Guns',
                       'flamethr': 'Big Guns',
                      }
 
-function parseAttack(weapon: WeaponObj) {
+interface AttackInfo {
+	mode: number;
+	APCost: number;
+	maxRange: number;
+}
+
+function parseAttack(weapon: WeaponObj): {first: AttackInfo; second: AttackInfo} {
 	var attackModes = weapon.pro.extra['attackMode']
-	var modeOne = attackMode[attackModes & 0xf]
-	var modeTwo = attackMode[(attackModes >> 4) & 0xf]
-	var attackOne: any = {mode: modeOne}
-	var attackTwo: any = {mode: modeTwo}
+	var modeOne: number = attackMode[attackModes & 0xf]
+	var modeTwo: number = attackMode[(attackModes >> 4) & 0xf]
+	var attackOne: AttackInfo = {mode: modeOne, APCost: 0, maxRange: 0}
+	var attackTwo: AttackInfo = {mode: modeTwo, APCost: 0, maxRange: 0}
 	
 	if(modeOne !== attackMode.none) {
 		attackOne.APCost = weapon.pro.extra.APCost1
@@ -72,130 +78,146 @@ function parseAttack(weapon: WeaponObj) {
 
 	return {first: attackOne, second: attackTwo}
 }
+
+// TODO: improve handling of melee
+class Weapon {
+	weapon: any; // TODO: any (because of melee)
+	name: string;
+	modes: string[];
+	mode: string; // current mode
+	type: string;
+	minDmg: number;
+	maxDmg: number;
+	weaponSkillType: string;
+
+	attackOne: {mode: number; APCost: number; maxRange: number};
+	attackTwo: {mode: number; APCost: number; maxRange: number};
+
+	constructor(weapon: WeaponObj) {
+		this.weapon = weapon
+		this.modes = ['single', 'called']
+
+		if(weapon === null) { // default punch
+			// todo: use character stats...
+			// todo: fully turn this into a real weapon
+			this.type = 'melee'
+			this.minDmg = 1
+			this.maxDmg = 2
+			this.name = 'punch'
+			this.weaponSkillType = 'Unarmed'
+			this.weapon = {}
+			this.weapon.pro = {extra: {}}
+			this.weapon.pro.extra.maxRange1 = 1
+			this.weapon.pro.extra.maxRange2 = 1
+			this.weapon.pro.extra.APCost1 = 4
+			this.weapon.pro.extra.APCost2 = 4
+		} else { // todo: spears, etc
+			this.type = 'gun'
+			this.minDmg = weapon.pro.extra.minDmg
+			this.maxDmg = weapon.pro.extra.maxDmg
+			var s = weapon.art.split('/')
+			this.name = s[s.length-1]
 			
-var Weapon = function(weapon) {
-	this.weapon = weapon
-	this.modes = ['single', 'called']
+			var attacks = parseAttack(weapon)
+			this.attackOne = attacks.first
+			this.attackTwo = attacks.second
 
-	if(weapon === 'punch') { // default punch
-		// todo: use character stats...
-		// todo: fully turn this into a real weapon
-		this.type = 'melee'
-		this.minDmg = 1
-		this.maxDmg = 2
-		this.name = 'punch'
-		this.weaponSkillType = 'Unarmed'
-		this.weapon = {}
-		this.weapon.pro = {extra: {}}
-		this.weapon.pro.extra.maxRange1 = 1
-		this.weapon.pro.extra.maxRange2 = 1
-		this.weapon.pro.extra.APCost1 = 4
-		this.weapon.pro.extra.APCost2 = 4
-	} else { // todo: spears, etc
-		this.type = 'gun'
-		this.minDmg = weapon.pro.extra.minDmg
-		this.maxDmg = weapon.pro.extra.maxDmg
-		var s = weapon.art.split('/')
-		this.name = s[s.length-1]
-		
-		var attacks = parseAttack(weapon)
-		this.attackOne = attacks.first
-		this.attackTwo = attacks.second
+			this.weaponSkillType = weaponSkillMap[this.name]
+			if(this.weaponSkillType === undefined)
+				console.log("unknown weapon type for " + this.name)
+		}
 
-		this.weaponSkillType = weaponSkillMap[this.name]
-		if(this.weaponSkillType === undefined)
-			console.log("unknown weapon type for " + this.name)
+		this.mode = this.modes[0]
 	}
 
-	this.mode = this.modes[0]
-}
-
-Weapon.prototype.cycleMode = function() {
-	this.mode = this.modes[(this.modes.indexOf(this.mode) + 1) % this.modes.length]
-}
-
-Weapon.prototype.isCalled = function() {
-	return this.mode === "called"
-}
-
-Weapon.prototype.getProjectilePID = function() {
-	if(this.type === "melee")
-		return -1
-	return this.weapon.pro.extra.projPID
-}
-
-// TODO: enum
-Weapon.prototype.getMaximumRange = function(attackType: number): number {
-
-	if(attackType === 1) return this.weapon.pro.extra.maxRange1
-	if(attackType === 2) return this.weapon.pro.extra.maxRange2
-	else throw "invalid attack type " + attackType
-}
-
-Weapon.prototype.getAPCost = function(attackMode: number): number {
-	return this.weapon.pro.extra["APCost" + attackMode]
-}
-
-Weapon.prototype.getSkin = function(): string {
-	if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
-		return null
-	var animCodeMap = {0: 'a',// None
-					   1: 'd', // Knife
-					   2: 'e', // Club
-					   3: 'f', // Sledgehammer
-					   4: 'g', // Spear
-					   5: 'h', // Pistol
-					   6: 'i', // SMG
-					   7: 'j', // Rifle
-					   8: 'k', // Big Gun
-					   9: 'l', // Minigun
-					   10: 'm'} // Rocket Launcher
-	return animCodeMap[this.weapon.pro.extra.animCode]
-}
-
-Weapon.prototype.getAttackSkin = function(): string {
-	if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
-		return null
-	if(this.weapon === 'punch') return 'q'
-
-	var modeSkinMap = {
-		'punch': 'q',
-		'kick': 'r',
-		'swing': 'g',
-		'thrust': 'f',
-		'throw': 's',
-		'fire single': 'j',
-		'fire burst': 'k',
-		'flame': 'l'
+	cycleMode(): void {
+		this.mode = this.modes[(this.modes.indexOf(this.mode) + 1) % this.modes.length]
 	}
 
-	// todo: mode equipped
-	if(this.attackOne.mode !== 'none') {
-		return modeSkinMap[this.attackOne.mode]
+	isCalled(): boolean {
+		return this.mode === "called"
 	}
-}
 
-Weapon.prototype.getAnim = function(anim: string): string {
-	if(weaponAnims[this.name] && weaponAnims[this.name][anim])
-		return weaponAnims[this.name][anim]
-
-	var wep = this.getSkin() || 'a'
-	switch(anim) {
-		case 'idle': return wep + 'a'
-		case 'walk': return wep + 'b'
-		case 'attack':
-			var attackSkin = this.getAttackSkin()
-			return wep + attackSkin
-		default: return null // let something else handle it
+	getProjectilePID(): number {
+		if(this.type === "melee")
+			return -1
+		return this.weapon.pro.extra.projPID
 	}
-}
 
-Weapon.prototype.canEquip = function(obj: Critter): boolean {
-	return imageInfo[critterGetBase(obj) + this.getAnim('attack')] !== undefined
-}
+	// TODO: enum
+	getMaximumRange(attackType: number): number {
 
-Weapon.prototype.getDamageType = function(): string {
-	return this.weapon.pro.extra.dmgType
+		if(attackType === 1) return this.weapon.pro.extra.maxRange1
+		if(attackType === 2) return this.weapon.pro.extra.maxRange2
+		else throw "invalid attack type " + attackType
+	}
+
+	getAPCost(attackMode: number): number {
+		return this.weapon.pro.extra["APCost" + attackMode]
+	}
+
+	getSkin(): string {
+		if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
+			return null
+		var animCodeMap = {0: 'a',// None
+						   1: 'd', // Knife
+						   2: 'e', // Club
+						   3: 'f', // Sledgehammer
+						   4: 'g', // Spear
+						   5: 'h', // Pistol
+						   6: 'i', // SMG
+						   7: 'j', // Rifle
+						   8: 'k', // Big Gun
+						   9: 'l', // Minigun
+						   10: 'm'} // Rocket Launcher
+		return animCodeMap[this.weapon.pro.extra.animCode]
+	}
+
+	getAttackSkin(): string {
+		if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
+			return null
+		if(this.weapon === 'punch') return 'q'
+
+		var modeSkinMap = {
+			'punch': 'q',
+			'kick': 'r',
+			'swing': 'g',
+			'thrust': 'f',
+			'throw': 's',
+			'fire single': 'j',
+			'fire burst': 'k',
+			'flame': 'l'
+		}
+
+		// todo: mode equipped
+		if(this.attackOne.mode !== attackMode.none) {
+			return modeSkinMap[this.attackOne.mode]
+		}
+	}
+
+	getAnim(anim: string): string {
+		if(weaponAnims[this.name] && weaponAnims[this.name][anim])
+			return weaponAnims[this.name][anim]
+
+		var wep = this.getSkin() || 'a'
+		switch(anim) {
+			case 'idle': return wep + 'a'
+			case 'walk': return wep + 'b'
+			case 'attack':
+				var attackSkin = this.getAttackSkin()
+				return wep + attackSkin
+			default: return null // let something else handle it
+		}
+	}
+
+	canEquip(obj: Critter): boolean {
+		return imageInfo[critterGetBase(obj) + this.getAnim('attack')] !== undefined
+	}
+
+	getDamageType(): string {
+		return this.weapon.pro.extra.dmgType
+	}
+
 }
 
 function critterGetBase(obj: Critter): string {
@@ -499,9 +521,9 @@ class Critter extends Obj {
 
 		// default to punches
 		if(!this.leftHand)
-			this.leftHand = <WeaponObj>{type: "item", subtype: "weapon", weapon: new Weapon("punch")}
+			this.leftHand = <WeaponObj>{type: "item", subtype: "weapon", weapon: new Weapon(null)}
 		if(!this.rightHand)
-			this.rightHand = <WeaponObj>{type: "item", subtype: "weapon", weapon: new Weapon("punch")}
+			this.rightHand = <WeaponObj>{type: "item", subtype: "weapon", weapon: new Weapon(null)}
 
 		// set them in their proper idle state for the weapon
 		this.art = critterGetAnim(this, "idle")
@@ -549,7 +571,6 @@ class Critter extends Obj {
 				} else {
 					// otherwise we're done animating this, loop
 					this.path.partial = 0
-					this.frame = 0
 				}
 				
 				// move to the start of the next partial action
