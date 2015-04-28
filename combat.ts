@@ -292,8 +292,8 @@ class Combat {
 		// attack!
 		critterStaticAnim(obj, "attack", callback)
 
-		var who = obj.isPlayer ? "You" : critterGetName(obj)
-		var targetName = target.isPlayer ? "you" : critterGetName(target)
+		var who = obj.isPlayer ? "You" : obj.name
+		var targetName = target.isPlayer ? "you" : target.name
 		var hitRoll = this.rollHit(obj, target, region)
 		this.log("hit% is " + this.getHitChance(obj, target, region).hit)
 
@@ -345,7 +345,7 @@ class Combat {
 		if(roll === false) return
 		var msgID = getRandomInt(parseInt(obj.ai.info[type+"_start"]),
 		                         parseInt(obj.ai.info[type+"_end"]))
-		this.log("[TAUNT " + critterGetName(obj) + ": " + this.getCombatAIMessage(msgID) + "]")
+		this.log("[TAUNT " + obj.name + ": " + this.getCombatAIMessage(msgID) + "]")
 	}
 
 	findTarget(obj: Critter): Critter {

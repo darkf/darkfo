@@ -672,7 +672,7 @@ function playerUse() {
 			if(who.dead !== true && inCombat !== true &&
 			   obj._script && obj._script.talk_p_proc !== undefined) {
 				// talk to a critter
-				console.log("Talking to " + critterGetName(who))
+				console.log("Talking to " + who.name)
 				scriptingEngine.talk(who._script, who)
 			}
 			else if(who.dead === true) {
@@ -722,10 +722,10 @@ heart.keydown = function(k) {
 		}
 	}
 	if(k === Config.controls.inspect) {
-		gMap.getObjects().forEach(obj => {
+		gMap.getObjects().forEach((obj, idx) => {
 			if(obj.position.x === mouseHex.x && obj.position.y === mouseHex.y) {
 				var hasScripts = (obj.script !== undefined ? ("yes (" + obj.script + ")") : "no") + " " + (obj._script === undefined ? "and is NOT loaded" : "and is loaded")
-				console.log("object is at index " + i + ", of type " + obj.type + ", has art " + obj.art + ", and has scripts? " + hasScripts + " -> %o", obj)
+				console.log("object is at index " + idx + ", of type " + obj.type + ", has art " + obj.art + ", and has scripts? " + hasScripts + " -> %o", obj)
 			}
 		})
 	}

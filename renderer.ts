@@ -48,7 +48,7 @@ class Renderer {
 		if(Config.ui.showRoof)    this.renderRoof(this.roofTiles)
 
 		if(inCombat) {
-			var whose = combat.inPlayerTurn ? "player" : critterGetName(combat.combatants[combat.whoseTurn])
+			var whose = combat.inPlayerTurn ? "player" : combat.combatants[combat.whoseTurn].name
 			var AP = combat.inPlayerTurn ? player.AP : combat.combatants[combat.whoseTurn].AP
 			this.text("[turn " + combat.turnNum + " of " + whose + " AP: " + AP.getAvailableMoveAP() + "]", SCREEN_WIDTH - 200, 15)
 		}

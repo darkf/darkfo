@@ -269,12 +269,6 @@ function critterHasAnim(obj: Critter, anim: string): boolean {
 	return imageInfo[critterGetAnim(obj, anim)] !== undefined
 }
 
-function critterGetName(obj: Critter): string {
-	if(obj.name !== undefined)
-		return obj.name
-	return "<unnamed>"
-}
-
 function critterGetKillType(obj: Critter): number {
 	if(obj.isPlayer) return 19 // last type
 	if(!obj.pro || !obj.pro.extra) return null

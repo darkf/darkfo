@@ -28,81 +28,81 @@ module CriticalEffects {
 
 	var critFailEffects = {
 		damageSelf: function(target) {
-			console.log(critterGetName(target) + " has damaged themselves. This does not do anything yet")
+			console.log(target.name + " has damaged themselves. This does not do anything yet")
 		},
 
 		crippleRandomAppendage: function(target) {
-			console.log(critterGetName(target) + " has crippled a random appendage. This does not do anything yet")
+			console.log(target.name + " has crippled a random appendage. This does not do anything yet")
 		},
 
 		hitRandomly: function(target) {
-			console.log(critterGetName(target) + " has hit randomly. This does not do anything yet")
+			console.log(target.name + " has hit randomly. This does not do anything yet")
 		},
 
 		hitSelf: function(target) {
-			console.log(critterGetName(target) + " has hit themselves. This does not do anything yet")
+			console.log(target.name + " has hit themselves. This does not do anything yet")
 		},
 
 		loseAmmo: function(target) {
-			console.log(critterGetName(target) + " has lost their ammo. This does not do anything yet")
+			console.log(target.name + " has lost their ammo. This does not do anything yet")
 		},
 
 		destroyWeapon: function(target) {
-			console.log(critterGetName(target) + " has had their weapon blow up in their face. Ouch. This does not do anything yet")
+			console.log(target.name + " has had their weapon blow up in their face. Ouch. This does not do anything yet")
 		},
 	}
 
 	var critterEffects = {
 		knockout: function(target) {
-			console.log(critterGetName(target) + " has been knocked out. This does not do anything yet")
+			console.log(target.name + " has been knocked out. This does not do anything yet")
 		},
 
 		knockdown: function(target) {
-			console.log(critterGetName(target) + " has been knocked down. This does not do anything yet")
+			console.log(target.name + " has been knocked down. This does not do anything yet")
 		},
 
 		crippledLeftLeg: function(target) {
-			console.log(critterGetName(target) + " has been crippled in the left leg. This does not do anything yet")
+			console.log(target.name + " has been crippled in the left leg. This does not do anything yet")
 		},
 
 		crippledRightLeg: function(target) {
-			console.log(critterGetName(target) + " has been crippled in the right leg. This does not do anything yet")
+			console.log(target.name + " has been crippled in the right leg. This does not do anything yet")
 		},
 
 		crippledLeftArm: function(target) {
-			console.log(critterGetName(target) + " has been crippled in the left arm. This does not do anything yet")
+			console.log(target.name + " has been crippled in the left arm. This does not do anything yet")
 		},
 
 		crippledRightArm: function(target) {
-			console.log(critterGetName(target) + " has been crippled in the right arm. This does not do anything yet")
+			console.log(target.name + " has been crippled in the right arm. This does not do anything yet")
 		},
 
 		blinded: function(target) {
-			console.log(critterGetName(target) + " has been blinded by delight. This does not do anything yet")
+			console.log(target.name + " has been blinded by delight. This does not do anything yet")
 		},
 
 		death: function(target) {
-			console.log(critterGetName(target) + " has met the reaperpony. This does not do anything yet")
+			console.log(target.name + " has met the reaperpony. This does not do anything yet")
 		},
 
 		onFire: function(target) {
-			console.log(critterGetName(target) + " just got a flame lit in their heart. This does not do anything yet")
+			console.log(target.name + " just got a flame lit in their heart. This does not do anything yet")
 		},
 
 		bypassArmor: function(target) {
-			console.log(critterGetName(target) + " is being hit by an armor bypassing bullet, blame the Zebras. This does not do anything yet")
+			console.log(target.name + " is being hit by an armor bypassing bullet, blame the Zebras. This does not do anything yet")
 		},
 
 		droppedWeapon: function(target) {
-			console.log(critterGetName(target) + " needs to drop their weapon like it's hot. The documentation claims this is broken. This does not do anything yet")
+			console.log(target.name + " needs to drop their weapon like it's hot. The documentation claims this is broken. This does not do anything yet")
 		},
 
 		loseNextTurn: function(target) {
-			console.log(critterGetName(target) + " lost their next turn. This does not do anything yet")
+			console.log(target.name + " lost their next turn. This does not do anything yet")
 		},
 
 		random: function(target) {
-			console.log(critterGetName(target) + " is affected by a random effect. How random! This does not do anything yet")
+			console.log(target.name + " is affected by a random effect. How random! This does not do anything yet")
 		}
 	}
 
