@@ -78,11 +78,11 @@ class Player extends Critter {
 						" @ " + startingPosition.x + ", " + startingPosition.y)
 					if(exitMapID === gMap.mapID) {
 						// same map, different elevation
-						changeElevation(startingElevation, true)
+						gMap.changeElevation(startingElevation, true)
 						player.move(startingPosition)
 					}
 					else
-						loadMapID(exitMapID, startingPosition, startingElevation)
+						gMap.loadMapByID(exitMapID, startingPosition, startingElevation)
 				}
 
 				return false

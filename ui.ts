@@ -780,7 +780,7 @@ function uiWorldMapShowArea(area) {
 				var mapName = lookupMapNameFromLookup(entrance.mapLookupName)
 				console.log("hotspot -> " + mapName + " (via " +
 					        entrance.mapLookupName + ")")
-				loadMap(mapName)
+				gMap.loadMap(mapName)
 				uiCloseWorldMap()
 			}
 		})(entrances[j]))
@@ -861,14 +861,14 @@ function uiElevator(elevator) {
 					// different map
 					console.log("elevator -> map " + mapID + ", level " + level + " @ " +
 						        position.x + ", " + position.y)
-					loadMapID(mapID, position, level)
+					gMap.loadMapByID(mapID, position, level)
 				}
 				else if(level !== currentElevation) {
 					// same map, different elevation
 					console.log("elevator -> level " + level + " @ " + 
 						        position.x + ", " + position.y)
 					player.move(position)
-					changeElevation(level, true)
+					gMap.changeElevation(level, true)
 				}
 
 				// else, same elevation, do nothing

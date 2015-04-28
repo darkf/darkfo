@@ -578,7 +578,7 @@ module scriptingEngine {
 		override_map_start: function(x, y, elevation, rotation) {
 			stub("override_map_start", arguments)
 			if(elevation !== currentElevation)
-				changeElevation(elevation, true)
+				gMap.changeElevation(elevation, true)
 			dudeObject.position = {x: x, y: y}
 			dudeObject.orientation = rotation
 			centerCamera(dudeObject.position)
@@ -883,9 +883,9 @@ module scriptingEngine {
 			log("load_map", arguments)
 			info("load_map: " + map)
 			if(typeof map === "string")
-				loadMap(map.split(".")[0].toLowerCase())
+				gMap.loadMap(map.split(".")[0].toLowerCase())
 			else
-				loadMapID(map)
+				gMap.loadMapByID(map)
 		},
 		play_gmovie: function(movieID) { stub("play_gmovie", arguments) },
 		mark_area_known: function(areaType, area, markState) {

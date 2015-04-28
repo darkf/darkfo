@@ -311,7 +311,7 @@ module Worldmap {
 		console.log("final: map %s, groups %o", enc.mapName, enc.groups)
 
 		// load map
-		loadMap(enc.mapName, undefined, undefined, function() {
+		gMap.loadMap(enc.mapName, undefined, undefined, function() {
 			// set up critters' positions in their formations
 			Encounters.positionCritters(enc.groups, player.position, lookupMapFromLookup(enc.mapLookupName))
 

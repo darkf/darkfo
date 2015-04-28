@@ -466,15 +466,14 @@ class GameMap {
 		if(curMapInfo && curMapInfo.music)
 			audioEngine.playMusic(curMapInfo.music)
 	}
-}
 
-// temporary
-function changeElevation(level: number, updateScripts?: boolean) {
-	gMap.changeElevation(level, updateScripts)
-}
-
-function loadMap(mapName: string, startingPosition?: Point, startingElevation?: number, loadedCallback?: () => void) {
-	gMap.loadMap(mapName, startingPosition, startingElevation, loadedCallback)
+	loadMapByID(mapID: number, startingPosition?: Point, startingElevation?: number): void {
+		var mapName = lookupMapName(mapID)
+		if(mapName !== null)
+			this.loadMap(mapName, startingPosition, startingElevation)
+		else
+			console.log("couldn't lookup map name for map ID " + mapID)
+	}
 }
 
 function parseMapInfo() {
@@ -562,14 +561,6 @@ function getMapInfo(mapName: string) {
 
 function getCurrentMapInfo() {
 	return getMapInfo(gMap.name)
-}
-
-function loadMapID(mapID: number, startingPosition?: Point, startingElevation?: number) {
-	var mapName = lookupMapName(mapID)
-	if(mapName !== null)
-		gMap.loadMap(mapName, startingPosition, startingElevation)
-	else
-		console.log("couldn't lookup map name for map ID " + mapID)
 }
 
 heart.load = function() {

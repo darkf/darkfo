@@ -218,12 +218,12 @@ function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean { /
 			console.log("stairs: tile: " + destTile.x + ", " + destTile.y + ", elev: " + destElev)
 
 			player.position = destTile
-			changeElevation(destElev)
+			gMap.changeElevation(destElev)
 		}
 		else {
 			console.log("stairs -> " + obj.extra.destinationMap + " @ " + destTile.x +
 				        ", " + destTile.y  + ", elev: " + destElev)
-			loadMapID(obj.extra.destinationMap, destTile, destElev)
+			gMap.loadMapByID(obj.extra.destinationMap, destTile, destElev)
 		}
 	}
 	else if(objectIsLadder(obj)) {
@@ -233,7 +233,7 @@ function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean { /
 		// TODO: destination also supposedly contains elevation and map
 		console.log("ladder (" + (isTop ? "top" : "bottom") + " -> level " + level + ")")
 		player.position = destTile
-		changeElevation(level)
+		gMap.changeElevation(level)
 	}
 	else
 		objectSingleAnim(obj)
