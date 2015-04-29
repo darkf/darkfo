@@ -274,6 +274,18 @@ function centerCamera(around) {
 	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2 | 0)
 }
 
+interface SerializedMap {
+	name: string;
+	mapID: number;
+	numLevels: number;
+
+	mapScript: /* SerializedScript */ any;
+	objects: /* SerializedObj */ any[][];
+	spatials: /* SerializedSpatial */ any[][];
+
+	mapObj: any; // required?
+}
+
 class GameMap {
 	name: string;
 	startingPosition: Point;
@@ -545,6 +557,19 @@ class GameMap {
 			this.loadMap(mapName, startingPosition, startingElevation)
 		else
 			console.log("couldn't lookup map name for map ID " + mapID)
+	}
+
+	serialize(): SerializedMap {
+		return {
+			name: this.name,
+			mapID: this.mapID,
+			numLevels: this.numLevels,
+			mapObj: this.mapObj,
+
+			mapScript: null, //this.mapScript.serialize(),
+			objects: this.objects.map(level => level.map(obj => obj.serialize())),
+			spatials: null //this.spatials.map(level => level.map(spatial:> spatial.serialize()))
+		}
 	}
 }
 

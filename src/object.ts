@@ -348,6 +348,36 @@ interface Point {
 	y: number;
 }
 
+interface SerializedObj {
+	pid: number;
+	pidID: number;
+	type: string;
+	pro: any;
+	flags: number;
+	art: string;
+	frmPID: number;
+	orientation: number;
+	visible: boolean;
+
+	extra: any;
+
+	script: any;
+	_script: any;
+
+	name: string;
+	subtype: string;
+	invArt: string;
+
+	frame: number;
+
+	amount: number;
+	position: Point;
+	inventory: SerializedObj[];
+
+	lightRadius: number;
+	lightIntensity: number;
+}
+
 class Obj {
 	pid: number; // PID (Prototype IDentifier)
 	pidID: number; // ID (not type) part of the PID
@@ -619,6 +649,32 @@ class Obj {
 			return null
 
 		return getMessage(this.getMessageCategory(), this.pro.textID + 1) || null
+
+	// TODO: override this for subclasses
+	serialize(): SerializedObj {
+		return {
+			pid: this.pid,
+			pidID: this.pidID,
+			type: this.type,
+			pro: this.pro,
+			flags: this.flags,
+			art: this.art,
+			frmPID: this.frmPID,
+			orientation: this.orientation,
+			visible: this.visible,
+			extra: this.extra,
+			script: this.script,
+			_script: null, //this._script.serialize(),
+			name: this.name,
+			subtype: this.subtype,
+			invArt: this.invArt,
+			frame: this.frame,
+			amount: this.amount,
+			position: this.position,
+			inventory: this.inventory.map(obj => obj.serialize()),
+			lightRadius: this.lightRadius,
+			lightIntensity: this.lightIntensity
+		}
 	}
 }
 
