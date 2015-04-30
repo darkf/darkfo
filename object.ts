@@ -447,18 +447,18 @@ class Obj {
 		return obj
 	}
 
-	static fromMapObject(mobj: any): Obj {
-		return Obj.fromMapObject_(new Obj(), mobj)
+	static fromMapObject(mobj: any, deserializing: boolean=false): Obj {
+		return Obj.fromMapObject_(new Obj(), mobj, deserializing)
 	}
 
-	static fromMapObject_<T extends Obj>(obj: T, mobj: any): T {
+	static fromMapObject_<T extends Obj>(obj: T, mobj: any, deserializing: boolean=false): T {
 		// Load an Obj from a map object
 		//console.log("fromMapObject: %o", mobj)
 		obj.pid = mobj.pid
 		obj.pidID = mobj.pidID
 		obj.frmPID = mobj.frmPID
 		obj.orientation = mobj.orientation
-		if(obj.type == null)
+		if(obj.type === null)
 			obj.type = mobj.type
 		obj.art = mobj.art
 		obj.position = mobj.position
@@ -476,14 +476,24 @@ class Obj {
 		// etc? TODO: check this!
 
 		obj.init()
-		obj.loadScript()
+
+		if(deserializing) {
+			obj.inventory = mobj.inventory.map(obj => deserializeObj(obj))
+			obj.script = mobj.script
+
+			if(mobj._script)
+				obj._script = scriptingEngine.deserializeScript(mobj._script)
+		}
+		else
+			obj.loadScript()
+
 		return obj
 	}
 
 	init() {
 		//console.log("init: %o", this)
 		if(this.inventory !== undefined) // containers and critters
-			this.inventory = this.inventory.map(objFromMapObject)
+			this.inventory = this.inventory.map(obj => objFromMapObject(obj))
 	}
 
 	loadScript(sid:number=-1): void {
@@ -644,7 +654,9 @@ class Item extends Obj {
 
 	static fromPID(pid: number, sid?: number): Item { return Obj.fromPID_(new Item(), pid, sid) }
 
-	static fromMapObject(mobj: any): Item { return Obj.fromMapObject_(new Item(), mobj) }
+	static fromMapObject(mobj: any, deserializing: boolean=false): Item {
+		return Obj.fromMapObject_(new Item(), mobj, deserializing)
+	}
 
 	init() {
 		super.init()
@@ -665,7 +677,9 @@ class WeaponObj extends Item {
 
 	static fromPID(pid: number, sid?: number): WeaponObj { return Obj.fromPID_(new WeaponObj(), pid, sid) }
 
-	static fromMapObject(mobj: any): WeaponObj { return Obj.fromMapObject_(new WeaponObj(), mobj) }
+	static fromMapObject(mobj: any, deserializing: boolean=false): WeaponObj {
+		return Obj.fromMapObject_(new WeaponObj(), mobj, deserializing)
+	}
 
 	init() {
 		super.init()
@@ -680,7 +694,9 @@ class Scenery extends Obj {
 
 	static fromPID(pid: number, sid?: number): Scenery { return Obj.fromPID_(new Scenery(), pid, sid) }
 
-	static fromMapObject(mobj: any): Scenery { return Obj.fromMapObject_(new Scenery(), mobj) }
+	static fromMapObject(mobj: any, deserializing: boolean=false): Scenery {
+		return Obj.fromMapObject_(new Scenery(), mobj, deserializing)
+	}
 
 	init() {
 		super.init()
@@ -699,7 +715,9 @@ class Door extends Scenery {
 
 	static fromPID(pid: number, sid?: number): Door { return Obj.fromPID_(new Door(), pid, sid) }
 
-	static fromMapObject(mobj: any): Door { return Obj.fromMapObject_(new Door(), mobj) }
+	static fromMapObject(mobj: any, deserializing: boolean=false): Door {
+		return Obj.fromMapObject_(new Door(), mobj, deserializing)
+	}
 
 	init() {
 		super.init()
@@ -732,26 +750,30 @@ function createObjectWithPID(pid: number, sid?: number) {
 		return Obj.fromPID(pid, sid)
 }
 
-function objFromMapObject(mobj: any) {
+function objFromMapObject(mobj: any, deserializing: boolean=false) {
 	var pid = mobj.pid
 	var pidType = (pid >> 24) & 0xff
 
 	if(pidType == 1) // critter
-		return Critter.fromMapObject(mobj)
+		return Critter.fromMapObject(mobj, deserializing)
 	else if(pidType == 0) { // item
 		var pro = mobj.pro || loadPRO(pid, pid & 0xffff)
 		if(pro && pro.extra && pro.extra.subType == 3)
-			return WeaponObj.fromMapObject(mobj)
+			return WeaponObj.fromMapObject(mobj, deserializing)
 		else
-			return Item.fromMapObject(mobj)
+			return Item.fromMapObject(mobj, deserializing)
 	}
 	else if(pidType == 2) { // scenery
 		var pro = mobj.pro || loadPRO(pid, pid & 0xffff)
 		if(pro && pro.extra && pro.extra.subType == 0)
-			return Door.fromMapObject(mobj)
+			return Door.fromMapObject(mobj, deserializing)
 		else
-			return Scenery.fromMapObject(mobj)
+			return Scenery.fromMapObject(mobj, deserializing)
 	}
 	else
-		return Obj.fromMapObject(mobj)
+		return Obj.fromMapObject(mobj, deserializing)
+}
+
+function deserializeObj(mobj: SerializedObj) {
+	return objFromMapObject(mobj, true)
 }

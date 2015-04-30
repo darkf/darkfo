@@ -478,12 +478,10 @@ class Critter extends Obj {
 
 	static fromPID(pid: number, sid?: number): Critter {
 		return Obj.fromPID_(new Critter(), pid, sid)
-
 	}
 
-	static fromMapObject(mobj: any): Critter {
-		//console.log("MAPOBJ")
-		return Obj.fromMapObject_(new Critter(), mobj);
+	static fromMapObject(mobj: any, deserializing: boolean=false): Critter {
+		return Obj.fromMapObject_(new Critter(), mobj, deserializing)
 	}
 
 	init() {
