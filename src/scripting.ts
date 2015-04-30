@@ -238,13 +238,18 @@ module scriptingEngine {
 		return false;
 	}
 
+	interface SerializedScript {
+		name: string;
+		lvars: any[];
+	}
+
 	export var ScriptProto = {
 		dude_obj: "<Dude Object>",
 		'true': true,
 		'false': false,
 		_didOverride: false,
 
-		floor: function(x) { return Math.floor(x) }, // TODO: does the language have floats? Are we handling division incorrectly?
+		floor: function(x) { return Math.floor(x) }, // TODO: does the language have floats (<- yes)? Are we handling division incorrectly? Test. (TODO: |0?)
 
 		set_global_var: function(gvar, value) {
 			globalVars[gvar] = value
@@ -1037,7 +1042,19 @@ module scriptingEngine {
 		party_remove: function(obj) {
 			info("party_remove", arguments)
 			gParty.removePartyMember(obj)
+		},
+
+		_serialize: function(): SerializedScript {
+			return {name: this.scriptName,
+			        lvars: _.clone(this.lvars)}
 		}
+	}
+
+	export function deserializeScript(obj) {
+		var script = loadScript(obj.name)
+		script.lvars = obj.lvars
+		// TODO: do some kind of logic like enterMap/updateMap
+		return script
 	}
 
 	function loadMessageFile(name) {
