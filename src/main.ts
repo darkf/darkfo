@@ -283,6 +283,9 @@ interface SerializedMap {
 	objects: /* SerializedObj */ any[][];
 	spatials: /* SerializedSpatial */ any[][];
 
+	floorMap: string[][];
+	roofMap: string[][];
+
 	mapObj: any; // required?
 }
 
@@ -461,6 +464,12 @@ class GameMap {
 
 		var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
+		// load map objects
+		this.objects = new Array(map.levels.length)
+		for(var level = 0; level < map.levels.length; level++) {
+			this.objects[level] = map.levels[level].objects.map(obj => objFromMapObject(obj))
+		}
+
 		if(Config.engine.doLoadScripts) {
 			scriptingEngine.init(player, mapName)
 			try {
@@ -564,12 +573,32 @@ class GameMap {
 			name: this.name,
 			mapID: this.mapID,
 			numLevels: this.numLevels,
-			mapObj: null, //this.mapObj,
+			mapObj: {levels: this.mapObj.levels},
+
+			// roof/floor maps
+			roofMap: this.roofMap,
+			floorMap: this.floorMap,
 
 			mapScript: this.mapScript ? this.mapScript._serialize() : null,
-			objects: this.objects.map(level => level.map(obj => obj.serialize())),
+			objects: this.objects.map(level =>
+				_.without(level, player).map(obj => obj.serialize())),
 			spatials: null //this.spatials.map(level => level.map(spatial:> spatial.serialize()))
 		}
+	}
+
+	deserialize(obj: SerializedMap): void {
+		this.name = obj.name
+		this.mapID = obj.mapID
+		this.numLevels = obj.numLevels
+		this.mapObj = obj.mapObj
+		this.mapScript = obj.mapScript ? scriptingEngine.deserializeScript(obj.mapScript) : null
+		this.objects = obj.objects.map(level => level.map(obj => deserializeObj(obj)))
+		this.spatials = [[],[],[]] //obj.spatials // TODO: deserialize
+		this.roofMap = obj.roofMap
+		this.floorMap = obj.floorMap
+		this.currentElevation = 0 // TODO
+
+		//this.mapObj = {levels: [{tiles: {floor: this.floorMap, roof: this.roofMap}}]} // TODO: add dimension to roofMap
 	}
 }
 
