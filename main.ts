@@ -492,9 +492,9 @@ class GameMap {
 			name: this.name,
 			mapID: this.mapID,
 			numLevels: this.numLevels,
-			mapObj: this.mapObj,
+			mapObj: null, //this.mapObj,
 
-			mapScript: null, //this.mapScript.serialize(),
+			mapScript: this.mapScript ? this.mapScript._serialize() : null,
 			objects: this.objects.map(level => level.map(obj => obj.serialize())),
 			spatials: null //this.spatials.map(level => level.map(spatial:> spatial.serialize()))
 		}
