@@ -25,6 +25,9 @@ var animInfo = {"idle": {type: "static"},
                 "walk": {type: "move"},
                 "static-idle": {type: "static"},
                 "static": {type: "static"},
+                "use": {type: "static"},
+                "pickUp": {type: "static"},
+                "climb": {type: "static"},
                 "hitFront": {type: "static"},
                 "death": {type: "static"},
                 "run": {type: "move"}}
@@ -253,6 +256,9 @@ function critterGetAnim(obj: Critter, anim: string): string {
 		case "static-idle": return base + wep + 'a'
 		case "static": return obj.art
 		case "hitFront": return base + 'ao'
+		case "use": return base + 'al'
+		case "pickUp": return base + 'ak'
+		case "climb": return base + 'ae'
 		//case "punch": return base + 'aq'
 		case "called-shot": return base + 'na'	
 		case "death":
