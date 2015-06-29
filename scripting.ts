@@ -471,34 +471,34 @@ module scriptingEngine {
 		critter_set_flee_state: function(obj, isFleeing) { stub("critter_set_flee_state", arguments) },
 
 		// objects
-		obj_is_locked: function(obj) { /*stub("obj_is_locked", arguments);*/ return 0 },
-		obj_lock: function(obj) { /*stub("obj_lock", arguments)*/ },
-		obj_unlock: function(obj) { stub("obj_unlock", arguments) },
+		obj_is_locked: function(obj: Obj) { log("obj_is_locked", arguments); return obj.locked ? 1 : 0 },
+		obj_lock: function(obj: Obj) { log("obj_lock", arguments); obj.locked = true },
+		obj_unlock: function(obj: Obj) { log("obj_unlock", arguments); obj.locked = false },
 		obj_is_open: function(obj) {
 			info("obj_is_open")
 			if(!isGameObject(obj)) {
 				warn("obj_is_open: not game object: " + obj)
 				return 0
 			}
-			return (obj.open === true) ? 1 : 0
+			return obj.open ? 1 : 0
 		},
-		obj_close: function(obj) {
+		obj_close: function(obj: Obj) {
 			if(!isGameObject(obj)) {
 				warn("obj_close: not game object: " + obj)
 				return 0
 			}
 			info("obj_close")
-			if(obj.open !== true) return
+			if(!obj.open) return
 			useObject(obj, this.self_obj, false)
 			//stub("obj_close", arguments)
 		},
-		obj_open: function(obj) {
+		obj_open: function(obj: Obj) {
 			if(!isGameObject(obj)) {
 				warn("obj_open: not game object: " + obj)
 				return 0
 			}
 			info("obj_open")
-			if(obj.open === true) return
+			if(obj.open) return
 			useObject(obj, this.self_obj, false)
 			//stub("obj_open", arguments)
 		},

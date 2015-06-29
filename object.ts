@@ -197,13 +197,17 @@ function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean { /
 
 	if(objectIsDoor(obj) || objectIsContainer(obj)) {
 		// open/closable doors/containers
-		// TODO: check lock status
-		// TODO: Door subclass
-		if(!(<any>obj).open) (<any>obj).open = true
-		else (<any>obj).open = false
-		objectSingleAnim(obj, !(<any>obj).open, function() {
+		// TODO: Door/Container subclasses
+		if(obj.locked) {
+			uiLog("That object is locked")
+			return
+		}
+
+		obj.open = !obj.open
+
+		objectSingleAnim(obj, !obj.open, function() {
 			obj.anim = null
-			if(objectIsContainer(obj) && (<any>obj).open === true) {
+			if(objectIsContainer(obj) && obj.open === true) {
 				// loot a container
 				uiLoot(obj)
 			}
@@ -351,6 +355,8 @@ class Obj {
 	frmPID: number = null; // Art FID
 	orientation: number = null; // Direction the object is facing
 	visible: boolean = true; // Is the object visible?
+	open: boolean = false; // Is the object open? (Mainly for doors)
+	locked: boolean = false; // Is the object locked? (Mainly for doors)
 
 	extra: any; // TODO
 
@@ -638,8 +644,6 @@ class Scenery extends Obj {
 }
 
 class Door extends Scenery {
-	open: boolean;
-
 	static fromPID(pid: number, sid?: number): Door { return Obj.fromPID_(new Door(), pid, sid) }
 
 	static fromMapObject(mobj: any): Door { return Obj.fromMapObject_(new Door(), mobj) }
@@ -647,7 +651,6 @@ class Door extends Scenery {
 	init() {
 		super.init()
 		//console.log("Door init")
-		this.open = false
 	}
 }
 
