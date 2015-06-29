@@ -126,6 +126,50 @@ body {
     background-image: url("art/intrface/endcmbtd.png");
 }
 
+#skilldexButton {
+    position: absolute;
+    left: 522; top: 5;
+    width: 22; height: 21;
+}
+
+#skilldexButton:active {
+    background-image: url("art/intrface/bigreddn.png");
+}
+
+#skilldex {
+    display: none;
+    position: absolute;
+    right: 10; bottom: 105;
+    width: 185; height: 368;
+    background-image: url("art/intrface/skldxbox.png");
+
+    /* skldxon.png / skldxoff.png */
+}
+
+#skilldexPlate {
+    position: absolute;
+    top: 13; left: 65;
+}
+
+.skilldexFont {
+    color: yellow;
+}
+
+#skilldex-lockpick {
+    position: absolute;
+    left: 25; top: 85;
+}
+
+#skilldex-lockpick-number {
+    position: absolute;
+    left: 110; top: 85;
+}
+
+#skilldex-lockpick-digit1 { left: 0; }
+#skilldex-lockpick-digit2 { left: 9; }
+#skilldex-lockpick-digit3 { left: 18; }
+#skilldex-lockpick-digit4 { left: 27; }
+
 #displayLog {
     position: absolute;
     left: 26; top: 30;

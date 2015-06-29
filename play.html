@@ -118,7 +118,7 @@ int colorToColorTableRGB(const vec3 color) {
 	int g = int(color.g*255.0) / 8;
 	int b = int(color.b*255.0) / 8;
 
-	// r << 10 | g << b | z
+	// r << 10 | g << 5 | b
 	return 32*32 * r + 32 * g + b;
 }
 
@@ -223,10 +223,25 @@ void main() {
 			<div id="acDigit4" class="number"></div>
 		</div>
 
+		<div id="skilldexButton"></div>
+
 		<div id="endContainer">
 			<div id="endTurnButton"></div>
 			<div id="endCombatButton"></div>
 		</div>
+	</div>
+	<div id="skilldex">
+		<div id="skilldexPlate" class="skilldexFont">Skilldex</div>
+
+		<div id="skilldex-lockpick" class="skilldexFont">Lockpick</div>
+		<div id="skilldex-lockpick-number">
+			<div id="skilldex-lockpick-digit1" class="number"></div>
+			<div id="skilldex-lockpick-digit2" class="number"></div>
+			<div id="skilldex-lockpick-digit3" class="number"></div>
+			<div id="skilldex-lockpick-digit4" class="number"></div>
+		</div>
+		
+		<div id="skilldexCancelButton"></div>
 	</div>
 	<div id="worldMapContainer">
 		<div id="worldMapBox">

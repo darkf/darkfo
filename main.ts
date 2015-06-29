@@ -45,9 +45,11 @@ var combat: Combat = null // combat object
 var inCombat: boolean = false // are we currently in combat?
 var gameHasFocus: boolean = false // do we have input focus?
 var lastMousePickTime: number = 0 // time when we last checked what's under the mouse cursor
+
+// TODO: enum this
 var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3,
     UI_MODE_INVENTORY = 4, UI_MODE_WORLDMAP = 5, UI_MODE_ELEVATOR = 6,
-    UI_MODE_CALLED_SHOT = 7
+    UI_MODE_CALLED_SHOT = 7, UI_MODE_SKILLDEX = 8, UI_MODE_USE_SKILL = 9
 var uiMode: number = UI_MODE_NONE
 
 enum Skills {
@@ -650,6 +652,13 @@ function playerUse() {
 	if(obj === null) { // walk to the destination if there is no usable object
 		if(!player.walkTo(mouseHex, Config.engine.doAlwaysRun))
 			console.log("Cannot walk there")
+		return
+	}
+
+	if(uiMode === UI_MODE_USE_SKILL) { // using a skill on object
+		playerUseSkill(skillMode, obj)
+		skillMode = Skills.None
+		uiMode = UI_MODE_NONE
 		return
 	}
 
