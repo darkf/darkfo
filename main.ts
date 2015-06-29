@@ -50,6 +50,12 @@ var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3
     UI_MODE_CALLED_SHOT = 7
 var uiMode: number = UI_MODE_NONE
 
+enum Skills {
+	None = 0,
+	Lockpick
+}
+var skillMode: Skills = Skills.None
+
 var isLoading: boolean = true // are we currently loading a map?
 var loadingAssetsLoaded: number = 0 // how many images we've loaded
 var loadingAssetsTotal: number = 0 // out of this total
@@ -603,6 +609,36 @@ heart.load = function() {
 
 function isSelectableObject(obj: any) {
 	return obj.visible !== false && (canUseObject(obj) || obj.type === "critter")
+}
+
+// Is the skill passive, or does it require a targeted object to use?
+function isPassiveSkill(skill: Skills): boolean {
+	switch(skill) {
+		case Skills.Lockpick: return false
+	}
+}
+
+function getSkillID(skill: Skills): number {
+	switch(skill) {
+		case Skills.Lockpick: return 9
+	}
+
+	console.log("unimplemented skill %d", skill)
+	return -1
+}
+
+function playerUseSkill(skill: Skills, obj: Obj): void {
+	console.log("use skill %o on %o", skill, obj)
+
+	if(!obj && !isPassiveSkill(skill))
+		throw "trying to use non-passive skill without a target"
+
+	if(!isPassiveSkill(skill)) {
+		// use the skill on the object
+		scriptingEngine.useSkillOn(player, getSkillID(skill), obj)
+	}
+	else
+		console.log("passive skills are not implemented")
 }
 
 function playerUse() {

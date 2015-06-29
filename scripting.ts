@@ -1088,6 +1088,16 @@ module scriptingEngine {
 		return obj._script._didOverride
 	}
 
+	export function useSkillOn(who: Critter, skillId: number, obj: Obj): boolean {
+		obj._script.self_obj = obj
+		obj._script.source_obj = who
+		obj._script.cur_map_index = currentMapID
+		obj._script._didOverride = false
+		obj._script.action_being_used = skillId
+		obj._script.use_skill_on_p_proc()
+		return obj._script._didOverride
+	}
+
 	export function combatEvent(obj, event) {
 		var fixed_param = null
 		switch(event) {

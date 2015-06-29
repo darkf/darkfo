@@ -80,7 +80,7 @@ function rollSkillCheck(skill, modifier, isBounded) {
 	return roll < tempSkill
 }
 
-function rollVsSkill(who: Critter, skill: string, modifier: number) {
+function rollVsSkill(who: Critter, skill: string, modifier: number=0) {
 	var skillLevel = critterGetSkill(who, skill) + modifier
 	var roll = skillLevel - getRandomInt(1, 100)
 
