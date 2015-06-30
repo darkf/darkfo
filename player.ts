@@ -23,6 +23,8 @@ class Player extends Critter {
 	// It is however only used for tag skills and temporary levelup menu stuff, so it's not crucial
 	tempChanges = {skills: {}, stats: {}};
 
+	name = "Player"
+
 	isPlayer = true;
 	art = "art/critters/hmjmpsaa";
 

@@ -83,7 +83,7 @@ class Renderer {
 
 	objectRenderInfo(obj: Obj): ObjectRenderInfo {
 		var scr = hexToScreen(obj.position.x, obj.position.y)
-		var visible = true
+		var visible = obj.visible
 
 		if(images[obj.art] === undefined) {
 			lazyLoadImage(obj.art) // try to load it in
