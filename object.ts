@@ -242,6 +242,7 @@ function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean { /
 	else
 		objectSingleAnim(obj)
 
+	gMap.updateMap()
 	return true
 }
 

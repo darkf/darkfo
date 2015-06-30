@@ -1137,7 +1137,7 @@ module scriptingEngine {
 		gameObjects = objects
 		mapFirstRun = false
 
-		mapScript.combat_is_initialized = 0
+		mapScript.combat_is_initialized = inCombat ? 1 : 0
 		if(mapScript.map_update_p_proc !== undefined) {
 			mapScript.self_obj = {_script: mapScript}
 			mapScript.map_update_p_proc()
@@ -1147,7 +1147,7 @@ module scriptingEngine {
 		for(var i = 0; i < gameObjects.length; i++) {
 			var script = gameObjects[i]._script
 			if(script !== undefined && script.map_update_p_proc !== undefined) {
-				script.combat_is_initialized = 0
+				script.combat_is_initialized = inCombat ? 1 : 0
 				script.self_obj = gameObjects[i]
 				script.game_time = Math.max(1, gameTickTime)
 				script.game_time_hour = 1200 // hour of the day

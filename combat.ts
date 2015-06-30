@@ -459,6 +459,8 @@ class Combat {
 		if(forceTurn !== undefined)
 			combat.forceTurn(forceTurn)
 		combat.nextTurn()
+
+		gMap.updateMap()
 	}
 
 	end() {
@@ -470,6 +472,8 @@ class Combat {
 		console.log("[end combat]")
 		combat = null // todo: invert control
 		inCombat = false
+
+		gMap.updateMap()
 
 		uiEndCombat()
 	}

@@ -328,6 +328,10 @@ class GameMap {
 		// TODO: notify scripts with destroy_p_proc
 	}
 
+	updateMap(): void {
+		scriptingEngine.updateMap(this.mapScript, this.getObjectsAndSpatials(), this.currentElevation)
+	}
+
 	changeElevation(level: number, updateScripts?: boolean) {
 		var oldElevation = this.currentElevation
 		this.currentElevation = level
