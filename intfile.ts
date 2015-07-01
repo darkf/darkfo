@@ -40,18 +40,15 @@ function parseIntFile(reader: BinaryReader) {
 	var identifiers = {}
 
 	var baseOffset = reader.offset
-	for(var i = 0; i < numIdents; i++) {
+	while(true) {
+		if(reader.offset - baseOffset >= numIdents)
+			break
+
 		var len = reader.read16()
 		var offset = reader.offset - baseOffset + 4
 		var str = ""
 		console.log("len=%d", len)
 		console.log("offset=%s", offset)
-
-		if(len == 0xFFFF) {
-			if(reader.read16() != 0xFFFF)
-				throw "length was 0xFFFF but 0xFFFF did not follow"
-			break
-		}
 
 		for(var j = 0; j < len; j++)
 			str += String.fromCharCode(reader.read8())
@@ -59,6 +56,8 @@ function parseIntFile(reader: BinaryReader) {
 		console.log("str=%s", str)
 		identifiers[offset] = str
 	}
+
+	assertEq(reader.read32(), 0xFFFFFFFF, "did not get 0xFFFFFFFF signature")
 
 	// give procedures their names from the identifier table
 	procs.forEach(proc => proc.name = identifiers[proc.nameIndex])
