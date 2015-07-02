@@ -1,3 +1,10 @@
+function binop(f) {
+	return function() {
+		var rhs = this.pop()
+		this.push(f(this.pop(), rhs))
+	}
+}
+
 var opMap = {0x8002: function() { } // start critical (nop)
             ,0xC001: function() { this.push(this.script.read32()) } // op_push_d
             ,0x800D: function() { this.retStack.push(this.pop()) } // op_d_to_a
@@ -21,6 +28,24 @@ var opMap = {0x8002: function() { } // start critical (nop)
             ,0x8029: function() { this.dvarBase = this.retStack.pop() } // op_pop_base
             ,0x801C: function() { this.pc = this.retStack.pop() } // op_pop_return
             ,0x8010: function() { this.halted = true; console.log("op_exit_prog") } // op_exit_prog
+
+            ,0x802F: function() { if(!this.pop()) { this.pc = this.pop() } else this.pop() } // op_if
+            ,0x80B4: function() { this.pop(); this.pop(); this.push(5) } //var max = this.pop(); this.push(getRandomInt(this.pop(), max)) } // op_random
+            ,0x8031: function() { var varNum = this.pop(); this.dataStack[this.dvarBase + varNum] = this.pop()  } // op_store
+            ,0x8032: function() { this.push(this.dataStack[this.dvarBase + this.pop()]) } // op_fetch
+
+            // logic/comparison
+			,0x8033: binop(function(x,y) { return x == y })
+			,0x8034: binop(function(x,y) { return x != y })
+			,0x8035: binop(function(x,y) { return x <= y })
+			,0x8036: binop(function(x,y) { return x >= y })
+			,0x8037: binop(function(x,y) { return x < y })
+			,0x8038: binop(function(x,y) { return x > y })
+
+            ,0x80BF: function() { this.push(123) } // dude_obj() (TODO: return player)
+            ,0x80CA: function() { this.pop(); this.pop(); this.push(0) } // get_critter_stat
+            ,0x8105: function() { var msgNum = this.pop(); this.pop(); this.push("lorem ipsum") } // message_str()
+            ,0x80B8: function() { console.log("display_msg: " + this.pop()) } // display_msg
         	}
 
 class ScriptVM {
