@@ -25,6 +25,7 @@ var opMap = {0x8002: function() { } // start critical (nop)
 
 class ScriptVM {
 	script: BinaryReader
+	intfile: IntFile
 	pc: number = 0
 	dataStack: any[] = []
 	retStack: number[] = []
@@ -32,8 +33,9 @@ class ScriptVM {
 	dvarBase: number
 	halted: boolean = false
 
-	constructor(script: BinaryReader) {
+	constructor(script: BinaryReader, intfile: IntFile) {
 		this.script = script
+		this.intfile = intfile
 	}
 
 	push(value: any): void {
@@ -42,6 +44,27 @@ class ScriptVM {
 
 	pop(): any {
 		return this.dataStack.pop()
+	}
+
+	// call a named procedure
+	call(procName: string, args: any[]=[]): any {
+		var proc = this.intfile.procedures[procName]
+		console.log("procs: %o", this.intfile.procedures)
+		if(!proc)
+			throw "ScriptVM: unknown procedure " + procName
+
+		// TODO: which way are args passed on the stack?
+		args.reverse()
+		args.forEach(arg => this.push(arg))
+		this.push(args.length)
+
+		this.retStack.push(0) // push return address (TODO: how is this handled?)
+
+		// run procedure code
+		this.pc = proc.offset
+		this.run()
+
+		return this.pop()
 	}
 
 	step(): boolean {
@@ -67,6 +90,7 @@ class ScriptVM {
 	}
 
 	run(): void {
+		this.halted = false
 		while(this.step()) { }
 	}
 }
