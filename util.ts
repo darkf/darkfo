@@ -74,6 +74,25 @@ function getFileBinaryAsync(path: string, callback: (DataView) => void) {
 	xhr.send(null)
 }
 
+function getFileBinarySync(path: string) {
+	var xhr = new XMLHttpRequest()
+	xhr.open("GET", path, false)
+	// tell browser not to mess with the response
+	xhr.overrideMimeType('text\/plain; charset=x-user-defined')
+	xhr.send(null)
+	if(xhr.status !== 200)
+		throw "getFileBinarySync: got status " + xhr.status + " when requesting " + path
+
+	// convert to ArrayBuffer, and then DataView
+	var data = xhr.responseText
+	var buffer = new ArrayBuffer(data.length)
+	var arr = new Uint8Array(buffer)
+
+	for(var i = 0; i < data.length; i++)
+		arr[i] = data.charCodeAt(i) & 0xff
+
+	return new DataView(buffer)
+}
 
 // Min inclusive, max inclusive
 function getRandomInt(min: number, max: number) {
