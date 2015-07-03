@@ -103,7 +103,30 @@ function parseIntFile(reader: BinaryReader): IntFile {
 	var stringEnd = reader.read32()
 	var strings: { [offset: number]: string } = {}
 
-	assertEq(stringEnd, 0xFFFFFFFF, "TODO: string table")
+	//assertEq(stringEnd, 0xFFFFFFFF, "TODO: string table")
+
+	if(stringEnd !== 0xFFFFFFFF) {
+		// read string table
+		var baseOffset = reader.offset
+		while(true) {
+			if(reader.offset - baseOffset >= stringEnd)
+				break
+
+			var len = reader.read16()
+			var offset = reader.offset - baseOffset + 4
+			var str = ""
+			// console.log("len=%d, offset=%d, stringEnd=%d", len, offset, stringEnd)
+
+			for(var j = 0; j < len; j++) {
+				var c = reader.read8()
+				if(c)
+					str += String.fromCharCode(c)
+			}
+
+			// console.log("str=%s", str)
+			strings[offset] = str
+		}
+	}
 
 	var codeOffset = reader.offset
 
