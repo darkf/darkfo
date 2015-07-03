@@ -50,6 +50,12 @@ module ScriptVMBridge {
     	constructor(script: BinaryReader, intfile: IntFile, obj: Obj) {
     	    super(script, intfile)
     	    this.scriptObj.self_obj = obj
+
+    	    // patch scriptObj to allow transparent procedure calls
+    	    // TODO: maybe we should check if we're interrupting the VM
+    	    for(var procName in this.intfile.procedures) {
+    	    	this.scriptObj[procName] = () => { this.call(procName) }
+    	    }
     	}
     }
 }
