@@ -27,13 +27,14 @@ var opMap = {0x8002: function() { } // start critical (nop)
             ,0xC001: function() { this.push(this.script.read32()) } // op_push_d
             ,0x800D: function() { this.retStack.push(this.pop()) } // op_d_to_a
             ,0x800C: function() { this.push(this.retStack.pop()) } // op_a_to_d
+            ,0x801A: function() { this.pop() } // op_pop
             ,0x8004: function() { this.pc = this.pop() } // op_jmp
             ,0x8003: function() { } // op_critical_done (nop)
             ,0x802B: function() {
             		var argc = this.pop()
             		this.retStack.push(this.dvarBase)
             		this.dvarBase = this.dataStack.length - argc
-            		console.log("op_push_base (argc %d)", argc)
+            		// console.log("op_push_base (argc %d)", argc)
             	} // op_push_base
             ,0x8019: function() { // op_swapa
 	            	var a = this.retStack.pop()
@@ -42,14 +43,27 @@ var opMap = {0x8002: function() { } // start critical (nop)
 	            	this.retStack.push(b)
             	}
             ,0x802A: function() { this.dataStack.splice(0, this.dvarBase) } // op_pop_to_base
-            ,0x802C: function() { this.svarBase = this.dataStack.length } // op_set_global 
+            ,0x802C: function() { this.svarBase = this.dataStack.length } // op_set_global
+            ,0x8013: function() { var num = this.pop(); this.dataStack[this.svarBase + num] = this.pop() } // op_store_global
+            ,0x8012: function() { var num = this.pop(); this.push(this.dataStack[this.svarBase + num]) } // op_fetch_global
             ,0x8029: function() { this.dvarBase = this.retStack.pop() } // op_pop_base
             ,0x801C: function() { this.pc = this.retStack.pop() } // op_pop_return
-            ,0x8010: function() { this.halted = true; console.log("op_exit_prog") } // op_exit_prog
+            ,0x8010: function() { this.halted = true; /*console.log("op_exit_prog")*/ } // op_exit_prog
 
             ,0x802F: function() { if(!this.pop()) { this.pc = this.pop() } else this.pop() } // op_if
             ,0x8031: function() { var varNum = this.pop(); this.dataStack[this.dvarBase + varNum] = this.pop()  } // op_store
             ,0x8032: function() { this.push(this.dataStack[this.dvarBase + this.pop()]) } // op_fetch
+            ,0x8046: function() { this.push(-this.pop()) } // op_negate
+
+            ,0x8005: function() { this.pc = this.intfile.proceduresTable[this.pop()].offset } // op_call
+            ,0x9001: function() { // weird 9001 op_push_d
+            	// TODO: check this, might also read identifiers instead of strings
+            	var num = this.script.read32()
+            	if(this.intfile.strings[num] === undefined)
+            		throw "ScriptVM: 9001 requested string " + num + " but it doesn't exist"
+            	this.push(this.intfile.strings[num])
+            }
+
 
             // logic/comparison
 			,0x8033: binop(function(x,y) { return x == y })
@@ -58,6 +72,13 @@ var opMap = {0x8002: function() { } // start critical (nop)
 			,0x8036: binop(function(x,y) { return x >= y })
 			,0x8037: binop(function(x,y) { return x < y })
 			,0x8038: binop(function(x,y) { return x > y })
+			,0x803E: binop(function(x,y) { return x && y })
+			,0x803F: binop(function(x,y) { return x || y })
+			,0x8039: binop(function(x,y) { return x + y })
+			,0x803A: binop(function(x,y) { return x - y })
+			,0x803B: binop(function(x,y) { return x * y })
+			,0x803d: binop(function(x,y) { return x % y })
+			,0x803C: binop(function(x,y) { return x / y | 0 }) // TODO: truncate or not?
         	}
 
 class ScriptVM {
@@ -86,7 +107,7 @@ class ScriptVM {
 	// call a named procedure
 	call(procName: string, args: any[]=[]): any {
 		var proc = this.intfile.procedures[procName]
-		console.log("procs: %o", this.intfile.procedures)
+		// console.log("CALL " + procName + " @ " + proc.offset + " from " + this.scriptObj.scriptName)
 		if(!proc)
 			throw "ScriptVM: unknown procedure " + procName
 
