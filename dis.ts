@@ -19,6 +19,7 @@ limitations under the License.
 // Map of opcode -> function that returns a list of arguments
 // If not present, it is assumed that the opcode is nullary
 var opArgs = {0xC001: function(reader) { return [reader.read32()] } // op_push_d
+             ,0x9001: function(reader) { return [reader.read32()]} // 9001 op_push_d
              }
 
 var opNames = {0x8004: "op_jmp"
@@ -100,7 +101,10 @@ function disassemble(intfile: IntFile, reader: BinaryReader): string {
 	}
 	function emitOp(opcode: number, offset: number, args: any[], t: number=0) {
 		var sargs = args.map(x => "0x" + x.toString(16))
-		emit(`0x${offset.toString(16)}: ${opcode.toString(16)} ${opNames[opcode]} ${sargs}`, t)
+		var p = ""
+		if(opcode === 0x9001)
+			p = ' ("' + intfile.strings[args[0]] + '")'
+		emit(`0x${offset.toString(16)}: ${opcode.toString(16)} ${opNames[opcode]} ${sargs}` + p, t)
 	}
 
 	function disasm(t: number=0): number {
