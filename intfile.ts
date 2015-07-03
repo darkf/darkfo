@@ -27,6 +27,7 @@ interface IntFile {
 	procedures: { [name: number]: Procedure };
 	identifiers: { [offset: number]: string };
 	strings: { [offset: number]: string };
+	codeOffset: number;
 }
 
 // parse .INT files
@@ -104,7 +105,10 @@ function parseIntFile(reader: BinaryReader): IntFile {
 
 	assertEq(stringEnd, 0xFFFFFFFF, "TODO: string table")
 
+	var codeOffset = reader.offset
+
 	return {procedures: procedures
 		   ,identifiers: identifiers
-	       ,strings: strings}
+	       ,strings: strings
+	       ,codeOffset: codeOffset}
 }
