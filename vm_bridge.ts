@@ -31,10 +31,13 @@ module ScriptVMBridge {
 
 	var bridgeOpMap = {
 	    0x80BF: function() { this.push(player) } // dude_obj
-       ,0x80B4: bridged("random", 2) //function() { var max = this.pop(); this.push(this.scriptObj.random(this.pop(), max)) } // op_random
-       ,0x80CA: bridged("get_critter_stat", 2) //function() { this.pop(); this.pop(); this.push(0) } // get_critter_stat
-       ,0x8105: bridged("message_str", 2) //function() { var msgNum = this.pop(); var list = this.pop(); this.push(this.scriptObj.message_str(list, msgNum)) } // message_str
-       ,0x80B8: bridged("display_msg", 1) //function() { this.scriptObj.display_msg(this.pop())  } // display_msg
+	   ,0x80BC: function() { this.push(this.scriptObj.self_obj) } // self_obj
+       ,0x80B4: bridged("random", 2)
+       ,0x80CA: bridged("get_critter_stat", 2)
+       ,0x8105: bridged("message_str", 2)
+       ,0x80B8: bridged("display_msg", 1)
+       ,0x810E: bridged("reg_anim_func", 2)
+       ,0x8126: bridged("reg_anim_animate_forever", 2)
     }
 
     // update VM opMap with our bridgeOpMap
@@ -43,5 +46,10 @@ module ScriptVMBridge {
     // define a game-oriented Script VM that has a ScriptProto instance
     export class GameScriptVM extends ScriptVM {
     	scriptObj = _.clone(scriptingEngine.ScriptProto)
+
+    	constructor(script: BinaryReader, intfile: IntFile, obj: Obj) {
+    	    super(script, intfile)
+    	    this.scriptObj.self_obj = obj
+    	}
     }
 }

@@ -166,7 +166,7 @@ module scriptingEngine {
 		$("#inventory").html("")
 	}
 
-	var ScriptProto = {
+	export var ScriptProto = {
 		dude_obj: "<Dude Object>",
 		'true': true,
 		'false': false,
