@@ -952,7 +952,33 @@ module scriptingEngine {
 		}
 	}
 
-	export function loadScript(name) {
+	export function loadScript(name: string) {
+		var obj = null
+
+		info("loading script " + name, "load")
+
+		var path = "data/scripts/" + name.toLowerCase() + ".int"
+		var data: DataView = getFileBinarySync(path)
+		var reader = new BinaryReader(data)
+		console.log("[%s] loaded %d bytes", name, reader.length)
+		var intfile = parseIntFile(reader)
+
+		console.log("%s int file: %o", name, intfile)
+		
+		reader.seek(0)
+		var vm = new ScriptVMBridge.GameScriptVM(reader, intfile, obj)
+		vm.run()
+
+		vm.scriptObj.scriptName = name
+		vm.scriptObj.lvars = {}
+
+		// return the scriptObj, which is a clone of ScriptProto
+		// which will be patched by the GameScriptVM to allow
+		// transparent procedure calls
+		return vm.scriptObj
+	}
+
+	/*export function loadScript(name) {
 		// e.g. "Raiders2"
 		var scriptObject = null
 		info("loading script " + name, "load")
@@ -986,7 +1012,7 @@ module scriptingEngine {
 		}
 
 		return scriptObject
-	}
+	}*/
 
 	export function initScript(script, obj) {
 		obj._script.self_obj = obj
