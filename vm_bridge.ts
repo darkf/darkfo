@@ -59,10 +59,31 @@ module ScriptVMBridge {
        ,0x8149: bridged("obj_art_fid", 1)
        ,0x80DE: bridged("start_gdialog", 5)
        ,0x811C: bridged("gsay_start", 0)
+       ,0x811D: bridged("gsay_end", 0)
        ,0x811E: bridged("gsay_reply", 2)
-       ,0x8121: bridged("giq_option", 5) // TODO: wrap this so that target becomes a function
+       ,0x80DF: bridged("end_dialogue", 0)
+       ,0x8120: bridged("gsay_message", 3)
 
+       //,0x8121: bridged("giq_option", 5) // TODO: wrap this so that target becomes a function
+       // giq_option
+       ,0x8121: function() { // giq_option
+       		var reaction = this.pop()
+       		var target = this.pop()
+       		var msgId = this.pop()
+       		var msgList = this.pop()
+       		var iqTest = this.pop()
 
+       		// wrap target in a function
+       		//var targetFn = () => { this.call() }
+       		//console.log("TARGET=%o, proc=%o this=%o", targetFn, this.intfile.proceduresTable[target], this)
+       		var targetProc = this.intfile.proceduresTable[target].name
+       		// TODO: do we save the current PC as the return address?
+       		// otherwise when end_dialogue is reached, we will have
+       		// interrupted to this targetFn, and have no way back
+       		var targetFn = () => { this.call(targetProc) }
+
+       		this.scriptObj.giq_option(iqTest, msgList, msgId, targetFn, reaction)
+       	}
     }
 
     // update VM opMap with our bridgeOpMap
