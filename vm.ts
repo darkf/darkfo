@@ -55,15 +55,40 @@ var opMap = {0x8002: function() { } // start critical (nop)
             ,0x8032: function() { this.push(this.dataStack[this.dvarBase + this.pop()]) } // op_fetch
             ,0x8046: function() { this.push(-this.pop()) } // op_negate
 
-            ,0x8005: function() { this.pc = this.intfile.proceduresTable[this.pop()].offset } // op_call
-            ,0x9001: function() { // weird 9001 op_push_d
-            	// TODO: check this, might also read identifiers instead of strings
+            ,0x8005: function() { this.pc = this.intfile.proceduresTable[this.pop()].offset } // op_call (TODO: verify)
+            ,0x9001: function() {
+            	// push a string from either the strings or identifiers table.
+            	// normally Fallout 2 checks the type of the operand per-instruction
+            	// and treats the actual operand however it wants. in this case,
+            	// it will either be treated like a string, or an identifier.
+            	//
+            	// we just check the next instruction and match it up with the set of
+            	// instructions who use it as an identifier (whom use interpretGetName).
+
             	var num = this.script.read32()
-            	if(this.intfile.strings[num] === undefined)
-            		throw "ScriptVM: 9001 requested string " + num + " but it doesn't exist"
-            	this.push(this.intfile.strings[num])
+            	var nextOpcode = this.script.peek16()
+
+            	if(_.includes([0x8014 // op_fetch_external
+            		          ,0x8015 // op_store_external
+            		          ,0x8016 // op_export_var
+            		          //,0x8017 // op_export_proc (TODO: verify)
+            		          //,0x8005: // op_call (TODO: verify, might need more operands)
+            		          ], nextOpcode)) {
+            		// fetch an identifier
+	            	if(this.intfile.identifiers[num] === undefined)
+	            		throw "ScriptVM: 9001 requested identifier " + num + " but it doesn't exist"
+	            	this.push(this.intfile.identifiers[num])
+            	}
+            	else {
+            		// fetch a string
+	            	if(this.intfile.strings[num] === undefined)
+	            		throw "ScriptVM: 9001 requested string " + num + " but it doesn't exist"
+	            	this.push(this.intfile.strings[num])
+            	}
             }
 
+            // exported vars
+            //,0x8016: function() { } // export_var
 
             // logic/comparison
 			,0x8033: binop(function(x,y) { return x == y })

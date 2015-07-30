@@ -63,6 +63,7 @@ module ScriptVMBridge {
        ,0x811E: bridged("gsay_reply", 2)
        ,0x80DF: bridged("end_dialogue", 0)
        ,0x8120: bridged("gsay_message", 3)
+       //,0x806B: bridged("display", 1)
 
        //,0x8121: bridged("giq_option", 5) // TODO: wrap this so that target becomes a function
        // giq_option
