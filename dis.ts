@@ -59,8 +59,8 @@ var opNames = {0x8004: "op_jmp"
               ,0x80AF: "is_success"
               ,0x80B0: "is_critical"
               ,0x80B8: "display_msg"
-              ,0x80C1: "LVAR[num]"
-              ,0x80C2: "LVAR[num]"
+              ,0x80C1: "lvar"
+              ,0x80C2: "set_local_var"
               ,0x80C7: "script_action"
               ,0x80D5: "tile_num_in_direction"
               ,0x80DE: "start_gdialog"
@@ -83,13 +83,19 @@ var opNames = {0x8004: "op_jmp"
               ,0xC001: "push_d"
               ,0x8002: "op_critical_start"
 
+              ,0x80CA: "get_critter_stat"
+              ,0x80C5: "global_var"
+              ,0x80C6: "set_global_var"
+              ,0x80BC: "self_obj"
+              ,0x806B: "display"
+
               // logic ops
               ,0x8033: "op_eq"
               ,0x8034: "op_neq"
               ,0x8035: "op_lte"
               ,0x8036: "op_gte"
-              ,0x8037: "op_lt" 
-              ,0x8038: "op_gt" 
+              ,0x8037: "op_lt"
+              ,0x8038: "op_gt"
 }
 
 function disassemble(intfile: IntFile, reader: BinaryReader): string {
@@ -103,7 +109,7 @@ function disassemble(intfile: IntFile, reader: BinaryReader): string {
 		var sargs = args.map(x => "0x" + x.toString(16))
 		var p = ""
 		if(opcode === 0x9001)
-			p = ' ("' + intfile.strings[args[0]] + '")'
+			p = ` ("${intfile.strings[args[0]]}" | ${intfile.identifiers[args[0]]})`
 		emit(`0x${offset.toString(16)}: ${opcode.toString(16)} ${opNames[opcode]} ${sargs}` + p, t)
 	}
 
