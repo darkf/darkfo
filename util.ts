@@ -185,6 +185,10 @@ class BinaryReader {
 	read8(): number { return this.data.getUint8(this.offset++) }
 	read16(): number { var r = this.data.getUint16(this.offset); this.offset += 2; return r }
 	read32(): number { var r = this.data.getUint32(this.offset); this.offset += 4; return r }
+
+	peek8(): number { return this.data.getUint8(this.offset) }
+	peek16(): number { return this.data.getUint16(this.offset) }
+	peek32(): number { return this.data.getUint32(this.offset) }
 }
 
 function assert(value: boolean, message: string) {
