@@ -20,10 +20,14 @@
 		root.heart = factory();
 	}
 })(this, function() {
-var heart = { _lastTick: new Date().getTime(), /* time of the last tick */
+var heart = { _lastTick: undefined, /* time of the last tick */
 			  _dt: 0, /* time since last tick in seconds */
 			  _fps: 0, /* frames per second */
+			  _frameAccum: 0, /* time accumulated between frames */
 			  _targetFPS: 30, /* the target FPS cap */
+			  _targetTickTime: undefined, /* 1000 / _targetFPS (milliseconds to aim for) */
+			  _numFrames: 0, /* used for FPS counting (number of frames since last FPS count) */
+			  _lastFPSTime: 0, /* used for FPS counting (time the last FPS count was done) */
 			  _bg: {r: 127, g: 127, b: 127}, /* background color */
 			  _size: {w: 800, h: 600}, /* size of viewport */
 			  _imagesLoading: [], /* for synchronous image loading */
@@ -168,10 +172,11 @@ heart.timer = {
 
 	setTargetFPS: function(fps) {
 		heart._targetFPS = fps;
+		heart._targetTickTime = 1000 / heart._targetFPS;
 	},
 
 	getTime: function() {
-		return new Date().getTime();
+		return window.performance.now();
 	}
 };
 
@@ -250,24 +255,42 @@ heart._init = function() {
 	if(heart.keyup === undefined)
 		heart.keyup = heart.keyreleased;
 
-	heart._tick(); /* first tick */
+	heart._lastTick = window.performance.now();
+	heart.timer.setTargetFPS(heart._targetFPS);
+
+	heart._tick(heart._lastTick); /* first tick */
 };
 
-heart._tick = function() {
-	var time = new Date().getTime();
+heart._tick = function(time) {
 	heart._dt = time - heart._lastTick;
 	heart._lastTick = time;
-	heart._fps = Math.floor(1000 / heart._dt);
+	heart._frameAccum += heart._dt;
 
-	if(heart.update)
-		heart.update(heart._dt / 1000);
+	if(heart._frameAccum >= heart._targetTickTime) {
+		heart._frameAccum -= heart._targetTickTime;
+		heart._numFrames++;
+		heart._frameAccum = Math.min(heart._frameAccum, heart._targetTickTime);
 
-	heart.ctx.fillStyle = "rgb("+heart._bg.r+","+heart._bg.g+","+heart._bg.b+")";
-	heart.ctx.fillRect(0, 0, heart._size.w, heart._size.h);
-	if(heart.draw)
-		heart.draw();
+		var deltaFPSTime = time - heart._lastFPSTime;
+		if(deltaFPSTime >= 1000) {
+			heart._fps = heart._numFrames / deltaFPSTime * 1000 | 0;
+			heart._lastFPSTime = time;
+			heart._numFrames = 0;
+		}
 
-	setTimeout(heart._tick, 1000 / heart._targetFPS);
+		if(heart.update)
+			heart.update(heart._dt / 1000);
+
+		if(heart._bg) {
+			heart.ctx.fillStyle = "rgb("+heart._bg.r+","+heart._bg.g+","+heart._bg.b+")";
+			heart.ctx.fillRect(0, 0, heart._size.w, heart._size.h);
+		}
+
+		if(heart.draw)
+			heart.draw();
+	}
+
+	window.requestAnimationFrame(heart._tick);
 };
 
 heart.attach = function(canvas) {
