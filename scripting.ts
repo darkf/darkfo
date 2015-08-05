@@ -952,6 +952,10 @@ module scriptingEngine {
 		}
 	}
 
+	export function setMapScript(script) {
+		currentMapObject = script
+	}
+
 	export function loadScript(name: string) {
 		var obj = null
 
@@ -971,6 +975,7 @@ module scriptingEngine {
 
 		vm.scriptObj.scriptName = name
 		vm.scriptObj.lvars = {}
+		vm.scriptObj._mapScript = currentMapObject
 
 		// return the scriptObj, which is a clone of ScriptProto
 		// which will be patched by the GameScriptVM to allow

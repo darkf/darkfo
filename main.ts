@@ -409,15 +409,10 @@ class GameMap {
 
 		var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
-		// load map objects
-		this.objects = new Array(map.levels.length)
-		for(var level = 0; level < map.levels.length; level++) {
-			this.objects[level] = map.levels[level].objects.map(objFromMapObject)
-		}
-
 		if(Config.engine.doLoadScripts) {
 			scriptingEngine.init(player, mapName)
 			this.mapScript = scriptingEngine.loadScript(mapName)
+			scriptingEngine.setMapScript(this.mapScript)
 
 			// warp to the default position (may be overridden by map script)
 			player.position = startingPosition || map.startPosition
@@ -443,6 +438,12 @@ class GameMap {
 			}
 			else
 				this.spatials = map.levels.map(_ => [])
+
+			// load map objects
+			this.objects = new Array(map.levels.length)
+			for(var level = 0; level < map.levels.length; level++) {
+				this.objects[level] = map.levels[level].objects.map(objFromMapObject)
+			}
 
 			this.changeElevation(elevation, false)
 
