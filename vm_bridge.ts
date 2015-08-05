@@ -37,6 +37,9 @@ module ScriptVMBridge {
        ,0x80F6: function() { this.push(1200) } // game_time_hour // TODO
        ,0x8101: function() { this.push(this.scriptObj.cur_map_index) } // cur_map_index
 
+       ,0x8016: function() { this.scriptObj[this.pop()] = 0 } // op_export_var
+       ,0x8015: function() { var name = this.pop(); this.scriptObj[name] = this.pop() } // op_store_external
+
        ,0x80B4: bridged("random", 2)
        ,0x80CA: bridged("get_critter_stat", 2)
        ,0x8105: bridged("message_str", 2)
@@ -45,9 +48,10 @@ module ScriptVMBridge {
        ,0x8126: bridged("reg_anim_animate_forever", 2)
        ,0x810B: bridged("metarule", 2)
        ,0x80C1: bridged("local_var", 1)
+       ,0x80C2: bridged("set_local_var", 2)
        ,0x80C5: bridged("global_var", 1)
        ,0x80C6: bridged("set_global_var", 2)
-       ,0x80C2: bridged("set_local_var", 2)
+       ,0x80C3: bridged("map_var", 1)
        ,0x80B7: bridged("create_object_sid", 4)
        ,0x8102: bridged("critter_add_trait", 4)
        ,0x8116: bridged("add_mult_objs_to_inven", 3)
@@ -59,6 +63,7 @@ module ScriptVMBridge {
        ,0x80F3: bridged("has_trait", 3)
        ,0x8149: bridged("obj_art_fid", 1)
        ,0x812E: bridged("obj_lock", 1)
+       ,0x812F: bridged("obj_unlock", 1)
        ,0x80FB: bridged("critter_state", 1)
        ,0x80EC: bridged("elevation", 1)
        ,0x80F2: bridged("game_ticks", 1)
