@@ -99,6 +99,7 @@ class WebGLRenderer extends Renderer {
 	    // TODO: hack
 	    heart.canvas = this.canvas
 	    heart.ctx = null
+	    heart._bg = null
 
 	    var gl = this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl")
 	    if(!gl) {

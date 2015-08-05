@@ -45,6 +45,7 @@ var combat: Combat = null // combat object
 var inCombat: boolean = false // are we currently in combat?
 var gameHasFocus: boolean = false // do we have input focus?
 var lastMousePickTime: number = 0 // time when we last checked what's under the mouse cursor
+var _lastFPSTime: number = 0 // Time since FPS counter was last updated
 
 // TODO: enum this
 var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3,
@@ -930,7 +931,10 @@ heart.update = function() {
 		return
 	var time = heart.timer.getTime()
 
-	$("#fpsOverlay").text("fps: " + heart.timer.getFPS())
+	if(time - _lastFPSTime >= 500) {
+		$("#fpsOverlay").text("fps: " + heart.timer.getFPS())
+		_lastFPSTime = time
+	}
 
 	if(gameHasFocus) {
 		var mousePos = heart.mouse.getPosition()
