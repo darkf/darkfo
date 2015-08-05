@@ -163,7 +163,7 @@ class ScriptVM {
 		if(opMap[opcode] !== undefined)
 			opMap[opcode].call(this)
 		else {
-			console.log("unimplemented opcode %s (pc=%s)", opcode.toString(16), this.pc.toString(16))
+			console.log("unimplemented opcode %s (pc=%s) in %s", opcode.toString(16), this.pc.toString(16), this.intfile.name)
 			return false
 		}
 

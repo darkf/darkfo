@@ -29,10 +29,11 @@ interface IntFile {
 	identifiers: { [offset: number]: string };
 	strings: { [offset: number]: string };
 	codeOffset: number;
+	name: string;
 }
 
 // parse .INT files
-function parseIntFile(reader: BinaryReader): IntFile {
+function parseIntFile(reader: BinaryReader, name: string=""): IntFile {
 	reader.seek(0x2A) // seek to procedure table
 
 	// read procedure table
@@ -135,5 +136,6 @@ function parseIntFile(reader: BinaryReader): IntFile {
 		   ,proceduresTable: procs
 		   ,identifiers: identifiers
 	       ,strings: strings
-	       ,codeOffset: codeOffset}
+	       ,codeOffset: codeOffset
+	       ,name: name}
 }
