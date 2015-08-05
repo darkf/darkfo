@@ -36,10 +36,13 @@ module ScriptVMBridge {
        ,0x8118: function() { this.push(1) } // get_month // TODO
        ,0x80F6: function() { this.push(1200) } // game_time_hour // TODO
        ,0x8101: function() { this.push(this.scriptObj.cur_map_index) } // cur_map_index
+       ,0x80BD: function() { this.push(this.scriptObj.source_obj) } // source_obj
+       ,0x80FA: function() { this.push(this.scriptObj.action_being_used) } // action_being_used
 
        ,0x8016: function() { this.scriptObj[this.pop()] = 0 } // op_export_var
        ,0x8015: function() { var name = this.pop(); this.scriptObj[name] = this.pop() } // op_store_external
 
+       ,0x80B9: bridged("script_overrides", 0)
        ,0x80B4: bridged("random", 2)
        ,0x80CA: bridged("get_critter_stat", 2)
        ,0x8105: bridged("message_str", 2)
@@ -64,6 +67,10 @@ module ScriptVMBridge {
        ,0x8149: bridged("obj_art_fid", 1)
        ,0x812E: bridged("obj_lock", 1)
        ,0x812F: bridged("obj_unlock", 1)
+       ,0x812D: bridged("obj_is_locked", 1)
+       ,0x80AC: bridged("roll_vs_skill", 3)
+       ,0x80AF: bridged("is_success", 1)
+       ,0x80A1: bridged("give_exp_points", 1)
        ,0x80FB: bridged("critter_state", 1)
        ,0x80EC: bridged("elevation", 1)
        ,0x80F2: bridged("game_ticks", 1)
