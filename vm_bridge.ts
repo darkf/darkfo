@@ -35,6 +35,7 @@ module ScriptVMBridge {
        ,0x8128: function() { this.push(this.scriptObj.combat_is_initialized) } // combat_is_initialized
        ,0x8118: function() { this.push(1) } // get_month // TODO
        ,0x80F6: function() { this.push(1200) } // game_time_hour // TODO
+       ,0x8101: function() { this.push(this.scriptObj.cur_map_index) } // cur_map_index
 
        ,0x80B4: bridged("random", 2)
        ,0x80CA: bridged("get_critter_stat", 2)
@@ -57,6 +58,14 @@ module ScriptVMBridge {
        ,0x8154: bridged("debug_msg", 1)
        ,0x80F3: bridged("has_trait", 3)
        ,0x8149: bridged("obj_art_fid", 1)
+       ,0x812E: bridged("obj_lock", 1)
+       ,0x80FB: bridged("critter_state", 1)
+       ,0x80EC: bridged("elevation", 1)
+       ,0x80F2: bridged("game_ticks", 1)
+       ,0x80D4: bridged("tile_num", 1)
+       ,0x80D5: bridged("tile_num_in_direction", 3)
+       ,0x80CE: bridged("animate_move_obj_to_tile", 3)
+       ,0x80F0: bridged("add_timer_event", 3)
        ,0x80DE: bridged("start_gdialog", 5)
        ,0x811C: bridged("gsay_start", 0)
        ,0x811D: bridged("gsay_end", 0)

@@ -91,6 +91,7 @@ var opMap = {0x8002: function() { } // start critical (nop)
             //,0x8016: function() { } // export_var
 
             // logic/comparison
+			,0x8045: function() { this.push(!this.pop()) }
 			,0x8033: binop(function(x,y) { return x == y })
 			,0x8034: binop(function(x,y) { return x != y })
 			,0x8035: binop(function(x,y) { return x <= y })
@@ -99,6 +100,7 @@ var opMap = {0x8002: function() { } // start critical (nop)
 			,0x8038: binop(function(x,y) { return x > y })
 			,0x803E: binop(function(x,y) { return x && y })
 			,0x803F: binop(function(x,y) { return x || y })
+			,0x8040: binop(function(x,y) { return x & y })
 			,0x8039: binop(function(x,y) { return x + y })
 			,0x803A: binop(function(x,y) { return x - y })
 			,0x803B: binop(function(x,y) { return x * y })
