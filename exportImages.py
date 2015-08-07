@@ -1,5 +1,5 @@
 """
-Copyright 2014 darkf
+Copyright 2014-2015 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@ limitations under the License.
 
 # Converts data/art/*/*.FRM images to .png images
 
-import sys, os, glob, json
+import sys, os, glob, json, time
 import pal
 import frmpixels
+
+def flatten(l):
+	return [item for sublist in l for item in sublist]
 
 def main():
 	if len(sys.argv) < 4:
@@ -36,8 +39,9 @@ def main():
 	exportImage = '--only-map' not in sys.argv
 
 	palette = pal.readPAL(open(PALETTE, "rb"))
+	palette = flatten([r, g, b] for r, g, b in palette)
 
-	subdirs = ("skilldex",)#("inven", "tiles", "critters", "items", "scenery", "walls", "misc", "intrface") # etc
+	subdirs = ("critters",) #("skilldex", "inven", "tiles", "critters", "items", "scenery", "walls", "misc", "intrface") # etc
 	imageInfo = {}
 
 	for subdir in subdirs:
@@ -82,4 +86,6 @@ def main():
 
 
 if __name__ == '__main__':
+	start_time = time.clock()
 	main()
+	print("--- %s seconds ---" % (time.clock() - start_time))

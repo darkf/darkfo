@@ -67,7 +67,7 @@ def readFRMInfo(f, exportImage=True):
 
 			frameSize = read32At(framesData, ptr + 4) # w*h
 			if exportImage:
-				framePixels[nDir].append(np.array([ord(byte) for byte in framesData[ptr + 12 : ptr + 12 + frameSize]]))
+				framePixels[nDir].append(np.array([ord(byte) for byte in framesData[ptr + 12 : ptr + 12 + frameSize]], np.uint8))
 
 			ptr += 12 + pixelDataSize
 
@@ -93,7 +93,8 @@ def exportFRM(frmFile, outFile, palette, exportImage=True):
 		frmInfo['frameWidth'] = maxW
 
 		if exportImage:
-			finalImg = Image.new("RGBA", (totalW, maxH))
+			finalImg = Image.new("P", (totalW, maxH))
+			finalImg.putpalette(palette)
 			currentX = 0
 
 			for nDir in range(frmInfo['numDirections']):
@@ -101,18 +102,18 @@ def exportFRM(frmFile, outFile, palette, exportImage=True):
 					offsets = frameOffsets[nDir][frameNum]
 					w,h = offsets['w'], offsets['h']
 					#print frame.shape, w, h, nDir, frameNum
-					frame = np.reshape(frame, (h, w))
+					pixels = np.reshape(frame, (h, w))
 
-					pixels = np.empty((h, w, 4), dtype=int) # HxW RGBA
-					for rowI,row in enumerate(frame):
-						for colI,palIdx in enumerate(row):
-							pixels[(rowI, colI)] = palette[palIdx] + (0 if palIdx == 0 else 255,)
+					#pixels = np.empty((h, w), np.uint8) # HxW RGBA
+					#for rowI,row in enumerate(frame):
+					#	for colI,palIdx in enumerate(row):
+					#		pixels[(rowI, colI)] = palIdx
 
-					img = Image.fromarray(pixels.astype('uint8'), "RGBA")
+					img = Image.fromarray(pixels, "P")
 					finalImg.paste(img, (currentX, 0))
 					currentX += maxW
 
-			finalImg.save(outFile)
+			finalImg.save(outFile, transparency=0)
 
 		# build an image map
 		sx = 0 # running total width offset
@@ -171,7 +172,8 @@ def exportFRMs(frmFiles, outFile, palette, exportImage=True):
 			raise Exception("frameOffsets is not 1 (more than one direction?)")
 
 	if exportImage:
-		finalImg = Image.new("RGBA", (totalW, maxH))
+		finalImg = Image.new("P", (totalW, maxH))
+		finalImg.putpalette(palette)
 	currentX = 0
 	_sx = 0 # running total width offset
 
@@ -185,14 +187,14 @@ def exportFRMs(frmFiles, outFile, palette, exportImage=True):
 					w,h = offsets['w'], offsets['h']
 					#print frame.shape, w, h, nDir, frameNum
 					if exportImage:
-						frame = np.reshape(frame, (h, w))
+						pixels = np.reshape(frame, (h, w))
 
-						pixels = np.empty((h, w, 4), dtype=int) # HxW RGBA
-						for rowI,row in enumerate(frame):
-							for colI,palIdx in enumerate(row):
-								pixels[(rowI, colI)] = palette[palIdx] + (0 if palIdx == 0 else 255,)
+						#pixels = np.empty((h, w), np.uint8) # HxW RGBA
+						#for rowI,row in enumerate(frame):
+						#	for colI,palIdx in enumerate(row):
+						#		pixels[(rowI, colI)] = palIdx
 
-						img = Image.fromarray(pixels.astype('uint8'), "RGBA")
+						img = Image.fromarray(pixels, "P")
 						finalImg.paste(img, (currentX, 0))
 					currentX += maxW
 
@@ -211,7 +213,7 @@ def exportFRMs(frmFiles, outFile, palette, exportImage=True):
 			del frmInfo['framePixels']
 
 	if exportImage:
-		finalImg.save(outFile)
+		finalImg.save(outFile, transparency=0)
 	
 	dOffsets = [[] for _ in range(6)]
 	for i,frmInfo in enumerate(frmInfos):
@@ -237,6 +239,7 @@ def main():
 		palFile = sys.argv[3]
 
 	palette = pal.readPAL(open(palFile, "rb"))
+	palette = flatten([r, g, b] for r, g, b in palette)
 	print json.dumps(exportFRM(sys.argv[1], sys.argv[2], palette))
 
 

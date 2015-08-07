@@ -1,5 +1,5 @@
 """
-Copyright 2014 darkf
+Copyright 2014-2015 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@ limitations under the License.
 
 # Converts data/art/*/*.FRM and *.FR[0-5] images to .png images
 
-import sys, os, glob, json, multiprocessing
+import sys, os, glob, json, time, multiprocessing
 import pal
 import frmpixels
 
-N_PROCS = 3
+N_PROCS = 2
 CHUNKSIZE = 4
 SUBDIRS = ("inven", "tiles", "critters", "items", "scenery", "walls", "misc", "intrface") # etc
 
@@ -59,9 +59,12 @@ def getFRXTasks(palette, dataDir, outDir, exportImage=True):
 			# TODO: validate that images are ordered FR0 to FRn
 
 			name = '%s/%s' % (subdir, basename)
-			outpath = "%s/%s.png" % (outDir, name)
+			outpath = "%s/%s.gif" % (outDir, name)
 
 			yield (name, images, outpath, palette, exportImage)
+
+def flatten(l):
+	return [item for sublist in l for item in sublist]
 
 def main():
 	if len(sys.argv) < 5:
@@ -82,6 +85,7 @@ def main():
 	exportImage = '--only-map' not in sys.argv
 
 	palette = pal.readPAL(open(palettePath, "rb"))
+	palette = flatten([r, g, b] for r, g, b in palette)
 
 	imageInfo = {}
 
@@ -125,4 +129,6 @@ def main():
 
 
 if __name__ == '__main__':
+	start_time = time.clock()
 	main()
+	print("--- %s seconds ---" % (time.clock() - start_time))
