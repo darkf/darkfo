@@ -100,6 +100,12 @@ module scriptingEngine {
 		return false
 	}
 
+	function isSpatial(obj: any): boolean {
+		if(!obj)
+			return false
+		return obj.isSpatial === true
+	}
+
 	function getScriptName(id) {
 		return getLstId("scripts/scripts", id - 1).split(".")[0]
 	}
@@ -395,7 +401,7 @@ module scriptingEngine {
 			}	
 			return 0
 		},
-		elevation: function(obj) { if(isGameObject(obj) || obj.isSpatial) return currentElevation
+		elevation: function(obj) { if(isGameObject(obj) || isSpatial(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj); return -1 } },
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
 		obj_can_hear_obj: function(a, b) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
@@ -635,7 +641,7 @@ module scriptingEngine {
 			return hexDistance(fromTileNum(a), fromTileNum(b))
 		},
 		tile_num: function(obj) {
-			if(!isGameObject(obj) && !obj.isSpatial) {
+			if(!isGameObject(obj) && !isSpatial(obj)) {
 				console.log("tile_num: not a game object: " + obj)
 				return null
 			}
@@ -972,11 +978,10 @@ module scriptingEngine {
 		
 		reader.seek(0)
 		var vm = new ScriptVMBridge.GameScriptVM(reader, intfile, obj)
-		vm.run()
-
 		vm.scriptObj.scriptName = name
 		vm.scriptObj.lvars = {}
 		vm.scriptObj._mapScript = currentMapObject
+		vm.run()
 
 		// return the scriptObj, which is a clone of ScriptProto
 		// which will be patched by the GameScriptVM to allow
