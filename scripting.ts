@@ -96,6 +96,7 @@ module scriptingEngine {
 
 		//warn("is NOT GO: " + obj.toString())
 		console.log("is NOT GO: %o", obj)
+		console.trace()
 		return false
 	}
 
@@ -394,7 +395,7 @@ module scriptingEngine {
 			}	
 			return 0
 		},
-		elevation: function(obj) { if(isGameObject(obj) || (obj && obj.isSpatial)) return currentElevation
+		elevation: function(obj) { if(isGameObject(obj) || obj.isSpatial) return currentElevation
 								   else { warn("elevation: not an object: " + obj); return -1 } },
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
 		obj_can_hear_obj: function(a, b) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
@@ -634,8 +635,8 @@ module scriptingEngine {
 			return hexDistance(fromTileNum(a), fromTileNum(b))
 		},
 		tile_num: function(obj) {
-			if(!isGameObject(obj) || (!obj || obj.isSpatial)) {
-				warn("tile_num: not a game object: " + obj)
+			if(!isGameObject(obj) && !obj.isSpatial) {
+				console.log("tile_num: not a game object: " + obj)
 				return null
 			}
 			return toTileNum(obj.position)

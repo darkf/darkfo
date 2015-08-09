@@ -320,6 +320,7 @@ class GameMap {
 		}
 
 		console.log("removeObject: couldn't find object on map")
+		console.trace()
 	}
 
 	destroyObject(obj: Obj): void {

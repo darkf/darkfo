@@ -18,16 +18,24 @@ limitations under the License.
 
 module ScriptVMBridge {
 	// create a bridged function that calls procedures on scriptObj
-	function bridged(procName: string, argc: number) {
+	function bridged(procName: string, argc: number, pushResult: boolean=true) {
 		return function() {
 			var args = []
 			for(var i = 0; i < argc; i++)
 				args.push(this.pop())
 			args.reverse()
 
-			this.push(this.scriptObj[procName].apply(this.scriptObj, args))
+			var r = this.scriptObj[procName].apply(this.scriptObj, args)
+            if(pushResult)
+                this.push(r)
 		}
 	}
+
+    function varName(value: any): string {
+        if(typeof value == "number")
+            return this.intfile.identifiers[value]
+        return value
+    }
 
 	var bridgeOpMap = {
 	    0x80BF: function() { this.push(player) } // dude_obj
@@ -38,52 +46,81 @@ module ScriptVMBridge {
        ,0x8101: function() { this.push(this.scriptObj.cur_map_index) } // cur_map_index
        ,0x80BD: function() { this.push(this.scriptObj.source_obj) } // source_obj
        ,0x80FA: function() { this.push(this.scriptObj.action_being_used) } // action_being_used
+       ,0x80BE: function() { this.push(this.scriptObj.target_obj) } // target_obj
+       ,0x80F7: function() { this.push(this.scriptObj.fixed_param) } // fixed_param
 
        ,0x8016: function() { this.scriptObj[this.pop()] = 0 } // op_export_var
-       ,0x8015: function() { var name = this.pop(); this.scriptObj[name] = this.pop() } // op_store_external
+       ,0x8015: function() { var name = varName(this.pop()); this.scriptObj[name] = this.pop() } // op_store_external
+       ,0x8014: function() { return this.scriptObj[varName(this.pop())] } // op_fetch_external
 
        ,0x80B9: bridged("script_overrides", 0)
        ,0x80B4: bridged("random", 2)
        ,0x80CA: bridged("get_critter_stat", 2)
        ,0x8105: bridged("message_str", 2)
-       ,0x80B8: bridged("display_msg", 1)
-       ,0x810E: bridged("reg_anim_func", 2)
-       ,0x8126: bridged("reg_anim_animate_forever", 2)
+       ,0x80B8: bridged("display_msg", 1, false)
+       ,0x810E: bridged("reg_anim_func", 2, false)
+       ,0x8126: bridged("reg_anim_animate_forever", 2, false)
+       ,0x810C: bridged("anim", 3, false)
        ,0x810B: bridged("metarule", 2)
        ,0x80C1: bridged("local_var", 1)
        ,0x80C2: bridged("set_local_var", 2)
        ,0x80C5: bridged("global_var", 1)
        ,0x80C6: bridged("set_global_var", 2)
        ,0x80C3: bridged("map_var", 1)
+       ,0x80C4: bridged("set_map_var", 2)
        ,0x80B7: bridged("create_object_sid", 4)
        ,0x8102: bridged("critter_add_trait", 4)
-       ,0x8116: bridged("add_mult_objs_to_inven", 3)
+       ,0x8116: bridged("add_mult_objs_to_inven", 3, false)
        ,0x80DC: bridged("obj_can_see_obj", 2)
        ,0x80E9: bridged("set_light_level", 1)
        ,0x80BB: bridged("tile_contains_obj_pid", 3)
-       ,0x80A9: bridged("override_map_start", 4)
-       ,0x8154: bridged("debug_msg", 1)
+       ,0x80D3: bridged("tile_distance_objs", 2)
+       ,0x80A7: bridged("tile_contains_pid_obj", 3)
+       ,0x814C: bridged("rotation_to_tile", 2)
+       ,0x80AE: bridged("do_check", 3)
+       ,0x814a: bridged("art_anim", 1)
+       ,0x80F4: bridged("destroy_object", 1)
+       ,0x80A9: bridged("override_map_start", 4, false)
+       ,0x8154: bridged("debug_msg", 1, false)
        ,0x80F3: bridged("has_trait", 3)
+       ,0x80B6: bridged("move_to", 3)
+       ,0x8147: bridged("move_obj_inven_to_obj", 2, false)
+       ,0x80A4: bridged("obj_name", 1)
        ,0x8149: bridged("obj_art_fid", 1)
-       ,0x812E: bridged("obj_lock", 1)
-       ,0x812F: bridged("obj_unlock", 1)
+       ,0x80E3: bridged("set_obj_visibility", 2, false)
+       ,0x80C8: bridged("obj_type", 1)
+       ,0x8131: bridged("obj_open", 1, false)
+       ,0x8132: bridged("obj_close", 1, false)
+       ,0x812E: bridged("obj_lock", 1, false)
+       ,0x812F: bridged("obj_unlock", 1, false)
        ,0x812D: bridged("obj_is_locked", 1)
        ,0x80AC: bridged("roll_vs_skill", 3)
        ,0x80AF: bridged("is_success", 1)
-       ,0x80A1: bridged("give_exp_points", 1)
+       ,0x80B0: bridged("is_critical", 1)
+       ,0x80A1: bridged("give_exp_points", 1, false)
        ,0x80FB: bridged("critter_state", 1)
        ,0x80EC: bridged("elevation", 1)
        ,0x80F2: bridged("game_ticks", 1)
+       ,0x8133: bridged("game_ui_disable", 0, false)
+       ,0x8134: bridged("game_ui_enable", 0, false)
        ,0x80D4: bridged("tile_num", 1)
        ,0x80D5: bridged("tile_num_in_direction", 3)
-       ,0x80CE: bridged("animate_move_obj_to_tile", 3)
-       ,0x80F0: bridged("add_timer_event", 3)
-       ,0x80DE: bridged("start_gdialog", 5)
+       ,0x80CE: bridged("animate_move_obj_to_tile", 3, false)
+       ,0x80D0: bridged("attack_complex", 8, false)
+       ,0x8153: bridged("terminate_combat", 0, false)
+       ,0x8145: bridged("use_obj_on_obj", 2, false)
+       ,0x80A3: bridged("play_sfx", 1, false)
+       ,0x8137: bridged("gfade_in", 1, false)
+       ,0x8136: bridged("gfade_out", 1, false)
+       ,0x810A: bridged("float_msg", 3, false)
+       ,0x80F0: bridged("add_timer_event", 3, false)
+       ,0x80F9: bridged("dialogue_system_enter", 0, false)
+       ,0x80DE: bridged("start_gdialog", 5, false)
        ,0x811C: bridged("gsay_start", 0)
        ,0x811D: bridged("gsay_end", 0)
-       ,0x811E: bridged("gsay_reply", 2)
+       ,0x811E: bridged("gsay_reply", 2, false)
        ,0x80DF: bridged("end_dialogue", 0)
-       ,0x8120: bridged("gsay_message", 3)
+       ,0x8120: bridged("gsay_message", 3, false)
        //,0x806B: bridged("display", 1)
 
        //,0x8121: bridged("giq_option", 5) // TODO: wrap this so that target becomes a function

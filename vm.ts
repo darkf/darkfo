@@ -55,6 +55,14 @@ var opMap = {0x8002: function() { } // start critical (nop)
             ,0x8032: function() { this.push(this.dataStack[this.dvarBase + this.pop()]) } // op_fetch
             ,0x8046: function() { this.push(-this.pop()) } // op_negate
 
+            ,0x8030: function() { // op_while
+            	var cond = this.pop()
+            	if(!cond) {
+	        		var pc = this.pop()
+            		this.pc = pc
+            	}
+            }
+
             ,0x8005: function() { this.pc = this.intfile.proceduresTable[this.pop()].offset } // op_call (TODO: verify)
             ,0x9001: function() {
             	// push a string from either the strings or identifiers table.
@@ -166,6 +174,8 @@ class ScriptVM {
 			opMap[opcode].call(this)
 		else {
 			console.log("unimplemented opcode %s (pc=%s) in %s", opcode.toString(16), this.pc.toString(16), this.intfile.name)
+			//console.log("disassembly:")
+			//console.log(disassemble(this.intfile, this.script))
 			return false
 		}
 
