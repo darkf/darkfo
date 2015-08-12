@@ -401,7 +401,7 @@ module scriptingEngine {
 			}	
 			return 0
 		},
-		elevation: function(obj) { if(isGameObject(obj) || isSpatial(obj)) return currentElevation
+		elevation: function(obj) { if(isSpatial(obj) || isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj); return -1 } },
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
 		obj_can_hear_obj: function(a, b) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
@@ -629,7 +629,7 @@ module scriptingEngine {
 
 		// tiles
 		tile_distance_objs: function(a, b) {
-			if((!isGameObject(a) || !isGameObject(b)) && (a && !a.isSpatial && b && !b.isSpatial)) {
+			if((!isSpatial(a) && !isSpatial(b)) && (!isGameObject(a) || !isGameObject(b))) {
 				warn("tile_distance_objs: " + a + " or " + b + " are not game objects")
 				return
 			}
@@ -641,7 +641,7 @@ module scriptingEngine {
 			return hexDistance(fromTileNum(a), fromTileNum(b))
 		},
 		tile_num: function(obj) {
-			if(!isGameObject(obj) && !isSpatial(obj)) {
+			if(!isSpatial(obj) && !isGameObject(obj)) {
 				console.log("tile_num: not a game object: " + obj)
 				return null
 			}
