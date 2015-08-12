@@ -53,7 +53,7 @@ module ScriptVMBridge {
        ,0x8015: function() { var name = varName(this.pop()); this.scriptObj[name] = this.pop() } // op_store_external
        ,0x8014: function() { return this.scriptObj[varName(this.pop())] } // op_fetch_external
 
-       ,0x80B9: bridged("script_overrides", 0)
+       ,0x80B9: bridged("script_overrides", 0, false)
        ,0x80B4: bridged("random", 2)
        ,0x80CA: bridged("get_critter_stat", 2)
        ,0x8105: bridged("message_str", 2)
@@ -63,11 +63,11 @@ module ScriptVMBridge {
        ,0x810C: bridged("anim", 3, false)
        ,0x810B: bridged("metarule", 2)
        ,0x80C1: bridged("local_var", 1)
-       ,0x80C2: bridged("set_local_var", 2)
+       ,0x80C2: bridged("set_local_var", 2, false)
        ,0x80C5: bridged("global_var", 1)
-       ,0x80C6: bridged("set_global_var", 2)
+       ,0x80C6: bridged("set_global_var", 2, false)
        ,0x80C3: bridged("map_var", 1)
-       ,0x80C4: bridged("set_map_var", 2)
+       ,0x80C4: bridged("set_map_var", 2, false)
        ,0x80B7: bridged("create_object_sid", 4)
        ,0x8102: bridged("critter_add_trait", 4)
        ,0x8116: bridged("add_mult_objs_to_inven", 3, false)
@@ -79,7 +79,7 @@ module ScriptVMBridge {
        ,0x814C: bridged("rotation_to_tile", 2)
        ,0x80AE: bridged("do_check", 3)
        ,0x814a: bridged("art_anim", 1)
-       ,0x80F4: bridged("destroy_object", 1)
+       ,0x80F4: bridged("destroy_object", 1, false)
        ,0x80A9: bridged("override_map_start", 4, false)
        ,0x8154: bridged("debug_msg", 1, false)
        ,0x80F3: bridged("has_trait", 3)
@@ -116,10 +116,10 @@ module ScriptVMBridge {
        ,0x80F0: bridged("add_timer_event", 3, false)
        ,0x80F9: bridged("dialogue_system_enter", 0, false)
        ,0x80DE: bridged("start_gdialog", 5, false)
-       ,0x811C: bridged("gsay_start", 0)
-       ,0x811D: bridged("gsay_end", 0)
+       ,0x811C: bridged("gsay_start", 0) // void?
+       ,0x811D: bridged("gsay_end", 0) // void?
        ,0x811E: bridged("gsay_reply", 2, false)
-       ,0x80DF: bridged("end_dialogue", 0)
+       ,0x80DF: bridged("end_dialogue", 0) // void?
        ,0x8120: bridged("gsay_message", 3, false)
        //,0x806B: bridged("display", 1)
 
