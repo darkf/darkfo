@@ -981,6 +981,7 @@ module scriptingEngine {
 		vm.scriptObj.scriptName = name
 		vm.scriptObj.lvars = {}
 		vm.scriptObj._mapScript = currentMapObject
+		vm.scriptObj._vm = vm
 		vm.run()
 
 		// return the scriptObj, which is a clone of ScriptProto

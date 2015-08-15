@@ -49,9 +49,9 @@ module ScriptVMBridge {
        ,0x80BE: function() { this.push(this.scriptObj.target_obj) } // target_obj
        ,0x80F7: function() { this.push(this.scriptObj.fixed_param) } // fixed_param
 
-       ,0x8016: function() { this.scriptObj[this.pop()] = 0 } // op_export_var
-       ,0x8015: function() { var name = varName(this.pop()); this.scriptObj[name] = this.pop() } // op_store_external
-       ,0x8014: function() { return this.scriptObj[varName(this.pop())] } // op_fetch_external
+       ,0x8016: function() { this.mapScript()[this.pop()] = 0 } // op_export_var
+       ,0x8015: function() { var name = varName(this.pop()); this.mapScript()[name] = this.pop() } // op_store_external
+       ,0x8014: function() { this.push(this.mapScript()[varName(this.pop())]) } // op_fetch_external
 
        ,0x80B9: bridged("script_overrides", 0, false)
        ,0x80B4: bridged("random", 2)
@@ -164,5 +164,11 @@ module ScriptVMBridge {
 	    	    })(_procName)
     	    }
     	}
+
+        mapScript(): any {
+            if(this.scriptObj._mapScript)
+                return this.scriptObj._mapScript
+            return this.scriptObj
+        }
     }
 }

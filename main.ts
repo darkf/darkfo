@@ -333,7 +333,7 @@ class GameMap {
 		scriptingEngine.updateMap(this.mapScript, this.getObjectsAndSpatials(), this.currentElevation)
 	}
 
-	changeElevation(level: number, updateScripts?: boolean) {
+	changeElevation(level: number, updateScripts: boolean=false) {
 		var oldElevation = this.currentElevation
 		this.currentElevation = level
 		this.floorMap = this.mapObj.levels[level].tiles.floor
@@ -458,12 +458,12 @@ class GameMap {
 			this.spatials.forEach(level => level.forEach(spatial => scriptingEngine.objectEnterMap(spatial, this.currentElevation, this.mapID)))
 
 			scriptingEngine.updateMap(this.mapScript, objectsAndSpatials, elevation)
+
+			// change elevation with script updates
+			this.changeElevation(elevation, true)
 		}
 		else
 			this.changeElevation(elevation, false)
-
-		// change elevation with script updates
-		this.changeElevation(elevation, true)
 
 		// TODO: is map_enter_p_proc called on elevation change?
 		console.log("loaded (" + map.levels.length + " levels, " +this.getObjects().length + " objects on elevation " + elevation + ")")
@@ -757,8 +757,8 @@ heart.keydown = function(k) {
 	if(k === Config.controls.cameraRight) cameraX += 15
 	if(k === Config.controls.cameraLeft) cameraX -= 15
 	if(k === Config.controls.cameraUp) cameraY -= 15
-	if(k === Config.controls.elevationDown) { if(currentElevation-1 >= 0) gMap.changeElevation(currentElevation-1) }
-	if(k === Config.controls.elevationUp) { if(currentElevation+1 < gMap.numLevels) gMap.changeElevation(currentElevation+1) }
+	if(k === Config.controls.elevationDown) { if(currentElevation-1 >= 0) gMap.changeElevation(currentElevation-1, true) }
+	if(k === Config.controls.elevationUp) { if(currentElevation+1 < gMap.numLevels) gMap.changeElevation(currentElevation+1, true) }
 	if(k === Config.controls.showRoof) { Config.ui.showRoof = !Config.ui.showRoof }
 	if(k === Config.controls.showFloor) { Config.ui.showFloor = !Config.ui.showFloor }
 	if(k === Config.controls.showObjects) { Config.ui.showObjects = !Config.ui.showObjects }

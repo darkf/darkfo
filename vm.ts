@@ -155,6 +155,13 @@ class ScriptVM {
 		return this.retStack.pop()
 	}
 
+	dis(): string {
+		var offset = this.script.offset
+		var disassembly = disassemble(this.intfile, this.script)
+		this.script.seek(offset)
+		return disassembly
+	}
+
 	// call a named procedure
 	call(procName: string, args: any[]=[]): any {
 		var proc = this.intfile.procedures[procName]
