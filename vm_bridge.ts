@@ -43,6 +43,7 @@ module ScriptVMBridge {
        ,0x8128: function() { this.push(this.scriptObj.combat_is_initialized) } // combat_is_initialized
        ,0x8118: function() { this.push(1) } // get_month // TODO
        ,0x80F6: function() { this.push(1200) } // game_time_hour // TODO
+       ,0x80EA: function() { this.push(this.scriptObj.game_time) } // game_time
        ,0x8101: function() { this.push(this.scriptObj.cur_map_index) } // cur_map_index
        ,0x80BD: function() { this.push(this.scriptObj.source_obj) } // source_obj
        ,0x80FA: function() { this.push(this.scriptObj.action_being_used) } // action_being_used
@@ -75,6 +76,7 @@ module ScriptVMBridge {
        ,0x80E9: bridged("set_light_level", 1)
        ,0x80BB: bridged("tile_contains_obj_pid", 3)
        ,0x80D3: bridged("tile_distance_objs", 2)
+       ,0x80D2: bridged("tile_distance", 2)
        ,0x80A7: bridged("tile_contains_pid_obj", 3)
        ,0x814C: bridged("rotation_to_tile", 2)
        ,0x80AE: bridged("do_check", 3)
@@ -98,6 +100,8 @@ module ScriptVMBridge {
        ,0x80AF: bridged("is_success", 1)
        ,0x80B0: bridged("is_critical", 1)
        ,0x80A1: bridged("give_exp_points", 1, false)
+       ,0x8138: bridged("item_caps_total", 1)
+       ,0x8139: bridged("item_caps_adjust", 2)
        ,0x80FB: bridged("critter_state", 1)
        ,0x80EC: bridged("elevation", 1)
        ,0x80F2: bridged("game_ticks", 1)
