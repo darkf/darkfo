@@ -56,7 +56,7 @@ module Worldmap {
 			       }
 		}
 
-		function parseEncounterReference(data) {
+		function parseEncounterReference(data): any {
 			// "(4-8) ncr_masters_army ambush player" 
 			if(data === "special1")
 				return {type: "special"}
