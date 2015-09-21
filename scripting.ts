@@ -980,7 +980,7 @@ module scriptingEngine {
 		var vm = new ScriptVMBridge.GameScriptVM(reader, intfile, obj)
 		vm.scriptObj.scriptName = name
 		vm.scriptObj.lvars = {}
-		vm.scriptObj._mapScript = currentMapObject
+		vm.scriptObj._mapScript = currentMapObject || vm.scriptObj // map scripts are their own map scripts
 		vm.scriptObj._vm = vm
 		vm.run()
 
