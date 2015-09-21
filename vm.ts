@@ -60,6 +60,7 @@ var opMap = {0x8002: function() { } // start critical (nop)
             ,0x8031: function() { var varNum = this.pop(); this.dataStack[this.dvarBase + varNum] = this.pop()  } // op_store
             ,0x8032: function() { this.push(this.dataStack[this.dvarBase + this.pop()]) } // op_fetch
             ,0x8046: function() { this.push(-this.pop()) } // op_negate
+            ,0x8044: function() { this.push(Math.floor(this.pop())) } //  op_floor (TODO: should we truncate? Test negatives)
 
             ,0x8030: function() { // op_while
             	var cond = this.pop()
