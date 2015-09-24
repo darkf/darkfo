@@ -971,10 +971,10 @@ module scriptingEngine {
 		var path = "data/scripts/" + name.toLowerCase() + ".int"
 		var data: DataView = getFileBinarySync(path)
 		var reader = new BinaryReader(data)
-		console.log("[%s] loaded %d bytes", name, reader.length)
+		//console.log("[%s] loaded %d bytes", name, reader.length)
 		var intfile = parseIntFile(reader, name.toLowerCase())
 
-		console.log("%s int file: %o", name, intfile)
+		//console.log("%s int file: %o", name, intfile)
 		
 		reader.seek(0)
 		var vm = new ScriptVMBridge.GameScriptVM(reader, intfile, obj)

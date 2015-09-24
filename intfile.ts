@@ -54,7 +54,7 @@ function parseIntFile(reader: BinaryReader, name: string=""): IntFile {
 		//console.log("offset: %d", offset)
 		var argc = reader.read32()
 		//console.log("argc: %d", argc)
-		console.log("")
+		//console.log("")
 
 		procs.push({nameIndex: nameIndex
 			       ,name: ""
