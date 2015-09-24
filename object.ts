@@ -587,6 +587,21 @@ class Obj {
 		// no existing item, add new inventory object
 		this.inventory.push(item.clone().setAmount(count))
 	}
+
+	getMessageCategory(): string {
+		return {"item": "pro_item",
+		        "critter": "pro_crit",
+	            "scenery": "pro_scen",
+	            "wall": "pro_wall",
+	            "misc": "pro_misc"}[this.type]
+	}
+
+	getDescription(): string {
+		if(!this.pro)
+			return null
+
+		return getMessage(this.getMessageCategory(), this.pro.textID + 1) || null
+	}
 }
 
 class Item extends Obj {
