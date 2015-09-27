@@ -462,8 +462,14 @@ def tileNumToPos(t):
 
 def convertMap(data, mapName, outDir, verbose=True):
 	map_ = fomap.parse(data)
-	if map_.version != 20:
-		raise Exception("not a FO2 map")
+
+	if map_.version == 19:
+		print "Dumping an FO1 map..."
+	elif map_.version == 20:
+		print "Dumping an FO2 map..."
+	else:
+		raise Exception("not a FO1 or FO2 map")
+
 	if verbose:
 		print "elevation:", map_.numLevels
 		print sum(len(level) for level in map_.tiles), "tiles"
