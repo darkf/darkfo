@@ -414,14 +414,18 @@ class GameMap {
 			scriptingEngine.init(player, mapName)
 			this.mapScript = scriptingEngine.loadScript(mapName)
 			scriptingEngine.setMapScript(this.mapScript)
+		}
+		else
+			this.mapScript = null
 
-			// warp to the default position (may be overridden by map script)
-			player.position = startingPosition || map.startPosition
-			player.orientation = map.startOrientation
+		// warp to the default position (may be overridden by map script)
+		player.position = startingPosition || map.startPosition
+		player.orientation = map.startOrientation
 
-			if(Config.engine.doSpatials) {
-				this.spatials = map.levels.map(level => level.spatials)
+		if(Config.engine.doSpatials) {
+			this.spatials = map.levels.map(level => level.spatials)
 
+			if(Config.engine.doLoadScripts) {
 				// initialize spatial scripts
 				this.spatials.forEach(level => level.forEach(spatial => {
 					var script = scriptingEngine.loadScript(spatial.script)
@@ -435,24 +439,27 @@ class GameMap {
 					spatial.isSpatial = true
 					spatial.position = fromTileNum(spatial.tileNum)
 				}))
-
 			}
-			else
-				this.spatials = map.levels.map(_ => [])
+		}
+		else
+			this.spatials = map.levels.map(_ => [])
 
-			// load map objects
-			this.objects = new Array(map.levels.length)
-			for(var level = 0; level < map.levels.length; level++) {
-				this.objects[level] = map.levels[level].objects.map(objFromMapObject)
-			}
+		// load map objects
+		this.objects = new Array(map.levels.length)
+		for(var level = 0; level < map.levels.length; level++) {
+			this.objects[level] = map.levels[level].objects.map(objFromMapObject)
+		}
 
-			this.changeElevation(elevation, false)
+		// change to our new elevation (sets up map state)
+		this.changeElevation(elevation, false)
 
-			// TODO: when exactly are these called?
-			// TODO: when objectsAndSpatials is updated, the scripting engine won't know
-			var objectsAndSpatials = this.getObjectsAndSpatials()
+		// TODO: when exactly are these called?
+		// TODO: when objectsAndSpatials is updated, the scripting engine won't know
+		var objectsAndSpatials = this.getObjectsAndSpatials()
+
+		if(Config.engine.doLoadScripts) {
 			scriptingEngine.enterMap(this.mapScript, objectsAndSpatials, this.currentElevation, this.mapID, true)
-
+	
 			// tell objects that they're now on the map
 			this.objects.forEach(level => level.forEach(obj => obj.enterMap()))
 			this.spatials.forEach(level => level.forEach(spatial => scriptingEngine.objectEnterMap(spatial, this.currentElevation, this.mapID)))
@@ -462,8 +469,6 @@ class GameMap {
 			// change elevation with script updates
 			this.changeElevation(elevation, true)
 		}
-		else
-			this.changeElevation(elevation, false)
 
 		// TODO: is map_enter_p_proc called on elevation change?
 		console.log("loaded (" + map.levels.length + " levels, " +this.getObjects().length + " objects on elevation " + elevation + ")")

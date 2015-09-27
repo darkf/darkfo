@@ -453,7 +453,8 @@ class Obj {
 		// etc? TODO: check this!
 
 		obj.init()
-		obj.loadScript()
+		if(Config.engine.doLoadScripts)
+			obj.loadScript()
 		return obj
 	}
 
