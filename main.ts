@@ -617,6 +617,8 @@ heart.load = function() {
 	tempCanvas = $("<canvas>")[0]
 	tempCanvasCtx = tempCanvas.getContext("2d")
 
+	Worldmap.init()
+	
 	initUI()
 }
 
