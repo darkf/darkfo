@@ -20,6 +20,7 @@ interface Procedure {
 	nameIndex: number;
 	name: string;
 	offset: number;
+	index: number;
 	argc: number;
 }
 
@@ -59,6 +60,7 @@ function parseIntFile(reader: BinaryReader, name: string=""): IntFile {
 		procs.push({nameIndex: nameIndex
 			       ,name: ""
 			       ,offset: offset
+			       ,index: i
 			       ,argc: argc
 			       })
 	}

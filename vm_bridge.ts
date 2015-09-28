@@ -59,7 +59,6 @@ module ScriptVMBridge {
        ,0x80B4: bridged("random", 2)
        ,0x80E1: bridged("metarule3", 4)
        ,0x80CA: bridged("get_critter_stat", 2)
-       ,0x8028: bridged("lookup_string_proc", 1)
        ,0x8105: bridged("message_str", 2)
        ,0x80B8: bridged("display_msg", 1, false)
        ,0x810E: bridged("reg_anim_func", 2, false)
