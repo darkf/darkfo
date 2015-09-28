@@ -991,42 +991,6 @@ module scriptingEngine {
 		return vm.scriptObj
 	}
 
-	/*export function loadScript(name) {
-		// e.g. "Raiders2"
-		var scriptObject = null
-		info("loading script " + name, "load")
-		var code = getFileText("scripts/" + name + ".js",
-			function() { console.log("script loading error (" + name + ")") })
-
-		//console.log("code: " + code)
-		var f: any = new Function(code)
-		f.prototype = ScriptProto
-		var obj = new f()
-		obj.scriptName = name
-		obj.lvars = {}
-		scriptObject = obj
-
-		// remove any defined Node999 (exit dialogue) procedures
-		// so we can take them over
-		if(obj.hasOwnProperty("node999"))
-			delete obj.node999
-
-		// same for node998 (combat); some scripts also use this
-		// so it would be a good idea to wrap it instead.
-		if(obj.hasOwnProperty("node998"))
-			delete obj.node998
-
-		if(currentMapObject !== null)
-			obj._mapScript = currentMapObject
-		else {
-			// this is likely our map script loaded first
-			currentMapObject = obj
-			obj._mapScript = obj
-		}
-
-		return scriptObject
-	}*/
-
 	export function initScript(script, obj) {
 		obj._script.self_obj = obj
 		obj._script.cur_map_index = currentMapID
@@ -1061,16 +1025,7 @@ module scriptingEngine {
 		script.game_time = Math.max(1, gameTickTime)
 		script.cur_map_index = currentMapID
 		script._didOverride = false
-
-		var r = script.talk_p_proc()
-		if(r !== undefined && r._yield !== undefined) {
-			// procedure yielded
-			info("[procedure yielded]")
-			if(script.yieldedFn !== undefined)
-				throw "unused yielded fn already exists"
-			script.yieldedFn = r._yield
-		}
-
+		script.talk_p_proc()
 		return script._didOverride
 	}
 
