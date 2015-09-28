@@ -44,6 +44,7 @@ module ScriptVMBridge {
        ,0x8118: function() { this.push(1) } // get_month // TODO
        ,0x80F6: function() { this.push(1200) } // game_time_hour // TODO
        ,0x80EA: function() { this.push(this.scriptObj.game_time) } // game_time
+       ,0x8119: function() { this.push(0) } // get_day // TODO
        ,0x8101: function() { this.push(this.scriptObj.cur_map_index) } // cur_map_index
        ,0x80BD: function() { this.push(this.scriptObj.source_obj) } // source_obj
        ,0x80FA: function() { this.push(this.scriptObj.action_being_used) } // action_being_used
@@ -58,11 +59,14 @@ module ScriptVMBridge {
        ,0x80B4: bridged("random", 2)
        ,0x80E1: bridged("metarule3", 4)
        ,0x80CA: bridged("get_critter_stat", 2)
+       ,0x8028: bridged("lookup_string_proc", 1)
        ,0x8105: bridged("message_str", 2)
        ,0x80B8: bridged("display_msg", 1, false)
        ,0x810E: bridged("reg_anim_func", 2, false)
        ,0x8126: bridged("reg_anim_animate_forever", 2, false)
+       ,0x810F: bridged("reg_anim_animate", 3, false)
        ,0x810C: bridged("anim", 3, false)
+       ,0x80E7: bridged("anim_busy", 1)
        ,0x810B: bridged("metarule", 2)
        ,0x80C1: bridged("local_var", 1)
        ,0x80C2: bridged("set_local_var", 2, false)
@@ -73,6 +77,8 @@ module ScriptVMBridge {
        ,0x80B2: bridged("mark_area_known", 3, false)
        ,0x80B7: bridged("create_object_sid", 4)
        ,0x8102: bridged("critter_add_trait", 4)
+       ,0x8106: bridged("critter_inven_obj", 2)
+       ,0x80FF: bridged("critter_attempt_placement", 3)
        ,0x8116: bridged("add_mult_objs_to_inven", 3, false)
        ,0x80DC: bridged("obj_can_see_obj", 2)
        ,0x80E9: bridged("set_light_level", 1)
@@ -87,12 +93,16 @@ module ScriptVMBridge {
        ,0x80A9: bridged("override_map_start", 4, false)
        ,0x8154: bridged("debug_msg", 1, false)
        ,0x80F3: bridged("has_trait", 3)
+       ,0x80C9: bridged("obj_item_subtype", 1)
        ,0x80BA: bridged("obj_is_carrying_obj_pid", 2)
        ,0x80B6: bridged("move_to", 3)
        ,0x8147: bridged("move_obj_inven_to_obj", 2, false)
+       ,0x8100: bridged("obj_pid", 1)
        ,0x80A4: bridged("obj_name", 1)
        ,0x8149: bridged("obj_art_fid", 1)
+       ,0x8150: bridged("obj_on_screen", 1)
        ,0x80E3: bridged("set_obj_visibility", 2, false)
+       ,0x8130: bridged("obj_is_open", 1)
        ,0x80C8: bridged("obj_type", 1)
        ,0x8131: bridged("obj_open", 1, false)
        ,0x8132: bridged("obj_close", 1, false)
@@ -116,6 +126,7 @@ module ScriptVMBridge {
        ,0x8133: bridged("game_ui_disable", 0, false)
        ,0x8134: bridged("game_ui_enable", 0, false)
        //,0x80f8: bridged("tile_is_visible", 1)
+       ,0x80CF: bridged("tile_in_tile_rect", 5)
        ,0x80D4: bridged("tile_num", 1)
        ,0x80D5: bridged("tile_num_in_direction", 3)
        ,0x80CE: bridged("animate_move_obj_to_tile", 3, false)
@@ -131,6 +142,7 @@ module ScriptVMBridge {
        ,0x810A: bridged("float_msg", 3, false)
        ,0x80F0: bridged("add_timer_event", 3, false)
        ,0x80F9: bridged("dialogue_system_enter", 0, false)
+       ,0x8129: bridged("gdialog_mod_barter", 1, false)
        ,0x80DE: bridged("start_gdialog", 5, false)
        ,0x811C: bridged("gsay_start", 0) // void?
        ,0x811D: bridged("gsay_end", 0) // void?
