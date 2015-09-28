@@ -154,11 +154,12 @@ module scriptingEngine {
 		uiEndDialogue()
 		info("[dialogue exit]")
 
-		if(currentDialogueObject !== null && currentDialogueObject._script.yieldedFn !== undefined) {
-			info("[calling yielded fn]")
-			var f = currentDialogueObject._script.yieldedFn
-			currentDialogueObject._script.yieldedFn = undefined
-			f()
+		if(currentDialogueObject) {
+			// resume from when we halted in gsay_end
+			var vm = currentDialogueObject._script._vm
+			vm.pc = vm.popAddr()
+			info(`[resuming from gsay_end (pc=0x${vm.pc.toString(16)})]`)
+			vm.run()
 		}
 
 		currentDialogueObject = null

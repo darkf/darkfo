@@ -144,11 +144,21 @@ module ScriptVMBridge {
        ,0x8129: bridged("gdialog_mod_barter", 1, false)
        ,0x80DE: bridged("start_gdialog", 5, false)
        ,0x811C: bridged("gsay_start", 0) // void?
-       ,0x811D: bridged("gsay_end", 0) // void?
+       //,0x811D: bridged("gsay_end", 0) // void?
        ,0x811E: bridged("gsay_reply", 2, false)
        ,0x80DF: bridged("end_dialogue", 0) // void?
        ,0x8120: bridged("gsay_message", 3, false)
        //,0x806B: bridged("display", 1)
+
+       ,0x811D: function() { // gsay_end
+            // halt where we are, saving our return address.
+            // we will resume when the dialogue system resumes us on dialogue exit
+            // usually to run cleanup code.
+            console.log("halting in gsay_end (pc=0x%s)", this.pc.toString(16))
+            this.retStack.push(this.pc + 2)
+            this.halted = true
+            this.scriptObj.gsay_end()
+       }
 
        //,0x8121: bridged("giq_option", 5) // TODO: wrap this so that target becomes a function
        // giq_option
