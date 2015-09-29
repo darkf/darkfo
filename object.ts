@@ -484,6 +484,7 @@ class Obj {
 			if(!script) {
 				console.log("loadScript: load script failed for %s (sid=%d)", scriptName, sid)
 			} else {
+				this.script = scriptName
 				this._script = script
 				scriptingEngine.initScript(this._script, this)
 			}
