@@ -1131,10 +1131,12 @@ module scriptingEngine {
 		gameObjects = objects
 		mapFirstRun = false
 
-		mapScript.combat_is_initialized = inCombat ? 1 : 0
-		if(mapScript.map_update_p_proc !== undefined) {
-			mapScript.self_obj = {_script: mapScript}
-			mapScript.map_update_p_proc()
+		if(mapScript) {
+			mapScript.combat_is_initialized = inCombat ? 1 : 0
+			if(mapScript.map_update_p_proc !== undefined) {
+				mapScript.self_obj = {_script: mapScript}
+				mapScript.map_update_p_proc()
+			}
 		}
 
 		var updated = 0
@@ -1159,7 +1161,7 @@ module scriptingEngine {
 		currentMapID = mapID
 		mapFirstRun = isFirstRun
 
-		if(mapScript.map_enter_p_proc !== undefined) {
+		if(mapScript && mapScript.map_enter_p_proc !== undefined) {
 			info("calling map enter")
 			mapScript.self_obj = {_script: mapScript}
 			mapScript.map_enter_p_proc()

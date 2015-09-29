@@ -412,8 +412,14 @@ class GameMap {
 
 		if(Config.engine.doLoadScripts) {
 			scriptingEngine.init(player, mapName)
-			this.mapScript = scriptingEngine.loadScript(mapName)
-			scriptingEngine.setMapScript(this.mapScript)
+			try {
+				this.mapScript = scriptingEngine.loadScript(mapName)
+				scriptingEngine.setMapScript(this.mapScript)
+			}
+			catch(e) {
+				this.mapScript = null
+				console.log("ERROR LOADING MAP SCRIPT:", e.message)
+			}
 		}
 		else
 			this.mapScript = null
