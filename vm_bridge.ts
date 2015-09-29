@@ -112,7 +112,8 @@ module ScriptVMBridge {
        ,0x80AF: bridged("is_success", 1)
        ,0x80B0: bridged("is_critical", 1)
        ,0x80AA: bridged("has_skill", 2)
-       //,0x813C: bridged("critter_mod_skill", 3, false)
+       ,0x813C: bridged("critter_mod_skill", 3) // int or void?
+       ,0x80EF: bridged("critter_dmg", 3, false)
        ,0x8123: bridged("get_poison", 1)
        ,0x80A1: bridged("give_exp_points", 1, false)
        ,0x8138: bridged("item_caps_total", 1)
@@ -124,7 +125,7 @@ module ScriptVMBridge {
        ,0x80F2: bridged("game_ticks", 1)
        ,0x8133: bridged("game_ui_disable", 0, false)
        ,0x8134: bridged("game_ui_enable", 0, false)
-       //,0x80f8: bridged("tile_is_visible", 1)
+       ,0x80f8: bridged("tile_is_visible", 1)
        ,0x80CF: bridged("tile_in_tile_rect", 5)
        ,0x80D4: bridged("tile_num", 1)
        ,0x80D5: bridged("tile_num_in_direction", 3)
