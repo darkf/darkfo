@@ -575,6 +575,21 @@ class Obj {
 
 	clone(): Obj {
 		// TODO: check this and probably fix it
+
+		// If we have a script, temporarily remove it so that we may clone the
+		// object without the script, and then re-load it for a new instance.
+		if(this._script) {
+			console.log("cloning an object with a script: %o", this)
+			var _script = this._script
+			this._script = null
+			var obj = $.extend(true, {}, this)
+			this._script = _script
+			obj.loadScript() // load new copy of the script
+			return obj
+
+		}
+
+		// no script, just deep clone the object
 		return $.extend(true, {}, this)
 	}
 
