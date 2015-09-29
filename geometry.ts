@@ -273,7 +273,7 @@ function hexInDirection(position: Point, dir: number): Point {
 function hexInDirectionDistance(position: Point, dir: number, distance: number): Point {
 	if(distance === 0) {
 		console.log("hexInDirectionDistance: distance=0")
-		return null
+		return position
 	}
 
 	var tile = hexInDirection(position, dir)
