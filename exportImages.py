@@ -41,7 +41,7 @@ def main():
 	palette = pal.readPAL(open(PALETTE, "rb"))
 	palette = flatten([r, g, b] for r, g, b in palette)
 
-	subdirs = ("critters",) #("skilldex", "inven", "tiles", "critters", "items", "scenery", "walls", "misc", "intrface") # etc
+	subdirs = ("critters", "skilldex", "inven", "tiles", "critters", "items", "scenery", "walls", "misc", "intrface") # etc
 	imageInfo = {}
 
 	for subdir in subdirs:
