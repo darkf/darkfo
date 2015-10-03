@@ -96,7 +96,14 @@ module scriptingEngine {
 
 		//warn("is NOT GO: " + obj.toString())
 		console.log("is NOT GO: %o", obj)
+		console.trace()
 		return false
+	}
+
+	function isSpatial(obj: any): boolean {
+		if(!obj)
+			return false
+		return obj.isSpatial === true
 	}
 
 	function getScriptName(id) {
@@ -147,11 +154,12 @@ module scriptingEngine {
 		uiEndDialogue()
 		info("[dialogue exit]")
 
-		if(currentDialogueObject !== null && currentDialogueObject._script.yieldedFn !== undefined) {
-			info("[calling yielded fn]")
-			var f = currentDialogueObject._script.yieldedFn
-			currentDialogueObject._script.yieldedFn = undefined
-			f()
+		if(currentDialogueObject) {
+			// resume from when we halted in gsay_end
+			var vm = currentDialogueObject._script._vm
+			vm.pc = vm.popAddr()
+			info(`[resuming from gsay_end (pc=0x${vm.pc.toString(16)})]`)
+			vm.run()
 		}
 
 		currentDialogueObject = null
@@ -166,7 +174,7 @@ module scriptingEngine {
 		$("#inventory").html("")
 	}
 
-	var ScriptProto = {
+	export var ScriptProto = {
 		dude_obj: "<Dude Object>",
 		'true': true,
 		'false': false,
@@ -394,10 +402,11 @@ module scriptingEngine {
 			}	
 			return 0
 		},
-		elevation: function(obj) { if(isGameObject(obj) || (obj && obj.isSpatial)) return currentElevation
+		elevation: function(obj) { if(isSpatial(obj) || isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj); return -1 } },
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
 		obj_can_hear_obj: function(a, b) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
+		critter_mod_skill: function(obj, skill, amount) { stub("critter_mod_skill", arguments); return 0 },
 		has_skill: function(obj, skill) { stub("has_skill", arguments); return 100 },
 		roll_vs_skill: function(obj, skill, bonus) { stub("roll_vs_skill", arguments); return 1 },
 		do_check: function(obj, check, modifier) { stub("do_check", arguments); return 1 },
@@ -622,7 +631,7 @@ module scriptingEngine {
 
 		// tiles
 		tile_distance_objs: function(a, b) {
-			if((!isGameObject(a) || !isGameObject(b)) && (a && !a.isSpatial && b && !b.isSpatial)) {
+			if((!isSpatial(a) && !isSpatial(b)) && (!isGameObject(a) || !isGameObject(b))) {
 				warn("tile_distance_objs: " + a + " or " + b + " are not game objects")
 				return
 			}
@@ -634,8 +643,8 @@ module scriptingEngine {
 			return hexDistance(fromTileNum(a), fromTileNum(b))
 		},
 		tile_num: function(obj) {
-			if(!isGameObject(obj) || (!obj || obj.isSpatial)) {
-				warn("tile_num: not a game object: " + obj)
+			if(!isSpatial(obj) && !isGameObject(obj)) {
+				console.log("tile_num: not a game object: " + obj)
 				return null
 			}
 			return toTileNum(obj.position)
@@ -651,6 +660,10 @@ module scriptingEngine {
 				}
 			}
 			return 0 // it's not there
+		},
+		tile_is_visible: function(tile) {
+			stub("tile_is_visible", arguments, "tiles")
+			return 1
 		},
 		tile_num_in_direction: function(tile, direction, distance) {
 			if(distance === 0) {
@@ -952,40 +965,35 @@ module scriptingEngine {
 		}
 	}
 
-	export function loadScript(name) {
-		// e.g. "Raiders2"
-		var scriptObject = null
+	export function setMapScript(script) {
+		currentMapObject = script
+	}
+
+	export function loadScript(name: string) {
+		var obj = null
+
 		info("loading script " + name, "load")
-		var code = getFileText("scripts/" + name + ".js",
-			function() { console.log("script loading error (" + name + ")") })
 
-		//console.log("code: " + code)
-		var f: any = new Function(code)
-		f.prototype = ScriptProto
-		var obj = new f()
-		obj.scriptName = name
-		obj.lvars = {}
-		scriptObject = obj
+		var path = "data/scripts/" + name.toLowerCase() + ".int"
+		var data: DataView = getFileBinarySync(path)
+		var reader = new BinaryReader(data)
+		//console.log("[%s] loaded %d bytes", name, reader.length)
+		var intfile = parseIntFile(reader, name.toLowerCase())
 
-		// remove any defined Node999 (exit dialogue) procedures
-		// so we can take them over
-		if(obj.hasOwnProperty("node999"))
-			delete obj.node999
+		//console.log("%s int file: %o", name, intfile)
+		
+		reader.seek(0)
+		var vm = new ScriptVMBridge.GameScriptVM(reader, intfile, obj)
+		vm.scriptObj.scriptName = name
+		vm.scriptObj.lvars = {}
+		vm.scriptObj._mapScript = currentMapObject || vm.scriptObj // map scripts are their own map scripts
+		vm.scriptObj._vm = vm
+		vm.run()
 
-		// same for node998 (combat); some scripts also use this
-		// so it would be a good idea to wrap it instead.
-		if(obj.hasOwnProperty("node998"))
-			delete obj.node998
-
-		if(currentMapObject !== null)
-			obj._mapScript = currentMapObject
-		else {
-			// this is likely our map script loaded first
-			currentMapObject = obj
-			obj._mapScript = obj
-		}
-
-		return scriptObject
+		// return the scriptObj, which is a clone of ScriptProto
+		// which will be patched by the GameScriptVM to allow
+		// transparent procedure calls
+		return vm.scriptObj
 	}
 
 	export function initScript(script, obj) {
@@ -1022,16 +1030,7 @@ module scriptingEngine {
 		script.game_time = Math.max(1, gameTickTime)
 		script.cur_map_index = currentMapID
 		script._didOverride = false
-
-		var r = script.talk_p_proc()
-		if(r !== undefined && r._yield !== undefined) {
-			// procedure yielded
-			info("[procedure yielded]")
-			if(script.yieldedFn !== undefined)
-				throw "unused yielded fn already exists"
-			script.yieldedFn = r._yield
-		}
-
+		script.talk_p_proc()
 		return script._didOverride
 	}
 
@@ -1137,10 +1136,12 @@ module scriptingEngine {
 		gameObjects = objects
 		mapFirstRun = false
 
-		mapScript.combat_is_initialized = inCombat ? 1 : 0
-		if(mapScript.map_update_p_proc !== undefined) {
-			mapScript.self_obj = {_script: mapScript}
-			mapScript.map_update_p_proc()
+		if(mapScript) {
+			mapScript.combat_is_initialized = inCombat ? 1 : 0
+			if(mapScript.map_update_p_proc !== undefined) {
+				mapScript.self_obj = {_script: mapScript}
+				mapScript.map_update_p_proc()
+			}
 		}
 
 		var updated = 0
@@ -1165,7 +1166,7 @@ module scriptingEngine {
 		currentMapID = mapID
 		mapFirstRun = isFirstRun
 
-		if(mapScript.map_enter_p_proc !== undefined) {
+		if(mapScript && mapScript.map_enter_p_proc !== undefined) {
 			info("calling map enter")
 			mapScript.self_obj = {_script: mapScript}
 			mapScript.map_enter_p_proc()

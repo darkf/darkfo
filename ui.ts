@@ -125,8 +125,6 @@ function initUI() {
 
 	drawHP(critterGetStat(player, "HP"))
 	uiDrawWeapon()
-
-	Worldmap.init()
 }
 
 function uiShowSkilldex() {

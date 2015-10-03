@@ -453,7 +453,8 @@ class Obj {
 		// etc? TODO: check this!
 
 		obj.init()
-		obj.loadScript()
+		if(Config.engine.doLoadScripts)
+			obj.loadScript()
 		return obj
 	}
 
@@ -483,6 +484,7 @@ class Obj {
 			if(!script) {
 				console.log("loadScript: load script failed for %s (sid=%d)", scriptName, sid)
 			} else {
+				this.script = scriptName
 				this._script = script
 				scriptingEngine.initScript(this._script, this)
 			}
@@ -573,6 +575,21 @@ class Obj {
 
 	clone(): Obj {
 		// TODO: check this and probably fix it
+
+		// If we have a script, temporarily remove it so that we may clone the
+		// object without the script, and then re-load it for a new instance.
+		if(this._script) {
+			console.log("cloning an object with a script: %o", this)
+			var _script = this._script
+			this._script = null
+			var obj = $.extend(true, {}, this)
+			this._script = _script
+			obj.loadScript() // load new copy of the script
+			return obj
+
+		}
+
+		// no script, just deep clone the object
 		return $.extend(true, {}, this)
 	}
 
@@ -586,6 +603,21 @@ class Obj {
 
 		// no existing item, add new inventory object
 		this.inventory.push(item.clone().setAmount(count))
+	}
+
+	getMessageCategory(): string {
+		return {"item": "pro_item",
+		        "critter": "pro_crit",
+	            "scenery": "pro_scen",
+	            "wall": "pro_wall",
+	            "misc": "pro_misc"}[this.type]
+	}
+
+	getDescription(): string {
+		if(!this.pro)
+			return null
+
+		return getMessage(this.getMessageCategory(), this.pro.textID + 1) || null
 	}
 }
 

@@ -65,6 +65,35 @@ function getFileJSON(path: string, err?: () => void) {
 	return r
 }
 
+// GET binary data into a DataView
+function getFileBinaryAsync(path: string, callback: (DataView) => void) {
+	var xhr = new XMLHttpRequest()
+	xhr.open("GET", path, true)
+	xhr.responseType = "arraybuffer"
+	xhr.onload = function(evt) { callback(new DataView(xhr.response)) }
+	xhr.send(null)
+}
+
+function getFileBinarySync(path: string) {
+	var xhr = new XMLHttpRequest()
+	xhr.open("GET", path, false)
+	// tell browser not to mess with the response
+	xhr.overrideMimeType('text\/plain; charset=x-user-defined')
+	xhr.send(null)
+	if(xhr.status !== 200)
+		throw "getFileBinarySync: got status " + xhr.status + " when requesting " + path
+
+	// convert to ArrayBuffer, and then DataView
+	var data = xhr.responseText
+	var buffer = new ArrayBuffer(data.length)
+	var arr = new Uint8Array(buffer)
+
+	for(var i = 0; i < data.length; i++)
+		arr[i] = data.charCodeAt(i) & 0xff
+
+	return new DataView(buffer)
+}
+
 // Min inclusive, max inclusive
 function getRandomInt(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min + 1)) + min
@@ -140,4 +169,34 @@ function pad(n: any, width: number, z?: string) {
   z = z || '0';
   n = n + '';
   return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
+class BinaryReader {
+	data: DataView
+	offset: number = 0
+	length: number
+
+	constructor(data: DataView) {
+	    this.data = data
+	    this.length = data.byteLength
+	}
+
+	seek(offset: number) { this.offset = offset }
+	read8(): number { return this.data.getUint8(this.offset++) }
+	read16(): number { var r = this.data.getUint16(this.offset); this.offset += 2; return r }
+	read32(): number { var r = this.data.getUint32(this.offset); this.offset += 4; return r }
+
+	peek8(): number { return this.data.getUint8(this.offset) }
+	peek16(): number { return this.data.getUint16(this.offset) }
+	peek32(): number { return this.data.getUint32(this.offset) }
+}
+
+function assert(value: boolean, message: string) {
+	if(!value)
+		throw "AssertionError: " + message
+}
+
+function assertEq<T>(value: T, expected: T, message: string) {
+	if(value !== expected)
+		throw `AssertionError: value (${value}) does not match expected (${expected}): ${message}`
 }

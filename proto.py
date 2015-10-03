@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# Parser/converter for Fallout 2 .PRO files to a JSON format
+# Parser/converter for Fallout 1 and 2 .PRO files to a JSON format
+
+# Fallout 1 mode
+FO1 = True
 
 import sys, os, struct, json
 
@@ -225,7 +228,7 @@ def readCritter(f):
 	obj["killType"] = read32(f)
 
 
-	if obj["killType"] in (5, 10): # Robots/Brahmin
+	if FO1 or obj["killType"] in (5, 10): # Robots/Brahmin
 		obj["damageType"] = None
 	else:
 		obj["damageType"] = read32(f)

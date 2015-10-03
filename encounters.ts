@@ -395,13 +395,13 @@ var Encounters = (function() {
 
 			var firstGroup = Worldmap.getEncounterGroup(firstParty.name)
 			var firstCritterCount = getRandomInt(firstParty.start, firstParty.end)
-			groups.push({critters: evalEncounterCritters(firstCritterCount, firstGroup), target: 1})
+			groups.push({critters: evalEncounterCritters(firstCritterCount, firstGroup), target: 1, position: firstGroup.position})
 
 			// one-party fighting? TODO: check what all is allowed with `fighting`
 			if(secondParty.name !== undefined) {
 				var secondGroup = Worldmap.getEncounterGroup(secondParty.name)
 				var secondCritterCount = getRandomInt(secondParty.start, secondParty.end)
-				groups.push({critters: evalEncounterCritters(secondCritterCount, secondGroup), target: 0})
+				groups.push({critters: evalEncounterCritters(secondCritterCount, secondGroup), target: 0, position: secondGroup.position})
 			}
 		}
 		else if(encounter.enc.type === "special") {
