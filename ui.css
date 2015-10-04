@@ -155,6 +155,11 @@ body {
     color: yellow;
 }
 
+.skilldex-digit1 { left: 0; }
+.skilldex-digit2 { left: 9; }
+.skilldex-digit3 { left: 18; }
+.skilldex-digit4 { left: 27; }
+
 #skilldex-lockpick {
     position: absolute;
     left: 25; top: 85;
@@ -165,10 +170,11 @@ body {
     left: 110; top: 85;
 }
 
-#skilldex-lockpick-digit1 { left: 0; }
-#skilldex-lockpick-digit2 { left: 9; }
-#skilldex-lockpick-digit3 { left: 18; }
-#skilldex-lockpick-digit4 { left: 27; }
+
+#skilldex-repair {
+    position: absolute;
+    left: 25; top: 300;
+}
 
 #displayLog {
     position: absolute;

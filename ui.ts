@@ -97,13 +97,6 @@ function initUI() {
 
 	$("#skilldexButton").click(() => uiToggleSkilldex())
 
-	$("#skilldex-lockpick").click(() => {
-		uiHideSkilldex()
-		uiMode = UI_MODE_USE_SKILL
-		skillMode = Skills.Lockpick
-		console.log("lockpicking")
-	})
-
 	function makeScrollable($el: any, scroll?: number) {
 		$el.bind("mousewheel DOMMouseScroll", function(e) {
 			var delta = (e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) ? -1 : 1
@@ -125,6 +118,18 @@ function initUI() {
 
 	drawHP(critterGetStat(player, "HP"))
 	uiDrawWeapon()
+
+	function useSkill(skill) {
+        return function() {
+            uiHideSkilldex()
+            uiMode = UI_MODE_USE_SKILL
+            skillMode = skill
+            console.log("using skill:", skill)
+        }
+    }
+
+    $("#skilldex-lockpick").click(useSkill(Skills.Lockpick))
+    $("#skilldex-repair").click(useSkill(Skills.Repair))
 }
 
 function uiShowSkilldex() {

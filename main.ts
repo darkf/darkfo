@@ -55,7 +55,8 @@ var uiMode: number = UI_MODE_NONE
 
 enum Skills {
 	None = 0,
-	Lockpick
+	Lockpick,
+	Repair
 }
 var skillMode: Skills = Skills.None
 
@@ -637,12 +638,15 @@ function isSelectableObject(obj: any) {
 function isPassiveSkill(skill: Skills): boolean {
 	switch(skill) {
 		case Skills.Lockpick: return false
+		case Skills.Repair: return false
 	}
 }
 
+// Return the skill ID used by the Fallout 2 engine
 function getSkillID(skill: Skills): number {
 	switch(skill) {
 		case Skills.Lockpick: return 9
+		case Skills.Repair: return 13
 	}
 
 	console.log("unimplemented skill %d", skill)
@@ -669,16 +673,19 @@ function playerUse() {
 	var obj = getObjectUnderCursor(isSelectableObject)
 	var who = <Critter>obj
 
-	if(obj === null) { // walk to the destination if there is no usable object
-		if(!player.walkTo(mouseHex, Config.engine.doAlwaysRun))
-			console.log("Cannot walk there")
-		return
-	}
-
 	if(uiMode === UI_MODE_USE_SKILL) { // using a skill on object
+		obj = getObjectUnderCursor(_ => true) // obj might not be usable, so select non-usable ones too
+		if(!obj)
+			return
 		playerUseSkill(skillMode, obj)
 		skillMode = Skills.None
 		uiMode = UI_MODE_NONE
+		return
+	}
+
+	if(obj === null) { // walk to the destination if there is no usable object
+		if(!player.walkTo(mouseHex, Config.engine.doAlwaysRun))
+			console.log("Cannot walk there")
 		return
 	}
 
