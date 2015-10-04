@@ -92,7 +92,7 @@ def readFile(f, fileEntry, checkSize=True):
 def mkdirs(path):
 	dir = ""
 	for component in path.split("\\"):
-		dir += component + "\\"
+		dir += component + "/"
 
 		if not os.path.exists(dir):
 			os.mkdir(dir)
@@ -103,7 +103,7 @@ def dumpFiles(f, outDir):
 	i = 1
 
 	for filename, fileEntry in dirTree.iteritems():
-		outPath = os.path.join(outDir, filename)
+		outPath = os.path.join(outDir, filename).replace("\\", "/")
 		mkdirs(outDir + "\\" + os.path.dirname(filename))
 
 		print("[%d/%d] dumping %s..." % (i, numFiles, filename))
