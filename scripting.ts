@@ -407,6 +407,7 @@ module scriptingEngine {
 		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
 		obj_can_hear_obj: function(a, b) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
 		critter_mod_skill: function(obj, skill, amount) { stub("critter_mod_skill", arguments); return 0 },
+		using_skill: function(obj, skill) { stub("using_skill", arguments); return 0 },
 		has_skill: function(obj, skill) { stub("has_skill", arguments); return 100 },
 		roll_vs_skill: function(obj, skill, bonus) { stub("roll_vs_skill", arguments); return 1 },
 		do_check: function(obj, check, modifier) { stub("do_check", arguments); return 1 },
@@ -459,6 +460,9 @@ module scriptingEngine {
 				return
 			}
 			critterDamage(obj, damage, this.self_obj, true, true, damageType)
+		},
+		critter_heal: function(obj, amount) {
+			stub("critter_heal", arguments)
 		},
 		poison: function(obj, amount) { stub("poison", arguments) },
 		radiation_dec: function(obj, amount) { stub("radiation_dec", arguments) },
