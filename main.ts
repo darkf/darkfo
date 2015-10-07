@@ -347,11 +347,36 @@ class GameMap {
 
 		player.clearAnim()
 
-		// remove the player from the old objects
-		_.pull(this.objects[oldElevation], player)
+		// remove the player/party from the old objects list
+		// and add the them to the new one
+		var party = gParty.getPartyMembersAndPlayer()
+		party.forEach((obj: Critter) => {
+			_.pull(this.objects[oldElevation], obj)
+			this.objects[level].push(obj)
+		})
 
-		// and add the player to the new one
-		this.objects[level].push(player)
+		// set up party members' positions
+		gParty.getPartyMembers().forEach((obj: Critter) => {
+			// attempt party member placement around player
+			var placed = false
+			for(var dist = 1; dist < 3; dist++) {
+				for(var dir = 0; dir < 6; dir++) {
+					var pos = hexInDirectionDistance(player.position, dir, dist)
+					if(objectsAtPosition(pos).length === 0) {
+						obj.position = pos
+						console.log("placed @ %o", pos)
+						placed = true
+						break
+					}
+				}
+
+				if(placed)
+					break
+			}
+
+			if(!placed)
+				console.log("couldn't place %o (player position: %o)", obj, player.position)
+		})
 
 		// set up renderer data
 		renderer.initData(this.roofMap, this.floorMap, this.getObjects())

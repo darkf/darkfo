@@ -29,6 +29,10 @@ class Party {
 		return this.party
 	}
 
+	getPartyMembersAndPlayer(): Critter[] {
+		return [<Critter>player].concat(this.party)
+	}
+
 	isPartyMember(obj: Critter) {
 		return _.includes(this.party, obj)
 	}
