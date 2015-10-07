@@ -1009,8 +1009,10 @@ module scriptingEngine {
 
 	export function timedEvent(script, userdata) {
 		info("timedEvent: " + script.scriptName + ": " + userdata, "timer")
-		if(script.timed_event_p_proc === undefined)
-			throw "timedEvent called on script without a timed_event_p_proc!"
+		if(script.timed_event_p_proc === undefined) {
+			warn(`timedEvent called on script without a timed_event_p_proc! script: ${script.scriptName} userdata: ${userdata}`)
+			return false
+		}
 
 		script.fixed_param = userdata
 		script._didOverride = false
