@@ -930,8 +930,14 @@ module scriptingEngine {
 		play_sfx: function(sfx) { stub("play_sfx", arguments) },
 
 		// party
-		party_member_obj: function(pid) { stub("party_member_obj", arguments, "party"); return 0 },
-		party_add: function(obj) { stub("party_add", arguments) }
+		party_member_obj: function(pid) {
+			log("party_member_obj", arguments, "party")
+			return gParty.getPartyMemberByPID(pid) || 0
+		},
+		party_add: function(obj) {
+			log("party_add", arguments)
+			gParty.addPartyMember(obj)
+		}
 	}
 
 	function loadMessageFile(name) {
