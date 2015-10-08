@@ -355,28 +355,7 @@ class GameMap {
 			this.objects[level].push(obj)
 		})
 
-		// set up party members' positions
-		gParty.getPartyMembers().forEach((obj: Critter) => {
-			// attempt party member placement around player
-			var placed = false
-			for(var dist = 1; dist < 3; dist++) {
-				for(var dir = 0; dir < 6; dir++) {
-					var pos = hexInDirectionDistance(player.position, dir, dist)
-					if(objectsAtPosition(pos).length === 0) {
-						obj.position = pos
-						console.log("placed @ %o", pos)
-						placed = true
-						break
-					}
-				}
-
-				if(placed)
-					break
-			}
-
-			if(!placed)
-				console.log("couldn't place %o (player position: %o)", obj, player.position)
-		})
+		this.placeParty()
 
 		// set up renderer data
 		renderer.initData(this.roofMap, this.floorMap, this.getObjects())
@@ -395,6 +374,31 @@ class GameMap {
 		}
 
 		centerCamera(player.position)
+	}
+
+	placeParty() {
+		// set up party members' positions
+		gParty.getPartyMembers().forEach((obj: Critter) => {
+			// attempt party member placement around player
+			var placed = false
+			for(var dist = 1; dist < 3; dist++) {
+				for(var dir = 0; dir < 6; dir++) {
+					var pos = hexInDirectionDistance(player.position, dir, dist)
+					if(objectsAtPosition(pos).length === 0) {
+						obj.position = pos
+						console.log("placed %o @ %o", obj, pos)
+						placed = true
+						break
+					}
+				}
+
+				if(placed)
+					break
+			}
+
+			if(!placed)
+				console.log("couldn't place %o (player position: %o)", obj, player.position)
+		})
 	}
 
 	loadMap(mapName: string, startingPosition?: Point, startingElevation?: number, loadedCallback?: () => void) {
@@ -491,7 +495,15 @@ class GameMap {
 		var objectsAndSpatials = this.getObjectsAndSpatials()
 
 		if(Config.engine.doLoadScripts) {
+			// party member NPCs get the new map script
+			gParty.getPartyMembers().forEach((obj: Critter) => {
+				obj._script._mapScript = this.mapScript
+			})
+
 			scriptingEngine.enterMap(this.mapScript, objectsAndSpatials, this.currentElevation, this.mapID, true)
+
+			// place party again, so if the map script overrided the start position we're in the right place
+			this.placeParty()
 	
 			// tell objects that they're now on the map
 			this.objects.forEach(level => level.forEach(obj => obj.enterMap()))
