@@ -574,7 +574,13 @@ class Critter extends Obj {
 				}
 				
 				// move to the start of the next partial action
-				this.frame = partials.actions[this.path.partial].startFrame
+				// we're already on its startFrame which coincides with the current endFrame,
+				// so we add one to get to the next frame.
+				// unless we're the first one, in which case just 0.
+				var nextFrame = partials.actions[this.path.partial].startFrame + 1
+				if(this.path.partial === 0)
+					nextFrame = 0
+				this.frame = nextFrame
 
 				// reset shift
 				this.shift = {x: 0, y: 0}
@@ -685,7 +691,7 @@ class Critter extends Obj {
 		this.art = critterGetAnim(this, this.anim)
 		this.animCallback = callback || (() => this.clearAnim())
 		this.frame = 0
-		this.lastFrameTime = 0
+		this.lastFrameTime = heart.timer.getTime()
 		this.shift = {x: 0, y: 0}
 		this.orientation = directionOfDelta(this.position.x, this.position.y, path[1][0], path[1][1])
 		//console.log("start dir: %o", this.orientation)
