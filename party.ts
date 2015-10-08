@@ -25,6 +25,11 @@ class Party {
 		this.party.push(obj)
 	}
 
+	removePartyMember(obj: Critter) {
+		console.log("party member %o removed", obj)
+		_.pull(this.party, obj)
+	}
+
 	getPartyMembers(): Critter[] {
 		return this.party
 	}

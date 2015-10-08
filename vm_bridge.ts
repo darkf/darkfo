@@ -121,12 +121,15 @@ module ScriptVMBridge {
        ,0x80AB: bridged("using_skill", 2)
        ,0x813C: bridged("critter_mod_skill", 3) // int or void?
        ,0x80EF: bridged("critter_dmg", 3, false)
+       ,0x80ed: bridged("kill_critter", 2, false)
+       ,0x811a: bridged("explosion", 3) // int?
        ,0x8123: bridged("get_poison", 1)
        ,0x80A1: bridged("give_exp_points", 1, false)
        ,0x8138: bridged("item_caps_total", 1)
        ,0x8139: bridged("item_caps_adjust", 2)
        ,0x80FB: bridged("critter_state", 1)
        ,0x8124: bridged("party_add", 1, false)
+       ,0x8125: bridged("party_remove", 1, false)
        ,0x814B: bridged("party_member_obj", 1)
        ,0x80EC: bridged("elevation", 1)
        ,0x80F2: bridged("game_ticks", 1)

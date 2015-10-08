@@ -86,6 +86,10 @@ module scriptingEngine {
 		return (globalVars[gvar] !== undefined) ? globalVars[gvar] : 0
 	}
 
+	export function getGlobalVars(): any {
+		return globalVars
+	}
+
 	function isGameObject(obj) {
 		// TODO: just use isinstance Obj?
 		if(obj === undefined || obj === null) return false
@@ -437,7 +441,10 @@ module scriptingEngine {
 
 			return state
 		},
-		kill_critter: function(obj, deathFrame) { stub("kill_critter", arguments) },
+		kill_critter: function(obj: Critter, deathFrame) {
+			info("kill_critter", arguments)
+			critterKill(obj, null)
+		},
 		get_poison: function(obj) { stub("get_poison", arguments); return 0 },
 		get_pc_stat: function(pcstat) {
 			switch(pcstat) {
@@ -935,8 +942,12 @@ module scriptingEngine {
 			return gParty.getPartyMemberByPID(pid) || 0
 		},
 		party_add: function(obj) {
-			log("party_add", arguments)
+			info("party_add", arguments)
 			gParty.addPartyMember(obj)
+		},
+		party_remove: function(obj) {
+			info("party_remove", arguments)
+			gParty.removePartyMember(obj)
 		}
 	}
 
