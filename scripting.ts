@@ -582,14 +582,18 @@ module scriptingEngine {
 		},
 		use_obj_on_obj: function(obj, who) { stub("use_obj_on_obj", arguments) },
 		use_obj: function(obj) { stub("use_obj", arguments) },
-		anim: function(obj, anim, direction) {
+		anim: function(obj, anim, param) {
 			if(!isGameObject(obj)) {
 				warn("anim: not a game object: " + obj)
 				return
 			}
 			stub("anim", arguments)
 			if(anim === 1000) // set rotation
-				obj.orientation = direction
+				obj.orientation = param
+			else if(anim === 1010) // set frame
+				obj.frame = param
+			else
+				warn("anim: unknown anim request: " + anim)
 		},
 
 		// environment
@@ -866,7 +870,17 @@ module scriptingEngine {
 			}
 		},
 		reg_anim_obj_move_to_tile: function(obj, tileNum, delay) { stub("reg_anim_obj_move_to_tile", arguments, "movement") },
-		explosion: function(tile, elevation, damage) { stub("explosion", arguments) },
+		explosion: function(tile, elevation, damage) {
+			info("explosion", arguments)
+
+			// TODO: objectExplode should defer to an auxillary tile explode function, which we should use
+			// Make dummy object so we can explode at the tile
+			var explosives = createObjectWithPID(makePID(0 /* items */, 85 /* Plastic Explosives */), -1)
+			explosives.position = fromTileNum(tile)
+			gMap.addObject(explosives)
+			objectExplode(explosives, explosives, 0, 100) // TODO: min/max dmg?
+			gMap.removeObject(explosives)
+		},
 
 		gfade_out: function(time) { stub("gfade_out", arguments) },
 		gfade_in: function(time) { stub("gfade_in", arguments) },
