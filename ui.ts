@@ -132,6 +132,44 @@ function initUI() {
     $("#skilldex-repair").click(useSkill(Skills.Repair))
 }
 
+function uiHideContextMenu() {
+	uiMode = UI_MODE_NONE
+	$("#itemContextMenu").css("visibility", "hidden")
+}
+
+function uiContextMenu(obj: Obj, evt: any) {
+	uiMode = UI_MODE_CONTEXT_MENU
+
+	function button(obj, action, onclick) {
+		return $("<img>").attr("id", "context_" + action).
+						  addClass("itemContextMenuButton").
+						  click(function() {
+						  		onclick()
+						  		uiHideContextMenu()
+						  })
+	}
+
+	var $menu = $("#itemContextMenu").css("visibility", "visible").html("").
+	                                  css({left: evt.clientX,
+	                                  	   top: evt.clientY})
+	var cancelBtn = button(obj, "cancel", () => {})
+	var lookBtn = button(obj, "look", () => uiLog("You see: " + obj.getDescription()))
+	var useBtn = button(obj, "use", () => playerUse()) // TODO: playerUse should take an object
+	var talkBtn = button(obj, "talk", () => {
+			console.log("talking to " + obj.name)
+			scriptingEngine.talk(obj._script, obj)
+	})
+	var pickupBtn = button(obj, "pickup", () => pickupObject(obj, player))
+
+	$menu.append(cancelBtn)
+	$menu.append(lookBtn)
+	if(obj._script && obj._script.talk_p_proc !== undefined)
+		$menu.append(talkBtn)
+	if(canUseObject(obj))
+		$menu.append(useBtn)
+	$menu.append(pickupBtn)
+}
+
 function uiShowSkilldex() {
 	uiMode = UI_MODE_SKILLDEX
 	$("#skilldex").show()

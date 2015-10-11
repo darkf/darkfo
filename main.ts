@@ -50,7 +50,8 @@ var _lastFPSTime: number = 0 // Time since FPS counter was last updated
 // TODO: enum this
 var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3,
     UI_MODE_INVENTORY = 4, UI_MODE_WORLDMAP = 5, UI_MODE_ELEVATOR = 6,
-    UI_MODE_CALLED_SHOT = 7, UI_MODE_SKILLDEX = 8, UI_MODE_USE_SKILL = 9
+    UI_MODE_CALLED_SHOT = 7, UI_MODE_SKILLDEX = 8, UI_MODE_USE_SKILL = 9,
+    UI_MODE_CONTEXT_MENU = 10
 var uiMode: number = UI_MODE_NONE
 
 enum Skills {
@@ -235,6 +236,13 @@ function dropObject(source, obj) {
 	gMap.addObject(obj) // add to objects
 	var idx = gMap.getObjects().length - 1 // our new index
 	obj.move({x: source.position.x, y: source.position.y}, idx)
+}
+
+function pickupObject(obj: Obj, source: Critter) {
+	if(obj._script) {
+		console.log("picking up %o", obj)
+		scriptingEngine.pickup(obj, source)
+	}
 }
 
 // Draws a line between a and b, returning the first object hit
@@ -656,6 +664,7 @@ heart.load = function() {
 	if(Config.engine.doCombat === true)
 		CriticalEffects.loadTable()
 
+    document.oncontextmenu = function() { return false }
 	$("#cnv").mouseenter(function() { gameHasFocus = true }).
 	          mouseleave(function() { gameHasFocus = false })
 
@@ -705,6 +714,7 @@ function playerUseSkill(skill: Skills, obj: Obj): void {
 }
 
 function playerUse() {
+	// TODO: playerUse should take an object
 	var mousePos = heart.mouse.getPosition()
 	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 	var obj = getObjectUnderCursor(isSelectableObject)
@@ -801,9 +811,16 @@ function playerUse() {
 }
 
 heart.mousepressed = function(x, y, btn) {
-	if(isLoading === true) return
-	if(btn !== "l") return
-	playerUse()
+	if(isLoading)
+		return
+	else if(btn === "l")
+		playerUse()
+	else if(btn === "r") {
+		// item context menu
+		var obj = getObjectUnderCursor(isSelectableObject)
+		if(obj)
+			uiContextMenu(obj, {clientX: x, clientY: y})
+	}
 }
 
 heart.keydown = function(k) {

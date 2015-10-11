@@ -360,6 +360,15 @@ left: 472; top: 75;
 #context_drop { background-image: url("art/intrface/dropn.png"); }
 #context_drop:hover { background-image: url("art/intrface/droph.png"); }
 
+#context_look { background-image: url("art/intrface/lookn.png"); }
+#context_look:hover { background-image: url("art/intrface/lookh.png"); }
+
+#context_pickup { background-image: url("art/intrface/dropn.png"); }
+#context_pickup:hover { background-image: url("art/intrface/droph.png"); }
+
+#context_talk { background-image: url("art/intrface/talkn.png"); }
+#context_talk:hover { background-image: url("art/intrface/talkh.png"); }
+
 /* bar height is 99
    bottom of screen then is 501 */
 
