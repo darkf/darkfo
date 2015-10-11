@@ -591,6 +591,8 @@ class Critter extends Obj {
 
 				if(!this.move(hex))
 					return
+				if(!this.path) // it's possible for move() to have side effects which can clear the anim
+					return
 
 				// set orientation towards new path hex
 				pos = this.path.path[this.path.index]

@@ -426,7 +426,11 @@ module scriptingEngine {
 			stub("critter_inven_obj", arguments)
 			return undefined
 		},
-		critter_attempt_placement: function(obj, tile, elevation) { stub("critter_attempt_placement", arguments) },
+		critter_attempt_placement: function(obj, tileNum, elevation) {
+			stub("critter_attempt_placement", arguments)
+			// TODO: it should find a place around tileNum if it's occupied
+			return this.move_to(obj, tileNum, elevation)
+		},
 		critter_state: function(obj) {
 			/*stub("critter_state", arguments);*/
 			if(!isGameObject(obj)) {
@@ -723,10 +727,18 @@ module scriptingEngine {
 			}
 			if(elevation !== currentElevation) {
 				info("move_to: moving to elevation " + elevation)
-				gMap.removeObject(obj)
-				gMap.addObject(obj, elevation)
+
+				if(obj.isPlayer)
+					gMap.changeElevation(elevation, true)
+				else {
+					gMap.removeObject(obj)
+					gMap.addObject(obj, elevation)
+				}
 			}
 			obj.position = fromTileNum(tileNum)
+
+			if(obj.isPlayer)
+				centerCamera(obj.position)
 		},
 
 		// combat
@@ -1131,6 +1143,15 @@ module scriptingEngine {
 		obj._script._didOverride = false
 		obj._script.action_being_used = skillId
 		obj._script.use_skill_on_p_proc()
+		return obj._script._didOverride
+	}
+
+	export function pickup(obj: Obj, source: Critter): boolean {
+		obj._script.self_obj = obj
+		obj._script.source_obj = source
+		obj._script.cur_map_index = currentMapID
+		obj._script._didOverride = false
+		obj._script.pickup_p_proc()
 		return obj._script._didOverride
 	}
 
