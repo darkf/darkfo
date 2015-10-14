@@ -30,6 +30,7 @@ var animInfo = {"idle": {type: "static"},
                 "climb": {type: "static"},
                 "hitFront": {type: "static"},
                 "death": {type: "static"},
+                "death-explode": {type: "static"},
                 "run": {type: "move"}}
 
 var weaponSkins = {"uzi": 'i', "rifle": 'j'}
@@ -267,6 +268,7 @@ function critterGetAnim(obj: Critter, anim: string): string {
 				return base + 'bl'
 			}
 			return base + 'bo' // TODO: choose death animation better
+		case "death-explode": return base + 'bl'
 		default: throw "Unknown animation: " + anim
 	}
 }
@@ -353,21 +355,22 @@ function hitSpatialTrigger(position: Point): any { // TODO: return type (Spatial
 	return gMap.getSpatials().filter(spatial => hexDistance(position, spatial.position) <= spatial.range)
 }
 
-function critterKill(obj: Critter, source: Critter, useScript?: boolean, useAnim?: boolean, callback?: () => void) {
+function critterKill(obj: Critter, source: Critter, useScript?: boolean, animName?: string, callback?: () => void) {
 	obj.dead = true
 
 	if(useScript === undefined || useScript === true) {
 		scriptingEngine.destroy(obj, source)
 	}
 
-	if((useAnim === undefined || useAnim === true) && critterHasAnim(obj, "death")) {
-		critterStaticAnim(obj, "death", function() {
-			// todo: corpse-ify
-			obj.frame-- // go to last frame
-			obj.anim = undefined
-			if(callback) callback()
-		}, true)
-	}
+	if(!animName || !critterHasAnim(obj, animName))
+		animName = "death"
+
+	critterStaticAnim(obj, animName, function() {
+		// todo: corpse-ify
+		obj.frame-- // go to last frame
+		obj.anim = undefined
+		if(callback) callback()
+	}, true)
 }
 
 function critterDamage(obj: Critter, damage: number, source: Critter, useScript?: boolean, useAnim?: boolean, damageType?: string, callback?: () => void) {
