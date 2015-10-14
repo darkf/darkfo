@@ -59,7 +59,7 @@ def getFRXTasks(palette, dataDir, outDir, exportImage=True):
 			# TODO: validate that images are ordered FR0 to FRn
 
 			name = '%s/%s' % (subdir, basename)
-			outpath = "%s/%s.gif" % (outDir, name)
+			outpath = "%s/%s.png" % (outDir, name)
 
 			yield (name, images, outpath, palette, exportImage)
 
