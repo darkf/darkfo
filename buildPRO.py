@@ -19,7 +19,7 @@ limitations under the License.
 import os, glob, json
 import proto
 
-subdirs = ("items", "critters","scenery", "walls")
+subdirs = ("items", "critters", "scenery", "walls", "misc")
 
 if not os.path.exists("proto"):
 	os.mkdir("proto")
