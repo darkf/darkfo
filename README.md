@@ -32,6 +32,8 @@ Once you've got all that, you can start trying it out. I'll assume you're in a c
 
 - Run `python buildPRO.py`
 
+- Run `python parseCritTable.py path/to/fallout2.exe`
+
 - OPTIONAL: If you want sound, run `python convertAudio.py`. You'll need the `acm2wav` tool (you can get it from No Mutants Allowed). 
 
 - Run `python fo2map.py data/maps/gecksetl.map` (or whichever map you want to run, substituting `gecksetl` here.)
