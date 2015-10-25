@@ -111,7 +111,7 @@ module scriptingEngine {
 	}
 
 	function getScriptName(id) {
-		return getLstId("scripts/scripts", id - 1).split(".")[0]
+		return getLstId("scripts/scripts", id - 1).split(".")[0].toLowerCase()
 	}
 
 	function getScriptMessage(id, msg) {
@@ -978,8 +978,9 @@ module scriptingEngine {
 	}
 
 	function loadMessageFile(name) {
+		name = name.toLowerCase()
 		info("loading message file: " + name, "load")
-		var msg = getFileText("data/text/english/dialog/" + name + ".MSG")
+		var msg = getFileText("data/text/english/dialog/" + name + ".msg")
 		if(scriptMessages[name] === undefined)
 			scriptMessages[name] = {}
 

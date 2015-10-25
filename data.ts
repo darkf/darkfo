@@ -40,7 +40,7 @@ function parseAreas(data) {
 	for(var _area in areas) {
 		var area = areas[_area]
 		var areaID = _area.match(/Area (\d+)/)
-		if(areaID === null) throw "CITY.TXT: invalid area name: " + area.area_name
+		if(areaID === null) throw "city.txt: invalid area name: " + area.area_name
 		areaID = parseInt(areaID[1])
 		var worldPos = area.world_pos.split(",").map(function(x) { return parseInt(x) })
 
@@ -104,7 +104,7 @@ function areaContainingMap(mapName) {
 }
 
 function loadAreas() {
-	return parseAreas(getFileText("data/data/CITY.TXT"))
+	return parseAreas(getFileText("data/data/city.txt"))
 }
 
 function allAreas() {
@@ -117,6 +117,7 @@ function allAreas() {
 }
 
 function loadMessage(name) {
+	name = name.toLowerCase()
 	var msg = getFileText("data/text/english/game/" + name + ".msg")
 	if(messageFiles[name] === undefined)
 		messageFiles[name] = {}

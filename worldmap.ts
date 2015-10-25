@@ -391,7 +391,7 @@ module Worldmap {
 		$worldmapTarget = $("#worldmapTarget")
 		$worldmap = $("#worldmap")
 
-		worldmap = parseWorldmap(getFileText("data/data/WORLDMAP.TXT"))
+		worldmap = parseWorldmap(getFileText("data/data/worldmap.txt"))
 
 		if(mapAreas === null)
 			mapAreas = loadAreas()

@@ -552,13 +552,13 @@ function parseMapInfo() {
 	if(mapInfo !== null)
 		return
 	
-	// parse map info from data/data/MAPS.TXT
+	// parse map info from data/data/maps.txt
 	mapInfo = {}
-	var text = getFileText("data/data/MAPS.TXT")
+	var text = getFileText("data/data/maps.txt")
 	var ini = parseIni(text)
 	for(var category in ini) {
 		var id = category.match(/Map (\d+)/)[1]
-		if(id === null) throw "MAPS.TXT: invalid category: " + category
+		if(id === null) throw "maps.txt: invalid category: " + category
 		id = parseInt(id)
 
 		var randomStartPoints = []
