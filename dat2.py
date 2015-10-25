@@ -35,7 +35,7 @@ def read16At(buf, idx):
 def read32At(buf, idx):
 	return struct.unpack('<l', buf[idx:idx + 4])[0]
 
-def readDAT(f, keepFilenameCase=False):
+def readDAT(f, keepFilenameCase=False, posixPaths=False):
 	# read the size of the dir tree and data block
 	f.seek(-8, SEEK_END)
 
@@ -67,6 +67,8 @@ def readDAT(f, keepFilenameCase=False):
 
 		if not keepFilenameCase:
 			filename = filename.lower()
+		if posixPaths:
+			filename = filename.replace("\\", "/")
 
 		dirTree[filename] = File(filename, compressed, unpackedSize, packedSize, offset)
 
@@ -91,20 +93,20 @@ def readFile(f, fileEntry, checkSize=True):
 
 def mkdirs(path):
 	dir = ""
-	for component in path.split("\\"):
+	for component in path.split("/"):
 		dir += component + "/"
 
 		if not os.path.exists(dir):
 			os.mkdir(dir)
 
 def dumpFiles(f, outDir):
-	dirTree = readDAT(f)
+	dirTree = readDAT(f, posixPaths=True)
 	numFiles = len(dirTree)
 	i = 1
 
 	for filename, fileEntry in dirTree.iteritems():
-		outPath = os.path.join(outDir, filename).replace("\\", "/")
-		mkdirs(outDir + "\\" + os.path.dirname(filename))
+		outPath = os.path.join(outDir, filename)
+		mkdirs(outDir + "/" + os.path.dirname(filename))
 
 		print("[%d/%d] dumping %s..." % (i, numFiles, filename))
 		with open(outPath, "wb") as fp:
