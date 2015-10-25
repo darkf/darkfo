@@ -33,7 +33,7 @@ def convertFRX(task):
 	return ('art/'+name, frmpixels.exportFRMs(images, outpath, palette, exportImage))
 
 def getFRMTasks(palette, dataDir, outDir, exportImage=True):
-	subdirFRMs = [glob.glob("%s/art/%s/*.FRM" % (dataDir, subdir)) for subdir in SUBDIRS]
+	subdirFRMs = [glob.glob("%s/art/%s/*.frm" % (dataDir, subdir)) for subdir in SUBDIRS]
 	#totalNum = sum(len(x) for x in subdirFRMs)
 	
 	for subdirIdx,FRMs in enumerate(subdirFRMs):
@@ -46,7 +46,7 @@ def getFRMTasks(palette, dataDir, outDir, exportImage=True):
 			yield (name, FRM, outpath, palette, exportImage)
 
 def getFRXTasks(palette, dataDir, outDir, exportImage=True):
-	subdirFRMs = [glob.glob("%s/art/%s/*.FR0" % (dataDir, subdir)) for subdir in SUBDIRS]
+	subdirFRMs = [glob.glob("%s/art/%s/*.fr0" % (dataDir, subdir)) for subdir in SUBDIRS]
 	#totalNum = sum(len(x) for x in subdirFRMs)
 
 	for subdirIdx,FRMs in enumerate(subdirFRMs):
@@ -54,7 +54,7 @@ def getFRXTasks(palette, dataDir, outDir, exportImage=True):
 		
 		for FRM in FRMs:
 			basename = os.path.splitext(os.path.basename(FRM))[0].lower()
-			images = glob.glob("%s/art/%s/%s.FR[0-5]" % (dataDir, subdir, basename))
+			images = glob.glob("%s/art/%s/%s.fr[0-5]" % (dataDir, subdir, basename))
 			#print "images:", images
 			# TODO: validate that images are ordered FR0 to FRn
 

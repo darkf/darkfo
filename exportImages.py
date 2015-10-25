@@ -49,7 +49,7 @@ def main():
 		if not os.path.exists(dir):
 			os.mkdir(dir)
 
-	subdirFRMs = [glob.glob("%s/art/%s/*.FRM" % (DATA_DIR, subdir)) for subdir in subdirs]
+	subdirFRMs = [glob.glob("%s/art/%s/*.frm" % (DATA_DIR, subdir)) for subdir in subdirs]
 	totalNum = sum(len(x) for x in subdirFRMs)
 
 	if '--update' in sys.argv:
