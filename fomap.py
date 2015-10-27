@@ -19,6 +19,8 @@ limitations under the License.
 from __future__ import print_function
 import sys, os, struct, json
 
+FO1_MODE = None # global
+DATA_DIR = None # global
 SCRIPT_TYPES = ["s_system", "s_spatial", "s_time", "s_item", "s_critter"]
 
 def read16(f):
@@ -53,6 +55,11 @@ def blankTileMap():
     # 100x100 2D array
     return [[0]*100 for _ in range(100)]
 
+def getProSubType(path):
+    with open(os.path.join(DATA_DIR, path), "rb") as f:
+        f.seek(0x20)
+        return readU32(f)
+
 def parseTiles(f, numLevels):
     # parse floor/roof tiles
     floorTiles = [blankTileMap() for _ in range(numLevels)]
@@ -70,8 +77,6 @@ def parseTiles(f, numLevels):
     return floorTiles, roofTiles
 
 def parseMapScripts(f, scriptLst):
-    print("todo: map scripts")
-
     totalScriptCount = 0
     spatials = []
     mapScriptPIDs = [{} for _ in range(5)]
@@ -116,7 +121,7 @@ def parseMapScripts(f, scriptLst):
                     # we're in the range of valid scripts
 
                     if pid_type == 1: # spatial scripts
-                        if script.range > 50:
+                        if spatialRange > 50:
                             # this is a hack because, presumably due to this entire
                             # procedure being undocumented hacks that need better
                             # reverse engineering, we get garbage that is not
@@ -148,29 +153,249 @@ def parseMapScripts(f, scriptLst):
 
     return {"count": totalScriptCount, "spatials": spatials, "mapScriptPIDs": mapScriptPIDs}
 
-def parseMapObjects(f):
-    print("todo: map objects")
+# TODO: rewrite this
+def getCritterArtPath(frmPID, critterLst):
+    idx =  frmPID & 0x00000fff
+    id1 = (frmPID & 0x0000f000) >> 12
+    id2 = (frmPID & 0x00ff0000) >> 16
+    id3 = (frmPID & 0x70000000) >> 28
 
-def parseLevel(level, floorTiles, roofTiles, objects, tilesLst):
-    def transformTile(idx):
-        return stripExt(tilesLst[idx].rstrip()).lower()
+    if (id2 == 0x1b or id2 == 0x1d or
+            id2 == 0x1e or id2 == 0x37 or
+            id2 == 0x39 or id2 == 0x3a or
+            id2 == 0x21 or id2 == 0x40):
+        raise Exception("reindex")
 
-    def transformTileMap(tileMap):
-        return [[transformTile(idx) for idx in row] for row in tileMap]
+    path = "art/critters/" + critterLst[idx].split(",")[0].upper()
 
-    return {"tiles": {"floor": transformTileMap(floorTiles[level]),
-                      "roof": transformTileMap(roofTiles[level])
-                     },
-            "spatials": [],
-            "objects": []
+    if (id1 >= 0x0b):
+        raise Exception("?")
+
+    if (id2 >= 0x26 and id2 <= 0x2f):
+        raise Exception("0x26 and 0x2f")
+    elif (id2 == 0x24):
+        path += "ch"
+    elif (id2 == 0x25):
+        path += "cj"
+    elif (id2 >= 0x30):
+        path += 'r' + chr(id2 + 0x31)
+    elif (id2 >= 0x14):
+        raise Exception("0x14")
+    elif (id2 == 0x12):
+        raise Exception("0x12")
+        if id1 == 0x01:
+            path += "dm"
+        elif id1 == 0x04:
+            path += "gm"
+        else:
+            path += "as"
+    elif (id2 == 0x0d):
+        raise Exception("0x0d")
+    else:
+        if (id2 <= 1 and id1 > 0):
+            path += chr(id1 + ord('c'))
+        else:
+            path += 'A'
+        path += chr(id2 + ord('a'))
+
+    path += ".fr"
+    if not id3:
+        path += "m"
+    else:
+        path += str(id3 - 1)
+
+    return path
+
+def parseItemObj(f, frmPID, protoPID, itemsLst, itemsProtoLst):
+    item = {"type": "item",
+            "artPath": "art/items/" + stripExt(itemsLst[frmPID & 0xffff])
+           }
+    subtype = getProSubType("proto/items/" + itemsProtoLst[(protoPID & 0xffff) - 1])
+    
+    if subtype == 4: # ammo
+        item["subtype"] = "ammo"
+        item["ammoCount"] = readU32(f)
+    elif subtype == 3: # weapon
+        item["subtype"] = "weapon"
+        f.read(8)
+    elif subtype == 1: # container
+        item["subtype"] = "container"
+    elif subtype == 0: # armor
+        item["subtype"] = "armor"
+    elif subtype == 2: # drug
+        item["subtype"] = "drug"
+    elif subtype == 5: # misc
+        item["subtype"] = "misc"
+        f.read(4) # unknown?
+    elif subtype == 6: # key
+        item["subtype"] = "key"
+        f.read(4) # unknown?
+
+    return item
+
+def parseObject(f, lstFiles):
+    f.read(4) # unknown (separator)
+    position = read32(f)
+    f.read(4*4) # unknown
+
+    frameNum = readU32(f)
+    orientation = readU32(f)
+    frmPID = readU32(f)
+    flags = readU32(f)
+    elevation = readU32(f)
+
+    protoPID = readU32(f)
+    objType = (protoPID >> 24) & 0xff
+
+    f.read(4) # unknown
+    lightRadius = readU32(f)
+    lightIntensity = readU32(f)
+
+    f.read(4) # unknown
+    mapPID = readU32(f)
+    scriptID = read32(f)
+    numInventory = readU32(f)
+    f.read(4*3) # unknown
+
+    # extra (per-type) object info
+    extra = {}
+    art = None
+    namedType = ""
+
+    # TODO: we should have a lookupArt function instead of looking them up directly here
+
+    if objType == 0: # item
+        extra = parseItemObj(f, frmPID, protoPID, lstFiles["items"], lstFiles["proto_items"])
+        namedType = "item"
+        art = extra["artPath"]
+
+        del extra["artPath"]
+        del extra["type"]
+
+    elif objType == 3: # wall
+        namedType = "wall"
+        art = "art/walls/" + stripExt(lstFiles["walls"][frmPID & 0xffff])
+
+    elif objType == 1: # critter
+        namedType = "critter"
+        art = stripExt(getCritterArtPath(frmPID, lstFiles["critters"]))
+
+        f.read(4*4)
+        extra["AInum"] = read32(f)
+        extra["groupID"] = readU32(f)
+        f.read(4)
+        extra["hp"] = readU32(f)
+        f.read(4*2)
+
+    elif objType == 2: # scenery
+        namedType = "scenery"
+        art = "art/scenery/" + stripExt(lstFiles["scenery"][frmPID & 0xffff])
+        subtype = getProSubType("proto/scenery/" + lstFiles["proto_scenery"][(protoPID & 0xffff) - 1])
+
+        """
+        # TODO: why have this? this just goes into the real "extra" field anyway
+        # may as well set the properties on extra (which should be renamed to item or something)
+        _extra = {}
+        extra["extra"] = _extra
+        """
+
+        if subtype == 0: # door
+            extra["subtype"] = "door"
+            f.read(4) # unknown?
+        elif subtype == 2: # elevator
+            extra["subtype"] = "elevator"
+            extra["type"] = readU32(f)
+            extra["level"] = readU32(f)
+        elif subtype == 1: # stairs
+            extra["subtype"] = "stairs"
+            extra["destination"] = read32(f)
+            extra["destinationMap"] = read32(f)
+        elif subtype in (3, 4): # ladder up/down
+            if not FO1_MODE: # FO2
+                extra["unknown1"] = read32(f)
+                extra["destination"] = read32(f)
+            else: # FO1
+                extra["destination"] = read32(f) # XXX / TODO: verify
+        else: # generic scenery
+            extra["subtype"] = "generic"
+
+    elif objType == 5: # misc
+        namedType = "misc"
+        art = "art/misc/" + stripExt(lstFiles["misc"][frmPID & 0xffff])
+
+        # exit grids
+        if (protoPID & 0xffff) != 1 and (protoPID & 0xffff) != 12:
+            extra["exitMapID"] = read32(f)
+            extra["startingPosition"] = read32(f)
+            extra["startingElevation"] = read32(f)
+            extra["startingOrientation"] = readU32(f)
+
+    inventory = []
+    for _ in range(numInventory):
+        amount = readU32(f)
+        invenObj = parseObject(f, lstFiles)
+        invenObj["amount"] = amount
+        inventory.append(invenObj)
+
+    obj =  {"type": namedType,
+            "pid": protoPID,
+            "pidID": protoPID & 0xffff,
+            "frmPID": frmPID,
+            "flags": flags,
+            "position": fromTileNum(position),
+            "orientation": orientation,
+            "lightRadius": lightRadius,
+            "lightIntensity": lightIntensity,
+            "inventory": inventory
            }
 
+    if art:
+        obj["art"] = art.lower()
+
+    if extra:
+        obj["extra"] = extra
+
+        if "subtype" in extra:
+            obj["subtype"] = extra["subtype"]
+
+    #if "extra" in extra:
+    #    obj["extra"] = extra["extra"]
+
+    #if "artPath" in extra:
+    #    obj["art"] = extra["artPath"].lower()
+
+    if scriptID != -1:
+        scriptName = stripExt(lstFiles["scripts"][scriptID].split()[0])
+        obj["script"] = scriptName
+    elif scriptID == -1 and mapPID != 0xFFFFFFFF:
+        # try to use the script IDs mapped in parseMapScripts
+        scriptType = (mapPID >> 24) & 0xff
+        scriptPID = mapPID & 0xffff
+        print("using map script for %s (script PID %d)" % (object_.extra.artPath, scriptPID))
+        scriptName = mapScriptPIDs[scriptType][scriptPID]
+        print("(map script %d type %d = %s)" %  (scriptPID, scriptType, scriptName))
+        obj["script"] = scriptName
+
+    return obj
+
+def parseLevelObjects(f, lstFiles):
+    numObjects = readU32(f)
+    return [parseObject(f, lstFiles) for _ in range(numObjects)]
+
+def parseMapObjects(f, numLevels, lstFiles):
+    numObjects = readU32(f)
+    return [parseLevelObjects(f, lstFiles) for _ in range(numLevels)]
+
 def parseMap(f, lstFiles):
+    global FO1_MODE
+
     version = readU32(f)
     if version == 19:
         namedVersion = "FO1"
+        FO1_MODE = True
     elif version == 20:
         namedVersion = "FO2"
+        FO1_MODE = False
     else:
         raise ValueError("not a FO1 or FO2 map")
 
@@ -194,7 +419,7 @@ def parseMap(f, lstFiles):
     floorTiles, roofTiles = parseTiles(f, numLevels)
 
     scripts = parseMapScripts(f, lstFiles["scripts"])
-    objects = parseMapObjects(f)
+    objects = parseMapObjects(f, numLevels, lstFiles)
 
     print("version:", version, namedVersion)
     print("name: %r" % mapName)
@@ -213,7 +438,7 @@ def parseMap(f, lstFiles):
                                  "roof": transformTileMap(roofTiles[level])
                                 },
                        "spatials":  [x for x in scripts["spatials"] if x["elevation"] == level],
-                       "objects": []
+                       "objects": objects[level]
                       })
 
     # return map
@@ -244,6 +469,8 @@ def getImageList(map):
     return list(images)
 
 def main():
+    global DATA_DIR
+
     if len(sys.argv) < 3:
         print("USAGE: %s DATA_DIR MAP_FILE [OUT_FILE]" % sys.argv[0])
         print("DATA_DIR should be the base directory where the .DATs are extracted")
@@ -257,7 +484,15 @@ def main():
         OUT_FILE = sys.argv[3]
 
     lstFiles = {"tiles": readLst(DATA_DIR, "art/tiles/tiles.lst"),
-                "scripts": readLst(DATA_DIR, "scripts/scripts.lst")}
+                "scenery": readLst(DATA_DIR, "art/scenery/scenery.lst"),
+                "proto_scenery": readLst(DATA_DIR, "proto/scenery/scenery.lst"),
+                "items": readLst(DATA_DIR, "art/items/items.lst"),
+                "proto_items": readLst(DATA_DIR, "proto/items/items.lst"),
+                "misc": readLst(DATA_DIR, "art/misc/misc.lst"),
+                "walls": readLst(DATA_DIR, "art/walls/walls.lst"),
+                "critters": readLst(DATA_DIR, "art/critters/critters.lst"),
+                "scripts": readLst(DATA_DIR, "scripts/scripts.lst")
+               }
 
     with open(MAP_FILE, "rb") as fin:
         with open(OUT_FILE, "wb") as fout:
