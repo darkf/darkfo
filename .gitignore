@@ -1,4 +1,5 @@
 *.json
+!tsconfig.json
 *.images.txt
 *.map
 *.pyc

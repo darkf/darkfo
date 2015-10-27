@@ -1,0 +1,48 @@
+{
+    "compilerOptions": {
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outDir": "js"
+    },
+
+    "files": [
+        "src/config.ts",
+
+        "src/util.ts",
+        "src/geometry.ts",
+        
+        "src/scripting.ts",
+        "src/intfile.ts",
+        "src/dis.ts",
+        "src/vm.ts",
+        "src/vm_bridge.ts",
+
+        "src/object.ts",
+        "src/critter.ts",
+        
+        "src/criticalEffects.ts",
+        "src/skillDependencies.ts",
+        "src/characterCreation.ts",
+
+        "src/data.ts",
+        "src/worldmap.ts",
+        "src/encounters.ts",
+
+
+        "src/lightmap.ts",
+        "src/lighting.ts",
+
+        "src/renderer.ts",
+        "src/canvasrenderer.ts",
+        "src/webglrenderer.ts",
+
+        "src/player.ts",
+        "src/party.ts",
+        "src/combat.ts",
+        
+        "src/ui.ts",
+        "src/audio.ts",
+
+        "src/main.ts"
+    ]
+}
