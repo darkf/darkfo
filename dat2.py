@@ -99,7 +99,7 @@ def mkdirs(path):
 		if not os.path.exists(dir):
 			os.mkdir(dir)
 
-def dumpFiles(f, outDir):
+def dumpFiles(f, outDir, verbose=True):
 	dirTree = readDAT(f, posixPaths=True)
 	numFiles = len(dirTree)
 	i = 1
@@ -108,7 +108,7 @@ def dumpFiles(f, outDir):
 		outPath = os.path.join(outDir, filename)
 		mkdirs(outDir + "/" + os.path.dirname(filename))
 
-		print("[%d/%d] dumping %s..." % (i, numFiles, filename))
+		if verbose: print("[%d/%d] dumping %s..." % (i, numFiles, filename.encode('ascii')))
 		with open(outPath, "wb") as fp:
 			try:
 				fp.write(readFile(f, fileEntry))
@@ -117,7 +117,7 @@ def dumpFiles(f, outDir):
 
 		i += 1
 
-	print("done")
+	if verbose: print("done")
 
 def main():
 	if len(sys.argv) < 3:
