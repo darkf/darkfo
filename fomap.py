@@ -470,6 +470,35 @@ def getImageList(map):
 
     return list(images)
 
+def exportMap(dataDir, mapFile, outFile, verbose=False):
+    global DATA_DIR
+
+    DATA_DIR = dataDir # TODO: make this not global
+
+    lstFiles = {"tiles": readLst(DATA_DIR, "art/tiles/tiles.lst"),
+                "scenery": readLst(DATA_DIR, "art/scenery/scenery.lst"),
+                "proto_scenery": readLst(DATA_DIR, "proto/scenery/scenery.lst"),
+                "items": readLst(DATA_DIR, "art/items/items.lst"),
+                "proto_items": readLst(DATA_DIR, "proto/items/items.lst"),
+                "misc": readLst(DATA_DIR, "art/misc/misc.lst"),
+                "walls": readLst(DATA_DIR, "art/walls/walls.lst"),
+                "critters": readLst(DATA_DIR, "art/critters/critters.lst"),
+                "scripts": readLst(DATA_DIR, "scripts/scripts.lst")
+               }
+
+    with open(mapFile, "rb") as fin:
+        with open(outFile, "wb") as fout:
+            if verbose: print("writing %s..." % outFile)
+            map = parseMap(fin, lstFiles)
+            json.dump(map, fout)
+
+            # write image list
+            if verbose: print("writing image list...")
+            with open(stripExt(outFile) + ".images.json", "wb") as fimg:
+                json.dump(getImageList(map), fimg)
+
+            if verbose: print("done")
+
 def main():
     global DATA_DIR
 
@@ -485,29 +514,7 @@ def main():
     if len(sys.argv) == 4:
         OUT_FILE = sys.argv[3]
 
-    lstFiles = {"tiles": readLst(DATA_DIR, "art/tiles/tiles.lst"),
-                "scenery": readLst(DATA_DIR, "art/scenery/scenery.lst"),
-                "proto_scenery": readLst(DATA_DIR, "proto/scenery/scenery.lst"),
-                "items": readLst(DATA_DIR, "art/items/items.lst"),
-                "proto_items": readLst(DATA_DIR, "proto/items/items.lst"),
-                "misc": readLst(DATA_DIR, "art/misc/misc.lst"),
-                "walls": readLst(DATA_DIR, "art/walls/walls.lst"),
-                "critters": readLst(DATA_DIR, "art/critters/critters.lst"),
-                "scripts": readLst(DATA_DIR, "scripts/scripts.lst")
-               }
-
-    with open(MAP_FILE, "rb") as fin:
-        with open(OUT_FILE, "wb") as fout:
-            print("writing %s..." % OUT_FILE)
-            map = parseMap(fin, lstFiles)
-            json.dump(map, fout)
-
-            # write image list
-            print("writing image list...")
-            with open(stripExt(OUT_FILE) + ".images.json", "wb") as fimg:
-                json.dump(getImageList(map), fimg)
-
-            print("done")
+    exportMap(DATA_DIR, MAP_FILE, OUT_FILE, verbose=True)
 
 if __name__ == '__main__':
     main()
