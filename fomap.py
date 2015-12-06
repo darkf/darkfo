@@ -23,6 +23,8 @@ FO1_MODE = None # global
 DATA_DIR = None # global
 SCRIPT_TYPES = ["s_system", "s_spatial", "s_time", "s_item", "s_critter"]
 
+mapScriptPIDs = [{} for _ in range(5)]
+
 def read16(f):
     return struct.unpack("!h", f.read(2))[0]
 
@@ -79,7 +81,6 @@ def parseTiles(f, numLevels):
 def parseMapScripts(f, scriptLst):
     totalScriptCount = 0
     spatials = []
-    mapScriptPIDs = [{} for _ in range(5)]
 
     for scriptType in range(5):
         scriptCount = read32(f)
@@ -371,7 +372,7 @@ def parseObject(f, lstFiles):
         # try to use the script IDs mapped in parseMapScripts
         scriptType = (mapPID >> 24) & 0xff
         scriptPID = mapPID & 0xffff
-        print("using map script for %s (script PID %d)" % (object_.extra.artPath, scriptPID))
+        print("using map script for %s (script PID %d)" % (art, scriptPID))
         scriptName = mapScriptPIDs[scriptType][scriptPID]
         print("(map script %d type %d = %s)" %  (scriptPID, scriptType, scriptName))
         obj["script"] = scriptName
@@ -399,7 +400,8 @@ def parseMap(f, lstFiles):
     else:
         raise ValueError("not a FO1 or FO2 map")
 
-    mapName = f.read(16).decode('ascii').rstrip('\0')
+    mapName = f.read(16).decode('ascii')
+    mapName = mapName[:mapName.index('\0')]
     playerPosition = read32(f)
     playerElevation = read32(f)
     playerOrientation = read32(f)
