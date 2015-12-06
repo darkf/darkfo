@@ -66,6 +66,64 @@ def getFRXTasks(palette, dataDir, outDir, exportImage=True):
 def flatten(l):
 	return [item for sublist in l for item in sublist]
 
+def readPAL(path):
+	palette = pal.readPAL(open(path, "rb"))
+	palette = flatten([r, g, b] for r, g, b in palette)
+	return palette
+
+def convertAll(palette, dataDir, outDir, mode='both', imageMapMode='yes', nProcs=N_PROCS, verbose=False):
+	# Convert FRMs and FR[0-9]s, and output an image map
+
+	start_time = time.clock()
+
+	if not os.path.exists(outDir):
+		os.mkdir(outDir)
+
+	exportImage = imageMapMode != 'only'
+
+	imageInfo = {}
+
+	for subdir in SUBDIRS:
+		dir = os.path.join(outDir, subdir)
+		if not os.path.exists(dir):
+			os.mkdir(dir)
+
+	pool = multiprocessing.Pool(processes=nProcs)
+
+	if mode == 'frx' or mode == 'both':
+		if verbose: print "scanning directories for FR[0-5]s..."
+		tasks = list(getFRXTasks(palette, dataDir, outDir, exportImage))
+		numTasks = len(tasks)
+		i = 1
+		
+		if verbose: print "processing %d FR[0-5]s..." % numTasks
+		for (k,v) in pool.imap(convertFRX, tasks, chunksize=CHUNKSIZE):
+			if verbose: print "[%d/%d] %s..." % (i, numTasks, k)
+			imageInfo[k] = v
+			i += 1
+
+	if mode == 'frm' or mode == 'both':
+		if verbose:
+			print ""
+			print "scanning directories for FRMs..."
+		tasks = list(getFRMTasks(palette, dataDir, outDir, exportImage))
+		numTasks = len(tasks)
+		i = 1
+
+		if verbose: print "processing FRMs..."
+		for (k,v) in pool.imap(convertFRM, tasks, chunksize=CHUNKSIZE):
+			if verbose: print "[%d/%d] %s..." % (i, numTasks, k)
+			imageInfo[k] = v
+			i += 1
+
+	if imageMapMode != 'no':
+		if verbose: print "writing image map..."
+		
+		# write new imageMap
+		json.dump(imageInfo, open(outDir + "/imageMap.json", "w"))
+
+	return time.clock() - start_time
+
 def main():
 	if len(sys.argv) < 5:
 		print "USAGE: %s PALETTE DATA_DIR OUT_DIR MODE [--no-map] [--only-map]" % sys.argv[0]
@@ -79,56 +137,17 @@ def main():
 	outDir = sys.argv[3]
 	mode = sys.argv[4]
 
-	if not os.path.exists(outDir):
-		os.mkdir(outDir)
+	palette = readPAL(palettePath)
 
-	exportImage = '--only-map' not in sys.argv
+	imageMapMode = 'yes'
+	if '--no-map' in sys.argv:
+		imageMapMode = 'no'
+	if '--only-map' in sys.argv:
+		imageMapMode = 'only'
 
-	palette = pal.readPAL(open(palettePath, "rb"))
-	palette = flatten([r, g, b] for r, g, b in palette)
-
-	imageInfo = {}
-
-	for subdir in SUBDIRS:
-		dir = '%s/%s' % (outDir, subdir)
-		if not os.path.exists(dir):
-			os.mkdir(dir)
-
-	pool = multiprocessing.Pool(processes=N_PROCS)
-
-	if mode == 'frx' or mode == 'both':
-		print "scanning directories for FR[0-5]s..."
-		tasks = list(getFRXTasks(palette, dataDir, outDir, exportImage))
-		numTasks = len(tasks)
-		i = 1
-		
-		print "processing %d FR[0-5]s..." % numTasks
-		for (k,v) in pool.imap(convertFRX, tasks, chunksize=CHUNKSIZE):
-			print "[%d/%d] %s..." % (i, numTasks, k)
-			imageInfo[k] = v
-			i += 1
-
-	if mode == 'frm' or mode == 'both':
-		print ""
-		print "scanning directories for FRMs..."
-		tasks = list(getFRMTasks(palette, dataDir, outDir, exportImage))
-		numTasks = len(tasks)
-		i = 1
-
-		print "processing FRMs..."
-		for (k,v) in pool.imap(convertFRM, tasks, chunksize=CHUNKSIZE):
-			print "[%d/%d] %s..." % (i, numTasks, k)
-			imageInfo[k] = v
-			i += 1
-
-	if '--no-map' not in sys.argv:
-		print "writing image map..."
-		
-		# write new imageMap
-		json.dump(imageInfo, open('%s/imageMap.json' % outDir, "w"))
+	elapsedTime = convertAll(palette, dataDir, outDir, mode, imageMapMode, verbose=True)
+	print "Took %r seconds" % elapsedTime
 
 
 if __name__ == '__main__':
-	start_time = time.clock()
 	main()
-	print("--- %s seconds ---" % (time.clock() - start_time))
