@@ -21,19 +21,29 @@ import proto
 
 subdirs = ("items", "critters", "scenery", "walls", "misc")
 
-if not os.path.exists("proto"):
-	os.mkdir("proto")
+def onError(path):
+	print "error reading", path
 
-for subdir in subdirs:
-	if not os.path.exists("proto/" + subdir):
-		os.mkdir("proto/" + subdir)
+def extractPROs(dataProtoPath, outDir, onError=onError, verbose=False):
+	if not os.path.exists(outDir):
+		os.mkdir(outDir)
 
-	for protofile in glob.glob("data/proto/" + subdir + "/*.pro"):
-		baseFile = os.path.basename(os.path.splitext(protofile)[0])
+	for subdir in subdirs:
+		if not os.path.exists(os.path.join(outDir, subdir)):
+			os.mkdir(os.path.join(outDir, subdir))
 
-		try:
-			pro = proto.readPRO(open(protofile, "rb"))
-			json.dump(pro, open("proto/" + subdir + "/" + baseFile + ".pro.json", "w"))
-			print "dumping: ", protofile
-		except Exception:
-			print "error reading", protofile
+		for protofile in glob.glob(os.path.join(dataProtoPath, subdir, "*.pro")):
+			baseFile = os.path.basename(os.path.splitext(protofile)[0])
+
+			try:
+				pro = proto.readPRO(open(protofile, "rb"))
+				json.dump(pro, open(os.path.join(outDir, subdir, baseFile + ".pro.json"), "w"))
+				if verbose: print "dumping:", protofile
+			except Exception:
+				onError(protofile)
+
+def main():
+	extractPROs(os.path.join("data", "proto"), "proto", verbose=True)
+
+if __name__ == "__main__":
+	main()
