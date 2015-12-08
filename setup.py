@@ -20,6 +20,7 @@ from __future__ import print_function
 import sys, os, glob, json, traceback
 import dat2
 import parseCritTable
+import parseElevatorTable
 import exportImagesPar
 import buildPRO
 import fomap
@@ -31,6 +32,7 @@ EXE_PATH = None
 
 def error(msg):
 	print("ERROR:", msg)
+	raw_input("")
 	sys.exit(1)
 
 def warn(msg):
@@ -88,6 +90,22 @@ def parse_crit_table():
 
 	return True
 
+def parse_elevator_table():
+	if EXE_PATH is not None:
+		info("Parsing elevator table from fallout2.exe...")
+		try:
+			with open(EXE_PATH, "rb") as fp:
+				elevators = parseElevatorTable.parseElevators(fp)
+				json.dump(elevators, open("elevators.json", "w"))
+				info("Done parsing elevator table")
+		except Exception:
+			traceback.print_exc()
+			warn("Error occurred while parsing elevator table (see traceback above).")
+	else:
+		warn("Cannot parse elevator table, missing fallout2.exe")
+
+	return True
+
 def extract_dats():
 	# Create data directory
 	if not os.path.exists("data"):
@@ -138,8 +156,6 @@ def export_pros():
 
 	return True
 
-# TODO: parse critical table from fallout2.exe using parseCritTable
-
 # TODO: extract audio using convertAudio
 
 def export_maps():
@@ -182,14 +198,17 @@ def main():
 
 	setup_check()
 	parse_crit_table()
+	parse_elevator_table()
 	extract_dats()
 	if not NO_EXPORT_IMAGES:
 		export_images()
 	export_pros()
 	export_maps()
 
+	info("")
 	info("Setup complete. Please review the messages above, looking for any warnings.")
 	info("Please run tsc after this to compile the source files.")
+	raw_input("")
 
 if __name__ == "__main__":
 	main()

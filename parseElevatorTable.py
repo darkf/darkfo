@@ -1,5 +1,5 @@
 """
-Copyright 2014 darkf
+Copyright 2014-2015 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ INFO = 0x0002EE7C # Information like coordinates for each type
 def read32(f):
 	return struct.unpack("<l", f.read(4))[0]
 
-def parseElevators(f):
+def parseElevators(f, verbose=False):
 	out = {}
 
 	# generic images
@@ -67,16 +67,17 @@ def parseElevators(f):
 				elevators[i]['buttons'][btn]['level'] = read32(f)
 				elevators[i]['buttons'][btn]['tileNum'] = read32(f)
 
-	for i in range(NUM_ELEVATORS):
-		print "elevator", i
-		print "  type:", elevators[i]['type']
-		if elevators[i]['labels'] != -1:
-			print "  labels:", elevators[i]['labels']
-		print "  num buttons:", elevators[i]['buttonCount']
+	if verbose:
+		for i in range(NUM_ELEVATORS):
+			print "elevator", i
+			print "  type:", elevators[i]['type']
+			if elevators[i]['labels'] != -1:
+				print "  labels:", elevators[i]['labels']
+			print "  num buttons:", elevators[i]['buttonCount']
 
-		print "  buttons:"
-		for btn in elevators[i]['buttons']:
-			print "    -> map %d, level %d, tile %d" % (btn['mapID'], btn['level'], btn['tileNum'])
+			print "  buttons:"
+			for btn in elevators[i]['buttons']:
+				print "    -> map %d, level %d, tile %d" % (btn['mapID'], btn['level'], btn['tileNum'])
 
 	return out
 
@@ -86,7 +87,7 @@ def main():
 		sys.exit(1)
 
 	with open(sys.argv[1], "rb") as f:
-		elevators = parseElevators(f)
+		elevators = parseElevators(f, verbose=True)
 		with open("elevators.json", "w") as g:
 			json.dump(elevators, g)
 
