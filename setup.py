@@ -17,8 +17,9 @@ limitations under the License.
 # Setup script to import Fallout 2 data for DarkFO
 
 from __future__ import print_function
-import sys, os, glob, traceback
+import sys, os, glob, json, traceback
 import dat2
+import parseCritTable
 import exportImagesPar
 import buildPRO
 import fomap
@@ -26,6 +27,7 @@ import fomap
 SRC_DIR = None
 NO_EXTRACT_DAT = False
 NO_EXPORT_IMAGES = False
+EXE_PATH = None
 
 def error(msg):
 	print("ERROR:", msg)
@@ -38,6 +40,8 @@ def info(msg):
 	print(msg)
 
 def setup_check():
+	global EXE_PATH
+
 	# Check whether everything we need to set up is included in the given source directory
 
 	print("Checking installation directory (%s)..." % SRC_DIR)
@@ -51,6 +55,8 @@ def setup_check():
 		error("Installation directory does not contain master.dat or critter.dat, please ensure they exist.")
 	if not install_file_exists("fallout2.exe"):
 		warn("Installation directory does not contain fallout2.exe. Please ensure this is the right directory and the file exists. Some features may not be available without it!")
+	else:
+		EXE_PATH = os.path.join(SRC_DIR, "fallout2.exe")
 
 	# Check for numpy, PIL, etc.
 	info("Checking for necessary Python modules...")
@@ -62,6 +68,23 @@ def setup_check():
 	try: import Image
 	except ImportError:
 		error("PIL not found. Please install it from http://www.pythonware.com/products/pil/ . Make sure the version matches your installed version of Python (%d.%d)." % sys.version_info.major, sys.version_info.minor)
+
+	return True
+
+def parse_crit_table():
+	if EXE_PATH is not None:
+		info("Parsing critical table from fallout2.exe...")
+		try:
+			with open(EXE_PATH, "rb") as fp:
+				# TODO: Don't hardcode paths, and need version check!
+				critTables = parseCritTable.readCriticalTables(fp, 0x000fef78, 0x00106597)
+				json.dump(critTables, open("criticalTables.json", "w"))
+				info("Done parsing critical table")
+		except Exception:
+			traceback.print_exc()
+			warn("Error occurred while parsing critical table (see traceback above).")
+	else:
+		warn("Cannot parse critical table, missing fallout2.exe")
 
 	return True
 
@@ -158,6 +181,7 @@ def main():
 	SRC_DIR = sys.argv[1]
 
 	setup_check()
+	parse_crit_table()
 	extract_dats()
 	if not NO_EXPORT_IMAGES:
 		export_images()
