@@ -545,12 +545,11 @@ class Obj {
 
 	blocks(): boolean {
 		// TODO: We could make use of subclass polymorphism to reduce the cases here
+		// NOTE: This may be overloaded in subclasses
 
 		if(this.type === "misc") return false
-		if(this.type === "critter")
-			return ((<Critter>this).dead !== true) && (this.visible !== false)
-		if(!this.pro) return true
-		if(this.subtype == "door") return !(<Door>this).open
+		if(!this.pro) return true // XXX: ?
+		if(this.subtype === "door") return !this.open
 		if(this.visible === false) return false
 
 		return !(this.pro.flags & 0x00000010 /* NoBlock */)

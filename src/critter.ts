@@ -630,6 +630,10 @@ class Critter extends Obj {
 		}
 	}
 
+	blocks(): boolean {
+		return (this.dead !== true) && (this.visible !== false)
+	}
+
 	inAnim(): boolean {
 		return !!(this.path || this.animCallback)
 	}
