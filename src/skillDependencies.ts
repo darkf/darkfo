@@ -19,6 +19,8 @@ limitations under the License.
 
 "use strict";
 
+enum StatType { STR, PER, END, CHR, INT, AGI, LCK, One }
+
 class Skill {
 	// TODO
 	startvalue: any;

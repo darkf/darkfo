@@ -1,6 +1,5 @@
 /*
-Copyright 2014 darkf, Stratege
-Copyright 2015 darkf
+Copyright 2014-2015 darkf, Stratege
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,11 +19,19 @@ limitations under the License.
 "use strict";
 
 module CriticalEffects {
-	var generalRegionName = {0: "head", 1: "leftArm",2: "rightArm",3: "torso",4: "rightLeg", 5: "leftLeg", 6: "eyes", 7: "groin",8: "uncalled"}
-	//todo: make this table account for different weapon types. It appears melee weapons use a second one
-	//though it appears to only be a /2 for melee
-	export var regionHitChanceDecTable = {"torso": 0, "leftLeg": 20, "rightLeg": 20, "groin": 30, "leftArm": 30, "rightArm": 30, "head": 40, "eyes": 60}
-	var critterTable = []
+	type EffectsFunction = (target: Critter) => void;
+
+	var generalRegionName = {0: "head", 1: "leftArm", 2: "rightArm", 3: "torso", 4: "rightLeg", 5: "leftLeg", 6: "eyes", 7: "groin", 8: "uncalled"};
+
+	// TODO: make this table account for different weapon types. It appears melee weapons use a second one
+	// though it appears to only be a /2 for melee
+	export var regionHitChanceDecTable = {"torso": 0, "leftLeg": 20, "rightLeg": 20, "groin": 30, "leftArm": 30, "rightArm": 30, "head": 40, "eyes": 60};
+
+	interface Dict<T> {
+		[key: string]: T;
+	}
+
+	var critterTable: Dict<CritType[]>[];
 
 	var critFailEffects = {
 		damageSelf: function(target) {
@@ -49,7 +56,7 @@ module CriticalEffects {
 
 		destroyWeapon: function(target) {
 			console.log(target.name + " has had their weapon blow up in their face. Ouch. This does not do anything yet")
-		},
+		}
 	}
 
 	var critterEffects = {
@@ -106,34 +113,45 @@ module CriticalEffects {
 		}
 	}
 
-	var Effects = function(effectCallbackList) {
-		this.effects = effectCallbackList
-	}
+	class Effects {
+		effects : EffectsFunction[]
 
-	Effects.prototype.doEffectsOn = function(target) {
-		for(var i = 0; i < this.effects.length; i++)
-			this.effects[i](target)
+		constructor(effectCallbackList : EffectsFunction[]) {
+			this.effects = effectCallbackList
+		}
+
+		doEffectsOn(target: any): void {
+			for(var i = 0; i < this.effects.length; i++)
+				this.effects[i](target)
+		}
 	}
 
 	class StatCheck {
-		stat: any; modifier: any; effects: any; failEffectMessageID: any; // TODO
+		stat: string;
+		modifier: number;
+		effects: Effects;
+		failEffectMessageID: number;
+		//stat = number, probably
 
-		constructor(stat, modifier, effects, failEffectMessage) {
+		constructor(stat: string, modifier: number, effects: Effects, failEffectMessageID: number) {
 			this.stat = stat
 			this.modifier = modifier
 			this.effects = effects
-			this.failEffectMessageID = failEffectMessage
+			this.failEffectMessageID = failEffectMessageID
 		}
 
-		doEffectsOn(target: any): any
-		{
-			if(this.stat === -1)
-				return false
+		// This should return "Maybe msgID"
+		doEffectsOn(target: Critter): any {
+			// stat being undefined means there is no stat check to be done
+			if(this.stat === undefined)
+				return {success: false}
 
-			var statToRollAgainst = critterGetStat(target,this.stat)
+			var statToRollAgainst = critterGetStat(target, this.stat)
 			statToRollAgainst += this.modifier
 
-			if(!rollSkillCheck(statToRollAgainst*10,0,false)) {
+			// if our target fails their skillcheck, they have to suffer the added effects.
+			// We do *10 so we can reuse the skillCheck function which goes from 0 to 100, while stat is 1 to 10
+			if(!rollSkillCheck(statToRollAgainst*10, 0, false)) {
 				this.effects.doEffectsOn(target)
 				return {success: true, msgID: this.failEffectMessageID}
 			}
@@ -142,59 +160,129 @@ module CriticalEffects {
 		}
 	}
 
-	var CritType = function(damageMultiplier, effects, statCheck, effectMsg) {
-		this.DM = damageMultiplier
-		this.effects = effects
-		this.statCheck = statCheck
-		this.msgID = effectMsg
+	class CritType {
+		DM : number
+		effects : Effects
+		statCheck : StatCheck
+		msgID : number
+
+		constructor(damageMultiplier, effects, statCheck, effectMsg) {
+			this.DM = damageMultiplier
+			this.effects = effects
+			this.statCheck = statCheck
+			this.msgID = effectMsg
+		}
+
+		doEffectsOn(target: Critter) {
+			var returnMsgID = this.msgID
+			//we need to check for results before we apply the other effects, to ensure the checks in statCheck aren't modified by the effects of the crit.
+			var statCheckResults = this.statCheck.doEffectsOn(target)
+
+			this.effects.doEffectsOn(target)
+
+			//did statCheck do its effects as well?
+			if(statCheckResults.success === true)
+				returnMsgID = statCheckResults.msgID
+
+			return {DM: this.DM, msgID: returnMsgID}
+		}
 	}
 
-	CritType.prototype.doEffectsOn = function(target) {
-		var statCheckResults = this.statCheck.doEffectsOn(target)
-		var returnMsgID = this.msgID
-		this.effects.doEffectsOn(target)
-
-		//did statCheck do its effects as well?
-		if(statCheckResults[0] === true)
-			returnMsgID = statCheckResults[1]
-
-		return {DM: this.DM, msgID: returnMsgID}
+	interface CritLevelData {
+		statCheck: { stat: number, checkModifier: number, failureEffect: string[], failureMessage: number };
+		dmgMultiplier: number;
+		critEffect: string[];
+		msg: number;
 	}
 
-	function parseCritLevel(critLevel) {
+	function parseCritLevel(critLevel: CritLevelData): CritType {
 		var stat = critLevel.statCheck
-		var tempStatCheck = new StatCheck(stat.stat, stat.checkModifier,
-			parseEffects(stat.failureEffect), stat.failureMessage)
-		var retCritLevel = new CritType(critLevel.dmgMultiplier,
-			parseEffects(critLevel.critEffect), tempStatCheck, critLevel.msg)
+		var statVal : string = undefined
+		if(stat.stat != -1)
+			statVal = StatType[stat.stat]
+		var tempStatCheck = new StatCheck(statVal, stat.checkModifier, parseEffects(stat.failureEffect), stat.failureMessage)
+		var retCritLevel = new CritType(critLevel.dmgMultiplier, parseEffects(critLevel.critEffect), tempStatCheck, critLevel.msg)
 		return retCritLevel
 	}
 
-	function parseEffects(effects) {
+	// takes a List of effect names, gets the appropriate effects from the table and stores it in a Effects object
+	function parseEffects(effects: string[]): Effects {
 		var tempEffects = []
 		for(var i = 0; i < effects.length; i++)
 			tempEffects[i] = critterEffects[effects[i]]
 		return new Effects(tempEffects)
 	}
 
-	export function getCritical(critterType, region, critLevel) {
-		var actualLevel = Math.min(critLevel, critterTable[critterType][region].length-1)
-		return critterTable[critterType][region][actualLevel]
+	// tries to obtain the CritType object partaining to the critLevel of the region of the critterType in question, returns a default CritType object otherwise
+	export function getCritical(critterType, region, critLevel): CritType {
+		var ret: CritType = undefined
+
+		try {
+			// ensure we aren't exceeding the highest crit level existing for this type of critter and region
+			var actualLevel: number = Math.min(critLevel, critterTable[critterType][region].length - 1)
+			// get the appropriate CritType from the table
+			ret = critterTable[critterType][region][actualLevel]
+		}
+		catch(e) {
+		}
+
+		if(ret === undefined) {
+			console.log("error: could not find critical: " + critterType + "/" + region + "/" + critLevel)
+			ret = defaultCritType(critterType, region, critLevel)
+		}
+
+		return ret
+	}
+
+	// constructs a default Crit Type object which doesn't apply any modifications to the shot, only changes the logging.
+	function defaultCritType(critterType, region, critLevel): CritType
+	{
+		return new CritType(2, new Effects([]), new StatCheck(undefined, undefined, undefined, undefined),undefined)
+	}
+
+	export function getCriticalFail(weaponType, failLevel): EffectsFunction
+	{
+		var ret: EffectsFunction = undefined
+		try {
+			//get the appropriate Critical Fail from the table
+			ret = criticalFailTable[weaponType][failLevel]
+		}
+		catch(e) {
+		}
+
+		if(ret === undefined)
+			//default crit fail error, which doesn't do anything but print an error message
+			ret = function(critter) { console.log("error: could not find critical fail: " + weaponType + "/" + failLevel); };
+
+		return ret;
 	}
 
 	export function loadTable() {
 		// read in the global table
-		//console.log("loading critical table...")
-		var table = getFileJSON("criticalTables.json")
+		var haveTable = true;
+
+		//console.log("loading critical table...");
+		var table = getFileJSON("criticalTables.json", () => {
+			haveTable = false;
+		});
+
+		if(!haveTable) {
+			console.log("criticalTables.json not found, not loading critical hit/miss table");
+			return;
+		}
+
+		critterTable = new Array(table.length);
 		for(var i = 0; i < table.length; i++) {
-			critterTable[i] = table[i]
-			for(var region in critterTable[i]) {
-				for(var critLevel = 0; critLevel < critterTable[i][region].length; critLevel++)
-					critterTable[i][region][critLevel] = parseCritLevel(critterTable[i][region][critLevel])
+			critterTable[i] = {};
+
+			for(var region in table[i]) {
+				critterTable[i][region] = new Array(table[i][region].length);
+
+				for(var critLevel = 0; critLevel < table[i][region].length; critLevel++)
+					critterTable[i][region][critLevel] = parseCritLevel(table[i][region][critLevel]);
 			}
 		}
 		//console.log("parsed critical table with " + critterTable.length + " entries")
-		//critterTable[number] = critTableJsonToJsObjectParser(table)
 	}
 
 	export var criticalFailTable = {
@@ -254,13 +342,4 @@ module CriticalEffects {
 			critFail[i](target)
 		}
 	}
-
-/*	return {generalRegionName: generalRegionName,
-			regionHitChanceDecTable: regionHitChanceDecTable,
-			critterTable: critterTable,
-			getCritical: getCritical,
-			loadTable: loadTable,
-			criticalFailTable: criticalFailTable,
-			temporaryDoCritFail: temporaryDoCritFail}
-*/
 }

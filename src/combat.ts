@@ -220,7 +220,7 @@ class Combat {
 		var hitChance = weaponSkill - AC - CriticalEffects.regionHitChanceDecTable[region] - hitDistanceModifier
 		var critChance = baseCrit + CriticalEffects.regionHitChanceDecTable[region]
 		if(isNaN(hitChance)) throw "something went wrong with hit chance calculation"
-		//1 in 20 chance of failing needs to be preserved
+		// 1 in 20 chance of failing needs to be preserved
 		hitChance = Math.min(95, hitChance)
 		return {hit: hitChance, crit: critChance}
 	}
@@ -229,16 +229,16 @@ class Combat {
 		var critModifer = critterGetStat(obj, "Better Criticals")
 		var hitChance = this.getHitChance(obj, target, region)
 
-		//hey kids! Did you know FO only rolls the dice once here and uses the results two times?
-		var roll = getRandomInt(1,101)
+		// hey kids! Did you know FO only rolls the dice once here and uses the results two times?
+		var roll = getRandomInt(1, 101)
 
 		if(hitChance.hit - roll > 0) {
 			var isCrit = false
-			if(rollSkillCheck(Math.floor(hitChance.hit - roll)/10, hitChance.crit, false) === true)
+			if(rollSkillCheck(Math.floor(hitChance.hit - roll) / 10, hitChance.crit, false) === true)
 				isCrit = true
-			//todo: if Slayer/Sniper perk -> second chance to crit
+			// TODO: if Slayer/Sniper perk -> second chance to crit
 			if(isCrit === true) {
-				var critLevel = Math.floor(Math.max(0, getRandomInt(critModifer,100+critModifer)) / 20)
+				var critLevel = Math.floor(Math.max(0, getRandomInt(critModifer, 100 + critModifer)) / 20)
 				this.log("crit level: " + critLevel)
 				var crit = CriticalEffects.getCritical(critterGetKillType(target), region, critLevel)
 				var critStatus = crit.doEffectsOn(target)
@@ -248,24 +248,24 @@ class Combat {
 			return {hit: true, crit: false} // hit
 		}
 
-		//in reverse because miss -> roll > hitchance.hit
+		// in reverse because miss -> roll > hitchance.hit
 		var isCrit = false
-		if(rollSkillCheck(Math.floor(roll - hitChance.hit)/10,0,false))
+		if(rollSkillCheck(Math.floor(roll - hitChance.hit) / 10, 0, false))
 			isCrit = true
-		//todo: jinxed/pariah dog give (nonstacking) 50% chance for critical miss upon miss
+		// TODO: jinxed/pariah dog give (nonstacking) 50% chance for critical miss upon miss
 
 		return {hit: false, crit: isCrit} // miss
 	}
 
 	getDamageDone(obj, target, critModifer) {
 		var wep = critterGetEquippedWeapon(obj).weapon
-		var typeOfDamge = damageType[wep.getDamageType()]
+		var typeOfDamage = damageType[wep.getDamageType()]
 
 		var RD = getRandomInt(wep.minDmg, wep.maxDmg) // rand damage min..max
 		var RB = 0 // ranged bonus (via perk)
 		var CM = critModifer // critical hit damage multiplier
-		var ADR = critterGetStat(target,"DR "+typeOfDamge) // damage resistance (TODO: armor)
-		var ADT = critterGetStat(target,"DT "+typeOfDamge) // damage threshold (TODO: armor)
+		var ADR = critterGetStat(target, "DR " + typeOfDamage) // damage resistance (TODO: armor)
+		var ADT = critterGetStat(target, "DT " + typeOfDamage) // damage threshold (TODO: armor)
 		var X = 2 // ammo dividend
 		var Y = 1 // ammo divisor
 		var RM = 0 // ammo resistance modifier
@@ -300,7 +300,7 @@ class Combat {
 		if(hitRoll.hit === true) {
 			var critModifier = hitRoll.crit ? hitRoll.DM : 2
 			var damage = this.getDamageDone(obj, target, critModifier)
-			var extraMsg = hitRoll.crit === true ? this.getCombatMsg(hitRoll.msgID) : ""
+			var extraMsg = hitRoll.crit === true ? (this.getCombatMsg(hitRoll.msgID) || "") : ""
 			this.log(who + " hit " + targetName + " for " + damage + " damage" + extraMsg)
 
 			critterDamage(target, damage, obj)
@@ -313,7 +313,7 @@ class Combat {
 			if(hitRoll.crit === true)
 			{
 				var critFailMod = (critterGetStat(obj, "LUK") - 5) * - 5
-				var critFailRoll = Math.floor(getRandomInt(1,100) - critFailMod)
+				var critFailRoll = Math.floor(getRandomInt(1, 100) - critFailMod)
 				var critFailLevel = 1
 				if(critFailRoll <= 20)
 					critFailLevel = 1
@@ -326,7 +326,8 @@ class Combat {
 				else
 					critFailLevel = 5
 				this.log(who + " failed at fail level "+critFailLevel);
-				//todo: map weapon type to crit fail table types
+
+				// TODO: map weapon type to crit fail table types
 				var critFailEffect = CriticalEffects.criticalFailTable.unarmed[critFailLevel]
 				CriticalEffects.temporaryDoCritFail(critFailEffect, obj)
 			}
