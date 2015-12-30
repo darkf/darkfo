@@ -11,6 +11,8 @@ A lot of core functionality works, but major parts are missing or need work.
 If you're looking for documentation on how Fallout 2 works, or documentation on certain file formats, or
 just want some tools to work with them, this project will be useful to you as well.
 
+<img src="screenshot.png" width="640" height="480">
+
 Here is a very rough list of what is known to work:
 
 - Map loading
@@ -67,6 +69,8 @@ Open a command prompt inside the DarkFO directory, and then run:
     python setup.py path/to/Fallout2/installation/directory
 
 This will take a few minutes, it's unpacking the game archives and converting relevant game data into a format DarkFO can use.
+
+NOTE: You may need to use `python2` instead, as some distributions package `python` as Python 3.
 
 Then run `tsc` to compile the source code.
 
