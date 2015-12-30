@@ -8,6 +8,9 @@ Status
 DarkFO is not a complete remake at this time.
 A lot of core functionality works, but major parts are missing or need work.
 
+If you're looking for documentation on how Fallout 2 works, or documentation on certain file formats, or
+just want some tools to work with them, this project will be useful to you as well.
+
 Here is a very rough list of what is known to work:
 
 - Map loading
@@ -35,6 +38,8 @@ Some features are not implemented at all:
 - The PipBoy map
 
 and other minor features here and there.
+
+If you'd like to contribute, those might be major parts to look into.
 
 Installation
 ============
@@ -84,6 +89,7 @@ Contributions are welcome!
 Testing is more than welcome: if you have issues running DarkFO, or if you find bugs, glitches, or other inaccuracies, please don't hesitate to file an issue on GitHub and/or contact the developers!
 
 To contribute code, simply submit a pull request with your changes. Take care to write sensible commit messages, and if you want to change major parts of the code, please discuss it with other developers first (see the Contact section below).
+I apologize in advance for any injury sustained while reading the code. :)
  
 
 Thanks!
