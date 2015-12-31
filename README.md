@@ -1,9 +1,10 @@
-**DarkFO**, a post-nuclear RPG remake
+# DarkFO
+
+a post-nuclear RPG remake
 
 This is a modern reimplementation of the engine of the video game [Fallout 2](http://en.wikipedia.org/wiki/Fallout_2), as well as a personal research project into the feasibility of doing such.
 
-Status
-======
+## Status
 
 DarkFO is not a complete remake at this time.
 A lot of core functionality works, but major parts are missing or need work.
@@ -43,8 +44,7 @@ and other minor features here and there.
 
 If you'd like to contribute, those might be major parts to look into.
 
-Installation
-============
+## Installation
 
 To use this, you'll need a few things:
 
@@ -90,13 +90,11 @@ Review `src/config.ts` for engine options. Be sure to re-compile if you change t
 
 OPTIONAL: If you want sound, run `python convertAudio.py`. You'll need the `acm2wav` tool (you can get it from No Mutants Allowed).
 
-License
-=======
+## License
 
 DarkFO is licensed under the terms of the Apache 2 license. See `LICENSE.txt` for the full license text.
 
-Contributing
-============
+## Contributing
 
 Contributions are welcome!
 
@@ -108,8 +106,7 @@ I apologize in advance for any injury sustained while reading the code. :)
 
 Thanks!
 
-Contact
-=======
+## Contact
 
 If you have an issue, please file it in the GitHub issue tracker.
 If you'd like to join us in discussion, visit us on IRC at `#darkfo` on FreeNode (`irc.freenode.net`)!
