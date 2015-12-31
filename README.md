@@ -60,6 +60,16 @@ To use this, you'll need a few things:
 
 If you're testing on Chrome, you'll need a suitable HTTP server due to the way it sandboxes `file://` (I'll recommend LightTPD. On Windows, [grab this .zip](http://en.wlmp-project.net/downloads.php?cat=lighty).You'll need to point its `server.document.root` in `conf/lighttpd.conf` to the DarkFO directory.)
 
+Or just quickly start one in the current directory using python:
+
+Python 2
+
+    python -m SimpleHTTPServer
+
+Python 3
+
+    python -m http.server
+
 Alternatively, Firefox can load directly from `file://`.
 
 Once you've got all that, you can start trying it out.
