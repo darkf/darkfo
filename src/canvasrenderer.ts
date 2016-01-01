@@ -21,6 +21,10 @@ class CanvasRenderer extends Renderer {
 		heart.graphics.draw(img, x, y, w, h)
 	}
 
+	clear(r: number, g: number, b: number): void {
+		heart.graphics.setBackgroundColor(r, g, b)
+	}
+
 	renderLitFloor(matrix, useColorTable: boolean=true) {
 		// get the screen framebuffer
 		var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
