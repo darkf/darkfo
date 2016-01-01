@@ -1,3 +1,21 @@
+/*
+Copyright 2015-2016 darkf
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// Abstract game renderer
+
 type TileMap = string[][]
 
 type ObjectRenderInfo = {x: number; y: number; spriteX: number;
@@ -37,6 +55,7 @@ class Renderer {
 
 		var mousePos = heart.mouse.getPosition()
 		var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
+		var mouseSquare = tileFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 		//var mouseTile = tileFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
 		if(Config.ui.showFloor)   this.renderFloor(this.floorTiles)
@@ -62,6 +81,7 @@ class Renderer {
 		}
 
 		this.text("mh: " + mouseHex.x + "," + mouseHex.y, 5, 15)
+		this.text("mt: " + mouseSquare.x + "," + mouseSquare.y, 75, 15)
 		//heart.graphics.print("mt: " + mouseTile.x + "," + mouseTile.y, 100, 15)
 		this.text("m: " + mousePos[0] + ", " + mousePos[1], 175, 15)
 
