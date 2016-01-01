@@ -1,3 +1,21 @@
+/*
+Copyright 2015-2016 darkf
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+// HTML5 Canvas game renderer
+
 class CanvasRenderer extends Renderer {
 	tileDataCache: {[key: string]: any} = {}
 
@@ -31,14 +49,17 @@ class CanvasRenderer extends Renderer {
 		var hexes = []
 
 		if(useColorTable) {
-			// TODO: hack
+			// XXX: hack
 			if(Lighting.colorLUT === null) {
 				Lighting.colorLUT = getFileJSON("color_lut.json")
 				Lighting.colorRGB = getFileJSON("color_rgb.json")
 			}
 		}
 
-		for(var i = 0; i < matrix.length; i++) {
+		// reverse i to draw in the order Fallout 2 normally does
+		// otherwise there will be artifacts in the light rendering
+		// due to tile sizes being different and not overlapping properly
+		for(var i = matrix.length - 1; i >= 0; i--) {
 			for(var j = 0; j < matrix[0].length; j++) {
 				var tile = matrix[j][i]
 				if(tile === "grid000") continue
@@ -53,12 +74,9 @@ class CanvasRenderer extends Renderer {
 					var sx = scr.x - cameraX
 					var sy = scr.y - cameraY
 
-					// TODO: how correct is this?
+					// XXX: how correct is this?
 					var hex = hexFromScreen(scr.x - 13,
 						                    scr.y + 13)
-
-					//hexes.push(hex)
-					//hex.x = 199 - hex.x
 
 					if(this.tileDataCache[img] === undefined) {
 						// temp canvas to get tile framebuffer
@@ -79,6 +97,7 @@ class CanvasRenderer extends Renderer {
 						framebuffer = Lighting.computeFrame()
 
 					// render tile
+
 					var w = Math.min(SCREEN_WIDTH - sx, 80)
 					var h = Math.min(SCREEN_HEIGHT - sy, 36)
 					for(var y = 0; y < h; y++) {
@@ -100,16 +119,16 @@ class CanvasRenderer extends Renderer {
 							// blit to the framebuffer
 							if(useColorTable) {
 								var orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
-								var palIdx = Lighting.colorLUT[orig_color]
+								var palIdx = Lighting.colorLUT[orig_color] // NOTE: substitue 221 for white for drawing just the lightbuffer
 								var tableIdx = palIdx*256 + (intensity_/512 | 0)
 								var colorPal = Lighting.intensityColorTable[tableIdx]
 								var color = Lighting.colorRGB[colorPal]
 
 								var intensity = Math.min(1.0, intensity_/65536)
-								var tcolor = Lighting.colorRGB[colorPal]
-								imageData.data[index + 0] = tcolor[0]//intensity*255 //color[0]
-								imageData.data[index + 1] = tcolor[1]//intensity*255 //color[1]
-								imageData.data[index + 2] = tcolor[2]//intensity*255 //color[2]
+
+								imageData.data[index + 0] = color[0] //intensity*255
+								imageData.data[index + 1] = color[1] //intensity*255
+								imageData.data[index + 2] = color[2] //intensity*255
 								//imageData.data[index + 3] = 255
 							}
 							else {
