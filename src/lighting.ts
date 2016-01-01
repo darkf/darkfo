@@ -125,7 +125,7 @@ module Lighting {
 	]
 
 	// Framebuffer for triangle-lit tiles
-	// TODO: what size should this be?
+	// XXX: what size should this be?
 	export var intensity_map = new Array(1024*12)
 
 	// zero array
@@ -192,10 +192,10 @@ module Lighting {
 			    baseLight = z
 			}
 			else { // upside down triangles
-				intensityIdx = vertices[4*a]
-				lightInc = (z - x) / 32 | 0
 				inc = (y - x) / 13 | 0
-				baseLight = vertices[3 + 4*a]
+				lightInc = (z - x) / 32 | 0
+				intensityIdx = vertices[4*a]
+				baseLight = x
 			}
 
 			for(var j = 0; j < 26; j += 2) {
@@ -204,6 +204,8 @@ module Lighting {
 
 				var light = baseLight
 				for(var k = 0; k < edx; k++) {
+					if(intensityIdx < 0 || intensityIdx >= intensity_map.length)
+						throw "guard";
 					intensity_map[intensityIdx++] = light
 					light += lightInc
 				}
