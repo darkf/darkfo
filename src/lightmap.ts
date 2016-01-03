@@ -157,9 +157,7 @@ module Lightmap {
 			if(obj.lightRadius /* esi */ >= light_distance[loopCnt/4|0]) {
 				var edi = v30
 				var v24 = loopCnt
-				var v20 = loopCnt
-				eax = loopCnt + edi
-				var v1c = eax
+				var v1c = loopCnt + edi
 
 				var v18 = loopCnt
 				var v26, v27, v28, v29, v31, v32, v33, v34 // temporaries
@@ -170,107 +168,7 @@ module Lightmap {
 					edx = (ecx + 1) % 6
 
 					if(ebp < 36) {
-						switch(v20/4|0) {
-							/*
-							case 0*4:
-								eax = 0
-								isLightBlocked = 0
-								break
-							case 1*4:
-								eax = light_blocked[ecx*144 / 4|0]
-								break
-							case 2*4:
-								eax = light_blocked[(4 + ecx*144) / 4|0]
-								break
-							case 3*4:
-								eax = light_blocked[(8 + ecx*144) / 4|0]
-								break
-							case 4*4:
-								eax = light_blocked[(12 + ecx*144) / 4|0]
-								break
-							case 5*4:
-								eax = light_blocked[(16 + ecx*144) / 4|0]
-								break
-							case 6*4:
-								eax = light_blocked[(0x14 + ecx*144) / 4|0]
-								break
-							case 7*4:
-								eax = light_blocked[(0x18 + ecx*144) / 4|0]
-								break
-							case 8*4: // changed from above
-								eax = light_blocked[ecx*144 / 4|0]
-								esi = light_blocked[edx*144 / 4|0]
-								eax = eax & esi
-								break
-							case 9*4:
-								eax = light_blocked[(0x20 + ecx*144) / 4|0]
-								ebx = light_blocked[(0x4 + ecx*144) / 4|0]
-								eax = eax & ebx
-								break
-							case 10*4:
-								eax = light_blocked[(0x24 + ecx*144) / 4|0]
-								edi = light_blocked[(0x8 + ecx*144) / 4|0]
-								eax = eax & edi
-								break
-							case 11*4:
-								eax = light_blocked[(0x28 + ecx*144) / 4|0]
-								esi = light_blocked[(0x0c + ecx*144) / 4|0]
-								eax = eax & esi
-								break
-							case 12*4:
-								eax = light_blocked[(0x2c + ecx*144) / 4|0]
-								ebx = light_blocked[(0x10 + ecx*144) / 4|0]
-								eax = eax & ebx
-								break
-							case 13*4:
-								eax = light_blocked[(0x30 + ecx*144) / 4|0]
-								edi = light_blocked[(0x14 + ecx*144) / 4|0]
-								eax = eax & edi
-								break
-							case 14*4:
-								eax = light_blocked[(0x34 + ecx*144) / 4|0]
-								esi = light_blocked[(0x18 + ecx*144) / 4|0]
-								eax = eax & esi
-								break
-							case 15*4: // changed
-								eax = light_blocked[(0x20 + ecx*144) / 4|0]
-								ebx = light_blocked[(0x4 + edx*144) / 4|0]
-								eax = eax & ebx
-								break
-							case 16*4: // changed
-								eax = light_blocked[(0x24 + ecx*144) / 4|0]
-								edi = light_blocked[(0x3c + ecx*144) / 4|0]
-								edx = light_blocked[(0x20 + ecx*144) / 4|0]
-								eax = eax & edi
-								edx |= eax
-								isLightBlocked = edx
-								//if(isLightBlocked === 0)
-								//	goto loc_4A7500;
-								break
-							case 17*4:
-								edx = light_blocked[(0x24 + ecx*144) / 4|0]
-								edx |= light_blocked[(0x28 + ecx*144) / 4|0]
-
-								ebx = light_blocked[(0x20 + ecx*144) / 4|0]
-								esi = light_blocked[(0x40 + ecx*144) / 4|0]
-								ebx &= edx
-								edx &= esi
-
-								edi = light_blocked[(0x3c + ecx*144) / 4|0]
-								ebx |= edx
-
-								edx = light_blocked[(0x28 + ecx*144) / 4|0]
-								esi = light_blocked[(0x24 + ecx*144) / 4|0]
-								edx |= edi
-								edx &= esi
-								ebx |= edx
-
-								isLightBlocked = ebx
-								//if(isLightBlocked === 0)
-								//	loc_4A7500 = 1
-								break
-							*/
-
+						switch(loopCnt/4|0) {
 				            case 0:
 				              isLightBlocked = 0;
 				              break;
@@ -388,9 +286,6 @@ module Lightmap {
 				              v34 = 36 * edx;
 				              isLightBlocked = light_blocked[v34 + 6] & light_blocked[36 * ecx + 33] | light_blocked[v34 + 4] & light_blocked[36 * ecx + 26] | light_blocked[v34 + 3] & light_blocked[36 * ecx + 21] | light_blocked[v34 + 2] & light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8] & light_blocked[v34 + 1] | light_blocked[v34 + 5] & light_blocked[36 * ecx + 30];
 				              break;
-
-							default:
-								throw "v20/4 > 36 or < 0";
 						}
 					}
 
@@ -478,13 +373,7 @@ module Lightmap {
 						}
 					}
 
-					eax = isLightBlocked // is light blocked?
-					edx = v18
-					ebx = v18
-					light_blocked[edx/4|0] = eax
-
-					v18 = ebx
-					ebx += 144
+					light_blocked[loopCnt/4|0] = isLightBlocked
 					v1c += 144
 				}
 			}
