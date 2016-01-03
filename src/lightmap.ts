@@ -290,14 +290,12 @@ module Lightmap {
 
 					if(isLightBlocked === 0) {
 						// loc_4A7500:
-						eax = toTileNum(obj.position) + light_offsets[v1c/4|0]
-						v14 = eax
+						var nextTile = toTileNum(obj.position) + light_offsets[v1c/4|0]
 
-						if(eax > 0 && eax < 40000) {
-							//esi = objectAt(fromTileNum(eax))
+						if(nextTile > 0 && nextTile < 40000) { // nextTile is within valid tile range
 							var edi = 1
-							// for each object at position eax
-							var objs = objectsAtPosition(fromTileNum(eax))
+							// for each object at position nextTile
+							var objs = objectsAtPosition(fromTileNum(nextTile))
 							for(var objsN = 0; objsN < objs.length; objsN++) {
 								var curObj = objs[objsN]
 								if(!curObj.pro)
@@ -356,7 +354,7 @@ module Lightmap {
 							}
 
 							if(edi !== 0) {
-								edx = v14
+								edx = nextTile
 								ebx = stackArray[v24/4|0]
 								// eax = 0 // should be set to obj+28h, aka elevation (we don't take elevation into account so we don't need this)
 								lightModifier(edx, ebx)
