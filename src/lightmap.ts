@@ -79,8 +79,8 @@ module Lightmap {
 		var edx: any, eax
 		edx = (pos.x%2)*3 * 32
 		eax = edx*9
-		//var v30 = light_offsets + eax // so &light_offsets[eax/4|0], we'd use an index here
-		var v30 = eax // so &light_offsets[eax/4|0], we'd use an index here
+		//var lightOffsetsStart = light_offsets + eax // so &light_offsets[eax/4|0], we'd use an index here
+		var lightOffsetsStart = eax // starting offset into light_offsets
 
 		var light_per_dist = /* obj.lightIntensity - */ (((obj.lightIntensity - 655) / (obj.lightRadius+1)) | 0)
 
@@ -147,7 +147,6 @@ module Lightmap {
 		// zero arrays
 		zeroArray(_light_blocked)
 
-		var loopCnt = 0 // var_2c / v2c: loop counter from 0 to 36*4, in 4 byte increments
 		var ebx, esi, v14
 		var isLightBlocked // var_C
 
@@ -155,11 +154,9 @@ module Lightmap {
 			return _light_blocked[index];
 		}
 
-		for(var i = 0; i < 36; i++, loopCnt += 4) {
+		for(var i = 0; i < 36; i++) {
 			if(obj.lightRadius >= light_distance[i]) {
-				var v1c = loopCnt + v30
-
-				var v26, v27, v28, v29, v31, v32, v33, v34 // temporaries
+				var v26, v27, v28, v29, v30, v31, v32, v33, v34 // temporaries
 
 				for(var ecx = 0; ecx < 6; ecx++) {
 					edx = (ecx + 1) % 6
@@ -266,6 +263,7 @@ module Lightmap {
 			              isLightBlocked = light_blocked(36 * ecx + 30) & light_blocked(36 * ecx + 27) | light_blocked(36 * ecx + 26) & (light_blocked(36 * ecx + 27) | light_blocked(36 * ecx + 22) | light_blocked(36 * ecx + 8)) | light_blocked(36 * ecx + 15) | light_blocked(36 * edx + 1) & light_blocked(36 * ecx + 8) | light_blocked(36 * ecx + 21);
 			              break;
 			            case 32:
+			              // XXX: v30 here could be lightOffsetsStart, but that is unlikely
 			              v30 = light_blocked(36 * edx + 1) & light_blocked(36 * ecx + 8) | (light_blocked(36 * ecx + 28) | light_blocked(36 * ecx + 23) | light_blocked(36 * ecx + 16) | light_blocked(36 * ecx + 9) | light_blocked(36 * ecx + 8)) & light_blocked(36 * ecx + 15);
 			              v31 = light_blocked(36 * ecx + 16) | light_blocked(36 * ecx + 8);
 			              isLightBlocked = light_blocked(36 * ecx + 28) & (light_blocked(36 * ecx + 31) | light_blocked(36 * ecx)) | light_blocked(36 * ecx + 27) & (light_blocked(36 * ecx + 28) | light_blocked(36 * ecx + 23) | v31) | light_blocked(36 * ecx + 22) | v30 | light_blocked(36 * ecx + 21) & (v31 | light_blocked(36 * ecx + 28));
@@ -286,7 +284,7 @@ module Lightmap {
 
 					if(isLightBlocked === 0) {
 						// loc_4A7500:
-						var nextTile = toTileNum(obj.position) + light_offsets[v1c/4|0]
+						var nextTile = toTileNum(obj.position) + light_offsets[(lightOffsetsStart/4|0) + 36 * ecx + i]
 
 						if(nextTile > 0 && nextTile < 40000) { // nextTile is within valid tile range
 							var edi = 1
@@ -355,7 +353,6 @@ module Lightmap {
 					}
 
 					_light_blocked[36 * ecx + i] = isLightBlocked
-					v1c += 144
 				}
 			}
 		}
@@ -381,7 +378,7 @@ module Lightmap {
 		var v2c = ecx
 		var v54 = eax
 		var v48
-		var ebx, ebp, esi, v3c, v40, v50, v20, v24, v30, v58
+		var ebx, ebp, esi, v3c, v40, v50, v20, v24, lightOffsetsStart, v58
 		var v44, v4c, v38, v34, v28, v1c, v28
 
 		do {
@@ -460,12 +457,12 @@ module Lightmap {
 		eax <<= 3
 		ebp = 0
 		eax += edx
-		v30 = ebp
+		lightOffsetsStart = ebp
 		v58 = eax
 
 		do {
 			eax = v58
-			edx = v30
+			edx = lightOffsetsStart
 			edx++
 			v44 = eax
 			eax = edx
@@ -491,7 +488,7 @@ module Lightmap {
 
 				if(eax > 0) {
 					do {
-						edx = v30
+						edx = lightOffsetsStart
 						eax = v28
 						ecx++
 						esi += 4
@@ -515,11 +512,11 @@ module Lightmap {
 			}
 			while(ebx < 8)
 
-			eax = v30
+			eax = lightOffsetsStart
 			ebp = v58
 			eax++
 			ebp += 144
-			v30 = eax
+			lightOffsetsStart = eax
 			v58 = ebp
 		}
 		while(eax < 6)
