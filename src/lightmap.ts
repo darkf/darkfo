@@ -157,10 +157,8 @@ module Lightmap {
 
 		for(var ebp = 0; ebp < 36; ebp++, loopCnt += 4) {
 			if(obj.lightRadius >= light_distance[loopCnt/4|0]) {
-				var v24 = loopCnt
 				var v1c = loopCnt + v30
 
-				var v18 = loopCnt
 				var v26, v27, v28, v29, v31, v32, v33, v34 // temporaries
 
 				for(var ecx = 0; ecx < 6; ecx++) {
@@ -348,7 +346,7 @@ module Lightmap {
 							}
 
 							if(edi !== 0) {
-								ebx = stackArray[v24/4|0]
+								ebx = stackArray[loopCnt/4|0]
 								// eax = 0 // should be set to obj+28h, aka elevation (we don't take elevation into account so we don't need this)
 								lightModifier(nextTile, ebx)
 
@@ -356,8 +354,7 @@ module Lightmap {
 						}
 					}
 
-					_light_blocked[v18/4|0] = isLightBlocked
-					v18 += 144
+					_light_blocked[36 * ecx + loopCnt] = isLightBlocked
 					v1c += 144
 				}
 			}
