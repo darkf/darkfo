@@ -155,8 +155,8 @@ module Lightmap {
 			return _light_blocked[index];
 		}
 
-		for(var ebp = 0; ebp < 36; ebp++, loopCnt += 4) {
-			if(obj.lightRadius >= light_distance[loopCnt/4|0]) {
+		for(var i = 0; i < 36; i++, loopCnt += 4) {
+			if(obj.lightRadius >= light_distance[i]) {
 				var v1c = loopCnt + v30
 
 				var v26, v27, v28, v29, v31, v32, v33, v34 // temporaries
@@ -164,7 +164,7 @@ module Lightmap {
 				for(var ecx = 0; ecx < 6; ecx++) {
 					edx = (ecx + 1) % 6
 
-					switch(loopCnt/4|0) {
+					switch(i) {
 			            case 0:
 			              isLightBlocked = 0;
 			              break;
@@ -315,7 +315,7 @@ module Lightmap {
 									    var flags = curObj.pro.flags // XXX: flags directly from PRO?
 									    //console.log("pro flags: " + flags.toString(16))
 									    if(flags & 0x8000000 || flags & 0x40000000) {
-									    	if(ecx != 4 && ecx != 5 && (ecx || ebp >= 8) && (ecx != 3 || ebp <= 15))
+									    	if(ecx != 4 && ecx != 5 && (ecx || i >= 8) && (ecx != 3 || i <= 15))
 									    		edi = 0
 									    }
 									    else if(flags & 0x10000000) {
@@ -323,10 +323,10 @@ module Lightmap {
 									    		edi = 0
 									    }
 									    else if(flags & 0x20000000) {
-									    	if(ecx && ecx != 1 && ecx != 4 && ecx != 5 && (ecx != 3 || ebp <= 15))
+									    	if(ecx && ecx != 1 && ecx != 4 && ecx != 5 && (ecx != 3 || i <= 15))
 									    		edi = 0
 									    }
-									    else if(ecx && ecx != 1 && (ecx != 5 || ebp <= 7)) {
+									    else if(ecx && ecx != 1 && (ecx != 5 || i <= 7)) {
 									    	edi = 0
 									    }
 									}
@@ -346,7 +346,7 @@ module Lightmap {
 							}
 
 							if(edi !== 0) {
-								ebx = stackArray[loopCnt/4|0]
+								ebx = stackArray[i]
 								// eax = 0 // should be set to obj+28h, aka elevation (we don't take elevation into account so we don't need this)
 								lightModifier(nextTile, ebx)
 
@@ -354,7 +354,7 @@ module Lightmap {
 						}
 					}
 
-					_light_blocked[36 * ecx + loopCnt] = isLightBlocked
+					_light_blocked[36 * ecx + i] = isLightBlocked
 					v1c += 144
 				}
 			}
