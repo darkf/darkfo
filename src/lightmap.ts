@@ -148,7 +148,8 @@ module Lightmap {
 		zeroArray(light_blocked)
 
 		var loopCnt = 0 // var_2c / v2c: loop counter from 0 to 36*4, in 4 byte increments
-		var ebx, vc, esi, v14
+		var ebx, esi, v14
+		var isLightBlocked // var_C
 
 		for(var ebp = 0; ebp < 36; ebp++, loopCnt += 4) {
 			edx = obj
@@ -173,7 +174,7 @@ module Lightmap {
 							/*
 							case 0*4:
 								eax = 0
-								vc = 0
+								isLightBlocked = 0
 								break
 							case 1*4:
 								eax = light_blocked[ecx*144 / 4|0]
@@ -242,8 +243,8 @@ module Lightmap {
 								edx = light_blocked[(0x20 + ecx*144) / 4|0]
 								eax = eax & edi
 								edx |= eax
-								vc = edx
-								//if(vc === 0)
+								isLightBlocked = edx
+								//if(isLightBlocked === 0)
 								//	goto loc_4A7500;
 								break
 							case 17*4:
@@ -264,139 +265,136 @@ module Lightmap {
 								edx &= esi
 								ebx |= edx
 
-								vc = ebx
-								//if(vc === 0)
+								isLightBlocked = ebx
+								//if(isLightBlocked === 0)
 								//	loc_4A7500 = 1
 								break
 							*/
 
 				            case 0:
-				              vc = 0;
+				              isLightBlocked = 0;
 				              break;
 				            case 1:
-				              vc = light_blocked[36 * ecx];
+				              isLightBlocked = light_blocked[36 * ecx];
 				              break
 				            case 2:
-				              vc = light_blocked[36 * ecx + 1];
+				              isLightBlocked = light_blocked[36 * ecx + 1];
 				              break
 				            case 3:
-				              vc = light_blocked[36 * ecx + 2];
+				              isLightBlocked = light_blocked[36 * ecx + 2];
 				              break
 				            case 4:
-				              vc = light_blocked[36 * ecx + 3];
+				              isLightBlocked = light_blocked[36 * ecx + 3];
 				              break
 				            case 5:
-				              vc = light_blocked[36 * ecx + 4];
+				              isLightBlocked = light_blocked[36 * ecx + 4];
 				              break
 				            case 6:
-				              vc = light_blocked[36 * ecx + 5];
+				              isLightBlocked = light_blocked[36 * ecx + 5];
 				              break
 				            case 7:
-				              vc = light_blocked[36 * ecx + 6];
+				              isLightBlocked = light_blocked[36 * ecx + 6];
 				              break
 				            case 8:
-				              vc = light_blocked[36 * edx] & light_blocked[36 * ecx];
+				              isLightBlocked = light_blocked[36 * edx] & light_blocked[36 * ecx];
 				              break
 				            case 9:
-				              vc = light_blocked[36 * ecx + 1] & light_blocked[36 * ecx + 8];
+				              isLightBlocked = light_blocked[36 * ecx + 1] & light_blocked[36 * ecx + 8];
 				              break
-				            case 0xA:
-				              vc = light_blocked[36 * ecx + 2] & light_blocked[36 * ecx + 9];
+				            case 10:
+				              isLightBlocked = light_blocked[36 * ecx + 2] & light_blocked[36 * ecx + 9];
 				              break
-				            case 0xB:
-				              vc = light_blocked[36 * ecx + 3] & light_blocked[36 * ecx + 10];
+				            case 11:
+				              isLightBlocked = light_blocked[36 * ecx + 3] & light_blocked[36 * ecx + 10];
 				              break
-				            case 0xC:
-				              vc = light_blocked[36 * ecx + 4] & light_blocked[36 * ecx + 11];
+				            case 12:
+				              isLightBlocked = light_blocked[36 * ecx + 4] & light_blocked[36 * ecx + 11];
 				              break
-				            case 0xD:
-				              vc = light_blocked[36 * ecx + 5] & light_blocked[36 * ecx + 12];
+				            case 13:
+				              isLightBlocked = light_blocked[36 * ecx + 5] & light_blocked[36 * ecx + 12];
 				              break
-				            case 0xE:
-				              vc = light_blocked[36 * ecx + 6] & light_blocked[36 * ecx + 13];
+				            case 14:
+				              isLightBlocked = light_blocked[36 * ecx + 6] & light_blocked[36 * ecx + 13];
 				              break
-				            case 0xF:
-				              vc = light_blocked[36 * edx + 1] & light_blocked[36 * ecx + 8];
+				            case 15:
+				              isLightBlocked = light_blocked[36 * edx + 1] & light_blocked[36 * ecx + 8];
 				              break
-
-				            // 16...
-				            case 0x10:
-				              vc = light_blocked[36 * ecx + 15] & light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 8];
+				            case 16:
+				              isLightBlocked = light_blocked[36 * ecx + 15] & light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 8];
 				              break;
-				            case 0x11:
+				            case 17:
 				              v26 = light_blocked[36 * ecx + 10] | light_blocked[36 * ecx + 9];
-				              vc = light_blocked[36 * ecx + 9] & (light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 10]) | light_blocked[36 * ecx + 16] & v26 | v26 & light_blocked[36 * ecx + 8];
+				              isLightBlocked = light_blocked[36 * ecx + 9] & (light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 10]) | light_blocked[36 * ecx + 16] & v26 | v26 & light_blocked[36 * ecx + 8];
 				              break;
-				            case 0x12:
-				              vc = (light_blocked[36 * ecx + 11] | light_blocked[36 * ecx + 10] | light_blocked[36 * ecx + 9] | light_blocked[36 * ecx]) & light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 16] & light_blocked[36 * ecx + 10];
+				            case 18:
+				              isLightBlocked = (light_blocked[36 * ecx + 11] | light_blocked[36 * ecx + 10] | light_blocked[36 * ecx + 9] | light_blocked[36 * ecx]) & light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 16] & light_blocked[36 * ecx + 10];
 				              break;
-				            case 0x13:
-				              vc = light_blocked[36 * ecx + 18] & light_blocked[36 * ecx + 12] | light_blocked[36 * ecx + 10] | light_blocked[36 * ecx + 9] | (light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17]) & light_blocked[36 * ecx + 11];
+				            case 19:
+				              isLightBlocked = light_blocked[36 * ecx + 18] & light_blocked[36 * ecx + 12] | light_blocked[36 * ecx + 10] | light_blocked[36 * ecx + 9] | (light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17]) & light_blocked[36 * ecx + 11];
 				              break;
-				            case 0x14:
+				            case 20:
 				              v27 = light_blocked[36 * ecx + 12] | light_blocked[36 * ecx + 11] | light_blocked[36 * ecx + 2];
-				              vc = (light_blocked[36 * ecx + 19] | light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 16]) & light_blocked[36 * ecx + 11] | v27 & light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 9] & v27 | light_blocked[36 * ecx + 10];
+				              isLightBlocked = (light_blocked[36 * ecx + 19] | light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 16]) & light_blocked[36 * ecx + 11] | v27 & light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 9] & v27 | light_blocked[36 * ecx + 10];
 				              break;
-				            case 0x15:
-				              vc = light_blocked[36 * edx + 2] & light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8] & light_blocked[36 * edx + 1];
+				            case 21:
+				              isLightBlocked = light_blocked[36 * edx + 2] & light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8] & light_blocked[36 * edx + 1];
 				              break;
-				            case 0x16:
-				              vc = (light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15]) & light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 15] & (light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 9]) | (light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15] | light_blocked[36 * edx + 1]) & light_blocked[36 * ecx + 8];
+				            case 22:
+				              isLightBlocked = (light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15]) & light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 15] & (light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 9]) | (light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15] | light_blocked[36 * edx + 1]) & light_blocked[36 * ecx + 8];
 				              break;
-				            case 0x17:
-				              vc = light_blocked[36 * ecx + 22] & light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 15] & light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 3] | light_blocked[36 * ecx + 16];
+				            case 23:
+				              isLightBlocked = light_blocked[36 * ecx + 22] & light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 15] & light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 3] | light_blocked[36 * ecx + 16];
 				              break;
-				            case 0x18:
+				            case 24:
 				              v28 = light_blocked[36 * ecx + 23];
-				              vc = v28 & light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17] & (v28 | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 15]) | light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 9] & (light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 15]) | (light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 10] | light_blocked[36 * ecx + 9] | light_blocked[36 * ecx]) & light_blocked[36 * ecx + 16];
+				              isLightBlocked = v28 & light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17] & (v28 | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 15]) | light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 9] & (light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 15]) | (light_blocked[36 * ecx + 18] | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 10] | light_blocked[36 * ecx + 9] | light_blocked[36 * ecx]) & light_blocked[36 * ecx + 16];
 				              break;
-				            case 0x19:
+				            case 25:
 				              v29 = light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 8];
-				              vc = light_blocked[36 * ecx + 24] & (light_blocked[36 * ecx + 19] | light_blocked[36 * ecx]) | light_blocked[36 * ecx + 18] & (light_blocked[36 * ecx + 24] | light_blocked[36 * ecx + 23] | v29) | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 10] & (light_blocked[36 * ecx + 24] | v29 | light_blocked[36 * ecx + 17]) | light_blocked[36 * ecx + 1] & light_blocked[36 * ecx + 8] | (light_blocked[36 * ecx + 24] | light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8]) & light_blocked[36 * ecx + 9];
+				              isLightBlocked = light_blocked[36 * ecx + 24] & (light_blocked[36 * ecx + 19] | light_blocked[36 * ecx]) | light_blocked[36 * ecx + 18] & (light_blocked[36 * ecx + 24] | light_blocked[36 * ecx + 23] | v29) | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 10] & (light_blocked[36 * ecx + 24] | v29 | light_blocked[36 * ecx + 17]) | light_blocked[36 * ecx + 1] & light_blocked[36 * ecx + 8] | (light_blocked[36 * ecx + 24] | light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8]) & light_blocked[36 * ecx + 9];
 				              break;
-				            case 0x1A:
-				              vc = light_blocked[36 * edx + 3] & light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 8] & light_blocked[36 * edx + 1] | light_blocked[36 * edx + 2] & light_blocked[36 * ecx + 15];
+				            case 26:
+				              isLightBlocked = light_blocked[36 * edx + 3] & light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 8] & light_blocked[36 * edx + 1] | light_blocked[36 * edx + 2] & light_blocked[36 * ecx + 15];
 				              break;
-				            case 0x1B:
-				              vc = light_blocked[36 * ecx + 21] & (light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 8]) | light_blocked[36 * ecx + 15] | light_blocked[36 * edx + 1] & light_blocked[36 * ecx + 8] | (light_blocked[36 * ecx + 26] | light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15] | light_blocked[36 * edx]) & light_blocked[36 * ecx + 22];
+				            case 27:
+				              isLightBlocked = light_blocked[36 * ecx + 21] & (light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 8]) | light_blocked[36 * ecx + 15] | light_blocked[36 * edx + 1] & light_blocked[36 * ecx + 8] | (light_blocked[36 * ecx + 26] | light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15] | light_blocked[36 * edx]) & light_blocked[36 * ecx + 22];
 				              break;
-				            case 0x1C:
-				              vc = light_blocked[36 * ecx + 27] & light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 22] & (light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 9]) | light_blocked[36 * ecx + 16] & (light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 21] | light_blocked[36 * edx]) | light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 15] & (light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 9]);
+				            case 28:
+				              isLightBlocked = light_blocked[36 * ecx + 27] & light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 22] & (light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 9]) | light_blocked[36 * ecx + 16] & (light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 21] | light_blocked[36 * edx]) | light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 15] & (light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 9]);
 				              break;
-				            case 0x1D:
-				              vc = light_blocked[36 * ecx + 28] & light_blocked[36 * ecx + 24] | light_blocked[36 * ecx + 22] & light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 15] & light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 23];
+				            case 29:
+				              isLightBlocked = light_blocked[36 * ecx + 28] & light_blocked[36 * ecx + 24] | light_blocked[36 * ecx + 22] & light_blocked[36 * ecx + 17] | light_blocked[36 * ecx + 15] & light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 23];
 				              break;
-				            case 0x1E:
-				              vc = light_blocked[36 * edx + 4] & light_blocked[36 * ecx + 26] | light_blocked[36 * edx + 2] & light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8] & light_blocked[36 * edx + 1] | light_blocked[36 * edx + 3] & light_blocked[36 * ecx + 21];
+				            case 30:
+				              isLightBlocked = light_blocked[36 * edx + 4] & light_blocked[36 * ecx + 26] | light_blocked[36 * edx + 2] & light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8] & light_blocked[36 * edx + 1] | light_blocked[36 * edx + 3] & light_blocked[36 * ecx + 21];
 				              break;
-				            case 0x1F:
-				              vc = light_blocked[36 * ecx + 30] & light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 26] & (light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 8]) | light_blocked[36 * ecx + 15] | light_blocked[36 * edx + 1] & light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 21];
+				            case 31:
+				              isLightBlocked = light_blocked[36 * ecx + 30] & light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 26] & (light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 8]) | light_blocked[36 * ecx + 15] | light_blocked[36 * edx + 1] & light_blocked[36 * ecx + 8] | light_blocked[36 * ecx + 21];
 				              break;
-				            case 0x20:
+				            case 32:
 				              v30 = light_blocked[36 * edx + 1] & light_blocked[36 * ecx + 8] | (light_blocked[36 * ecx + 28] | light_blocked[36 * ecx + 23] | light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 9] | light_blocked[36 * ecx + 8]) & light_blocked[36 * ecx + 15];
 				              v31 = light_blocked[36 * ecx + 16] | light_blocked[36 * ecx + 8];
-				              vc = light_blocked[36 * ecx + 28] & (light_blocked[36 * ecx + 31] | light_blocked[36 * ecx]) | light_blocked[36 * ecx + 27] & (light_blocked[36 * ecx + 28] | light_blocked[36 * ecx + 23] | v31) | light_blocked[36 * ecx + 22] | v30 | light_blocked[36 * ecx + 21] & (v31 | light_blocked[36 * ecx + 28]);
+				              isLightBlocked = light_blocked[36 * ecx + 28] & (light_blocked[36 * ecx + 31] | light_blocked[36 * ecx]) | light_blocked[36 * ecx + 27] & (light_blocked[36 * ecx + 28] | light_blocked[36 * ecx + 23] | v31) | light_blocked[36 * ecx + 22] | v30 | light_blocked[36 * ecx + 21] & (v31 | light_blocked[36 * ecx + 28]);
 				              break;
-				            case 0x21:
+				            case 33:
 				              v32 = 36 * edx;
-				              vc = light_blocked[v32 + 5] & light_blocked[36 * ecx + 30] | light_blocked[v32 + 3] & light_blocked[36 * ecx + 21] | light_blocked[v32 + 2] & light_blocked[36 * ecx + 15] | light_blocked[v32 + 1] & light_blocked[36 * ecx + 8] | light_blocked[v32 + 4] & light_blocked[36 * ecx + 26];
+				              isLightBlocked = light_blocked[v32 + 5] & light_blocked[36 * ecx + 30] | light_blocked[v32 + 3] & light_blocked[36 * ecx + 21] | light_blocked[v32 + 2] & light_blocked[36 * ecx + 15] | light_blocked[v32 + 1] & light_blocked[36 * ecx + 8] | light_blocked[v32 + 4] & light_blocked[36 * ecx + 26];
 				              break;
-				            case 0x22:
+				            case 34:
 				              v33 = light_blocked[36 * ecx + 30] | light_blocked[36 * ecx + 26] | light_blocked[36 * edx + 2];
-				              vc = (light_blocked[36 * ecx + 31] | light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 16]) & light_blocked[36 * ecx + 26] | light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15] & v33 | v33 & light_blocked[36 * ecx + 8];
+				              isLightBlocked = (light_blocked[36 * ecx + 31] | light_blocked[36 * ecx + 27] | light_blocked[36 * ecx + 22] | light_blocked[36 * ecx + 16]) & light_blocked[36 * ecx + 26] | light_blocked[36 * ecx + 21] | light_blocked[36 * ecx + 15] & v33 | v33 & light_blocked[36 * ecx + 8];
 				              break;
-				            case 0x23:
+				            case 35:
 				              v34 = 36 * edx;
-				              vc = light_blocked[v34 + 6] & light_blocked[36 * ecx + 33] | light_blocked[v34 + 4] & light_blocked[36 * ecx + 26] | light_blocked[v34 + 3] & light_blocked[36 * ecx + 21] | light_blocked[v34 + 2] & light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8] & light_blocked[v34 + 1] | light_blocked[v34 + 5] & light_blocked[36 * ecx + 30];
+				              isLightBlocked = light_blocked[v34 + 6] & light_blocked[36 * ecx + 33] | light_blocked[v34 + 4] & light_blocked[36 * ecx + 26] | light_blocked[v34 + 3] & light_blocked[36 * ecx + 21] | light_blocked[v34 + 2] & light_blocked[36 * ecx + 15] | light_blocked[36 * ecx + 8] & light_blocked[v34 + 1] | light_blocked[v34 + 5] & light_blocked[36 * ecx + 30];
 				              break;
 
 							default:
-								console.log("UNHANDLED SWITCH: v20=" + v20 + " (case " + (v20/4|0) + ")")
-								vc = 0
+								throw "v20/4 > 36 or < 0";
 						}
 					}
 
-					if(vc === 0) {
+					if(isLightBlocked === 0) {
 						// loc_4A7500:
 						edx = v1c // light_offset idx
 						//console.log("edx: %d (index: %d?)", edx, edx/4|0)
@@ -414,7 +412,7 @@ module Lightmap {
 								if(!curObj.pro)
 									continue
 
-								// vc = light blocked
+								// isLightBlocked = light blocked
 
 								// if(curObj+24h & 1 === 0) { continue }
 								if((curObj.flags & 1) !== 0) { // ?
@@ -423,8 +421,8 @@ module Lightmap {
 								}
 
 								// edx = !(curObj+27h & 0x20)
-								vc = !((curObj.flags >> 24) & 0x20) // LightThru flag?
-								//console.log("vc = %o", vc)
+								isLightBlocked = !((curObj.flags >> 24) & 0x20) // LightThru flag?
+								//console.log("isLightBlocked = %o", isLightBlocked)
 
 								// ebx = (curObj+20h) & 0x0F000000 >> 24
 								if(curObj.type === "wall") {
@@ -464,7 +462,7 @@ module Lightmap {
 								}
 							    //console.log("edi: " + edi)
 
-								//vc = 0 // hack, temporary
+								//isLightBlocked = 0 // hack, temporary
 								//edi = 0
 							}
 
@@ -480,7 +478,7 @@ module Lightmap {
 						}
 					}
 
-					eax = vc // is light blocked?
+					eax = isLightBlocked // is light blocked?
 					edx = v18
 					ebx = v18
 					light_blocked[edx/4|0] = eax
