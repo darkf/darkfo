@@ -147,19 +147,17 @@ module Lightmap {
 		// zero arrays
 		zeroArray(light_blocked)
 
-		var ebp = 0 // i
 		var loopCnt = 0 // var_2c / v2c: loop counter from 0 to 36*4, in 4 byte increments
 		var ebx, vc, esi, v14
 
-		do {
+		for(var ebp = 0; ebp < 36; ebp++, loopCnt += 4) {
 			edx = obj
-			eax = loopCnt
 
-			if(obj.lightRadius /* esi */ >= light_distance[eax/4|0]) {
+			if(obj.lightRadius /* esi */ >= light_distance[loopCnt/4|0]) {
 				var edi = v30
-				var v24 = eax
-				var v20 = eax
-				eax += edi
+				var v24 = loopCnt
+				var v20 = loopCnt
+				eax = loopCnt + edi
 				var v1c = eax
 
 				var v18 = loopCnt
@@ -498,11 +496,7 @@ module Lightmap {
 				}
 				while(ecx < 6)
 			}
-
-			loopCnt += 4
-			ebp++ // i++
 		}
-		while(ebp < 36)
 
 		return tile_intensity
 	}
