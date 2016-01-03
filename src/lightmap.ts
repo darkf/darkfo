@@ -142,12 +142,11 @@ module Lightmap {
 		stackArray[136/4|0] = light
 		stackArray[140/4|0] = light
 
-		var _light_blocked = new Array(36*6)
+		var _light_blocked = new Array(36*6) // XXX: Is this the exact size?
 
 		// zero arrays
 		zeroArray(_light_blocked)
 
-		var ebx, esi, v14
 		var isLightBlocked // var_C
 
 		function light_blocked(index) {
@@ -158,133 +157,133 @@ module Lightmap {
 			if(obj.lightRadius >= light_distance[i]) {
 				var v26, v27, v28, v29, v30, v31, v32, v33, v34 // temporaries
 
-				for(var ecx = 0; ecx < 6; ecx++) {
-					edx = (ecx + 1) % 6
+				for(var dir = 0; dir < 6; dir++) {
+					var nextDir = (dir + 1) % 6
 
 					switch(i) {
 			            case 0:
 			              isLightBlocked = 0;
 			              break;
 			            case 1:
-			              isLightBlocked = light_blocked(36 * ecx);
+			              isLightBlocked = light_blocked(36 * dir);
 			              break
 			            case 2:
-			              isLightBlocked = light_blocked(36 * ecx + 1);
+			              isLightBlocked = light_blocked(36 * dir + 1);
 			              break
 			            case 3:
-			              isLightBlocked = light_blocked(36 * ecx + 2);
+			              isLightBlocked = light_blocked(36 * dir + 2);
 			              break
 			            case 4:
-			              isLightBlocked = light_blocked(36 * ecx + 3);
+			              isLightBlocked = light_blocked(36 * dir + 3);
 			              break
 			            case 5:
-			              isLightBlocked = light_blocked(36 * ecx + 4);
+			              isLightBlocked = light_blocked(36 * dir + 4);
 			              break
 			            case 6:
-			              isLightBlocked = light_blocked(36 * ecx + 5);
+			              isLightBlocked = light_blocked(36 * dir + 5);
 			              break
 			            case 7:
-			              isLightBlocked = light_blocked(36 * ecx + 6);
+			              isLightBlocked = light_blocked(36 * dir + 6);
 			              break
 			            case 8:
-			              isLightBlocked = light_blocked(36 * edx) & light_blocked(36 * ecx);
+			              isLightBlocked = light_blocked(36 * nextDir) & light_blocked(36 * dir);
 			              break
 			            case 9:
-			              isLightBlocked = light_blocked(36 * ecx + 1) & light_blocked(36 * ecx + 8);
+			              isLightBlocked = light_blocked(36 * dir + 1) & light_blocked(36 * dir + 8);
 			              break
 			            case 10:
-			              isLightBlocked = light_blocked(36 * ecx + 2) & light_blocked(36 * ecx + 9);
+			              isLightBlocked = light_blocked(36 * dir + 2) & light_blocked(36 * dir + 9);
 			              break
 			            case 11:
-			              isLightBlocked = light_blocked(36 * ecx + 3) & light_blocked(36 * ecx + 10);
+			              isLightBlocked = light_blocked(36 * dir + 3) & light_blocked(36 * dir + 10);
 			              break
 			            case 12:
-			              isLightBlocked = light_blocked(36 * ecx + 4) & light_blocked(36 * ecx + 11);
+			              isLightBlocked = light_blocked(36 * dir + 4) & light_blocked(36 * dir + 11);
 			              break
 			            case 13:
-			              isLightBlocked = light_blocked(36 * ecx + 5) & light_blocked(36 * ecx + 12);
+			              isLightBlocked = light_blocked(36 * dir + 5) & light_blocked(36 * dir + 12);
 			              break
 			            case 14:
-			              isLightBlocked = light_blocked(36 * ecx + 6) & light_blocked(36 * ecx + 13);
+			              isLightBlocked = light_blocked(36 * dir + 6) & light_blocked(36 * dir + 13);
 			              break
 			            case 15:
-			              isLightBlocked = light_blocked(36 * edx + 1) & light_blocked(36 * ecx + 8);
+			              isLightBlocked = light_blocked(36 * nextDir + 1) & light_blocked(36 * dir + 8);
 			              break
 			            case 16:
-			              isLightBlocked = light_blocked(36 * ecx + 15) & light_blocked(36 * ecx + 9) | light_blocked(36 * ecx + 8);
+			              isLightBlocked = light_blocked(36 * dir + 15) & light_blocked(36 * dir + 9) | light_blocked(36 * dir + 8);
 			              break;
 			            case 17:
-			              v26 = light_blocked(36 * ecx + 10) | light_blocked(36 * ecx + 9);
-			              isLightBlocked = light_blocked(36 * ecx + 9) & (light_blocked(36 * ecx + 15) | light_blocked(36 * ecx + 10)) | light_blocked(36 * ecx + 16) & v26 | v26 & light_blocked(36 * ecx + 8);
+			              v26 = light_blocked(36 * dir + 10) | light_blocked(36 * dir + 9);
+			              isLightBlocked = light_blocked(36 * dir + 9) & (light_blocked(36 * dir + 15) | light_blocked(36 * dir + 10)) | light_blocked(36 * dir + 16) & v26 | v26 & light_blocked(36 * dir + 8);
 			              break;
 			            case 18:
-			              isLightBlocked = (light_blocked(36 * ecx + 11) | light_blocked(36 * ecx + 10) | light_blocked(36 * ecx + 9) | light_blocked(36 * ecx)) & light_blocked(36 * ecx + 17) | light_blocked(36 * ecx + 9) | light_blocked(36 * ecx + 16) & light_blocked(36 * ecx + 10);
+			              isLightBlocked = (light_blocked(36 * dir + 11) | light_blocked(36 * dir + 10) | light_blocked(36 * dir + 9) | light_blocked(36 * dir)) & light_blocked(36 * dir + 17) | light_blocked(36 * dir + 9) | light_blocked(36 * dir + 16) & light_blocked(36 * dir + 10);
 			              break;
 			            case 19:
-			              isLightBlocked = light_blocked(36 * ecx + 18) & light_blocked(36 * ecx + 12) | light_blocked(36 * ecx + 10) | light_blocked(36 * ecx + 9) | (light_blocked(36 * ecx + 18) | light_blocked(36 * ecx + 17)) & light_blocked(36 * ecx + 11);
+			              isLightBlocked = light_blocked(36 * dir + 18) & light_blocked(36 * dir + 12) | light_blocked(36 * dir + 10) | light_blocked(36 * dir + 9) | (light_blocked(36 * dir + 18) | light_blocked(36 * dir + 17)) & light_blocked(36 * dir + 11);
 			              break;
 			            case 20:
-			              v27 = light_blocked(36 * ecx + 12) | light_blocked(36 * ecx + 11) | light_blocked(36 * ecx + 2);
-			              isLightBlocked = (light_blocked(36 * ecx + 19) | light_blocked(36 * ecx + 18) | light_blocked(36 * ecx + 17) | light_blocked(36 * ecx + 16)) & light_blocked(36 * ecx + 11) | v27 & light_blocked(36 * ecx + 8) | light_blocked(36 * ecx + 9) & v27 | light_blocked(36 * ecx + 10);
+			              v27 = light_blocked(36 * dir + 12) | light_blocked(36 * dir + 11) | light_blocked(36 * dir + 2);
+			              isLightBlocked = (light_blocked(36 * dir + 19) | light_blocked(36 * dir + 18) | light_blocked(36 * dir + 17) | light_blocked(36 * dir + 16)) & light_blocked(36 * dir + 11) | v27 & light_blocked(36 * dir + 8) | light_blocked(36 * dir + 9) & v27 | light_blocked(36 * dir + 10);
 			              break;
 			            case 21:
-			              isLightBlocked = light_blocked(36 * edx + 2) & light_blocked(36 * ecx + 15) | light_blocked(36 * ecx + 8) & light_blocked(36 * edx + 1);
+			              isLightBlocked = light_blocked(36 * nextDir + 2) & light_blocked(36 * dir + 15) | light_blocked(36 * dir + 8) & light_blocked(36 * nextDir + 1);
 			              break;
 			            case 22:
-			              isLightBlocked = (light_blocked(36 * ecx + 21) | light_blocked(36 * ecx + 15)) & light_blocked(36 * ecx + 16) | light_blocked(36 * ecx + 15) & (light_blocked(36 * ecx + 21) | light_blocked(36 * ecx + 9)) | (light_blocked(36 * ecx + 21) | light_blocked(36 * ecx + 15) | light_blocked(36 * edx + 1)) & light_blocked(36 * ecx + 8);
+			              isLightBlocked = (light_blocked(36 * dir + 21) | light_blocked(36 * dir + 15)) & light_blocked(36 * dir + 16) | light_blocked(36 * dir + 15) & (light_blocked(36 * dir + 21) | light_blocked(36 * dir + 9)) | (light_blocked(36 * dir + 21) | light_blocked(36 * dir + 15) | light_blocked(36 * nextDir + 1)) & light_blocked(36 * dir + 8);
 			              break;
 			            case 23:
-			              isLightBlocked = light_blocked(36 * ecx + 22) & light_blocked(36 * ecx + 17) | light_blocked(36 * ecx + 15) & light_blocked(36 * ecx + 9) | light_blocked(36 * ecx + 3) | light_blocked(36 * ecx + 16);
+			              isLightBlocked = light_blocked(36 * dir + 22) & light_blocked(36 * dir + 17) | light_blocked(36 * dir + 15) & light_blocked(36 * dir + 9) | light_blocked(36 * dir + 3) | light_blocked(36 * dir + 16);
 			              break;
 			            case 24:
-			              v28 = light_blocked(36 * ecx + 23);
-			              isLightBlocked = v28 & light_blocked(36 * ecx + 18) | light_blocked(36 * ecx + 17) & (v28 | light_blocked(36 * ecx + 22) | light_blocked(36 * ecx + 15)) | light_blocked(36 * ecx + 8) | light_blocked(36 * ecx + 9) & (light_blocked(36 * ecx + 23) | light_blocked(36 * ecx + 16) | light_blocked(36 * ecx + 15)) | (light_blocked(36 * ecx + 18) | light_blocked(36 * ecx + 17) | light_blocked(36 * ecx + 10) | light_blocked(36 * ecx + 9) | light_blocked(36 * ecx)) & light_blocked(36 * ecx + 16);
+			              v28 = light_blocked(36 * dir + 23);
+			              isLightBlocked = v28 & light_blocked(36 * dir + 18) | light_blocked(36 * dir + 17) & (v28 | light_blocked(36 * dir + 22) | light_blocked(36 * dir + 15)) | light_blocked(36 * dir + 8) | light_blocked(36 * dir + 9) & (light_blocked(36 * dir + 23) | light_blocked(36 * dir + 16) | light_blocked(36 * dir + 15)) | (light_blocked(36 * dir + 18) | light_blocked(36 * dir + 17) | light_blocked(36 * dir + 10) | light_blocked(36 * dir + 9) | light_blocked(36 * dir)) & light_blocked(36 * dir + 16);
 			              break;
 			            case 25:
-			              v29 = light_blocked(36 * ecx + 16) | light_blocked(36 * ecx + 8);
-			              isLightBlocked = light_blocked(36 * ecx + 24) & (light_blocked(36 * ecx + 19) | light_blocked(36 * ecx)) | light_blocked(36 * ecx + 18) & (light_blocked(36 * ecx + 24) | light_blocked(36 * ecx + 23) | v29) | light_blocked(36 * ecx + 17) | light_blocked(36 * ecx + 10) & (light_blocked(36 * ecx + 24) | v29 | light_blocked(36 * ecx + 17)) | light_blocked(36 * ecx + 1) & light_blocked(36 * ecx + 8) | (light_blocked(36 * ecx + 24) | light_blocked(36 * ecx + 23) | light_blocked(36 * ecx + 16) | light_blocked(36 * ecx + 15) | light_blocked(36 * ecx + 8)) & light_blocked(36 * ecx + 9);
+			              v29 = light_blocked(36 * dir + 16) | light_blocked(36 * dir + 8);
+			              isLightBlocked = light_blocked(36 * dir + 24) & (light_blocked(36 * dir + 19) | light_blocked(36 * dir)) | light_blocked(36 * dir + 18) & (light_blocked(36 * dir + 24) | light_blocked(36 * dir + 23) | v29) | light_blocked(36 * dir + 17) | light_blocked(36 * dir + 10) & (light_blocked(36 * dir + 24) | v29 | light_blocked(36 * dir + 17)) | light_blocked(36 * dir + 1) & light_blocked(36 * dir + 8) | (light_blocked(36 * dir + 24) | light_blocked(36 * dir + 23) | light_blocked(36 * dir + 16) | light_blocked(36 * dir + 15) | light_blocked(36 * dir + 8)) & light_blocked(36 * dir + 9);
 			              break;
 			            case 26:
-			              isLightBlocked = light_blocked(36 * edx + 3) & light_blocked(36 * ecx + 21) | light_blocked(36 * ecx + 8) & light_blocked(36 * edx + 1) | light_blocked(36 * edx + 2) & light_blocked(36 * ecx + 15);
+			              isLightBlocked = light_blocked(36 * nextDir + 3) & light_blocked(36 * dir + 21) | light_blocked(36 * dir + 8) & light_blocked(36 * nextDir + 1) | light_blocked(36 * nextDir + 2) & light_blocked(36 * dir + 15);
 			              break;
 			            case 27:
-			              isLightBlocked = light_blocked(36 * ecx + 21) & (light_blocked(36 * ecx + 16) | light_blocked(36 * ecx + 8)) | light_blocked(36 * ecx + 15) | light_blocked(36 * edx + 1) & light_blocked(36 * ecx + 8) | (light_blocked(36 * ecx + 26) | light_blocked(36 * ecx + 21) | light_blocked(36 * ecx + 15) | light_blocked(36 * edx)) & light_blocked(36 * ecx + 22);
+			              isLightBlocked = light_blocked(36 * dir + 21) & (light_blocked(36 * dir + 16) | light_blocked(36 * dir + 8)) | light_blocked(36 * dir + 15) | light_blocked(36 * nextDir + 1) & light_blocked(36 * dir + 8) | (light_blocked(36 * dir + 26) | light_blocked(36 * dir + 21) | light_blocked(36 * dir + 15) | light_blocked(36 * nextDir)) & light_blocked(36 * dir + 22);
 			              break;
 			            case 28:
-			              isLightBlocked = light_blocked(36 * ecx + 27) & light_blocked(36 * ecx + 23) | light_blocked(36 * ecx + 22) & (light_blocked(36 * ecx + 23) | light_blocked(36 * ecx + 17) | light_blocked(36 * ecx + 9)) | light_blocked(36 * ecx + 16) & (light_blocked(36 * ecx + 27) | light_blocked(36 * ecx + 22) | light_blocked(36 * ecx + 21) | light_blocked(36 * edx)) | light_blocked(36 * ecx + 8) | light_blocked(36 * ecx + 15) & (light_blocked(36 * ecx + 23) | light_blocked(36 * ecx + 16) | light_blocked(36 * ecx + 9));
+			              isLightBlocked = light_blocked(36 * dir + 27) & light_blocked(36 * dir + 23) | light_blocked(36 * dir + 22) & (light_blocked(36 * dir + 23) | light_blocked(36 * dir + 17) | light_blocked(36 * dir + 9)) | light_blocked(36 * dir + 16) & (light_blocked(36 * dir + 27) | light_blocked(36 * dir + 22) | light_blocked(36 * dir + 21) | light_blocked(36 * nextDir)) | light_blocked(36 * dir + 8) | light_blocked(36 * dir + 15) & (light_blocked(36 * dir + 23) | light_blocked(36 * dir + 16) | light_blocked(36 * dir + 9));
 			              break;
 			            case 29:
-			              isLightBlocked = light_blocked(36 * ecx + 28) & light_blocked(36 * ecx + 24) | light_blocked(36 * ecx + 22) & light_blocked(36 * ecx + 17) | light_blocked(36 * ecx + 15) & light_blocked(36 * ecx + 9) | light_blocked(36 * ecx + 16) | light_blocked(36 * ecx + 8) | light_blocked(36 * ecx + 23);
+			              isLightBlocked = light_blocked(36 * dir + 28) & light_blocked(36 * dir + 24) | light_blocked(36 * dir + 22) & light_blocked(36 * dir + 17) | light_blocked(36 * dir + 15) & light_blocked(36 * dir + 9) | light_blocked(36 * dir + 16) | light_blocked(36 * dir + 8) | light_blocked(36 * dir + 23);
 			              break;
 			            case 30:
-			              isLightBlocked = light_blocked(36 * edx + 4) & light_blocked(36 * ecx + 26) | light_blocked(36 * edx + 2) & light_blocked(36 * ecx + 15) | light_blocked(36 * ecx + 8) & light_blocked(36 * edx + 1) | light_blocked(36 * edx + 3) & light_blocked(36 * ecx + 21);
+			              isLightBlocked = light_blocked(36 * nextDir + 4) & light_blocked(36 * dir + 26) | light_blocked(36 * nextDir + 2) & light_blocked(36 * dir + 15) | light_blocked(36 * dir + 8) & light_blocked(36 * nextDir + 1) | light_blocked(36 * nextDir + 3) & light_blocked(36 * dir + 21);
 			              break;
 			            case 31:
-			              isLightBlocked = light_blocked(36 * ecx + 30) & light_blocked(36 * ecx + 27) | light_blocked(36 * ecx + 26) & (light_blocked(36 * ecx + 27) | light_blocked(36 * ecx + 22) | light_blocked(36 * ecx + 8)) | light_blocked(36 * ecx + 15) | light_blocked(36 * edx + 1) & light_blocked(36 * ecx + 8) | light_blocked(36 * ecx + 21);
+			              isLightBlocked = light_blocked(36 * dir + 30) & light_blocked(36 * dir + 27) | light_blocked(36 * dir + 26) & (light_blocked(36 * dir + 27) | light_blocked(36 * dir + 22) | light_blocked(36 * dir + 8)) | light_blocked(36 * dir + 15) | light_blocked(36 * nextDir + 1) & light_blocked(36 * dir + 8) | light_blocked(36 * dir + 21);
 			              break;
 			            case 32:
 			              // XXX: v30 here could be lightOffsetsStart, but that is unlikely
-			              v30 = light_blocked(36 * edx + 1) & light_blocked(36 * ecx + 8) | (light_blocked(36 * ecx + 28) | light_blocked(36 * ecx + 23) | light_blocked(36 * ecx + 16) | light_blocked(36 * ecx + 9) | light_blocked(36 * ecx + 8)) & light_blocked(36 * ecx + 15);
-			              v31 = light_blocked(36 * ecx + 16) | light_blocked(36 * ecx + 8);
-			              isLightBlocked = light_blocked(36 * ecx + 28) & (light_blocked(36 * ecx + 31) | light_blocked(36 * ecx)) | light_blocked(36 * ecx + 27) & (light_blocked(36 * ecx + 28) | light_blocked(36 * ecx + 23) | v31) | light_blocked(36 * ecx + 22) | v30 | light_blocked(36 * ecx + 21) & (v31 | light_blocked(36 * ecx + 28));
+			              v30 = light_blocked(36 * nextDir + 1) & light_blocked(36 * dir + 8) | (light_blocked(36 * dir + 28) | light_blocked(36 * dir + 23) | light_blocked(36 * dir + 16) | light_blocked(36 * dir + 9) | light_blocked(36 * dir + 8)) & light_blocked(36 * dir + 15);
+			              v31 = light_blocked(36 * dir + 16) | light_blocked(36 * dir + 8);
+			              isLightBlocked = light_blocked(36 * dir + 28) & (light_blocked(36 * dir + 31) | light_blocked(36 * dir)) | light_blocked(36 * dir + 27) & (light_blocked(36 * dir + 28) | light_blocked(36 * dir + 23) | v31) | light_blocked(36 * dir + 22) | v30 | light_blocked(36 * dir + 21) & (v31 | light_blocked(36 * dir + 28));
 			              break;
 			            case 33:
-			              v32 = 36 * edx;
-			              isLightBlocked = light_blocked(v32 + 5) & light_blocked(36 * ecx + 30) | light_blocked(v32 + 3) & light_blocked(36 * ecx + 21) | light_blocked(v32 + 2) & light_blocked(36 * ecx + 15) | light_blocked(v32 + 1) & light_blocked(36 * ecx + 8) | light_blocked(v32 + 4) & light_blocked(36 * ecx + 26);
+			              v32 = 36 * nextDir;
+			              isLightBlocked = light_blocked(v32 + 5) & light_blocked(36 * dir + 30) | light_blocked(v32 + 3) & light_blocked(36 * dir + 21) | light_blocked(v32 + 2) & light_blocked(36 * dir + 15) | light_blocked(v32 + 1) & light_blocked(36 * dir + 8) | light_blocked(v32 + 4) & light_blocked(36 * dir + 26);
 			              break;
 			            case 34:
-			              v33 = light_blocked(36 * ecx + 30) | light_blocked(36 * ecx + 26) | light_blocked(36 * edx + 2);
-			              isLightBlocked = (light_blocked(36 * ecx + 31) | light_blocked(36 * ecx + 27) | light_blocked(36 * ecx + 22) | light_blocked(36 * ecx + 16)) & light_blocked(36 * ecx + 26) | light_blocked(36 * ecx + 21) | light_blocked(36 * ecx + 15) & v33 | v33 & light_blocked(36 * ecx + 8);
+			              v33 = light_blocked(36 * dir + 30) | light_blocked(36 * dir + 26) | light_blocked(36 * nextDir + 2);
+			              isLightBlocked = (light_blocked(36 * dir + 31) | light_blocked(36 * dir + 27) | light_blocked(36 * dir + 22) | light_blocked(36 * dir + 16)) & light_blocked(36 * dir + 26) | light_blocked(36 * dir + 21) | light_blocked(36 * dir + 15) & v33 | v33 & light_blocked(36 * dir + 8);
 			              break;
 			            case 35:
-			              v34 = 36 * edx;
-			              isLightBlocked = light_blocked(v34 + 6) & light_blocked(36 * ecx + 33) | light_blocked(v34 + 4) & light_blocked(36 * ecx + 26) | light_blocked(v34 + 3) & light_blocked(36 * ecx + 21) | light_blocked(v34 + 2) & light_blocked(36 * ecx + 15) | light_blocked(36 * ecx + 8) & light_blocked(v34 + 1) | light_blocked(v34 + 5) & light_blocked(36 * ecx + 30);
+			              v34 = 36 * nextDir;
+			              isLightBlocked = light_blocked(v34 + 6) & light_blocked(36 * dir + 33) | light_blocked(v34 + 4) & light_blocked(36 * dir + 26) | light_blocked(v34 + 3) & light_blocked(36 * dir + 21) | light_blocked(v34 + 2) & light_blocked(36 * dir + 15) | light_blocked(36 * dir + 8) & light_blocked(v34 + 1) | light_blocked(v34 + 5) & light_blocked(36 * dir + 30);
 			              break;
 					}
 
 					if(isLightBlocked === 0) {
 						// loc_4A7500:
-						var nextTile = toTileNum(obj.position) + light_offsets[(lightOffsetsStart/4|0) + 36 * ecx + i]
+						var nextTile = toTileNum(obj.position) + light_offsets[(lightOffsetsStart/4|0) + 36 * dir + i]
 
 						if(nextTile > 0 && nextTile < 40000) { // nextTile is within valid tile range
 							var edi = 1
@@ -313,18 +312,18 @@ module Lightmap {
 									    var flags = curObj.pro.flags // XXX: flags directly from PRO?
 									    //console.log("pro flags: " + flags.toString(16))
 									    if(flags & 0x8000000 || flags & 0x40000000) {
-									    	if(ecx != 4 && ecx != 5 && (ecx || i >= 8) && (ecx != 3 || i <= 15))
+									    	if(dir != 4 && dir != 5 && (dir || i >= 8) && (dir != 3 || i <= 15))
 									    		edi = 0
 									    }
 									    else if(flags & 0x10000000) {
-									    	if(ecx && ecx != 5)
+									    	if(dir && dir != 5)
 									    		edi = 0
 									    }
 									    else if(flags & 0x20000000) {
-									    	if(ecx && ecx != 1 && ecx != 4 && ecx != 5 && (ecx != 3 || i <= 15))
+									    	if(dir && dir != 1 && dir != 4 && dir != 5 && (dir != 3 || i <= 15))
 									    		edi = 0
 									    }
-									    else if(ecx && ecx != 1 && (ecx != 5 || i <= 7)) {
+									    else if(dir && dir != 1 && (dir != 5 || i <= 7)) {
 									    	edi = 0
 									    }
 									}
@@ -332,27 +331,27 @@ module Lightmap {
 								// XXX: Is this just an elevation check?
 								/*else { // TODO: check logic
 									if(edx !== 0) { // XXX: what is edx?
-										if(ecx >= 2) {
-											if(ecx === 3) {
+										if(dir >= 2) {
+											if(dir === 3) {
 												edi = 0
 											}
 										}
-										else if(ecx === 1)
+										else if(dir === 1)
 											edi = 0
 									}
 								}*/
 							}
 
 							if(edi !== 0) {
-								ebx = stackArray[i]
+								var lightAdjustment = stackArray[i]
 								// eax = 0 // should be set to obj+28h, aka elevation (we don't take elevation into account so we don't need this)
-								lightModifier(nextTile, ebx)
+								lightModifier(nextTile, lightAdjustment)
 
 							}
 						}
 					}
 
-					_light_blocked[36 * ecx + i] = isLightBlocked
+					_light_blocked[36 * dir + i] = isLightBlocked
 				}
 			}
 		}
