@@ -290,10 +290,7 @@ module Lightmap {
 
 					if(isLightBlocked === 0) {
 						// loc_4A7500:
-						// edx = v1c // light_offset idx
-						//console.log("edx: %d (index: %d?)", edx, edx/4|0)
-						ebx = light_offsets[v1c/4|0]
-						eax = /* light_offsets + */ ebx + toTileNum(obj.position)
+						eax = toTileNum(obj.position) + light_offsets[v1c/4|0]
 						v14 = eax
 
 						if(eax > 0 && eax < 40000) {
@@ -359,11 +356,9 @@ module Lightmap {
 							}
 
 							if(edi !== 0) {
-								ebx = v24
 								edx = v14
-								//console.log("ebx: %d, index: %d", stackArray[ebx/4|0], ebx/4|0);
-								ebx = stackArray[ebx/4|0]
-								eax = 0 // obj+28h, aka elevation
+								ebx = stackArray[v24/4|0]
+								// eax = 0 // should be set to obj+28h, aka elevation (we don't take elevation into account so we don't need this)
 								lightModifier(edx, ebx)
 
 							}
