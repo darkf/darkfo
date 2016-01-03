@@ -163,13 +163,12 @@ module Lightmap {
 				var v18 = loopCnt
 				var v26, v27, v28, v29, v31, v32, v33, v34 // temporaries
 
-				var ecx = 0 // loop counter (j)
-				do {
+				for(var ecx = 0; ecx < 6; ecx++) { // loop counter (j)
 					//edx = ecx+1
 					//eax = edx/6 | 0
 					edx = (ecx + 1) % 6
 
-					if(ebp <= 35) {
+					if(ebp < 36) {
 						switch(v20/4|0) {
 							/*
 							case 0*4:
@@ -430,8 +429,7 @@ module Lightmap {
 								// ebx = (curObj+20h) & 0x0F000000 >> 24
 								if(curObj.type === "wall") {
 								    //console.log("obj flags: " + curObj.flags.toString(16))
-									if(!(curObj.flags & 8)) // Flat flag?
-									{
+									if(!(curObj.flags & 8)) { // Flat flag?
 									    //proto_ptr(*(v37 + 100), &v43, 3, v11);
 									    //var flags = (pro+24)
 									    var flags = curObj.pro.flags // flags directly from PRO?
@@ -485,16 +483,12 @@ module Lightmap {
 					eax = vc // is light blocked?
 					edx = v18
 					ebx = v18
-					ecx++ // j++
 					light_blocked[edx/4|0] = eax
 
-					edx = v1c
-					ebx += 144
-					edx += 144
 					v18 = ebx
-					v1c = edx
+					ebx += 144
+					v1c += 144
 				}
-				while(ecx < 6)
 			}
 		}
 
