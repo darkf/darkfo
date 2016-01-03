@@ -156,16 +156,14 @@ module Lightmap {
 		}
 
 		for(var ebp = 0; ebp < 36; ebp++, loopCnt += 4) {
-			edx = obj
-
-			if(obj.lightRadius /* esi */ >= light_distance[loopCnt/4|0]) {
+			if(obj.lightRadius >= light_distance[loopCnt/4|0]) {
 				var v24 = loopCnt
 				var v1c = loopCnt + v30
 
 				var v18 = loopCnt
 				var v26, v27, v28, v29, v31, v32, v33, v34 // temporaries
 
-				for(var ecx = 0; ecx < 6; ecx++) { // loop counter (j)
+				for(var ecx = 0; ecx < 6; ecx++) {
 					edx = (ecx + 1) % 6
 
 					switch(loopCnt/4|0) {
@@ -298,11 +296,11 @@ module Lightmap {
 							var objs = objectsAtPosition(fromTileNum(nextTile))
 							for(var objsN = 0; objsN < objs.length; objsN++) {
 								var curObj = objs[objsN]
-								if(!curObj.pro)
+								if(!curObj.pro) // XXX: why wouldn't an object have pro?
 									continue
 
 								// if(curObj+24h & 1 === 0) { continue }
-								if((curObj.flags & 1) !== 0) { // ?
+								if((curObj.flags & 1) !== 0) { // internal flag?
 									console.log("continue (%s)", curObj.flags.toString(16))
 									continue
 								}
@@ -316,7 +314,7 @@ module Lightmap {
 									if(!(curObj.flags & 8)) { // Flat flag?
 									    //proto_ptr(*(v37 + 100), &v43, 3, v11);
 									    //var flags = (pro+24)
-									    var flags = curObj.pro.flags // flags directly from PRO?
+									    var flags = curObj.pro.flags // XXX: flags directly from PRO?
 									    //console.log("pro flags: " + flags.toString(16))
 									    if(flags & 0x8000000 || flags & 0x40000000) {
 									    	if(ecx != 4 && ecx != 5 && (ecx || ebp >= 8) && (ecx != 3 || ebp <= 15))
@@ -337,7 +335,7 @@ module Lightmap {
 								}
 								// XXX: Is this just an elevation check?
 								/*else { // TODO: check logic
-									if(edx !== 0) {
+									if(edx !== 0) { // XXX: what is edx?
 										if(ecx >= 2) {
 											if(ecx === 3) {
 												edi = 0
@@ -347,17 +345,12 @@ module Lightmap {
 											edi = 0
 									}
 								}*/
-							    //console.log("edi: " + edi)
-
-								//isLightBlocked = 0 // hack, temporary
-								//edi = 0
 							}
 
 							if(edi !== 0) {
-								edx = nextTile
 								ebx = stackArray[v24/4|0]
 								// eax = 0 // should be set to obj+28h, aka elevation (we don't take elevation into account so we don't need this)
-								lightModifier(edx, ebx)
+								lightModifier(nextTile, ebx)
 
 							}
 						}
