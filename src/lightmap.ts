@@ -312,9 +312,8 @@ module Lightmap {
 									continue
 								}
 
-								// edx = !(curObj+27h & 0x20)
-								isLightBlocked = !((curObj.flags >> 24) & 0x20) // !LightThru flag?
-								//console.log("isLightBlocked = %o", isLightBlocked)
+								// LightThru flag isn't set -> blocked
+								isLightBlocked =  (curObj.flags & 0x20000000 /* LightThru */) ? 0 : 1
 
 								// ebx = (curObj+20h) & 0x0F000000 >> 24
 								if(curObj.type === "wall") {
@@ -341,7 +340,8 @@ module Lightmap {
 									    }
 									}
 								}
-								else { // TODO: check logic
+								// XXX: Is this just an elevation check?
+								/*else { // TODO: check logic
 									if(edx !== 0) {
 										if(ecx >= 2) {
 											if(ecx === 3) {
@@ -351,7 +351,7 @@ module Lightmap {
 										else if(ecx === 1)
 											edi = 0
 									}
-								}
+								}*/
 							    //console.log("edi: " + edi)
 
 								//isLightBlocked = 0 // hack, temporary
