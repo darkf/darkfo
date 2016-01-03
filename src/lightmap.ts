@@ -95,52 +95,52 @@ module Lightmap {
 
 		light -= light_per_dist
 		stackArray[4/4|0] = light
-		stackArray[0x20/4|0] = light
+		stackArray[32/4|0] = light
 
 		light -= light_per_dist
-		stackArray[0x8/4|0] = light
-		stackArray[0x24/4|0] = light
-		stackArray[0x3C/4|0] = light
+		stackArray[8/4|0] = light
+		stackArray[36/4|0] = light
+		stackArray[60/4|0] = light
 
 		light -= light_per_dist
-		stackArray[0x0C/4|0] = light
-		stackArray[0x28/4|0] = light
-		stackArray[0x40/4|0] = light
-		stackArray[0x54/4|0] = light
+		stackArray[12/4|0] = light
+		stackArray[40/4|0] = light
+		stackArray[64/4|0] = light
+		stackArray[84/4|0] = light
 
 		light -= light_per_dist
-		stackArray[0x10/4|0] = light
-		stackArray[0x2C/4|0] = light
-		stackArray[0x44/4|0] = light
-		stackArray[0x58/4|0] = light
-		stackArray[0x68/4|0] = light
+		stackArray[16/4|0] = light
+		stackArray[44/4|0] = light
+		stackArray[68/4|0] = light
+		stackArray[88/4|0] = light
+		stackArray[104/4|0] = light
 
 		light -= light_per_dist
-		stackArray[0x14/4|0] = light
-		stackArray[0x30/4|0] = light
-		stackArray[0x48/4|0] = light
-		stackArray[0x5C/4|0] = light
-		stackArray[0x6C/4|0] = light
-		stackArray[0x78/4|0] = light
+		stackArray[20/4|0] = light
+		stackArray[48/4|0] = light
+		stackArray[72/4|0] = light
+		stackArray[92/4|0] = light
+		stackArray[108/4|0] = light
+		stackArray[120/4|0] = light
 
 		light -= light_per_dist
-		stackArray[0x18/4|0] = light
-		stackArray[0x34/4|0] = light
-		stackArray[0x4C/4|0] = light
-		stackArray[0x60/4|0] = light
-		stackArray[0x70/4|0] = light
-		stackArray[0x7C/4|0] = light
-		stackArray[0x84/4|0] = light
+		stackArray[24/4|0] = light
+		stackArray[52/4|0] = light
+		stackArray[76/4|0] = light
+		stackArray[96/4|0] = light
+		stackArray[112/4|0] = light
+		stackArray[124/4|0] = light
+		stackArray[132/4|0] = light
 
 		light -= light_per_dist
-		stackArray[0x1C/4|0] = light
-		stackArray[0x38/4|0] = light
-		stackArray[0x50/4|0] = light
-		stackArray[0x64/4|0] = light
-		stackArray[0x74/4|0] = light
-		stackArray[0x80/4|0] = light
-		stackArray[0x88/4|0] = light
-		stackArray[0x8C/4|0] = light
+		stackArray[28/4|0] = light
+		stackArray[56/4|0] = light
+		stackArray[80/4|0] = light
+		stackArray[100/4|0] = light
+		stackArray[116/4|0] = light
+		stackArray[128/4|0] = light
+		stackArray[136/4|0] = light
+		stackArray[140/4|0] = light
 
 		var light_blocked = new Array(36)
 
