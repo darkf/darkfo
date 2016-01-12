@@ -318,12 +318,17 @@ class WebGLRenderer extends Renderer {
 		gl.activeTexture(gl.TEXTURE1)
 		gl.bindTexture(gl.TEXTURE_2D, this.lightBufferTexture)
 
+		// allocate texture for tile image
+		//gl.activeTexture(gl.TEXTURE1)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, 80, 36, 0, gl.ALPHA, gl.FLOAT, null)
+
 		// use tile texture unit
-		gl.activeTexture(gl.TEXTURE0)
+		//gl.activeTexture(gl.TEXTURE0)
 
 		// construct light buffer
-		var lightBuffer = new Float32Array(80*4*36)
+		var lightBuffer = new Float32Array(80*36)
 		var lastTexture = null
+
 
 		// reverse i to draw in the order Fallout 2 normally does
 		// otherwise there will be artifacts in the light rendering
@@ -340,13 +345,17 @@ class WebGLRenderer extends Renderer {
 					continue
 
 				if(img !== lastTexture) {
+					gl.activeTexture(gl.TEXTURE0)
+					
 					// TODO: uses hack
 					var texture = this.getTextureFromHack(img)
 					if(!texture) {
 						console.log("skipping tile without a texture: " + img)
 						continue
 					}
+
 					gl.bindTexture(gl.TEXTURE_2D, texture)
+
 					lastTexture = img
 				}
 
@@ -374,15 +383,14 @@ class WebGLRenderer extends Renderer {
 						}
 
 						// blit to the light buffer
-						lightBuffer[(y*80 + x) * 4] = intensity_ //(x%2 && y%2) ? 0.5 : 0.25 //Math.max(0.25, intensity_/65536)
+						lightBuffer[y*80 + x] = intensity_ //(x%2 && y%2) ? 0.5 : 0.25 //Math.max(0.25, intensity_/65536)
 					}
 				}
 
 				// update light buffer texture
 				gl.activeTexture(gl.TEXTURE1)
 				//gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 80, 36, 0, gl.RGBA, gl.UNSIGNED_BYTE, lightBuffer)
-				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 80, 36, 0, gl.RGBA, gl.FLOAT, lightBuffer)
-				gl.activeTexture(gl.TEXTURE0)
+				gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 80, 36, gl.ALPHA, gl.FLOAT, lightBuffer)
 
 				// draw
 				gl.uniform2f(this.litOffsetLocation, scr.x - cameraX, scr.y - cameraY)
@@ -390,6 +398,8 @@ class WebGLRenderer extends Renderer {
 			}
 		}
 
+		gl.activeTexture(gl.TEXTURE0)
+		
 		// use normal shader
 		gl.useProgram(this.tileShader)
 	}
