@@ -21,6 +21,7 @@ type TileMap = string[][]
 type ObjectRenderInfo = {x: number; y: number; spriteX: number;
 	                     frameWidth: number; frameHeight: number;
 	                     uniformFrameWidth: number;
+	                     uniformFrameHeight: number;
 	                     spriteFrameNum: number;
 	                     artInfo: any;
 	                     visible: boolean}
@@ -144,6 +145,7 @@ class Renderer {
 		return {x: scrX, y: scrY, spriteX: sx,
 			   frameWidth: frameInfo.w, frameHeight: frameInfo.h,
 			   uniformFrameWidth: info.frameWidth,
+			   uniformFrameHeight: info.frameHeight,
 			   spriteFrameNum: spriteFrameNum,
 			   artInfo: info,
 			   visible: visible}

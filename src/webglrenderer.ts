@@ -457,7 +457,7 @@ class WebGLRenderer extends Renderer {
 		gl.uniform1f(this.uFrameLocation, renderInfo.spriteFrameNum)
 
 		gl.uniform2f(this.offsetLocation, renderInfo.x - cameraX, renderInfo.y - cameraY) // pos
-		gl.uniform2f(this.uScaleLocation, renderInfo.uniformFrameWidth, renderInfo.frameHeight) // size
+		gl.uniform2f(this.uScaleLocation, renderInfo.uniformFrameWidth, renderInfo.uniformFrameHeight) // size
 
 		gl.drawArrays(gl.TRIANGLES, 0, 6)
 	}

@@ -91,6 +91,7 @@ def exportFRM(frmFile, outFile, palette, exportImage=True):
 		totalW = maxW * frmInfo['totalFrames']
 
 		frmInfo['frameWidth'] = maxW
+		frmInfo['frameHeight'] = maxH
 
 		if exportImage:
 			finalImg = Image.new("P", (totalW, maxH))
@@ -223,6 +224,7 @@ def exportFRMs(frmFiles, outFile, palette, exportImage=True):
 	return {'numFrames': _numFrames,
 	        'totalFrames': totalFrames,
 			'frameWidth': maxW,
+			'frameHeight': maxH,
 			'fps': _fps,
 			'numDirections': len(frmFiles),
 	        'directionOffsets': dOffsets,
