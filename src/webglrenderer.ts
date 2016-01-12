@@ -227,31 +227,6 @@ class WebGLRenderer extends Renderer {
 	    }
 	}
 
-	setUVs(x: number, w: number, tw: number): void {
-		var gl = this.gl
-		var s = w/tw
-		var sx = x/tw
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.objectUVBuffer)
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-		    sx,  0.0,
-		    1.0 * s + sx,  0.0,
-		    sx,  1.0,
-		    sx,  1.0,
-		    1.0 * s + sx,  0.0,
-		    1.0 * s + sx,  1.0]), gl.STATIC_DRAW);
-	}
-
-	renderLoop(): void {
-		console.log("render")
-		this.render()
-		//window.requestAnimationFrame(this.renderLoop.bind(this))
-		setTimeout(16, this.renderLoop.bind(this))
-	}
-
-	/*render(): void {
-		super.render()
-	}*/
-
 	rectangleBuffer(gl, x, y, width, height) {
 		var gl = this.gl
 		var buffer = gl.createBuffer();
