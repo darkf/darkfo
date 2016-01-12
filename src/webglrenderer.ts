@@ -321,6 +321,10 @@ class WebGLRenderer extends Renderer {
 		// use tile texture unit
 		gl.activeTexture(gl.TEXTURE0)
 
+		// construct light buffer
+		var lightBuffer = new Float32Array(80*4*36)
+		var lastTexture = null
+
 		// reverse i to draw in the order Fallout 2 normally does
 		// otherwise there will be artifacts in the light rendering
 		// due to tile sizes being different and not overlapping properly
@@ -335,13 +339,16 @@ class WebGLRenderer extends Renderer {
 				   scr.x >= cameraX+SCREEN_WIDTH || scr.y >= cameraY+SCREEN_HEIGHT)
 					continue
 
-				// TODO: uses hack
-				var texture = this.getTextureFromHack(img)
-				if(!texture) {
-					console.log("skipping tile without a texture: " + img)
-					continue
+				if(img !== lastTexture) {
+					// TODO: uses hack
+					var texture = this.getTextureFromHack(img)
+					if(!texture) {
+						console.log("skipping tile without a texture: " + img)
+						continue
+					}
+					gl.bindTexture(gl.TEXTURE_2D, texture)
+					lastTexture = img
 				}
-				gl.bindTexture(gl.TEXTURE_2D, texture)
 
 				// compute lighting
 
@@ -355,10 +362,6 @@ class WebGLRenderer extends Renderer {
 
 				if(isTriangleLit)
 					framebuffer = Lighting.computeFrame()
-
-				// construct light buffer
-				//var lightBuffer = new Uint8Array(80*4*36)
-				var lightBuffer = new Float32Array(80*4*36)
 
 				// render tile
 				for(var y = 0; y < 36; y++) {
