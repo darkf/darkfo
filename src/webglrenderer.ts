@@ -346,7 +346,10 @@ class WebGLRenderer extends Renderer {
 		// use tile texture unit
 		gl.activeTexture(gl.TEXTURE0)
 
-		for(var i = 0; i < tilemap.length; i++) {
+		// reverse i to draw in the order Fallout 2 normally does
+		// otherwise there will be artifacts in the light rendering
+		// due to tile sizes being different and not overlapping properly
+		for(var i = tilemap.length - 1; i >= 0; i--) {
 			for(var j = 0; j < tilemap[0].length; j++) {
 				var tile = tilemap[j][i]
 				if(tile === "grid000") continue
