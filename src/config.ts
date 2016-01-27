@@ -21,6 +21,7 @@ var Config = {
 	},
 
 	engine: {
+		renderer: "canvas", // which renderer backend to use ("canvas" or "webgl")
 		doLoadScripts: true, // should we load scripts?
 		doUpdateCritters: true, // should we give critters heartbeats?
 		doTimedEvents: true, // should we handle registered timed events?

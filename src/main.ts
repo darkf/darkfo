@@ -640,7 +640,15 @@ heart.load = function() {
 	imageInfo = getFileJSON("art/imageMap.json")
 
 	// initialize renderer
-	renderer = new CanvasRenderer()
+	if(Config.engine.renderer === "canvas")
+		renderer = new CanvasRenderer()
+	else if(Config.engine.renderer === "webgl")
+		renderer = new WebGLRenderer()
+	else {
+		console.error("No renderer backend named '%s'", Config.engine.renderer)
+		throw new Error("Invalid renderer backend");
+	}
+
 	renderer.init()
 
 	// initialize audio engine
