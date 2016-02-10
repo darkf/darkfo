@@ -83,7 +83,7 @@ class AI {
 
 		if(AI.aiTxt === null) { // load AI.TXT
 			AI.aiTxt = {}
-			var ini = parseIni(getFileText("data/data/AI.TXT"))
+			var ini = parseIni(getFileText("data/data/ai.txt"))
 			if(ini === null) throw "couldn't load AI.TXT"
 			for(var key in ini) {
 				ini[key].keyName = key
