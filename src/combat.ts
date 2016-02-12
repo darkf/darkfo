@@ -1,6 +1,6 @@
 /*
 Copyright 2014 darkf, Stratege
-Copyright 2015 darkf
+Copyright 2015-2016 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -78,21 +78,30 @@ class AI {
 	combatant: Critter;
 	info: any;
 
+	static init(): void {
+		// load and parse AI.TXT
+		AI.aiTxt = {}
+		var ini = parseIni(getFileText("data/data/ai.txt"))
+		if(ini === null) throw "couldn't load AI.TXT"
+		for(var key in ini) {
+			ini[key].keyName = key
+			AI.aiTxt[ini[key].packet_num] = ini[key]
+		}
+	}
+
+	static getPacketInfo(aiNum: number): any {
+		return AI.aiTxt[aiNum] || null
+	}
+
 	constructor(combatant: Critter) {
 		this.combatant = combatant
 
-		if(AI.aiTxt === null) { // load AI.TXT
-			AI.aiTxt = {}
-			var ini = parseIni(getFileText("data/data/ai.txt"))
-			if(ini === null) throw "couldn't load AI.TXT"
-			for(var key in ini) {
-				ini[key].keyName = key
-				AI.aiTxt[ini[key].packet_num] = ini[key]
-			}
-		}
+		// load if necessary
+		if(AI.aiTxt === null)
+			AI.init()
 
-		this.info = AI.aiTxt[this.combatant.aiNum]
-		if(this.info === undefined)
+		this.info = AI.getPacketInfo(this.combatant.aiNum)
+		if(!this.info)
 			throw "no AI packet for " + combatant.toString() +
 				  " (packet " + this.combatant.aiNum + ")"
 	}
