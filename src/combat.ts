@@ -107,6 +107,7 @@ class AI {
 	}
 }
 
+// A combat encounter
 class Combat {
 	combatants: Critter[];
 	playerIdx: number;
@@ -211,16 +212,19 @@ class Combat {
 	getHitChance(obj: Critter, target: Critter, region: string) {
 		// TODO: visibility (= light conditions) and distance
 		var weaponObj = critterGetEquippedWeapon(obj)
-		if(weaponObj === null)
+		if(weaponObj === null) // no weapon equipped (not even melee)
 			return {hit: -1, crit: -1}
+
 		var weapon = weaponObj.weapon
 		var weaponSkill
+
 		if(weapon.weaponSkillType === undefined) {
 			this.log("weaponSkillType is undefined")
 			weaponSkill = 0
 		}
 		else
 			weaponSkill = critterGetSkill(obj, weapon.weaponSkillType)
+
 		var hitDistanceModifier = this.getHitDistanceModifier(obj, target, weapon)
 		var bonusAC = 0 // TODO: AP at end of turn bonus
 		var AC = critterGetStat(target, "AC") + bonusAC
@@ -228,9 +232,13 @@ class Combat {
 		var baseCrit = critterGetStat(obj, "Critical Chance") + bonusCrit
 		var hitChance = weaponSkill - AC - CriticalEffects.regionHitChanceDecTable[region] - hitDistanceModifier
 		var critChance = baseCrit + CriticalEffects.regionHitChanceDecTable[region]
-		if(isNaN(hitChance)) throw "something went wrong with hit chance calculation"
+
+		if(isNaN(hitChance))
+			throw "something went wrong with hit chance calculation"
+
 		// 1 in 20 chance of failing needs to be preserved
 		hitChance = Math.min(95, hitChance)
+
 		return {hit: hitChance, crit: critChance}
 	}
 
@@ -245,12 +253,14 @@ class Combat {
 			var isCrit = false
 			if(rollSkillCheck(Math.floor(hitChance.hit - roll) / 10, hitChance.crit, false) === true)
 				isCrit = true
+
 			// TODO: if Slayer/Sniper perk -> second chance to crit
 			if(isCrit === true) {
 				var critLevel = Math.floor(Math.max(0, getRandomInt(critModifer, 100 + critModifer)) / 20)
 				this.log("crit level: " + critLevel)
 				var crit = CriticalEffects.getCritical(critterGetKillType(target), region, critLevel)
 				var critStatus = crit.doEffectsOn(target)
+
 				return {hit: true, crit: true, DM: critStatus.DM, msgID: critStatus.msgID} // crit
 			}
 
@@ -285,6 +295,7 @@ class Combat {
 		var baseDamage = (CM/2) * ammoDamageMult * (RD+RB) * (CD / 100)
 		var adjustedDamage = Math.max(0, baseDamage - ADT)
 		console.log("RD: "+RD+" CM: "+CM+" ADR: "+ADR+" ADT: "+ADT+" baseDamage: "+baseDamage+" adjustedDamage: "+adjustedDamage)
+
 		return Math.ceil(adjustedDamage * (1 - (ADR+RM)/100))
 	}
 
@@ -313,6 +324,7 @@ class Combat {
 			this.log(who + " hit " + targetName + " for " + damage + " damage" + extraMsg)
 
 			critterDamage(target, damage, obj)
+
 			if(target.dead === true)
 				combat.perish(target)
 		}
@@ -334,6 +346,7 @@ class Combat {
 					critFailLevel = 4
 				else
 					critFailLevel = 5
+
 				this.log(who + " failed at fail level "+critFailLevel);
 
 				// TODO: map weapon type to crit fail table types
@@ -362,7 +375,6 @@ class Combat {
 		// TODO: find target according to AI rules
 		// Find the first combatant on a different team
 		return _.find(this.combatants, (x:Critter) => x.teamNum != obj.teamNum)
-		//return this.player
 	}
 
 	walkUpTo(obj: Critter, idx: number, target: Point, maxDistance: number, callback: () => void): boolean {
@@ -466,10 +478,11 @@ class Combat {
 		// begin combat
 		inCombat = true
 		combat = new Combat(gMap.getObjects())
+
 		if(forceTurn !== undefined)
 			combat.forceTurn(forceTurn)
-		combat.nextTurn()
 
+		combat.nextTurn()
 		gMap.updateMap()
 	}
 
@@ -484,7 +497,6 @@ class Combat {
 		inCombat = false
 
 		gMap.updateMap()
-
 		uiEndCombat()
 	}
 
