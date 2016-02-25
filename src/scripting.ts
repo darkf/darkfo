@@ -261,7 +261,7 @@ module scriptingEngine {
 						case "explosion": return 6 // DMG_explosion
 						default: throw "unknown damage type"
 					}
-				default: stub("metarule", arguments)
+				default: stub("metarule", arguments); break
 			}
 		},
 		metarule3: function(id, obj, userdata, radius): any {
@@ -460,6 +460,7 @@ module scriptingEngine {
 				case 5: // PCSTAT_max_pc_stat
 					stub("get_pc_stat", arguments)
 					return 0
+				default: throw `get_pc_stat: unhandled ${pcstat}`
 			}
 		},
 		critter_injure: function(obj, how) { stub("critter_injure", arguments) },
@@ -509,7 +510,7 @@ module scriptingEngine {
 		obj_close: function(obj: Obj) {
 			if(!isGameObject(obj)) {
 				warn("obj_close: not game object: " + obj)
-				return 0
+				return
 			}
 			info("obj_close")
 			if(!obj.open) return
@@ -519,7 +520,7 @@ module scriptingEngine {
 		obj_open: function(obj: Obj) {
 			if(!isGameObject(obj)) {
 				warn("obj_open: not game object: " + obj)
-				return 0
+				return
 			}
 			info("obj_open")
 			if(obj.open) return
@@ -719,6 +720,7 @@ module scriptingEngine {
 			if(hex !== null)
 				return hex.direction
 			warn("rotation_to_tile: invalid hex: " + srcTile + " / " + destTile)
+			return -1 // TODO/XXX: what does this return if invalid?
 		},
 		move_to: function(obj, tileNum, elevation) {
 			if(!isGameObject(obj)) {

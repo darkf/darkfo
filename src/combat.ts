@@ -134,6 +134,8 @@ class Combat {
 				obj.AP = new ActionPoints(obj)
 				return true
 			}
+			
+			return false
 		})
 
 		this.playerIdx = _.findIndex(this.combatants, (x:Critter) => x.isPlayer)

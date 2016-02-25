@@ -87,6 +87,8 @@ class HTMLAudioEngine implements AudioEngine {
 
 			roll -= freq
 		}
+
+		throw "shouldn't be here"
 	}
 
 	tick(): void {

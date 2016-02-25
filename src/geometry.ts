@@ -187,6 +187,8 @@ function hexFromScreen(x, y) {
 	var dx = x - xhBase
 	var dy = y - yhBase
 
+	// XXX: Some of these cases fall through, should be inspected.
+
 	switch(dy)
 	{
 	  case 0:

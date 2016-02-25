@@ -693,6 +693,7 @@ function isPassiveSkill(skill: Skills): boolean {
 	switch(skill) {
 		case Skills.Lockpick: return false
 		case Skills.Repair: return false
+		default: throw `TODO: is passive skill ${skill}`
 	}
 }
 

@@ -266,9 +266,10 @@ function objectZCompare(a: Obj, b: Obj): number {
 			else return 0
 		}
 	}
-
-	if(aY < bY) return -1
+	else if(aY < bY) return -1
 	else if(aY > bY) return 1
+
+	throw "unreachable"
 }
 
 function objectZOrder(obj: Obj, index: number): void {

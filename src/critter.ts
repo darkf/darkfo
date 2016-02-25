@@ -193,10 +193,12 @@ class Weapon {
 			'flame': 'l'
 		}
 
-		// todo: mode equipped
+		// TODO: mode equipped
 		if(this.attackOne.mode !== attackMode.none) {
 			return modeSkinMap[this.attackOne.mode]
 		}
+
+		throw "TODO"
 	}
 
 	getAnim(anim: string): string {
@@ -248,7 +250,9 @@ function critterGetAnim(obj: Critter, anim: string): string {
 
 	var wep = 'a'
 	switch(anim) {
-		case "attack": console.log("default attack animation instead of weapon animation.")
+		case "attack":
+			console.log("default attack animation instead of weapon animation.")
+			return base + wep + 'a'
 		case "idle": return base + wep + 'a'
 		case "walk": return base + wep + 'b'
 		case "run":  return base + wep + 't'

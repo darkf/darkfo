@@ -348,6 +348,8 @@ var Encounters = (function() {
 						// use some arbitrary formation
 						critter.position = {x: pos.x, y: pos.y}
 						pos.x--
+						
+						break
 				}
 			})
 		})
