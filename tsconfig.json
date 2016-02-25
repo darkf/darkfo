@@ -2,6 +2,7 @@
     "compilerOptions": {
         "removeComments": true,
         "preserveConstEnums": true,
+        "noImplicitReturns": true,
         "outDir": "js"
     },
 
