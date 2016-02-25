@@ -194,7 +194,7 @@ module Worldmap {
 				var tileY = Math.floor(tileNum / 4)
 				var difficulty = parseInt(ini[key].encounter_difficulty)
 
-				for(var position in ini[key]) {
+				for(let position in ini[key]) {
 					var pos = position.match(/(\d)_(\d)/)
 					if(pos === null) continue
 					var x = tileX * 7 + parseInt(pos[1])
@@ -219,7 +219,7 @@ module Worldmap {
 			}
 			else if(key.indexOf("Encounter:") === 0) {
 				var groupName = key.slice("Encounter: ".length).toLowerCase()
-				var position = null
+				let position = null
 
 				if(ini[key].position !== undefined) {
 					var position_ = ini[key].position.split(",").map(function(x) { return x.trim().toLowerCase() })

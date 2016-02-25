@@ -175,12 +175,12 @@ function getCritterArtPath(frmPID) {
 		throw "0x14"
 	else if (id2 === 0x12) {
 		throw "0x12"
-		if(id1 === 0x01)
+		/*if(id1 === 0x01)
 			path += "dm"
 		else if(id1 === 0x04)
 			path += "gm"
 		else
-			path += "as"
+			path += "as"*/
 	}
 	else if(id2 === 0x0d)
 		throw "0x0d"
@@ -557,7 +557,7 @@ function parseMapInfo() {
 	var text = getFileText("data/data/maps.txt")
 	var ini = parseIni(text)
 	for(var category in ini) {
-		var id = category.match(/Map (\d+)/)[1]
+		var id: any = category.match(/Map (\d+)/)[1]
 		if(id === null) throw "maps.txt: invalid category: " + category
 		id = parseInt(id)
 

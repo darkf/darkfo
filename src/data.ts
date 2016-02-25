@@ -39,9 +39,9 @@ function parseAreas(data) {
 
 	for(var _area in areas) {
 		var area = areas[_area]
-		var areaID = _area.match(/Area (\d+)/)
-		if(areaID === null) throw "city.txt: invalid area name: " + area.area_name
-		areaID = parseInt(areaID[1])
+		var match = _area.match(/Area (\d+)/)
+		if(match === null) throw "city.txt: invalid area name: " + area.area_name
+		var areaID = parseInt(match[1])
 		var worldPos = area.world_pos.split(",").map(function(x) { return parseInt(x) })
 
 		var newArea: any = {name: area.area_name,

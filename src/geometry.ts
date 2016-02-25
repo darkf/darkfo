@@ -334,6 +334,7 @@ function hexNearestNeighbor(a, b) {
 function hexLine(a, b) {
 	var path = []
 	var position = {x: a.x, y: a.y}
+
 	while(true) {
 		path.push(position)
 		if(position.x === b.x && position.y === b.y)
@@ -343,7 +344,8 @@ function hexLine(a, b) {
 			return null
 		position = nearest.hex
 	}
-	throw "unreachable"
+
+	// throw "unreachable"
 }
 
 function hexesInRadius(center, radius) {
