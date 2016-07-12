@@ -1,17 +1,17 @@
+from __future__ import print_function
 from multiprocessing import Pool
 import os, glob
-import fo2map
+import fomap
 
 N_PROCS = 2
 
 def convert(mapFile):
-	with open(mapFile, "rb") as f:
-		try:
-			mapName = os.path.basename(mapFile).lower()
-			#print "converting %s (%s)..." % (mapName, mapFile)
-			fo2map.convertMap(f.read(), mapName, outDir="maps", verbose=False)
-		except Exception as e:
-			print "couldn't convert %s: %s" % (mapFile, str(e))
+	try:
+		mapName = os.path.splitext(os.path.basename(mapFile).lower())[0]
+		print("converting %s (%s)..." % (mapName, mapFile))
+		fomap.exportMap("data", mapFile, outFile="maps2/" + mapName + ".json", verbose=False)
+	except Exception as e:
+		print("couldn't convert %s: %s" % (mapFile, str(e)))
 
 if __name__ == '__main__':
 	if not os.path.exists("maps"):
