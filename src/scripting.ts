@@ -628,9 +628,9 @@ module scriptingEngine {
 			return objectOnScreen(obj) ? 1 : 0
 		},
 		obj_type: function(obj) {
-			if(!isGameObject(obj)) { warn("obj_type: not game object: " + obj); return }
+			if(!isGameObject(obj)) { warn("obj_type: not game object: " + obj); return null }
 			else if(obj.isPlayer) return 1 // critter
-			else if(obj.pid === undefined) { warn("obj_type: no PID"); return }
+			else if(obj.pid === undefined) { warn("obj_type: no PID"); return null }
 			return (obj.pid >> 24) & 0xff
 		},
 		destroy_object: function(obj) { // destroy object from world
@@ -653,7 +653,7 @@ module scriptingEngine {
 		tile_distance_objs: function(a, b) {
 			if((!isSpatial(a) && !isSpatial(b)) && (!isGameObject(a) || !isGameObject(b))) {
 				warn("tile_distance_objs: " + a + " or " + b + " are not game objects")
-				return
+				return null
 			}
 			return hexDistance(a.position, b.position)
 		},
@@ -1158,7 +1158,7 @@ module scriptingEngine {
 		return obj._script._didOverride
 	}
 
-	export function combatEvent(obj, event) {
+	export function combatEvent(obj, event): boolean {
 		var fixed_param = null
 		switch(event) {
 			case "turnBegin": fixed_param = 4; break // COMBAT_SUBTYPE_TURN
@@ -1166,7 +1166,7 @@ module scriptingEngine {
 		}
 
 		if(obj._script.combat_p_proc === undefined)
-			return
+			return false
 
 		info("[COMBAT EVENT " + event + "]")
 

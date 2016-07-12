@@ -74,7 +74,7 @@ function initUI() {
 		}
 	}).bind("contextmenu", function() { // right mouse button (cycle weapon modes)
 		var wep = critterGetEquippedWeapon(player)
-		if(wep === null) return
+		if(wep === null) return false
 		wep.weapon.cycleMode()
 		uiDrawWeapon()
 		return false

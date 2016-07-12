@@ -264,7 +264,7 @@ module Worldmap {
 			    y: Math.floor(pos.y / SQUARE_SIZE)}
 	}
 
-	function setSquareStateAt(squarePos: Point, newState: number, seeAdjacent: boolean=true) {
+	function setSquareStateAt(squarePos: Point, newState: number, seeAdjacent: boolean=true): void {
 		if(squarePos.x < 0 || squarePos.x >= NUM_SQUARES_X ||
 		   squarePos.y < 0 || squarePos.y >= NUM_SQUARES_Y)
 			return
@@ -306,7 +306,7 @@ module Worldmap {
 		}
 	}
 
-	function execEncounter(encTable) {
+	function execEncounter(encTable): void {
 		var enc = Encounters.evalEncounter(encTable)
 		console.log("final: map %s, groups %o", enc.mapName, enc.groups)
 
@@ -333,7 +333,7 @@ module Worldmap {
 		})
 	}
 
-	export function doEncounter() {
+	export function doEncounter(): void {
 		var squarePos = positionToSquare(worldmapPlayer)
 		var square = worldmap.squares[squarePos.x][squarePos.y]
 		var encTable = worldmap.encounterTables[square.encounterType]
@@ -342,7 +342,7 @@ module Worldmap {
 		execEncounter(encTable)
 	}
 
-	export function didEncounter() {
+	export function didEncounter(): boolean {
 		var squarePos = positionToSquare(worldmapPlayer)
 		var square = worldmap.squares[squarePos.x][squarePos.y]
 		var encRate = worldmap.encounterRates[square.frequency]
@@ -350,7 +350,7 @@ module Worldmap {
 		//console.log("square: %o, worldmap: %o, encRate: %d", square, worldmap, encRate)
 
 		if(encRate === 0) // 0% encounter rate (none)
-			return
+			return false
 		else if(encRate === 100) // 100% encounter rate (forced)
 			doEncounter()
 		else { // roll for it

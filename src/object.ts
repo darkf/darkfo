@@ -173,7 +173,8 @@ function useExplosive(obj: Obj, source: Critter): void {
 	}})
 }
 
-function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean { // TODO: any
+// Returns whether or not the object was used
+function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean {
 	if(canUseObject(obj, source) === false) {
 		console.log("can't use object")
 		return false
@@ -200,7 +201,7 @@ function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean { /
 		// TODO: Door/Container subclasses
 		if(obj.locked) {
 			uiLog("That object is locked")
-			return
+			return false
 		}
 
 		obj.open = !obj.open
