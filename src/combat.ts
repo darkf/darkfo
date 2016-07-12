@@ -161,7 +161,7 @@ class Combat {
 		return 0
 	}
 
-	getHitDistanceModifier(obj: Critter, target: Critter, weapon): number {
+	getHitDistanceModifier(obj: Critter, target: Critter, weapon: Obj): number {
 		//we calculate the distance between source and target
 		//we then substract the source's per modified by the weapon from it (except for scoped weapons)
 

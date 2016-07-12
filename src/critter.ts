@@ -338,9 +338,7 @@ function getAnimPartialActions(art, anim) {
 	var delta = Math.floor(imageInfo[art].numFrames / numPartials)
 	var startFrame = 0
 	var endFrame = delta
-	var nextActionId = 0
 	for(var i = 0; i < numPartials; i++) {
-		var nextNumber = (i+1) % numPartials
 		partialActions.actions.push({startFrame: startFrame,
 									 endFrame: endFrame,
 									 step: i})
@@ -559,7 +557,6 @@ class Critter extends Obj {
 		var time = heart.timer.getTime()
 		var fps = imageInfo[this.art].fps
 		var targetScreen = hexToScreen(this.path.target.x, this.path.target.y)
-		var moveDistance = getAnimDistance(this.art)
 
 		var partials = getAnimPartialActions(this.art, this.anim)
 		var currentPartial = partials.actions[this.path.partial]

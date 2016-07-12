@@ -220,7 +220,7 @@ function uiDrawWeapon() {
 
 	if(weapon.weapon.type !== "melee") {
 		$("#attackButtonWeapon").off("load")
-		var $img = $("#attackButtonWeapon").load(function() {
+		$("#attackButtonWeapon").load(function() {
 			if(!this.complete) return
 			$(this).css({position: "absolute",
 				         top: 5,
@@ -384,7 +384,6 @@ function uiInventoryScreen() {
 		          attr("width", 72).attr("height", 60) // 90x60 // 70x40
 		img.attr("title", player[slot].name)
 		img.click(function(e) {
-			var offset = img.offset()
 			makeItemContextMenu(e, player[slot], slot)
 		})
 		makeDraggable(img, slot)

@@ -149,7 +149,7 @@ function getCritterArtPath(frmPID) {
 	var idx = (frmPID & 0x00000fff)
 	var id1 = (frmPID & 0x0000f000) >> 12
 	var id2 = (frmPID & 0x00ff0000) >> 16
-	var id3 = (frmPID & 0x70000000) >> 28
+	//var id3 = (frmPID & 0x70000000) >> 28
 
 	if (id2 == 0x1b || id2 == 0x1d ||
 			id2 == 0x1e || id2 == 0x37 ||

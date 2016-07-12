@@ -54,10 +54,6 @@ module Lightmap {
 			arr[i] = 0
 	}
 
-	function objectAt(pos: Point) {
-		return _.find(gMap.getObjects(), obj => obj.position.x === pos.x && obj.position.y === pos.y) || null
-	}
-
 	// obj_adjust_light(eax=obj_ptr, ebx=0, edx=0)
 	// edx controls whether light is added or subtracted
 
@@ -87,7 +83,6 @@ module Lightmap {
 		//console.log("light per dist: %d", light_per_dist)
 
 		var stackArray = new Array(36)
-		var idx = 0
 		var light = obj.lightIntensity
 
 		light -= light_per_dist
