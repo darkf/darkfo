@@ -16,7 +16,6 @@ limitations under the License.
 
 # Parser/converter for Fallout 1 (partially) and 2 .MAP files to a JSON format
 
-from __future__ import print_function
 import sys, os, struct, json
 
 FO1_MODE = None # global
@@ -455,7 +454,7 @@ def parseMap(f, lstFiles):
 
 def readLst(dataDir, path):
     with open(os.path.join(dataDir, path), "rb") as f:
-        return [x.rstrip() for x in list(f)]
+        return [x.decode('ascii').rstrip() for x in list(f)]
 
 def getImageList(map):
     images = set()
@@ -487,14 +486,14 @@ def exportMap(dataDir, mapFile, outFile, verbose=False):
                }
 
     with open(mapFile, "rb") as fin:
-        with open(outFile, "wb") as fout:
+        with open(outFile, "w") as fout:
             if verbose: print("writing %s..." % outFile)
             map = parseMap(fin, lstFiles)
             json.dump(map, fout)
 
             # write image list
             if verbose: print("writing image list...")
-            with open(stripExt(outFile) + ".images.json", "wb") as fimg:
+            with open(stripExt(outFile) + ".images.json", "w") as fimg:
                 json.dump(getImageList(map), fimg)
 
             if verbose: print("done")

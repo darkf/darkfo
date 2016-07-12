@@ -1,4 +1,3 @@
-from __future__ import print_function
 from multiprocessing import Pool
 import os, glob
 import fomap
@@ -9,7 +8,7 @@ def convert(mapFile):
 	try:
 		mapName = os.path.splitext(os.path.basename(mapFile).lower())[0]
 		print("converting %s (%s)..." % (mapName, mapFile))
-		fomap.exportMap("data", mapFile, outFile="maps2/" + mapName + ".json", verbose=False)
+		fomap.exportMap("data", mapFile, outFile="maps/" + mapName + ".json", verbose=False)
 	except Exception as e:
 		print("couldn't convert %s: %s" % (mapFile, str(e)))
 
