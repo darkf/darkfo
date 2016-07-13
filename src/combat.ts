@@ -80,6 +80,9 @@ class AI {
 
 	static init(): void {
 		// load and parse AI.TXT
+		if(AI.aiTxt !== null) // already loaded
+			return;
+
 		AI.aiTxt = {}
 		var ini = parseIni(getFileText("data/data/ai.txt"))
 		if(ini === null) throw "couldn't load AI.TXT"
@@ -126,7 +129,6 @@ class Combat {
 				// TODO: should we initialize AI elsewhere, like in Critter?
 				if(!obj.isPlayer && !obj.ai)
 					obj.ai = new AI(obj)
-				//else this.playerIdx = this.combatants.length - 1
 
 				if(obj.stats === undefined)
 					throw "no stats"
@@ -157,53 +159,52 @@ class Combat {
 	}
 
 	accountForPartialCover(obj: Critter, target: Critter): number {
-		//todo: get list of intervening critters. Substract 10 for each one in the way
+		// TODO: get list of intervening critters. Substract 10 for each one in the way
 		return 0
 	}
 
 	getHitDistanceModifier(obj: Critter, target: Critter, weapon: Obj): number {
-		//we calculate the distance between source and target
-		//we then substract the source's per modified by the weapon from it (except for scoped weapons)
+		// we calculate the distance between source and target
+		// we then substract the source's per modified by the weapon from it (except for scoped weapons)
 
-		//note: this function is supposed to have weird behaviour for multihex sources and targets. Let's ignore that.
+		// NOTE: this function is supposed to have weird behaviour for multihex sources and targets. Let's ignore that.
 
-	    //4 if weapon has long_range perk
-	    //5 if weapon has scope_range perk
+	    // 4 if weapon has long_range perk
+	    // 5 if weapon has scope_range perk
 		var distModifier = 2
-		//8 if weapon has scope_range perk
+		// 8 if weapon has scope_range perk
 		var minDistance = 0 
 		var perception = critterGetStat(obj, "PER")
 		var distance = hexDistance(obj.position, target.position)
 		if(distance < minDistance)
-			distance += minDistance //yes supposedly += not =, this means 7 grid distance is the worst
+			distance += minDistance // yes supposedly += not =, this means 7 grid distance is the worst
 		else
 		{
 			var tempPER = perception
 			if(obj.isPlayer === true)
-				tempPER -= 2 //supposedly player gets nerfed like this. WTF?
+				tempPER -= 2 // supposedly player gets nerfed like this. WTF?
 			distance -= tempPER * distModifier
 		}
 
-		//this appears not to have any effect but was found so elsewhere
-		//If anyone can tell me why it exists or what it's for I'd be grateful.
+		// this appears not to have any effect but was found so elsewhere
+		// If anyone can tell me why it exists or what it's for I'd be grateful.
 		if (-2*perception > distance)
 			distance = -2*perception
 
-		//needs to add sharpshooter perk bonuses on top
-		//distance -= 2*sharpshooterRank
+		// TODO: needs to add sharpshooter perk bonuses on top
+		// distance -= 2*sharpshooterRank
 
-
-		//then we multiply a magic number on top. More if there is eye damage involved by the attacker
-		//this means for each field distance after PER modification we lose 4 points of hitchance
-		//12 if we have eyedamage
+		// then we multiply a magic number on top. More if there is eye damage involved by the attacker
+		// this means for each field distance after PER modification we lose 4 points of hitchance
+		// 12 if we have eyedamage
 		var objHasEyeDamage = false
 		if(distance >= 0 && objHasEyeDamage)
 			distance *= 12
 		else 
 			distance *= 4
 
-		//and if the result is a positive distance, we return that
-		//closeness can not improve hitchance above normal, so we don't return that
+		// and if the result is a positive distance, we return that
+		// closeness can not improve hitchance above normal, so we don't return that
 		if(distance >= 0)
 			return distance
 		else
@@ -330,11 +331,9 @@ class Combat {
 			if(target.dead === true)
 				combat.perish(target)
 		}
-		else
-		{
+		else {
 			this.log(who + " missed " + targetName + (hitRoll.crit === true ? " critically" : ""))		
-			if(hitRoll.crit === true)
-			{
+			if(hitRoll.crit === true) {
 				var critFailMod = (critterGetStat(obj, "LUK") - 5) * - 5
 				var critFailRoll = Math.floor(getRandomInt(1, 100) - critFailMod)
 				var critFailLevel = 1
@@ -439,7 +438,7 @@ class Combat {
 			var maxDistance = Math.min(AP.getAvailableMoveAP(), distance - fireDistance)
 			this.maybeTaunt(obj, "move", messageRoll)
 
-			// todo: check nearest direction first
+			// TODO: check nearest direction first
 			var didCreep = false
 			for(var i = 0; i < neighbors.length; i++) {
 				if(obj.walkTo(neighbors[i], false, function() {
@@ -481,7 +480,7 @@ class Combat {
 		inCombat = true
 		combat = new Combat(gMap.getObjects())
 
-		if(forceTurn !== undefined)
+		if(forceTurn)
 			combat.forceTurn(forceTurn)
 
 		combat.nextTurn()
