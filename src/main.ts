@@ -247,7 +247,7 @@ function pickupObject(obj: Obj, source: Critter) {
 
 // Draws a line between a and b, returning the first object hit
 function hexLinecast(a, b) {
-	var line = hexLine(a, b)
+	var line = hexLine(a, b).slice(1, -1)
 	if(line === null)
 		return null
 	for(var i = 0; i < line.length; i++) {
