@@ -178,6 +178,61 @@ module scriptingEngine {
 		$("#inventory").html("")
 	}
 
+	// TODO: Thoroughly test these functions (dealing with critter LOS)
+	function isWithinPerception(obj: Critter, target: Critter): boolean {
+		const dist = hexDistance(obj.position, target.position);
+		const perception = critterGetStat(obj, "PER");
+		const sneakSkill = critterGetSkill(target, "Sneak");
+		let reqDist;
+
+		// TODO: Implement all of the conditionals here
+
+		if(true /* obj1 can see obj2 */) {
+			reqDist = perception*5;
+			if(false /* some target flags & 2 */)
+				reqDist /= 2;
+
+			if(target === player) {
+				if(false /* is_pc_sneak_working */) {
+					reqDist /= 4;
+
+					if(sneakSkill > 120)
+						reqDist--;
+				}
+				else if(false /* is_sneaking */)
+					reqDist = reqDist * 2 / 3;
+			}
+		}
+
+		if(dist <= reqDist)
+			return true;
+
+		reqDist = inCombat ? perception*2 : perception;
+
+		if(target === player) {
+			if(false /* is_pc_sneak_working */) {
+				reqDist /= 4;
+
+				if(sneakSkill > 120)
+					reqDist--;
+			}
+			else if(false /* is_sneaking */)
+				reqDist = reqDist * 2 / 3;
+		}
+
+		return dist <= reqDist;
+	}
+
+	function objCanSeeObj(obj: Critter, target: Critter): boolean {
+		// Is target within obj's perception?
+		if(isWithinPerception(obj, target)) {
+			// Then, is anything blocking obj from drawing a straight line to target?
+			const hit = hexLinecast(obj.position, target.position);
+			return !hit;
+		}
+		return false;
+	}
+
 	export var ScriptProto = {
 		dude_obj: "<Dude Object>",
 		'true': true,
@@ -409,7 +464,7 @@ module scriptingEngine {
 		},
 		elevation: function(obj) { if(isSpatial(obj) || isGameObject(obj)) return currentElevation
 								   else { warn("elevation: not an object: " + obj); return -1 } },
-		obj_can_see_obj: function(a, b) { /*stub("obj_can_see_obj", arguments);*/ return 0 },
+		obj_can_see_obj: function(a, b) { log("obj_can_see_obj", arguments); return +objCanSeeObj(a, b) },
 		obj_can_hear_obj: function(a, b) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
 		critter_mod_skill: function(obj, skill, amount) { stub("critter_mod_skill", arguments); return 0 },
 		using_skill: function(obj, skill) { stub("using_skill", arguments); return 0 },
