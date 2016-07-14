@@ -1132,5 +1132,9 @@ heart.draw = function() {
 	return renderer.render()
 }
 
+// some utility functions for use in the console
+function allCritters() { return gMap.getObjects().filter(obj => obj instanceof Critter) }
+
+// global callbacks for dialogue UI
 function dialogueReply(id) { scriptingEngine.dialogueReply(id) }
 function dialogueEnd() { scriptingEngine.dialogueEnd() }
