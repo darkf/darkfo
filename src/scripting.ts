@@ -178,6 +178,11 @@ module scriptingEngine {
 		$("#inventory").html("")
 	}
 
+	function canSee(obj: Obj, target: Obj): boolean {
+	  const dir = Math.abs(obj.orientation - hexDirectionTo(obj.position, target.position));
+	  return [0, 1, 5].indexOf(dir) !== -1;
+	}
+
 	// TODO: Thoroughly test these functions (dealing with critter LOS)
 	function isWithinPerception(obj: Critter, target: Critter): boolean {
 		const dist = hexDistance(obj.position, target.position);
@@ -187,7 +192,7 @@ module scriptingEngine {
 
 		// TODO: Implement all of the conditionals here
 
-		if(true /* obj1 can see obj2 */) {
+		if(canSee(obj, target)) {
 			reqDist = perception*5;
 			if(false /* some target flags & 2 */)
 				reqDist /= 2;
@@ -202,10 +207,10 @@ module scriptingEngine {
 				else if(false /* is_sneaking */)
 					reqDist = reqDist * 2 / 3;
 			}
-		}
 
-		if(dist <= reqDist)
-			return true;
+			if(dist <= reqDist)
+				return true;
+		}
 
 		reqDist = inCombat ? perception*2 : perception;
 

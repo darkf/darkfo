@@ -312,6 +312,23 @@ function hexDistance(a, b) {
 	                Math.abs(cubeA.z - cubeB.z))
 }
 
+// Direction between hexes a and b
+function hexDirectionTo(a: Point, b: Point): number {
+	// TODO: check correctness
+    const delta = {x: b.x - a.x, y: b.y - a.y};
+
+    if(delta.x) {
+        const angle = Math.atan2(-delta.y, delta.x) * 180/Math.PI;
+        let temp = 90 - angle|0;
+        if(temp < 0)
+            temp += 360;
+        return Math.min(temp / 60|0, 5);
+    }
+    else if(delta.y < 0)
+        return 0;
+    return 2;
+}
+
 function hexOppositeDirection(direction) {
 	return (direction + 3) % 6
 }
