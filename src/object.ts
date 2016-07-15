@@ -660,6 +660,7 @@ class Obj {
 			return null
 
 		return getMessage(this.getMessageCategory(), this.pro.textID + 1) || null
+	}
 
 	// TODO: override this for subclasses
 	serialize(): SerializedObj {
