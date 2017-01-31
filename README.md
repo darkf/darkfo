@@ -54,7 +54,7 @@ To use this, you'll need a few things:
 
 - Python 2.7
 
-- [Pillow](https://pillow.readthedocs.io/en/4.0.x)
+- [Pillow](https://pillow.readthedocs.io/en/4.0.x) (just `pip install pillow`)
 
 - [NumPy](http://www.numpy.org/) (Windows binaries available [here](http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy).)
 
@@ -64,13 +64,9 @@ If you're testing on Chrome, you'll need a suitable HTTP server due to the way i
 
 Or just quickly start one in the current directory using python:
 
-Python 2
+Python 2: `python -m SimpleHTTPServer`
 
-    python -m SimpleHTTPServer
-
-Python 3
-
-    python -m http.server
+Python 3: `python -m http.server`
 
 Alternatively, Firefox can load directly from `file://`.
 
