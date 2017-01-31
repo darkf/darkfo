@@ -440,7 +440,7 @@ function tile_in_tile_rect2(tile, a, c) {
 	return tile_in_tile_rect(tile, a, b, c, d)
 }
 
-function pointIntersectsCircle(center, radius, point) {
+function pointIntersectsCircle(center: Point, radius: number, point: Point): boolean {
 	return Math.abs(point.x - center.x) <= radius &&
 	       Math.abs(point.y - center.y) <= radius
 }

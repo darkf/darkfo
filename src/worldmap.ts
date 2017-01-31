@@ -1,5 +1,5 @@
 /*
-Copyright 2014-2015 darkf
+Copyright 2014-2017 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,32 +19,32 @@ limitations under the License.
 "use strict";
 
 module Worldmap {
-	var worldmap = null
-	var worldmapPlayer = null
-	var $worldmap = null
-	var $worldmapPlayer = null
-	var $worldmapTarget = null
-	var worldmapTimer = null
-	var lastEncounterCheck = 0
+	let worldmap = null
+	let worldmapPlayer = null
+	let $worldmap = null
+	let $worldmapPlayer = null
+	let $worldmapTarget = null
+	let worldmapTimer = null
+	let lastEncounterCheck = 0
 
-	var WORLDMAP_UNDISCOVERED = 0
-	var WORLDMAP_DISCOVERED = 1
-	var WORLDMAP_SEEN = 2
+	const WORLDMAP_UNDISCOVERED = 0
+	const WORLDMAP_DISCOVERED = 1
+	const WORLDMAP_SEEN = 2
 
-	var NUM_SQUARES_X = 4*7
-	var NUM_SQUARES_Y = 5*6
-	var SQUARE_SIZE = 51
+	const NUM_SQUARES_X = 4*7
+	const NUM_SQUARES_Y = 5*6
+	const SQUARE_SIZE = 51
 
-	var WORLDMAP_SPEED = 2 // speed scalar
-	var WORLDMAP_ENCOUNTER_CHECK_RATE = 800 // ms (TODO: find right value)
+	const WORLDMAP_SPEED = 2 // speed scalar
+	const WORLDMAP_ENCOUNTER_CHECK_RATE = 800 // ms (TODO: find right value)
 
 	function parseWorldmap(data) {
 		// 20 tiles, 7x6 squares each
 		// each tile is 350x300
 		// 4 tiles horizontally, 5 vertically
 
-		function parseSquare(data) {
-			var props = data.split(",").map(function(x) { return x.toLowerCase() })
+		function parseSquare(data: string) {
+			const props = data.split(",").map(x => x.toLowerCase())
 
 			return {terrainType: props[0], // Mountain | Ocean | ...
 			        fillType: props[1], // No_Fill | Fill_W
@@ -85,12 +85,11 @@ module Worldmap {
 			}
 		}
 
-		function parseEncounter(data) {
-			data = data.trim()
-			var s = data.split(",")
-			var enc: any = {}
-			var isSpecial = false
-			var i = 0
+		function parseEncounter(data: string) {
+			const s = data.trim().split(",")
+			const enc: any = {}
+			let isSpecial = false
+			let i = 0
 
 			for(; i < s.length; i++) {
 				var kv = s[i].split(":")
@@ -100,7 +99,7 @@ module Worldmap {
 					isSpecial = true
 			}
 
-			var cond = s[i-1].toLowerCase().trim()
+			let cond = s[i-1].toLowerCase().trim()
 			if(cond.indexOf('if') !== 0) // conditions start with "if"
 				cond = null
 
@@ -113,30 +112,30 @@ module Worldmap {
 			       }
 		}
 
-		function parseEncounterItem(data) {
+		function parseEncounterItem(data: string) {
 			// an item, e.g. Item:7(wielded), Item:(0-10)41
-			var m = data.match(/(?:\((\d+)-(\d+)\))?(\d+)(?:\((wielded)\))?/)
+			const m = data.match(/(?:\((\d+)-(\d+)\))?(\d+)(?:\((wielded)\))?/)
 
-			var range = null
+			let range = null
 			if(m[1] !== undefined)
 				range = {start: parseInt(m[1]),
 					     end: parseInt(m[2])}
 
-			var item = {range: range,
-				        pid: parseInt(m[3]),
-				        wielded: (m[4] !== undefined)}
+			const item = {range: range,
+				          pid: parseInt(m[3]),
+				          wielded: (m[4] !== undefined)}
 
 			return item
 		}
 
-		function parseEncounterCritter(data) {
-			data = data.trim()
-			var s = data.split(",")
-			var enc: any = {}
-			var items = []
-			var i = 0
+		function parseEncounterCritter(data: string) {
+			const s = data.trim().split(",")
+			const enc: any = {}
+			const items = []
+			let i = 0
+
 			for(; i < s.length; i++) {
-				var kv = s[i].split(":").map(function(x) { return x.toLowerCase().trim() })
+				const kv = s[i].split(":").map(x => x.toLowerCase().trim())
 				if(kv[0] === "item") {
 					items.push(parseEncounterItem(kv[1]))
 				}
@@ -144,9 +143,9 @@ module Worldmap {
 					enc[kv[0]] = kv[1]
 			}
 
-			var isDead = s[0] === "dead"
+			const isDead = s[0] === "dead"
 
-			var cond = s[i-1].toLowerCase().trim()
+			let cond = s[i-1].toLowerCase().trim()
 			if(cond.indexOf('if') !== 0) // conditions start with "if"
 				cond = null
 
@@ -159,11 +158,11 @@ module Worldmap {
 		}
 
 		// Parse a "key:value, key:value" format
-		function parseKeyed(data) {
-			var items = data.split(",").map(function(x) { return x.trim() })
+		function parseKeyed(data: string) {
+			var items = data.split(",").map(x => x.trim())
 			var out = {}
 			for(var i = 0; i < items.length; i++) {
-				var s = items[i].split(":")
+				const s: any = items[i].split(":")
 				if($.isNumeric(s[1]))
 					s[1] = parseFloat(s[1])
 				out[s[0].toLowerCase()] = s[1]
@@ -180,8 +179,8 @@ module Worldmap {
 		for(var i = 0; i < 4; i++)
 			tiles[i] = new Array(5)*/
 
-		var squares = new Array(NUM_SQUARES_X) // (4*7) x (5*6) array (i.e., number of tiles -- 840)
-		for(var i = 0; i < NUM_SQUARES_X; i++)
+		const squares = new Array(NUM_SQUARES_X) // (4*7) x (5*6) array (i.e., number of tiles -- 840)
+		for(let i = 0; i < NUM_SQUARES_X; i++)
 			squares[i] = new Array(NUM_SQUARES_Y)
 
 		// console.log(ini)
@@ -207,7 +206,7 @@ module Worldmap {
 			}
 			else if(key.indexOf("Encounter Table") === 0) {
 				var name = ini[key].lookup_name.toLowerCase()
-				var maps = ini[key].maps.split(",").map(function(x) { return x.trim() })
+				var maps = ini[key].maps.split(",").map(x => x.trim())
 
 				var encounter = {maps: maps, encounters: []}
 				for(var prop in ini[key]) {
@@ -222,7 +221,7 @@ module Worldmap {
 				let position = null
 
 				if(ini[key].position !== undefined) {
-					var position_ = ini[key].position.split(",").map(function(x) { return x.trim().toLowerCase() })
+					var position_ = ini[key].position.split(",").map(x => x.trim().toLowerCase())
 					position = {type: position_[0], spacing: 3} // TODO: verify defaults (3 spacing?)
 				}
 				else { // default
@@ -239,8 +238,8 @@ module Worldmap {
 			}
 		}
 
-		var encounterRates = {}
-		for(var key in ini.Data) {
+		const encounterRates = {}
+		for(const key in ini.Data) {
 			encounterRates[key.toLowerCase()] = parseInt(ini.Data[key])
 		}
 
@@ -248,14 +247,10 @@ module Worldmap {
 		// console.log(encounterTables)
 		// console.log(encounterGroups)
 
-		return {squares: squares,
-			    encounterTables: encounterTables,
-			    encounterGroups: encounterGroups,
-			    encounterRates: encounterRates,
-			    terrainSpeed: parseKeyed(ini.Data.terrain_types)}
+		return {squares, encounterTables, encounterGroups, encounterRates, terrainSpeed: parseKeyed(ini.Data.terrain_types)}
 	}
 
-	export function getEncounterGroup(groupName) {
+	export function getEncounterGroup(groupName: string) {
 		return worldmap.encounterGroups[groupName]
 	}
 
@@ -370,7 +365,7 @@ module Worldmap {
 		return false
 	}
 
-	export function init() {
+	export function init(): void {
 		/*$("#worldmap").mousemove(function(e) {
 			var offset = $(this).offset()
 			var x = e.pageX - parseInt(offset.left)
@@ -426,7 +421,7 @@ module Worldmap {
 			}
 		})
 
-		for(var key in mapAreas) {
+		for(const key in mapAreas) {
 			var area = mapAreas[key]
 			if(area.state !== true) continue
 
@@ -490,10 +485,11 @@ module Worldmap {
 	}
 
 	// check if we're inside an area
-	function withinArea(position) {
+	function withinArea(position: Point) {
 		for(var areaNum in mapAreas) {
-			var area = mapAreas[areaNum]
-			var radius = (area.size === "large" ? 32 : 16) // guessing for now
+			const area = mapAreas[areaNum]
+			const radius = (area.size === "large" ? 32 : 16) // guessing for now
+
 			if(pointIntersectsCircle(area.worldPosition, radius, position)) {
 				console.log("intersects " + area.name)
 				return area
