@@ -1,8 +1,10 @@
 # DarkFO
 
-a post-nuclear RPG remake
+A post-nuclear RPG remake
 
 This is a modern reimplementation of the engine of the video game [Fallout 2](http://en.wikipedia.org/wiki/Fallout_2), as well as a personal research project into the feasibility of doing such.
+
+It is written primarily in TypeScript and Python, and targets a modern (HTML 5) Web browser.
 
 ## Status
 
@@ -52,13 +54,13 @@ To use this, you'll need a few things:
 
 - Python 2.7
 
-- [PIL](http://www.pythonware.com/products/pil/) ([pillow](https://python-pillow.github.io/) may also work, but hasn't been tested)
+- [Pillow](https://pillow.readthedocs.io/en/4.0.x)
 
-- [NumPy](http://www.numpy.org/)
+- [NumPy](http://www.numpy.org/) (Windows binaries available [here](http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy).)
 
 - The TypeScript compiler, installed via `npm install -g typescript` (you'll need [node.js](https://nodejs.org/en/)).
 
-If you're testing on Chrome, you'll need a suitable HTTP server due to the way it sandboxes `file://` (I'll recommend LightTPD. On Windows, [grab this .zip](http://en.wlmp-project.net/downloads.php?cat=lighty).You'll need to point its `server.document.root` in `conf/lighttpd.conf` to the DarkFO directory.)
+If you're testing on Chrome, you'll need a suitable HTTP server due to the way it sandboxes `file://` (I'll recommend LightTPD. On Windows, [grab this .zip](http://en.wlmp-project.net/downloads.php?cat=lighty). You'll need to point its `server.document.root` in `conf/lighttpd.conf` to the root DarkFO directory.)
 
 Or just quickly start one in the current directory using python:
 
@@ -80,7 +82,7 @@ Open a command prompt inside the DarkFO directory, and then run:
 
 This will take a few minutes, it's unpacking the game archives and converting relevant game data into a format DarkFO can use.
 
-NOTE: You may need to use `python2` instead, as some distributions package `python` as Python 3.
+NOTE: You may need to use `python2` instead, as some Linux distributions package `python` as Python 3.
 
 Then run `tsc` to compile the source code.
 
@@ -109,4 +111,3 @@ Thanks!
 ## Contact
 
 If you have an issue, please file it in the GitHub issue tracker.
-If you'd like to join us in discussion, visit us on IRC at `#darkfo` on FreeNode (`irc.freenode.net`)!
