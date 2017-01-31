@@ -38,7 +38,7 @@ module Worldmap {
 	const WORLDMAP_SPEED = 2 // speed scalar
 	const WORLDMAP_ENCOUNTER_CHECK_RATE = 800 // ms (TODO: find right value)
 
-	function parseWorldmap(data) {
+	function parseWorldmap(data: string) {
 		// 20 tiles, 7x6 squares each
 		// each tile is 350x300
 		// 4 tiles horizontally, 5 vertically
@@ -56,20 +56,20 @@ module Worldmap {
 			       }
 		}
 
-		function parseEncounterReference(data): any {
+		function parseEncounterReference(data: string): any {
 			// "(4-8) ncr_masters_army ambush player" 
 			if(data === "special1")
 				return {type: "special"}
 
-			var party = "(?:\\((\\d+)-(\\d+)\\) ([a-z0-9_]+))"
-			var re = party + " ?(?:(ambush player)|(fighting) " + party + ")?"
-			var m = data.match(new RegExp(re))
+			const party = "(?:\\((\\d+)-(\\d+)\\) ([a-z0-9_]+))"
+			const re = party + " ?(?:(ambush player)|(fighting) " + party + ")?"
+			const m = data.match(new RegExp(re))
 			//console.log("%o %o", re, data)
 
-			var firstParty = {start: parseInt(m[1]),
-			                  end: parseInt(m[2]),
-			                  name: m[3]
-			                 }
+			const firstParty = {start: parseInt(m[1]),
+			                    end: parseInt(m[2]),
+			                    name: m[3]
+			                   }
 
 			if(m[4] === "ambush player") {
 				return {type: "ambush", target: "player", party: firstParty}
@@ -92,7 +92,7 @@ module Worldmap {
 			let i = 0
 
 			for(; i < s.length; i++) {
-				var kv = s[i].split(":")
+				const kv = s[i].split(":")
 				if(kv.length === 2)
 					enc[kv[0].toLowerCase()] = kv[1].toLowerCase()
 				if(s[i].toLowerCase().trim() === "special")
@@ -159,9 +159,9 @@ module Worldmap {
 
 		// Parse a "key:value, key:value" format
 		function parseKeyed(data: string) {
-			var items = data.split(",").map(x => x.trim())
-			var out = {}
-			for(var i = 0; i < items.length; i++) {
+			const items = data.split(",").map(x => x.trim())
+			const out = {}
+			for(let i = 0; i < items.length; i++) {
 				const s: any = items[i].split(":")
 				if($.isNumeric(s[1]))
 					s[1] = parseFloat(s[1])
@@ -170,14 +170,9 @@ module Worldmap {
 			return out
 		}
 
-		var ini: any = parseIni(data)
-		var encounterTables = {}
-		var encounterGroups = {}
-
-		// 4x5 tiles
-		/*var tiles = new Array(4)
-		for(var i = 0; i < 4; i++)
-			tiles[i] = new Array(5)*/
+		const ini: any = parseIni(data)
+		const encounterTables = {}
+		const encounterGroups = {}
 
 		const squares = new Array(NUM_SQUARES_X) // (4*7) x (5*6) array (i.e., number of tiles -- 840)
 		for(let i = 0; i < NUM_SQUARES_X; i++)
@@ -185,31 +180,33 @@ module Worldmap {
 
 		// console.log(ini)
 
-		for(var key in ini) {
-			var m = key.match(/Tile (\d+)/)
+		for(const key in ini) {
+			const m = key.match(/Tile (\d+)/)
 			if(m !== null) {
-				var tileNum = parseInt(m[1])
-				var tileX = tileNum % 4
-				var tileY = Math.floor(tileNum / 4)
-				var difficulty = parseInt(ini[key].encounter_difficulty)
+				const tileNum = parseInt(m[1])
+				const tileX = tileNum % 4
+				const tileY = Math.floor(tileNum / 4)
+				const difficulty = parseInt(ini[key].encounter_difficulty)
 
-				for(let position in ini[key]) {
-					var pos = position.match(/(\d)_(\d)/)
+				for(const position in ini[key]) {
+					const pos = position.match(/(\d)_(\d)/)
 					if(pos === null) continue
-					var x = tileX * 7 + parseInt(pos[1])
-					var y = tileY * 6 + parseInt(pos[2])
+
+					const x = tileX * 7 + parseInt(pos[1])
+					const y = tileY * 6 + parseInt(pos[2])
 					//console.log(tileX + "/" + tileY + " | " + pos[1] + ", " + pos[2] + " -> " + x + ", " + y)
+
 					squares[x][y] = parseSquare(ini[key][position])
 					squares[x][y].difficulty = difficulty
 					squares[x][y].state = WORLDMAP_UNDISCOVERED
 				}
 			}
 			else if(key.indexOf("Encounter Table") === 0) {
-				var name = ini[key].lookup_name.toLowerCase()
-				var maps = ini[key].maps.split(",").map(x => x.trim())
+				const name = ini[key].lookup_name.toLowerCase()
+				const maps = ini[key].maps.split(",").map(x => x.trim())
+				const encounter = {maps: maps, encounters: []}
 
-				var encounter = {maps: maps, encounters: []}
-				for(var prop in ini[key]) {
+				for(const prop in ini[key]) {
 					if(prop.indexOf("enc_") === 0) {
 						encounter.encounters.push(parseEncounter(ini[key][prop]))
 					}
@@ -217,19 +214,19 @@ module Worldmap {
 				encounterTables[name] = encounter
 			}
 			else if(key.indexOf("Encounter:") === 0) {
-				var groupName = key.slice("Encounter: ".length).toLowerCase()
+				const groupName = key.slice("Encounter: ".length).toLowerCase()
 				let position = null
 
 				if(ini[key].position !== undefined) {
-					var position_ = ini[key].position.split(",").map(x => x.trim().toLowerCase())
+					const position_ = ini[key].position.split(",").map(x => x.trim().toLowerCase())
 					position = {type: position_[0], spacing: 3} // TODO: verify defaults (3 spacing?)
 				}
 				else { // default
 					position = {type: "surrounding", spacing: 5, distance: "Player(Perception)"}
 				}
 
-				var group = {critters: [], position: position}
-				for(var prop in ini[key]) {
+				const group = {critters: [], position: position}
+				for(const prop in ini[key]) {
 					if(prop.indexOf("type_") === 0) {
 						group.critters.push(parseEncounterCritter(ini[key][prop]))
 					}
@@ -250,11 +247,11 @@ module Worldmap {
 		return {squares, encounterTables, encounterGroups, encounterRates, terrainSpeed: parseKeyed(ini.Data.terrain_types)}
 	}
 
-	export function getEncounterGroup(groupName: string) {
+	export function getEncounterGroup(groupName: string): any {
 		return worldmap.encounterGroups[groupName]
 	}
 
-	function positionToSquare(pos) {
+	function positionToSquare(pos: Point): Point {
 		return {x: Math.floor(pos.x / SQUARE_SIZE),
 			    y: Math.floor(pos.y / SQUARE_SIZE)}
 	}
@@ -264,7 +261,7 @@ module Worldmap {
 		   squarePos.y < 0 || squarePos.y >= NUM_SQUARES_Y)
 			return
 
-		var oldState = worldmap.squares[squarePos.x][squarePos.y].state
+		const oldState = worldmap.squares[squarePos.x][squarePos.y].state
 		worldmap.squares[squarePos.x][squarePos.y].state = newState
 
 		if(oldState === WORLDMAP_DISCOVERED && newState === WORLDMAP_SEEN)
@@ -273,7 +270,7 @@ module Worldmap {
 		// console.log( worldmap.squares[squarePos.x][squarePos.y].fillType )
 
 		// the square element at squarePos
-		var stateName = {}
+		const stateName = {}
 		stateName[WORLDMAP_UNDISCOVERED] = "undiscovered"
 		stateName[WORLDMAP_DISCOVERED] = "discovered"
 		stateName[WORLDMAP_SEEN] = "seen"
@@ -301,8 +298,8 @@ module Worldmap {
 		}
 	}
 
-	function execEncounter(encTable): void {
-		var enc = Encounters.evalEncounter(encTable)
+	function execEncounter(encTable: any): void {
+		const enc = Encounters.evalEncounter(encTable)
 		console.log("final: map %s, groups %o", enc.mapName, enc.groups)
 
 		// load map
@@ -313,7 +310,7 @@ module Worldmap {
 			enc.groups.forEach(function(group) {
 				group.critters.forEach(function(critter) {
 					//console.log("critter: %o", critter)
-					var obj = createObjectWithPID(critter.pid, critter.script ? critter.script : undefined)
+					const obj = createObjectWithPID(critter.pid, critter.script ? critter.script : undefined)
 					//console.log("obj: %o", obj)
 
 					// TODO: items & equipping
@@ -329,33 +326,33 @@ module Worldmap {
 	}
 
 	export function doEncounter(): void {
-		var squarePos = positionToSquare(worldmapPlayer)
-		var square = worldmap.squares[squarePos.x][squarePos.y]
-		var encTable = worldmap.encounterTables[square.encounterType]
+		const squarePos = positionToSquare(worldmapPlayer)
+		const square = worldmap.squares[squarePos.x][squarePos.y]
+		const encTable = worldmap.encounterTables[square.encounterType]
 
 		console.log("enc table: %s -> %o", square.encounterType, encTable)
 		execEncounter(encTable)
 	}
 
 	export function didEncounter(): boolean {
-		var squarePos = positionToSquare(worldmapPlayer)
-		var square = worldmap.squares[squarePos.x][squarePos.y]
-		var encRate = worldmap.encounterRates[square.frequency]
+		const squarePos = positionToSquare(worldmapPlayer)
+		const square = worldmap.squares[squarePos.x][squarePos.y]
+		const encRate = worldmap.encounterRates[square.frequency]
 
 		//console.log("square: %o, worldmap: %o, encRate: %d", square, worldmap, encRate)
 
 		if(encRate === 0) // 0% encounter rate (none)
 			return false
 		else if(encRate === 100) // 100% encounter rate (forced)
-			doEncounter()
+			return true
 		else { // roll for it
 			// TODO: adjust for difficulty:
 			// If easy difficulty, encRate -= encRate / 15
 			// If hard difficulty, encRate += encRate / 15
 
-			var roll = getRandomInt(0, 100)
-			//var roll = 0
+			const roll = getRandomInt(0, 100)
 			console.log("encounter: rolled %d vs %d", roll, encRate)
+
 			if(roll < encRate) {
 				// We rolled an encounter!
 				return true
@@ -392,15 +389,15 @@ module Worldmap {
 			mapAreas = loadAreas()
 
 		$worldmap.click(function(e) {
-			var offset = $(this).offset()
-			var x = e.pageX - parseInt(offset.left)
-			var y = e.pageY - parseInt(offset.top)
+			const offset = $(this).offset()
+			const x = e.pageX - parseInt(offset.left)
+			const y = e.pageY - parseInt(offset.top)
 
-			var scrollLeft = $(this).scrollLeft()
-			var scrollTop = $(this).scrollTop()
+			const scrollLeft = $(this).scrollLeft()
+			const scrollTop = $(this).scrollTop()
 
-			var ax = x + scrollLeft
-			var ay = y + scrollTop
+			const ax = x + scrollLeft
+			const ay = y + scrollTop
 
 			worldmapPlayer.target = {x: ax, y: ay}
 			$worldmapPlayer.css("visibility", "visible")
@@ -410,7 +407,7 @@ module Worldmap {
 		})
 
 		$worldmapTarget.click(function(e) {
-			var area = withinArea(worldmapPlayer)
+			const area = withinArea(worldmapPlayer)
 			if(area !== null) {
 				// we're on a hotspot, visit the area map
 				e.stopPropagation()
@@ -422,19 +419,19 @@ module Worldmap {
 		})
 
 		for(const key in mapAreas) {
-			var area = mapAreas[key]
+			const area = mapAreas[key]
 			if(area.state !== true) continue
 
-			var $area = $("<div>").addClass("area").appendTo($worldmap)
+			const $area = $("<div>").addClass("area").appendTo($worldmap)
 
 			//console.log("adding one @ " + area.worldPosition.x + ", " + area.worldPosition.y)
-			var $el = $("<div>").addClass("areaCircle")
-			                    .addClass("areaSize-" + area.size)
-			                    .appendTo($area)
+			const $el = $("<div>").addClass("areaCircle")
+			                      .addClass("areaSize-" + area.size)
+			                      .appendTo($area)
 
 			// transform the circle since (0,0) is the top-left instead of center
-			var x = area.worldPosition.x - $el.width() / 2
-			var y = area.worldPosition.y - $el.height() / 2
+			const x = area.worldPosition.x - $el.width() / 2
+			const y = area.worldPosition.y - $el.height() / 2
 			//console.log("adding one @ " + x + ", " + y + " | " + $el.width() + ", " + $el.height())
 			//console.log("size = " + area.size)
 			$area.css({left: x, top: y})
@@ -447,9 +444,9 @@ module Worldmap {
 			          .appendTo($area)
 		}
 
-		for(var x = 0; x < NUM_SQUARES_X; x++) {
-			for(var y = 0; y < NUM_SQUARES_Y; y++) {
-				var state = worldmap.squares[x][y].state
+		for(let x = 0; x < NUM_SQUARES_X; x++) {
+			for(let y = 0; y < NUM_SQUARES_Y; y++) {
+				let state = worldmap.squares[x][y].state
 				if(state === WORLDMAP_UNDISCOVERED) state = "undiscovered"
 				else if(state === WORLDMAP_DISCOVERED) state = "discovered"
 				else if(state === WORLDMAP_SEEN) state = "seen"
@@ -486,7 +483,7 @@ module Worldmap {
 
 	// check if we're inside an area
 	function withinArea(position: Point) {
-		for(var areaNum in mapAreas) {
+		for(const areaNum in mapAreas) {
 			const area = mapAreas[areaNum]
 			const radius = (area.size === "large" ? 32 : 16) // guessing for now
 
@@ -504,14 +501,13 @@ module Worldmap {
 			                 top: worldmapPlayer.y})
 
 		if(worldmapPlayer.target) {
-			var dx = worldmapPlayer.target.x - worldmapPlayer.x
-		    var dy = worldmapPlayer.target.y - worldmapPlayer.y
-		    var len = Math.sqrt(dx*dx + dy*dy)
+			let dx = worldmapPlayer.target.x - worldmapPlayer.x
+		    let dy = worldmapPlayer.target.y - worldmapPlayer.y
+		    const len = Math.sqrt(dx*dx + dy*dy)
 
-		    var squarePos = positionToSquare(worldmapPlayer)
-		    var currentSquare = worldmap.squares[squarePos.x][squarePos.y]
-		    var speed = 1 / worldmap.terrainSpeed[currentSquare.terrainType]
-		    speed *= WORLDMAP_SPEED
+		    const squarePos = positionToSquare(worldmapPlayer)
+		    const currentSquare = worldmap.squares[squarePos.x][squarePos.y]
+		    const speed = WORLDMAP_SPEED / worldmap.terrainSpeed[currentSquare.terrainType]
 
 		    if(len < speed) {
 		    	worldmapPlayer.x = worldmapPlayer.target.x
@@ -530,10 +526,10 @@ module Worldmap {
 
 
 			// center the worldmap to the player
-			var width = $worldmap.width()
-			var height = $worldmap.height()
-			var sx = clamp(0, width, Math.floor(worldmapPlayer.x - width/2))
-			var sy = clamp(0, height, Math.floor(worldmapPlayer.y - height/2))
+			const width = $worldmap.width()
+			const height = $worldmap.height()
+			const sx = clamp(0, width, Math.floor(worldmapPlayer.x - width/2))
+			const sy = clamp(0, height, Math.floor(worldmapPlayer.y - height/2))
 			$worldmap.scrollLeft(sx).scrollTop(sy)
 
 		    
@@ -541,13 +537,15 @@ module Worldmap {
 		    	setSquareStateAt(squarePos, WORLDMAP_DISCOVERED)
 
 		    // check for encounters
-		    var time = heart.timer.getTime()
+		    const time = heart.timer.getTime()
 		    if(Config.engine.doEncounters === true && (time >= lastEncounterCheck + WORLDMAP_ENCOUNTER_CHECK_RATE)) {
 		    	lastEncounterCheck = time
 
-			    var hadEncounter = didEncounter()
+			    const hadEncounter = didEncounter()
 			    if(hadEncounter === true) {
 			    	$worldmapPlayer.css("backgroundImage", "url('art/intrface/wmapfgt0.png')")
+
+			    	// TODO: Disable Worldmap UI while waiting on this!
 
 			    	setTimeout(function() {
 				    	doEncounter()
