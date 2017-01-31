@@ -1,5 +1,5 @@
 /*
-Copyright 2014-2015 darkf
+Copyright 2014-2017 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1242,7 +1242,7 @@ module scriptingEngine {
 
 		// hack so that the procedure is allowed to finish before
 		// we actually terminate combat
-		var doTerminate = false // did combat_p_proc terminate combat?
+		var doTerminate: any = false // did combat_p_proc terminate combat?
 		obj._script.terminate_combat = function() { doTerminate = true }
 		obj._script.combat_p_proc()
 
