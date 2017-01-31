@@ -18,7 +18,7 @@ limitations under the License.
 
 import sys, os, struct, json
 import pal
-import Image
+from PIL import Image
 import numpy as np
 
 def read16(f):

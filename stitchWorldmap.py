@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import Image
+from PIL import Image
 
 def main():
 	# 20 tiles, 7x6 squares each

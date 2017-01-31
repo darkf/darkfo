@@ -1,5 +1,5 @@
 """
-Copyright 2015 darkf
+Copyright 2015-2017 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,17 +18,6 @@ limitations under the License.
 
 from __future__ import print_function
 import sys, os, glob, json, traceback
-import dat2
-import parseCritTable
-import parseElevatorTable
-import exportImagesPar
-import buildPRO
-import fomap
-
-SRC_DIR = None
-NO_EXTRACT_DAT = False
-NO_EXPORT_IMAGES = False
-EXE_PATH = None
 
 def error(msg):
 	print("ERROR:", msg)
@@ -40,6 +29,31 @@ def warn(msg):
 
 def info(msg):
 	print(msg)
+
+# Check for numpy and pillow (required)
+info("Checking for necessary Python modules...")
+
+try: import numpy
+except ImportError:
+	error("NumPy not found. Please install it from http://www.numpy.org or http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy . Make sure the version matches your installed version of Python (%d.%d)." % (sys.version_info.major, sys.version_info.minor))
+
+try: from PIL import Image
+except ImportError:
+	error("Pillow not found. Please see https://pillow.readthedocs.io/en/4.0.x for installation instructions. Make sure the version matches your installed version of Python (%d.%d)." % (sys.version_info.major, sys.version_info.minor))
+
+# import local modules
+import dat2
+import parseCritTable
+import parseElevatorTable
+import exportImagesPar
+import buildPRO
+import fomap
+
+# global paths/flags
+SRC_DIR = None
+NO_EXTRACT_DAT = False
+NO_EXPORT_IMAGES = False
+EXE_PATH = None
 
 def setup_check():
 	global EXE_PATH
@@ -59,17 +73,6 @@ def setup_check():
 		warn("Installation directory does not contain fallout2.exe. Please ensure this is the right directory and the file exists. Some features may not be available without it!")
 	else:
 		EXE_PATH = os.path.join(SRC_DIR, "fallout2.exe")
-
-	# Check for numpy, PIL, etc.
-	info("Checking for necessary Python modules...")
-
-	try: import numpy
-	except ImportError:
-		error("NumPy not found. Please install it from http://www.numpy.org/ . Make sure the version matches your installed version of Python (%d.%d)." % sys.version_info.major, sys.version_info.minor)
-
-	try: import Image
-	except ImportError:
-		error("PIL not found. Please install it from http://www.pythonware.com/products/pil/ . Make sure the version matches your installed version of Python (%d.%d)." % sys.version_info.major, sys.version_info.minor)
 
 	return True
 
