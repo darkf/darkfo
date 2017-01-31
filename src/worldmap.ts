@@ -38,21 +38,32 @@ module Worldmap {
 	const WORLDMAP_SPEED = 2 // speed scalar
 	const WORLDMAP_ENCOUNTER_CHECK_RATE = 800 // ms (TODO: find right value)
 
+	interface Square {
+		terrainType: string, //"mountain" | "ocean" | "desert" | "city" | "ocean"
+		fillType: string, //"no_fill" | "fill_w"
+		// note: there are frequencies for certain times of day (Morning, Afternoon, Night)
+		// but as noted on http://falloutmods.wikia.com/wiki/Worldmap.txt_File_Format
+		// they don't appear to be used
+		frequency: string, //"forced" | "frequent" | "uncommon" | "common" | "rare" | "none"
+		encounterType: string,
+		difficulty: number,
+		state: number // WORLDMAP_UNDISCOVERED etc (TODO: make an enum)
+	}
+
 	function parseWorldmap(data: string) {
 		// 20 tiles, 7x6 squares each
 		// each tile is 350x300
 		// 4 tiles horizontally, 5 vertically
 
-		function parseSquare(data: string) {
+		function parseSquare(data: string): Square {
 			const props = data.split(",").map(x => x.toLowerCase())
 
-			return {terrainType: props[0], // Mountain | Ocean | ...
-			        fillType: props[1], // No_Fill | Fill_W
-			        // note: there are frequencies for certain times of day (Morning, Afternoon, Night)
-			        // but as noted on http://falloutmods.wikia.com/wiki/Worldmap.txt_File_Format
-			        // they don't appear to be used
-			        frequency: props[2], // Forced | Frequent | Uncommon | Common | Rare | None
-			        encounterType: props[5]
+			return {terrainType: props[0],
+			        fillType: props[1],
+			        frequency: props[2],
+			        encounterType: props[5],
+			        difficulty: null,
+			        state: null
 			       }
 		}
 
@@ -174,7 +185,7 @@ module Worldmap {
 		const encounterTables = {}
 		const encounterGroups = {}
 
-		const squares = new Array(NUM_SQUARES_X) // (4*7) x (5*6) array (i.e., number of tiles -- 840)
+		const squares: Square[][] = new Array(NUM_SQUARES_X) // (4*7) x (5*6) array (i.e., number of tiles -- 840)
 		for(let i = 0; i < NUM_SQUARES_X; i++)
 			squares[i] = new Array(NUM_SQUARES_Y)
 
