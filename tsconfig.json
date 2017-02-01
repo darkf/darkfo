@@ -45,6 +45,8 @@
         "src/ui.ts",
         "src/audio.ts",
 
+        "src/saveload.ts",
+
         "src/main.ts"
     ]
 }
