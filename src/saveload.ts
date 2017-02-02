@@ -9,7 +9,7 @@ module SaveLoad {
         currentMap: string;
         currentElevation: number;
 
-        player: { position: Point; orientation: number };
+        player: { position: Point; orientation: number; inventory: SerializedObj[] };
         party: SerializedObj[];
         savedMaps: { [mapName: string]: SerializedMap }
     }
@@ -24,7 +24,7 @@ module SaveLoad {
                , timestamp: Date.now()
                , currentElevation
                , currentMap: curMap.name
-               , player: {position: player.position, orientation: player.orientation}
+               , player: {position: player.position, orientation: player.orientation, inventory: player.inventory.map(obj => obj.serialize())}
                , party: gParty.serialize()
                , savedMaps: {[curMap.name]: curMap}
                };
@@ -99,6 +99,7 @@ module SaveLoad {
                 // TODO: Properly (de)serialize the player!
                 player.position = save.player.position;
                 player.orientation = save.player.orientation;
+                player.inventory = save.player.inventory.map(obj => deserializeObj(obj));
                 
                 gParty.deserialize(save.party);
 
