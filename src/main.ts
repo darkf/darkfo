@@ -733,6 +733,8 @@ heart.load = function() {
 	tempCanvas = $("<canvas>")[0]
 	tempCanvasCtx = tempCanvas.getContext("2d")
 
+	SaveLoad.init()
+
 	Worldmap.init()
 	
 	initUI()
