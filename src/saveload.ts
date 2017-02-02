@@ -77,7 +77,24 @@ module SaveLoad {
         }, callback);
     }
 
-    export function load(id: number): void {}
+    export function load(id: number): void {
+        // Load stored savegame with id
+
+        withTransaction(trans => {
+            trans.objectStore("saves").get(id).onsuccess = function(e) {
+                const save: SaveGame = (<any>e.target).result;
+                const savedMap = save.savedMaps[save.currentMap];
+
+                console.log("[SaveLoad] Loading save #%d ('%s') from %s", id, save.name, formatSaveDate(save));
+
+                gMap.deserialize(savedMap);
+                console.log("[SaveLoad] Finished map deserialization");
+
+                gMap.changeElevation(0, false);
+                console.log("[SaveLoad] Finished loading map %s", savedMap.name);
+            };
+        });
+    }
 
     export function init(): void {
         const request = indexedDB.open("darkfo", 1);
