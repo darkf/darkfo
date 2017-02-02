@@ -3,11 +3,21 @@ module SaveLoad {
 
     // Save game metadata + maps
     interface SaveGame {
-        id: number;
         version: number;
         name: string;
 
         savedMaps: { [mapName: string]: SerializedMap }
+    }
+
+    function gatherSaveData(name: string): SaveGame {
+        // Saves the game and returns the savegame
+
+        const curMap = gMap.serialize();
+
+        return { version: 1
+               , name
+               , savedMaps: {[curMap.name]: curMap}
+               };
     }
 
     function withTransaction(f: (trans: IDBTransaction) => void, finished?: () => void) {
@@ -35,17 +45,18 @@ module SaveLoad {
             getAll(trans.objectStore("saves"), callback);
         });
     }
-    export function save(callback: () => void): void {
-        // Test save
-        const save = {version: 1, name: "foo", savedMaps: []};
+
+    export function save(name: string, callback: () => void): void {
+        const save = gatherSaveData(name);
 
         withTransaction(trans => {
             trans.objectStore("saves").put(save);
 
-            console.log("-> saved dummy data");
+            console.log("[SaveLoad] Saved game data as '%s'", name);
         }, callback);
     }
-    export function load(index: number): void {}
+
+    export function load(id: number): void {}
 
     export function init(): void {
         const request = indexedDB.open("darkfo", 1);
@@ -58,9 +69,13 @@ module SaveLoad {
         request.onsuccess = function() {
             db = request.result;
 
+            db.onerror = function(e) {
+                console.error("Database error: " + (<any>e.target).errorCode);
+            };
+
             console.log("Established DB connection");
 
-            save(() => {
+            save("test", () => {
                 saveList((saves: SaveGame[]) => {
                     console.log("Save List:");
                     for(const savegame of saves)
