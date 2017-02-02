@@ -5,6 +5,7 @@ module SaveLoad {
     interface SaveGame {
         version: number;
         name: string;
+        timestamp: number;
 
         savedMaps: { [mapName: string]: SerializedMap }
     }
@@ -16,6 +17,7 @@ module SaveLoad {
 
         return { version: 1
                , name
+               , timestamp: Date.now()
                , savedMaps: {[curMap.name]: curMap}
                };
     }
