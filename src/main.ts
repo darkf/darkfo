@@ -573,7 +573,7 @@ class GameMap {
 			name: this.name,
 			mapID: this.mapID,
 			numLevels: this.numLevels,
-			mapObj: {levels: this.mapObj.levels},
+			mapObj: {levels: this.mapObj.levels.map(level => { return {tiles: level.tiles} })},
 
 			// roof/floor maps
 			roofMap: this.roofMap,
@@ -581,7 +581,7 @@ class GameMap {
 
 			mapScript: this.mapScript ? this.mapScript._serialize() : null,
 			objects: this.objects.map(level =>
-				_.without(level, player).map(obj => obj.serialize())),
+				_.without(level, player).map(obj => obj.serialize())), // TODO: Should be without entire party?
 			spatials: null //this.spatials.map(level => level.map(spatial:> spatial.serialize()))
 		}
 	}
