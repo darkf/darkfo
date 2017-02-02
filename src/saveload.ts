@@ -6,6 +6,7 @@ module SaveLoad {
         version: number;
         name: string;
         timestamp: number;
+        currentMap: string;
 
         savedMaps: { [mapName: string]: SerializedMap }
     }
@@ -18,8 +19,14 @@ module SaveLoad {
         return { version: 1
                , name
                , timestamp: Date.now()
+               , currentMap: curMap.name
                , savedMaps: {[curMap.name]: curMap}
                };
+    }
+
+    function formatSaveDate(save: SaveGame): string {
+        const date = new Date(save.timestamp);
+        return `${date.getMonth()+1}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
     }
 
     function withTransaction(f: (trans: IDBTransaction) => void, finished?: () => void) {
@@ -48,13 +55,25 @@ module SaveLoad {
         });
     }
 
+    export function debugSaveList(): void {
+        saveList((saves: SaveGame[]) => {
+            console.log("Save List:");
+            for(const savegame of saves)
+                console.log("  -", savegame.name, formatSaveDate(savegame), savegame);
+        });
+    }
+
+    export function debugSave(): void {
+        save("debug", () => { console.log("[SaveLoad] Done"); });
+    }
+
     export function save(name: string, callback: () => void): void {
         const save = gatherSaveData(name);
 
         withTransaction(trans => {
             trans.objectStore("saves").put(save);
 
-            console.log("[SaveLoad] Saved game data as '%s'", name);
+            console.log("[SaveLoad] Saving game data as '%s'", name);
         }, callback);
     }
 
@@ -76,14 +95,6 @@ module SaveLoad {
             };
 
             console.log("Established DB connection");
-
-            save("test", () => {
-                saveList((saves: SaveGame[]) => {
-                    console.log("Save List:");
-                    for(const savegame of saves)
-                        console.log("Save:", savegame);
-                });
-            });
         }
     }
 }
