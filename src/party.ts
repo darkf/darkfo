@@ -45,6 +45,16 @@ class Party {
 	getPartyMemberByPID(pid: number) {
 		return _.find(this.party, (obj: Critter) => obj.pid === pid) || null
 	}
+
+	serialize(): SerializedObj[] {
+		return this.party.map(obj => obj.serialize())
+	}
+
+	deserialize(objs: SerializedObj[]): void {
+		this.party.length = 0
+		for(const obj of objs)
+			this.party.push(<Critter>deserializeObj(obj))
+	}
 }
 
 var gParty = new Party()
