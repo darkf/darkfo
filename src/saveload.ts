@@ -7,7 +7,10 @@ module SaveLoad {
         name: string;
         timestamp: number;
         currentMap: string;
+        currentElevation: number;
 
+        player: { position: Point; orientation: number };
+        party: SerializedObj[];
         savedMaps: { [mapName: string]: SerializedMap }
     }
 
@@ -19,7 +22,10 @@ module SaveLoad {
         return { version: 1
                , name
                , timestamp: Date.now()
+               , currentElevation
                , currentMap: curMap.name
+               , player: {position: player.position, orientation: player.orientation}
+               , party: gParty.serialize()
                , savedMaps: {[curMap.name]: curMap}
                };
     }
@@ -90,7 +96,13 @@ module SaveLoad {
                 gMap.deserialize(savedMap);
                 console.log("[SaveLoad] Finished map deserialization");
 
-                gMap.changeElevation(0, false);
+                // TODO: Properly (de)serialize the player!
+                player.position = save.player.position;
+                player.orientation = save.player.orientation;
+                
+                gParty.deserialize(save.party);
+
+                gMap.changeElevation(save.currentElevation, false);
                 console.log("[SaveLoad] Finished loading map %s", savedMap.name);
             };
         });
