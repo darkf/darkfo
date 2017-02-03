@@ -137,14 +137,6 @@ function initUI() {
 
     $("#skilldex-lockpick").click(useSkill(Skills.Lockpick))
     $("#skilldex-repair").click(useSkill(Skills.Repair))
-
-    $("#saveloadCancelBtn").click(() => { uiMode = UI_MODE_NONE; $("#saveloadBox").hide() })
-    $("#saveloadDoneBtn").click(() => {
-    	console.log("TODO: Load selected save.")
-
-    	uiMode = UI_MODE_NONE
-    	$("#saveloadBox").hide()
-    })
 }
 
 function uiHideContextMenu() {
@@ -997,8 +989,53 @@ function uiCalledShot(art, target, callback) {
 }
 
 function uiSaveLoad() {
-	uiMode = UI_MODE_SAVELOAD
-	$("#saveloadBox").show()
+	uiMode = UI_MODE_SAVELOAD;
+	$("#saveloadBox").show();
 
-	// TODO: List saves.
+	$("#saveloadList").html("");
+
+	let selectedSaveID= -1;
+	let saveList = null;
+
+	$("#saveloadCancelBtn").click(() => {
+		uiMode = UI_MODE_NONE;
+		$("#saveloadBox").hide();
+
+		// unbind previous event listeners
+		$("#saveloadCancelBtn").off("click");
+		$("#saveloadDoneBtn").off("click");
+	});
+
+	$("#saveloadDoneBtn").click(() => {
+		if(selectedSaveID === -1)
+			return;
+
+		console.log("[UI] Loading save #%d.", selectedSaveID);
+
+		uiMode = UI_MODE_NONE;
+		$("#saveloadBox").hide();
+
+		// unbind previous event listeners
+		$("#saveloadCancelBtn").off("click");
+		$("#saveloadDoneBtn").off("click");
+
+		// load save
+		SaveLoad.load(selectedSaveID);
+	});
+
+
+	console.log("[UI] Requesting and populating save list...");
+
+	// List saves, and write them to the UI list
+	SaveLoad.saveList(saves => {
+		for(const save of saves) {
+			$("#saveloadList").append($("<li>").text(save.name).click(e => {
+				$("#saveloadList li").removeClass("saveloadListSelected");
+				$(e).addClass("saveloadListSelected");
+				selectedSaveID = save.id;
+
+				$("#saveloadInfo").html(SaveLoad.formatSaveDate(save) + "<br>" + save.currentMap);
+			}));
+		}
+	})
 }

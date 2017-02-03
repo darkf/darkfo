@@ -879,7 +879,7 @@ left: 472; top: 75;
 }
 
 /* Savegame list */
-#saveLoadList {
+#saveloadList {
   position: absolute;
   left: 55; top: 87;
 
@@ -888,6 +888,8 @@ left: 472; top: 75;
   list-style: none;
   padding: 0;
 }
+
+.saveloadListSelected { color: white; }
 
 /* Savegame info */
 

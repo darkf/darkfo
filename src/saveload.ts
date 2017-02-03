@@ -30,7 +30,7 @@ module SaveLoad {
                };
     }
 
-    function formatSaveDate(save: SaveGame): string {
+    export function formatSaveDate(save: SaveGame): string {
         const date = new Date(save.timestamp);
         return `${date.getMonth()+1}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
     }
