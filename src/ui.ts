@@ -26,6 +26,13 @@ limitations under the License.
 
 "use strict";
 
+// TODO: enum this
+var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3,
+    UI_MODE_INVENTORY = 4, UI_MODE_WORLDMAP = 5, UI_MODE_ELEVATOR = 6,
+    UI_MODE_CALLED_SHOT = 7, UI_MODE_SKILLDEX = 8, UI_MODE_USE_SKILL = 9,
+    UI_MODE_CONTEXT_MENU = 10, UI_MODE_SAVELOAD = 11
+var uiMode: number = UI_MODE_NONE
+
 function initUI() {
 	makeDropTarget($("#inventoryBoxList"), function(data) { uiMoveSlot(data, "inventory") })
 	makeDropTarget($("#inventoryBoxItem1"), function(data) { uiMoveSlot(data, "leftHand") })
@@ -130,6 +137,14 @@ function initUI() {
 
     $("#skilldex-lockpick").click(useSkill(Skills.Lockpick))
     $("#skilldex-repair").click(useSkill(Skills.Repair))
+
+    $("#saveloadCancelBtn").click(() => { uiMode = UI_MODE_NONE; $("#saveloadBox").hide() })
+    $("#saveloadDoneBtn").click(() => {
+    	console.log("TODO: Load selected save.")
+
+    	uiMode = UI_MODE_NONE
+    	$("#saveloadBox").hide()
+    })
 }
 
 function uiHideContextMenu() {
@@ -979,4 +994,11 @@ function uiCalledShot(art, target, callback) {
 		if(callback)
 			callback(regionHit)
 	})
+}
+
+function uiSaveLoad() {
+	uiMode = UI_MODE_SAVELOAD
+	$("#saveloadBox").show()
+
+	// TODO: List saves.
 }

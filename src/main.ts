@@ -47,13 +47,6 @@ var gameHasFocus: boolean = false // do we have input focus?
 var lastMousePickTime: number = 0 // time when we last checked what's under the mouse cursor
 var _lastFPSTime: number = 0 // Time since FPS counter was last updated
 
-// TODO: enum this
-var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3,
-    UI_MODE_INVENTORY = 4, UI_MODE_WORLDMAP = 5, UI_MODE_ELEVATOR = 6,
-    UI_MODE_CALLED_SHOT = 7, UI_MODE_SKILLDEX = 8, UI_MODE_USE_SKILL = 9,
-    UI_MODE_CONTEXT_MENU = 10
-var uiMode: number = UI_MODE_NONE
-
 enum Skills {
 	None = 0,
 	Lockpick,
@@ -998,6 +991,9 @@ heart.keydown = function(k) {
 
 	if(k === Config.controls.worldmap)
 		uiWorldMap()
+
+	if(k === Config.controls.saveLoadKey)
+		uiSaveLoad()
 
 	//if(k == calledShotKey)
 	//	uiCalledShot()

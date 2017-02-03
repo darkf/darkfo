@@ -832,7 +832,7 @@ left: 472; top: 75;
 
   color: yellow;
 
-  visibility: hidden;
+  display: none;
   background-image: url("art/intrface/lsgame.png");
 }
 
