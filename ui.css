@@ -822,3 +822,81 @@ left: 472; top: 75;
 
 #calledShot-rightLeg-chance { left: 33; top: 230; }
 #calledShot-rightLeg-label { left: 75; top: 225; }
+
+/* save/load dialog */
+
+#saveloadBox {
+  position: absolute;
+  left: 80; top: 20;
+  width: 640px; height: 480px;
+
+  color: yellow;
+
+  visibility: hidden;
+  background-image: url("art/intrface/lsgame.png");
+}
+
+#saveloadCover {
+  position: absolute;
+  left: 340; top: 40;
+  width: 275px; height: 173px;
+
+  background-image: url("art/intrface/lscover.png");
+}
+
+/* "DONE" button */
+#saveloadDone {
+  position: absolute;
+  left: 391; top: 349;
+  /*width: 275px; height: 173px;*/
+}
+
+#saveloadDoneBtn {
+    width: 15; height: 16;
+    display: inline-block;
+    background-image: url("art/intrface/lilredup.png");
+}
+
+#saveloadDoneBtn:active {
+    background-image: url("art/intrface/lilreddn.png");
+}
+
+/* "CANCEL" button */
+#saveloadCancel {
+  position: absolute;
+  left: 495; top: 349;
+  /*width: 275px; height: 173px;*/
+}
+
+#saveloadCancelBtn {
+    width: 15; height: 16;
+    display: inline-block;
+    background-image: url("art/intrface/lilredup.png");
+}
+
+#saveloadCancelBtn:active {
+    background-image: url("art/intrface/lilreddn.png");
+}
+
+/* Savegame list */
+#saveLoadList {
+  position: absolute;
+  left: 55; top: 87;
+
+  color: #00FF00;
+
+  list-style: none;
+  padding: 0;
+}
+
+/* Savegame info */
+
+#saveloadInfo {
+  position: absolute;
+  left: 404; top: 262;
+  width: 154; height: 33;
+
+  color: #00FF00;
+  font-size: 8pt;
+  overflow: hidden;
+}

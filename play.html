@@ -66,7 +66,7 @@ limitations under the License.
 
 <link rel="stylesheet" type="text/css" href="ui.css">
 
-<!-- vertex shader -->
+<!-- WebGL vertex shader -->
 <script id="2d-vertex-shader" type="x-shader/x-vertex">
 attribute vec2 a_position;
 
@@ -94,7 +94,7 @@ void main() {
 }
 </script>
 
-<!-- fragment shader -->
+<!-- WebGL fragment shader -->
 <script id="2d-fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
 
@@ -113,7 +113,7 @@ void main() {
 }
 </script>
 
-<!-- floor lighting fragment shader -->
+<!-- WebGL floor lighting fragment shader -->
 <script id="2d-lighting-fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
 
@@ -313,6 +313,28 @@ void main() {
 		<div id="calledShot-rightLeg-chance" class="calledShotChance"></div>
 		<div id="calledShot-groin-chance" class="calledShotChance"></div>
 		<div id="calledShot-torso-chance" class="calledShotChance"></div>
+	</div>
+	<div id="saveloadBox">
+		<div id="saveloadCover"></div>
+		<div id="saveloadListContainer">
+			<ul id="saveLoadList">
+				<li>Test</li>
+				<li>Foo</li>
+				<li>Bar</li>
+			</ul>
+		</div>
+		<div id="saveloadInfo">
+			test
+		</div>
+
+		<div id="saveloadDone">
+			<div id="saveloadDoneBtn"></div>
+			Done
+		</div>
+		<div id="saveloadCancel">
+			<div id="saveloadCancelBtn"></div>
+			Cancel
+		</div>
 	</div>
 </div>
 </body>
