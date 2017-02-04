@@ -889,7 +889,9 @@ left: 472; top: 75;
   padding: 0;
 }
 
-.saveloadListSelected { color: white; }
+#saveloadList li { cursor: pointer; }
+
+.saveloadListSelected { color: #FCFC7C; }
 
 /* Savegame info */
 

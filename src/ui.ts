@@ -1029,10 +1029,11 @@ function uiSaveLoad() {
 	// List saves, and write them to the UI list
 	SaveLoad.saveList(saves => {
 		for(const save of saves) {
-			$("#saveloadList").append($("<li>").text(save.name).click(e => {
+			$("#saveloadList").append($("<li>").text(save.name).click(function() {
+				// highlight the item
 				$("#saveloadList li").removeClass("saveloadListSelected");
-				$(e).addClass("saveloadListSelected");
-				selectedSaveID = save.id;
+				$(this).addClass("saveloadListSelected");
+				selectedSaveID = (<any>save).id;
 
 				$("#saveloadInfo").html(SaveLoad.formatSaveDate(save) + "<br>" + save.currentMap);
 			}));
