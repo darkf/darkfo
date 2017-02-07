@@ -60,7 +60,8 @@ var Config = {
 		kill: "k",
 		worldmap: "p",
 		calledShot: "z",
-		saveLoadKey: "escape",
+		saveKey: "n",
+		loadKey: "m",
 	},
 
 	scripting: {

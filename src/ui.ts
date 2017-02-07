@@ -988,7 +988,7 @@ function uiCalledShot(art, target, callback) {
 	})
 }
 
-function uiSaveLoad() {
+function uiSaveLoad(isSave: boolean): void {
 	uiMode = UI_MODE_SAVELOAD;
 	$("#saveloadBox").show();
 
@@ -997,34 +997,52 @@ function uiSaveLoad() {
 	let selectedSaveID= -1;
 	let saveList = null;
 
-	$("#saveloadCancelBtn").click(() => {
+	function done() {
 		uiMode = UI_MODE_NONE;
 		$("#saveloadBox").hide();
 
 		// unbind previous event listeners
 		$("#saveloadCancelBtn").off("click");
 		$("#saveloadDoneBtn").off("click");
-	});
+	}
+
+	$("#saveloadCancelBtn").click(done);
 
 	$("#saveloadDoneBtn").click(() => {
-		if(selectedSaveID === -1)
+		if(!isSave && selectedSaveID === -1)
 			return;
 
-		console.log("[UI] Loading save #%d.", selectedSaveID);
+		console.log("[UI] %s save #%d.", isSave ? "Saving" : "Loading", selectedSaveID);
 
-		uiMode = UI_MODE_NONE;
-		$("#saveloadBox").hide();
+		// save/load in slot
+		if(isSave) {
+			const name = prompt("Save Name?");
 
-		// unbind previous event listeners
-		$("#saveloadCancelBtn").off("click");
-		$("#saveloadDoneBtn").off("click");
+			if(selectedSaveID !== -1) {
+				if(!confirm("Are you sure you want to overwrite that save slot?"))
+					return;
+			}
 
-		// load save
-		SaveLoad.load(selectedSaveID);
+			SaveLoad.save(name, selectedSaveID === -1 ? undefined : selectedSaveID, done);
+		}
+		else {
+			SaveLoad.load(selectedSaveID);
+			done();
+		}
 	});
 
 
 	console.log("[UI] Requesting and populating save list...");
+
+	if(isSave) {
+		$("#saveloadList").append($("<li>").text("<New Slot>").click(function() {
+			// highlight new slot
+			$("#saveloadList li").removeClass("saveloadListSelected");
+			$(this).addClass("saveloadListSelected");
+			$("#saveloadInfo").text("New save");
+			selectedSaveID = -1;
+		}).addClass("saveloadListSelected"));
+	}
 
 	// List saves, and write them to the UI list
 	SaveLoad.saveList(saves => {

@@ -70,11 +70,14 @@ module SaveLoad {
     }
 
     export function debugSave(): void {
-        save("debug", () => { console.log("[SaveLoad] Done"); });
+        save("debug", undefined, () => { console.log("[SaveLoad] Done"); });
     }
 
-    export function save(name: string, callback: () => void): void {
+    export function save(name: string, slot: number=-1, callback?: () => void): void {
         const save = gatherSaveData(name);
+
+        if(slot !== -1)
+            (<any>save).id = slot;
 
         withTransaction(trans => {
             trans.objectStore("saves").put(save);

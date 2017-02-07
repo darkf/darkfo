@@ -992,8 +992,11 @@ heart.keydown = function(k) {
 	if(k === Config.controls.worldmap)
 		uiWorldMap()
 
-	if(k === Config.controls.saveLoadKey)
-		uiSaveLoad()
+	if(k === Config.controls.saveKey)
+		uiSaveLoad(true)
+
+	if(k === Config.controls.loadKey)
+		uiSaveLoad(false)
 
 	//if(k == calledShotKey)
 	//	uiCalledShot()
