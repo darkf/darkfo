@@ -994,6 +994,8 @@ function uiSaveLoad(isSave: boolean): void {
 
 	$("#saveloadList").html("");
 
+	$("#saveloadHeader").text(isSave ? "Save Game" : "Load Game");
+
 	let selectedSaveID= -1;
 	let saveList = null;
 
