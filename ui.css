@@ -881,7 +881,7 @@ left: 472; top: 75;
 /* Savegame list */
 #saveloadList {
   position: absolute;
-  left: 55; top: 87;
+  left: 55; top: 50;
 
   color: #00FF00;
 
