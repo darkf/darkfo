@@ -46,6 +46,7 @@
         "src/audio.ts",
 
         "src/saveload.ts",
+        "src/idbcache.ts",
 
         "src/main.ts"
     ]

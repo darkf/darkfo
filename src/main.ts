@@ -55,6 +55,7 @@ enum Skills {
 var skillMode: Skills = Skills.None
 
 var isLoading: boolean = true // are we currently loading a map?
+var isInitializing: boolean = true // are we initializing the engine?
 var loadingAssetsLoaded: number = 0 // how many images we've loaded
 var loadingAssetsTotal: number = 0 // out of this total
 var loadingLoadedCallback: () => void = null // loaded callback
@@ -682,28 +683,7 @@ function getCurrentMapInfo() {
 	return getMapInfo(gMap.name)
 }
 
-heart.load = function() {
-	// load image map
-	imageInfo = getFileJSON("art/imageMap.json")
-
-	// initialize renderer
-	if(Config.engine.renderer === "canvas")
-		renderer = new CanvasRenderer()
-	else if(Config.engine.renderer === "webgl")
-		renderer = new WebGLRenderer()
-	else {
-		console.error("No renderer backend named '%s'", Config.engine.renderer)
-		throw new Error("Invalid renderer backend");
-	}
-
-	renderer.init()
-
-	// initialize audio engine
-	if(Config.engine.doAudio)
-		audioEngine = new HTMLAudioEngine()
-	else
-		audioEngine = new NullAudioEngine()
-
+function initGame() {
 	// initialize map
 	gMap = new GameMap()
 
@@ -731,6 +711,48 @@ heart.load = function() {
 	Worldmap.init()
 	
 	initUI()
+}
+
+heart.load = function() {
+	isInitializing = true;
+
+	// initialize renderer
+	if(Config.engine.renderer === "canvas")
+		renderer = new CanvasRenderer()
+	else if(Config.engine.renderer === "webgl")
+		renderer = new WebGLRenderer()
+	else {
+		console.error("No renderer backend named '%s'", Config.engine.renderer)
+		throw new Error("Invalid renderer backend");
+	}
+
+	renderer.init()
+
+	// initialize audio engine
+	if(Config.engine.doAudio)
+		audioEngine = new HTMLAudioEngine()
+	else
+		audioEngine = new NullAudioEngine()
+
+	// initialize cached data
+	IDBCache.init(() => {
+		// load image map (from cache if possible, else load and cache it)
+		IDBCache.get("imageMap", value => {
+			if(value) {
+				imageInfo = value;
+				console.log("[Main] imageMap loaded from cache DB");
+			}
+			else {
+				imageInfo = getFileJSON("art/imageMap.json");
+				IDBCache.add("imageMap", imageInfo);
+				console.log("[Main] imageMap loaded and cached");
+			}
+
+			// continue initialization
+			initGame();
+			isInitializing = false;
+		});
+	});
 }
 
 function isSelectableObject(obj: any) {
@@ -1060,13 +1082,16 @@ function getObjectUnderCursor(p) {
 }
 
 heart.update = function() {
-	if(isLoading === true) {
+	if(isInitializing)
+		return;
+	else if(isLoading) {
 		if(loadingAssetsLoaded === loadingAssetsTotal) {
 			isLoading = false
 			if(loadingLoadedCallback) loadingLoadedCallback()
 		}
 		else return
 	}
+	
 	if(uiMode !== UI_MODE_NONE)
 		return
 	var time = heart.timer.getTime()
