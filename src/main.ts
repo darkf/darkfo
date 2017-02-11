@@ -64,7 +64,7 @@ var lazyAssetLoadingQueue = {} // set of lazily-loaded assets being loaded
 var floatMessages = []
 
 // the global player object
-var player = new Player()
+var player = null
 
 var renderer: Renderer = null
 var audioEngine: AudioEngine = null
@@ -684,6 +684,9 @@ function getCurrentMapInfo() {
 }
 
 function initGame() {
+	// initialize player
+	player = new Player()
+
 	// initialize map
 	gMap = new GameMap()
 
