@@ -735,18 +735,28 @@ heart.load = function() {
 		audioEngine = new NullAudioEngine()
 
 	// initialize cached data
-	IDBCache.init(() => {
-		// load image map (from cache if possible, else load and cache it)
-		IDBCache.get("imageMap", value => {
+
+	function cachedJSON(key: string, path: string, callback: (value: any) => void): void {
+		// load data from cache if possible, else load and cache it
+		IDBCache.get(key, value => {
 			if(value) {
-				imageInfo = value;
-				console.log("[Main] imageMap loaded from cache DB");
+				console.log("[Main] %s loaded from cache DB", key);
+				callback(value);
 			}
 			else {
-				imageInfo = getFileJSON("art/imageMap.json");
-				IDBCache.add("imageMap", imageInfo);
-				console.log("[Main] imageMap loaded and cached");
+				value = getFileJSON(path);
+				IDBCache.add(key, value);
+				console.log("[Main] %s loaded and cached", key);
+				callback(value);
 			}
+		});
+	}
+
+	IDBCache.init(() => {
+		// load image map (from cache if possible, else load and cache it)
+
+		cachedJSON("imageMap", "art/imageMap.json", value => {
+			imageInfo = value;
 
 			// continue initialization
 			initGame();
