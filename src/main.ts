@@ -107,20 +107,17 @@ function getPROType(pid) {
 }
 
 function loadPRO(pid, pidID) {
-	if(proFiles[pid] !== undefined)
-		return proFiles[pid] // todo: clone?
+	if(!proMap)
+		return null
 
-	// use the proto/ .lst files to look up proto
-	var type = getPROType(pid)
-	var lsts = {"items": "proto/items/items", "critters": "proto/critters/critters",
+	// use the proto/ .lst files to look up type/pid
+	const type = getPROType(pid)
+	const lsts = {"items": "proto/items/items", "critters": "proto/critters/critters",
                 "scenery": "proto/scenery/scenery", "misc": "proto/misc/misc",
                 "walls": "proto/walls/walls"}
-	var id = lsts[type] ? getLstId(lsts[type], pidID - 1) : pidID
-	var path = lsts[type] ? id : (pad(id, 8) + '.pro')
+	const id = lsts[type] ? parseInt(getLstId(lsts[type], pidID - 1).split(".")[0], 10) : pidID
 
-	var pro = getFileJSON('proto/' + type + '/' + path + '.json')
-	proFiles[pid] = pro
-	return pro
+	return proMap[type][id]
 }
 
 function getPROTypeName(type) {
@@ -756,14 +753,16 @@ heart.load = function() {
 	}
 
 	IDBCache.init(() => {
-		// load image map (from cache if possible, else load and cache it)
-
 		cachedJSON("imageMap", "art/imageMap.json", value => {
 			imageInfo = value;
 
-			// continue initialization
-			initGame();
-			isInitializing = false;
+			cachedJSON("proMap", "proto/pro.json", value => {
+				proMap = value;
+
+				// continue initialization
+				initGame();
+				isInitializing = false;
+			});
 		});
 	});
 }

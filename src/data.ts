@@ -18,7 +18,7 @@ limitations under the License.
 
 var mapAreas = null
 
-var proFiles = {}
+var proMap = null
 var lstFiles = {}
 var messageFiles = {}
 var mapInfo = null
