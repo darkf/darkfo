@@ -524,13 +524,16 @@ module Worldmap {
 		    	worldmapPlayer.x = worldmapPlayer.target.x
 		    	worldmapPlayer.y = worldmapPlayer.target.y
 		    	worldmapPlayer.target = null
+
 		    	$worldmapPlayer.css("visibility", "hidden")
 		    	$worldmapTarget.css("backgroundImage", "url('art/intrface/hotspot1.png')")
 		    }
 		    else {
+		    	// normalize direction
 			    dx /= len
 			    dy /= len
 
+			    // head towards it
 			    worldmapPlayer.x += dx * speed
 			    worldmapPlayer.y += dy * speed
 			}

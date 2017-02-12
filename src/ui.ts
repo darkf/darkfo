@@ -796,9 +796,6 @@ function uiCloseWorldMap() {
 	uiMode = UI_MODE_NONE
 
 	$("#worldMapContainer").css("visibility", "hidden")
-	$("#worldmap").css("visibility", "hidden")
-	$("#worldmapTarget").css("visibility", "hidden")
-	$("#worldmapPlayer").css("visibility", "hidden")
 	$("#areamap").css("visibility", "hidden")
 
 	Worldmap.stop()
@@ -821,8 +818,6 @@ function uiWorldMap(onAreaMap: boolean=false) {
 function uiWorldMapAreaView() {
 	$("#worldmap").css("visibility", "hidden")
 	$("#areamap").css("visibility", "visible")
-	$("#worldmapTarget").css("visibility", "hidden")
-	$("#worldmapPlayer").css("visibility", "hidden")
 
 	Worldmap.stop()
 }
