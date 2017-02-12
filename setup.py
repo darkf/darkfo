@@ -46,7 +46,7 @@ import dat2
 import parseCritTable
 import parseElevatorTable
 import exportImagesPar
-import buildPRO
+import exportPRO
 import fomap
 
 # global paths/flags
@@ -155,7 +155,7 @@ def export_pros():
 
 	info("Converting prototypes (PROs), please wait while this runs.")
 
-	buildPRO.extractPROs(os.path.join("data", "proto"), "proto")
+	exportPRO.extractPROs(os.path.join("data", "proto"), "proto")
 
 	return True
 
