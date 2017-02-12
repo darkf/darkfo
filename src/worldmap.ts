@@ -373,6 +373,11 @@ module Worldmap {
 		return false
 	}
 
+	function centerWorldmapTarget(x: number, y: number): void {
+		$worldmapTarget.css({left: x - $worldmapTarget.width()/2|0,
+		                     top: y - $worldmapTarget.height()/2|0})
+	}
+
 	export function init(): void {
 		/*$("#worldmap").mousemove(function(e) {
 			var offset = $(this).offset()
@@ -527,6 +532,7 @@ module Worldmap {
 
 		    	$worldmapPlayer.css("visibility", "hidden")
 		    	$worldmapTarget.css("backgroundImage", "url('art/intrface/hotspot1.png')")
+    			centerWorldmapTarget(worldmapPlayer.x, worldmapPlayer.y)
 		    }
 		    else {
 		    	// normalize direction
