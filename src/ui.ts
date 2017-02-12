@@ -795,15 +795,16 @@ function uiLog(msg) {
 function uiCloseWorldMap() {
 	uiMode = UI_MODE_NONE
 
-	$("#worldMapContainer").css("visibility", "hidden")
+	$("#worldMapContainer").hide()
 	$("#areamap").css("visibility", "hidden")
+	$("#worldmap").css("visibility", "hidden")
 
 	Worldmap.stop()
 }
 
 function uiWorldMap(onAreaMap: boolean=false) {
 	uiMode = UI_MODE_WORLDMAP
-	$("#worldMapContainer").css("visibility", "visible")
+	$("#worldMapContainer").show()
 
 	if(mapAreas === null)
 		mapAreas = loadAreas()
