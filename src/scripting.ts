@@ -320,6 +320,7 @@ module scriptingEngine {
 				case 17: stub("metarule", arguments); return 0  // is area known? (TODO)
 				case 18: return 0 // is the critter under the influence of drugs? (TODO)
 				case 22: return 0 // is_game_loading
+				case 46: return 0 // METARULE_CURRENT_TOWN (TODO: return current city ID)
 				case 48: return 2 // METARULE_VIOLENCE_FILTER (2 = VLNCLVL_NORMAL)
 				case 49: // METARULE_W_DAMAGE_TYPE
 					switch(objectGetDamageType(target)) {
