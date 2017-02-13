@@ -25,21 +25,21 @@ Here is a very rough list of what is known to work:
 - Some quests (a lot of the scripting works, majors quests can be completed)
 - Some party members
 - Some skills (lockpicking and repair, and some passive skills)
-- Sound (scripted sound effects, music)
+- Sound (scripted sound effects, music; not hardcoded sound effects, yet)
 
 Some features are more middle ground:
 
 - Combat works at an extremely basic level but not to a great degree (only the SMG and spear is really tested, you cannot swap ammo, etc.)
 - No equippable armor
 - The world map is rough and buggy, and on the area screens entrances are misplaced
-- Random encounters work, but not all of them are implemented
-- Lighting is a big enigma; there is code there for it and it *almost* works, but there is a bug causing large black lines in lit tiles. Also, it is particularly slow, especially outside of the WebGL backend.)
+- Random encounters work, but not all of the setups are implemented
+- Lighting works, but has some minor bugs and inaccuracies. It is also particularly slow, especially outside of the WebGL backend.
+- Saving and loading is at an alpha stage: it works to a basic degree, but is missing large features and is not tested. As such, consider it experimental.
 - Some animations are off, particularly related to combat
 
 Some features are not implemented at all:
 
 - Leveling up (including XP, leveling stats/skills, etc.)
-- Saving and loading
 - The PipBoy map
 
 and other minor features here and there.
@@ -60,13 +60,11 @@ To use this, you'll need a few things:
 
 - The TypeScript compiler, installed via `npm install -g typescript` (you'll need [node.js](https://nodejs.org/en/)).
 
-If you're testing on Chrome, you'll need a suitable HTTP server due to the way it sandboxes `file://` (I'll recommend LightTPD. On Windows, [grab this .zip](http://en.wlmp-project.net/downloads.php?cat=lighty). You'll need to point its `server.document.root` in `conf/lighttpd.conf` to the root DarkFO directory.)
+You'll need an HTTP server to run (despite being all static content) due to the way browsers sandbox requests.
+If you're comfortable with setting up nginx, lighttpd, or Apache, go for that. If not, a simple way is to use Python:
 
-Or just quickly start one in the current directory using python:
-
-Python 2: `python -m SimpleHTTPServer`
-
-Python 3: `python -m http.server`
+- Python 2: `python -m SimpleHTTPServer` (Python 2 is already required anyway)
+- Python 3: `python -m http.server`
 
 Alternatively, Firefox can load directly from `file://`.
 
@@ -78,7 +76,7 @@ Open a command prompt inside the DarkFO directory, and then run:
 
 This will take a few minutes, it's unpacking the game archives and converting relevant game data into a format DarkFO can use.
 
-NOTE: You may need to use `python2` instead, as some Linux distributions package `python` as Python 3.
+NOTE: You may need to use `python2` instead, as some Linux distributions package `python` as Python 3. Run `python --version` to check!
 
 Then run `tsc` to compile the source code.
 
