@@ -86,6 +86,35 @@ Review `src/config.ts` for engine options. Be sure to re-compile if you change t
 
 OPTIONAL: If you want sound, run `python convertAudio.py`. You'll need the `acm2wav` tool (you can get it from No Mutants Allowed).
 
+## FAQ
+
+- **Q:** Why TypeScript? Why a browser?
+  
+  A: Everyone has a browser: it's a portable platform for running code with more features than people expect.
+     There are other projects that use native code already... and are already seeing segfaults. :)
+
+     The project started out in JavaScript and was ported to TypeScript as it was continuing to grow. TypeScript strikes
+     an excellent balance between useful and safe.
+
+- **Q:** But why Python?
+  
+  A: Python is actually quite fast when written well, despite many peoples' expectations. It is very elegant and allows me to write
+     backend code like file parsers and exporters with tiny code, very few troubles, and that I know is portable and safe.
+
+- **Q:** Why do I need `acm2wav` for sound?
+  
+  A: Because it hasn't been ported to Python yet. If you're willing to contribute, give it a shot: the original Pascal source code is available online.
+   
+- **Q:** Why convert all assets up front, why not load them directly?
+  
+  A: Because it would require more processing time to load them each time they're needed rather than having them already in a sane, modern format.
+  
+  By converting, for example, FRMs (a proprietary Interplay format) to PNGs (a ubiquitous, open modern format) we allow normal browsers or image viewers to open them, as well as edit them -- a huge win for modders. Other games or tools could take advantage of the new formats as well.
+
+- **Q:** Why do this at all?
+  
+  A: Why not? It's a fun project, and I love Fallout. Fallout 1 and 2 do not run particularly well on modern machines, even with engine hacks. They're also hard to mod -- I'd like to change that.
+
 ## License
 
 DarkFO is licensed under the terms of the Apache 2 license. See `LICENSE.txt` for the full license text.
