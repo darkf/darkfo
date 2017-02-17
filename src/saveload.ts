@@ -26,7 +26,7 @@ module SaveLoad {
                , currentMap: curMap.name
                , player: {position: player.position, orientation: player.orientation, inventory: player.inventory.map(obj => obj.serialize())}
                , party: gParty.serialize()
-               , savedMaps: {[curMap.name]: curMap}
+               , savedMaps: {[curMap.name]: curMap, ...dirtyMapCache}
                };
     }
 
@@ -76,6 +76,9 @@ module SaveLoad {
     export function save(name: string, slot: number=-1, callback?: () => void): void {
         const save = gatherSaveData(name);
 
+        const dirtyMapNames = Object.keys(dirtyMapCache);
+        console.log(`[SaveLoad] Saving ${1 + dirtyMapNames.length} maps (current: ${gMap.name} plus dirty maps: ${dirtyMapNames.join(", ")})`);
+
         if(slot !== -1)
             (<any>save).id = slot;
 
@@ -107,6 +110,11 @@ module SaveLoad {
                 gParty.deserialize(save.party);
 
                 gMap.changeElevation(save.currentElevation, false);
+
+                // populate dirty map cache out of non-current saved maps
+                dirtyMapCache = {...save.savedMaps};
+                delete dirtyMapCache[savedMap.name];
+
                 console.log("[SaveLoad] Finished loading map %s", savedMap.name);
             };
         });
