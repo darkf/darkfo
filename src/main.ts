@@ -281,7 +281,7 @@ interface SerializedMap {
 }
 
 class GameMap {
-	name: string;
+	name: string = null;
 	startingPosition: Point;
 	startingElevation: number;
 	numLevels: number;
@@ -415,7 +415,42 @@ class GameMap {
 		})
 	}
 
-	loadMap(mapName: string, startingPosition?: Point, startingElevation?: number, loadedCallback?: () => void) {
+	loadMap(mapName: string, startingPosition?: Point, startingElevation?: number, loadedCallback?: () => void): void {
+		if(this.name !== null) { // if a map is already loaded, save it to the dirty map cache before loading
+			console.log(`[Main] Serializing map ${this.name} and committing to dirty map cache`);
+			dirtyMapCache[this.name] = this.serialize();
+		}
+
+		if(mapName in dirtyMapCache) { // previously loaded; load from dirty map cache
+			console.log(`[Main] Loading map ${this.name} from dirty map cache`);
+			
+			const map = dirtyMapCache[mapName];
+			this.deserialize(map);
+
+			// set position and orientation
+			if(startingPosition !== undefined)
+				player.position = startingPosition;
+			else // use default map starting position
+				player.position = map.mapObj.startPosition;
+
+			player.orientation = map.mapObj.startOrientation;
+
+			// set elevation
+			if(startingElevation !== undefined)
+				gMap.changeElevation(startingElevation, true);
+			else // use default map elevation (0)
+				gMap.changeElevation(0, true);
+
+			console.log(`[Main] Loaded from dirty map cache`);
+			loadedCallback && loadedCallback();
+		}
+		else {
+			console.log(`[Main] Loading map ${this.name} from clean load`);
+			this.loadNewMap(mapName, startingPosition, startingElevation, loadedCallback);
+		}
+	}
+
+	loadNewMap(mapName: string, startingPosition?: Point, startingElevation?: number, loadedCallback?: () => void) {
 		function load(file: string, callback?: (x:any) => void) {
 			if(images[file] !== undefined) return // don't load more than once
 			loadingAssetsTotal++
@@ -564,7 +599,10 @@ class GameMap {
 			name: this.name,
 			mapID: this.mapID,
 			numLevels: this.numLevels,
-			mapObj: {levels: this.mapObj.levels.map(level => { return {tiles: level.tiles} })},
+			mapObj: { levels: this.mapObj.levels.map(level => { return {tiles: level.tiles} })
+			        , startPosition: this.mapObj.startPosition
+			        , startOrientation: this.mapObj.startOrientation
+		            },
 
 			// roof/floor maps
 			roofMap: this.roofMap,
@@ -590,6 +628,8 @@ class GameMap {
 		this.currentElevation = 0 // TODO
 
 		//this.mapObj = {levels: [{tiles: {floor: this.floorMap, roof: this.roofMap}}]} // TODO: add dimension to roofMap
+
+		// TODO: reset scriptingEngine?
 	}
 }
 

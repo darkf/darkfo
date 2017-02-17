@@ -23,6 +23,7 @@ var lstFiles = {}
 var messageFiles = {}
 var mapInfo = null
 var elevatorInfo = null
+var dirtyMapCache: { [mapName: string]: SerializedMap } = {}
 
 function getElevator(type) {
 	if(elevatorInfo === null) {
