@@ -539,7 +539,7 @@ class GameMap {
 		// load map objects
 		this.objects = new Array(map.levels.length)
 		for(var level = 0; level < map.levels.length; level++) {
-			this.objects[level] = map.levels[level].objects.map(objFromMapObject)
+			this.objects[level] = map.levels[level].objects.map(obj => objFromMapObject(obj))
 		}
 
 		// change to our new elevation (sets up map state)
