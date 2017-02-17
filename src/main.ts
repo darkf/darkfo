@@ -416,7 +416,7 @@ class GameMap {
 	}
 
 	loadMap(mapName: string, startingPosition?: Point, startingElevation?: number, loadedCallback?: () => void): void {
-		if(this.name !== null) { // if a map is already loaded, save it to the dirty map cache before loading
+		if(Config.engine.doSaveDirtyMaps && this.name !== null) { // if a map is already loaded, save it to the dirty map cache before loading
 			console.log(`[Main] Serializing map ${this.name} and committing to dirty map cache`);
 			dirtyMapCache[this.name] = this.serialize();
 		}
