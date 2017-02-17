@@ -422,7 +422,7 @@ class GameMap {
 		}
 
 		if(mapName in dirtyMapCache) { // previously loaded; load from dirty map cache
-			console.log(`[Main] Loading map ${this.name} from dirty map cache`);
+			console.log(`[Main] Loading map ${mapName} from dirty map cache`);
 			
 			const map = dirtyMapCache[mapName];
 			this.deserialize(map);
@@ -445,7 +445,7 @@ class GameMap {
 			loadedCallback && loadedCallback();
 		}
 		else {
-			console.log(`[Main] Loading map ${this.name} from clean load`);
+			console.log(`[Main] Loading map ${mapName} from clean load`);
 			this.loadNewMap(mapName, startingPosition, startingElevation, loadedCallback);
 		}
 	}
