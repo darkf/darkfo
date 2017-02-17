@@ -9,6 +9,7 @@
 
     "files": [
         "src/config.ts",
+        "src/logging.ts",
 
         "src/util.ts",
         "src/geometry.ts",
