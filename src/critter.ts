@@ -466,6 +466,25 @@ function critterSetRawSkill(obj: Critter, skill: string, amount: number) {
 	console.log(skill + " changed to: " + obj.skills[skill])
 }
 
+interface SerializedCritter extends SerializedObj {
+	stats: any;
+	skills: any;
+
+	// TODO: Properly (de)serialize WeaponObj
+	// leftHand: SerializedObj;
+	// rightHand: SerializedObj;
+
+	aiNum: number;
+	teamNum: number;
+	// ai: AI; // TODO
+	hostile: boolean;
+
+	isPlayer: boolean;
+	dead: boolean;
+}
+
+const SERIALIZED_CRITTER_PROPS = ["stats", "skills", "aiNum", "teamNum", "hostile", "isPlayer", "dead"];
+
 class Critter extends Obj {
 	// TODO: any
 	stats: any;
@@ -492,7 +511,19 @@ class Critter extends Obj {
 	}
 
 	static fromMapObject(mobj: any, deserializing: boolean=false): Critter {
-		return Obj.fromMapObject_(new Critter(), mobj, deserializing)
+		const obj = Obj.fromMapObject_(new Critter(), mobj, deserializing);
+
+		if(deserializing) { // deserialize critter: copy fields from SerializedCritter
+			console.log("Deserialize critter?");
+			console.trace();
+
+			for(const prop of SERIALIZED_CRITTER_PROPS) {
+				// console.log(`loading prop ${prop} from SerializedCritter = ${mobj[prop]}`);
+				obj[prop] = mobj[prop];
+			}
+		}
+
+		return obj;
 	}
 
 	init() {
@@ -727,5 +758,16 @@ class Critter extends Obj {
 
 		//console.log("path: %o, callback %o", path, callback)
 		return this.walkTo(targetPos, running, callback, undefined, path)
+	}
+
+	serialize(): SerializedCritter {
+		const obj = <SerializedCritter>super.serialize();
+
+		for(const prop of SERIALIZED_CRITTER_PROPS) {
+			// console.log(`saving prop ${prop} from SerializedCritter = ${this[prop]}`);
+			obj[prop] = this[prop];
+		}
+
+		return obj;
 	}
 }
