@@ -1220,8 +1220,8 @@ heart.update = function() {
 	})
 }
 
-function getPixelIndex(x, y, imageData) {
-	return (x + y * imageData.width) * 4
+function getPixelIndex(x, y, w) {
+	return (x + y * w) * 4
 }
 
 // get an object's bounding box in screen-space (note: not camera-space)

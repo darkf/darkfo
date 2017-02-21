@@ -43,9 +43,10 @@ class CanvasRenderer extends Renderer {
 		heart.graphics.setBackgroundColor(r, g, b)
 	}
 
-	renderLitFloor(matrix, useColorTable: boolean=true) {
+	renderLitFloor(matrix, useColorTable: boolean=false) {
 		// get the screen framebuffer
-		var imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+		const imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+		const screenWidth = imageData.width;
 		var hexes = []
 
 		if(useColorTable) {
@@ -89,9 +90,11 @@ class CanvasRenderer extends Renderer {
 					else
 						tileData = this.tileDataCache[img]
 
-					var isTriangleLit = Lighting.initTile(hex)
-					var framebuffer
-					var intensity_
+					const tileWidth = tileData.width;
+
+					const isTriangleLit = Lighting.initTile(hex)
+					let framebuffer
+					let intensity_
 
 					if(isTriangleLit)
 						framebuffer = Lighting.computeFrame()
@@ -100,14 +103,16 @@ class CanvasRenderer extends Renderer {
 
 					var w = Math.min(SCREEN_WIDTH - sx, 80)
 					var h = Math.min(SCREEN_HEIGHT - sy, 36)
+
 					for(var y = 0; y < h; y++) {
 						for(var x = 0; x < w; x++) {
 							if((sx + x) < 0 || (sy + y) < 0)
 								continue
-							var tileIndex = getPixelIndex(x, y, tileData)
-							if(tileData.data[tileIndex + 3] === 0) // transparent pixel
+
+							const tileIndex = getPixelIndex(x, y, tileWidth)
+
+							if(tileData.data[tileIndex + 3] === 0) // transparent pixel, skip
 								continue
-							var index = getPixelIndex(sx + x, sy + y, imageData)
 
 							if(isTriangleLit) {
 								intensity_ = framebuffer[160 + 80*y + x]
@@ -116,27 +121,26 @@ class CanvasRenderer extends Renderer {
 								intensity_ = Lighting.vertices[3]
 							}
 
+							var screenIndex = getPixelIndex(sx + x, sy + y, screenWidth)
+							const intensity = Math.min(1.0, intensity_/65536) // tile intensity [0, 1]
+
 							// blit to the framebuffer
-							if(useColorTable) {
-								var orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
-								var palIdx = Lighting.colorLUT[orig_color] // NOTE: substitue 221 for white for drawing just the lightbuffer
-								var tableIdx = palIdx*256 + (intensity_/512 | 0)
-								var colorPal = Lighting.intensityColorTable[tableIdx]
-								var color = Lighting.colorRGB[colorPal]
+							if(useColorTable) { // TODO: optimize
+								const orig_color = (tileData.data[tileIndex + 0] << 16) | (tileData.data[tileIndex + 1] << 8) | tileData.data[tileIndex + 2]
+								const palIdx = Lighting.colorLUT[orig_color] // NOTE: substitue 221 for white for drawing just the lightbuffer
+								const tableIdx = palIdx*256 + (intensity_/512 | 0)
+								const colorPal = Lighting.intensityColorTable[tableIdx]
+								const color = Lighting.colorRGB[colorPal]
 
-								var intensity = Math.min(1.0, intensity_/65536)
-
-								imageData.data[index + 0] = color[0] //intensity*255
-								imageData.data[index + 1] = color[1] //intensity*255
-								imageData.data[index + 2] = color[2] //intensity*255
-								//imageData.data[index + 3] = 255
+								imageData.data[screenIndex + 0] = color[0]
+								imageData.data[screenIndex + 1] = color[1]
+								imageData.data[screenIndex + 2] = color[2]
 							}
-							else {
-								var intensity = Math.min(1.0, intensity_/65536)
-								imageData.data[index + 0] = Math.floor(tileData.data[tileIndex + 0] * intensity)
-								imageData.data[index + 1] = Math.floor(tileData.data[tileIndex + 1] * intensity)
-								imageData.data[index + 2] = Math.floor(tileData.data[tileIndex + 2] * intensity)
-								//imageData.data[index + 3] = 255
+							else { // just draw the source pixel with the light intensity
+								imageData.data[screenIndex + 0] = tileData.data[tileIndex + 0] * intensity | 0
+								imageData.data[screenIndex + 1] = tileData.data[tileIndex + 1] * intensity | 0
+								imageData.data[screenIndex + 2] = tileData.data[tileIndex + 2] * intensity | 0
+
 							}
 						}
 					}
