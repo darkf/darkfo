@@ -47,7 +47,8 @@ class CanvasRenderer extends Renderer {
 		// get the screen framebuffer
 		const imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 		const screenWidth = imageData.width;
-		var hexes = []
+		let tmpCtx = null
+		let tileData
 
 		if(useColorTable) {
 			// XXX: hack
@@ -60,37 +61,38 @@ class CanvasRenderer extends Renderer {
 		// reverse i to draw in the order Fallout 2 normally does
 		// otherwise there will be artifacts in the light rendering
 		// due to tile sizes being different and not overlapping properly
-		for(var i = matrix.length - 1; i >= 0; i--) {
-			for(var j = 0; j < matrix[0].length; j++) {
-				var tile = matrix[j][i]
+		for(let i = matrix.length - 1; i >= 0; i--) {
+			for(let j = 0; j < matrix[0].length; j++) {
+				const tile = matrix[j][i]
 				if(tile === "grid000") continue
-				var img = "art/tiles/" + tile
+				const img = "art/tiles/" + tile
 
 				if(images[img] !== undefined) {
-					var scr = tileToScreen(i, j)
+					const scr = tileToScreen(i, j)
 					if(scr.x+TILE_WIDTH < cameraX || scr.y+TILE_HEIGHT < cameraY ||
 					   scr.x >= cameraX+SCREEN_WIDTH || scr.y >= cameraY+SCREEN_HEIGHT)
 						continue
 
-					var sx = scr.x - cameraX
-					var sy = scr.y - cameraY
+					const sx = scr.x - cameraX
+					const sy = scr.y - cameraY
 
 					// XXX: how correct is this?
-					var hex = hexFromScreen(scr.x - 13,
-						                    scr.y + 13)
+					const hex = hexFromScreen(scr.x - 13,
+						                      scr.y + 13)
 
 					if(this.tileDataCache[img] === undefined) {
 						// temp canvas to get tile framebuffer
-						var tmpCanvas = document.createElement('canvas')
-						var ctx = tmpCanvas.getContext('2d')
-						ctx.drawImage(images[img].img, 0, 0)
-						var tileData = ctx.getImageData(0, 0, images[img].img.width, images[img].img.height)
+						if(!tmpCtx)
+							tmpCtx = document.createElement("canvas").getContext("2d")
+
+						tmpCtx.drawImage(images[img].img, 0, 0)
+						tileData = tmpCtx.getImageData(0, 0, images[img].img.width, images[img].img.height)
 						this.tileDataCache[img] = tileData
 					}
 					else
 						tileData = this.tileDataCache[img]
 
-					const tileWidth = tileData.width;
+					const tileWidth = tileData.width
 
 					const isTriangleLit = Lighting.initTile(hex)
 					let framebuffer
@@ -101,8 +103,8 @@ class CanvasRenderer extends Renderer {
 
 					// render tile
 
-					var w = Math.min(SCREEN_WIDTH - sx, 80)
-					var h = Math.min(SCREEN_HEIGHT - sy, 36)
+					const w = Math.min(SCREEN_WIDTH - sx, 80)
+					const h = Math.min(SCREEN_HEIGHT - sy, 36)
 
 					for(var y = 0; y < h; y++) {
 						for(var x = 0; x < w; x++) {
@@ -121,7 +123,7 @@ class CanvasRenderer extends Renderer {
 								intensity_ = Lighting.vertices[3]
 							}
 
-							var screenIndex = getPixelIndex(sx + x, sy + y, screenWidth)
+							const screenIndex = getPixelIndex(sx + x, sy + y, screenWidth)
 							const intensity = Math.min(1.0, intensity_/65536) // tile intensity [0, 1]
 
 							// blit to the framebuffer
@@ -148,14 +150,8 @@ class CanvasRenderer extends Renderer {
 			}
 		}
 
-		// write the framebuffer back
+		// write the framebuffer back to the canvas
 		heart.ctx.putImageData(imageData, 0, 0)
-
-		// draw hexes
-		hexes.forEach(hex => {
-			var hscr = hexToScreen(hex.x, hex.y)
-			heart.graphics.draw(hexOverlay, hscr.x - 16 - cameraX, hscr.y - 12 - cameraY)
-		})
 	}
 
 	drawTileMap(matrix: TileMap, offsetY: number): void {
