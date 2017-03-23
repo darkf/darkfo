@@ -1,0 +1,84 @@
+<script src="jquery-1.11.1.min.js"></script>
+<script>var Lighting = {}</script>
+<script src="intensityColorTable.js"></script>
+<script>
+var color_rgb = null
+var colorTable = null
+var intensityColorTable = new Uint8Array(65536)
+var mappedColor = new Array(256)
+//mappedColor.fill(0)
+for(var i = 0; i < 256; i++)
+	mappedColor[i] = 0
+
+function Color2RGB(idx) {
+	var color = color_rgb[idx]
+	//return (color[0] << 16) | (color[1] << 8) | color[2]
+	// Normally this would be >> 1 (i.e., / 2), but our RGB values are already the palette color * 4, so (/ 8)
+	return (color[2] >> 3) | 32 * ((color[1] >> 3) | 32 * (color[0] >> 3))
+}
+
+function Index2Color(x) { return x }
+
+function setIntensityTableColor(tableIdx) {
+	for(var tableIdx2 = 0; tableIdx2 < 128; tableIdx2++) {
+	    var v5 = (Color2RGB(tableIdx) & 0x7C00) >> 10
+	    var v6 = (Color2RGB(tableIdx) & 0x3E0) >> 5
+	    var v7 = Color2RGB(tableIdx) & 0x1F
+
+	    intensityColorTable[256 * tableIdx + tableIdx2] = Index2Color(colorTable[(((tableIdx2 << 9) * v7) >> 16) | ((tableIdx2 << 9) * v5 >> 16 << 10) | 32 * ((tableIdx2 << 9) * v6 >> 16)]);
+
+	    intensityColorTable[256 * tableIdx + 128 + tableIdx2] = Index2Color(colorTable[((((tableIdx2 << 9) * (31 - v5) >> 16)
+                                                                                       + v5) << 10) | 32 * (((tableIdx2 << 9) * (31 - v6) >> 16) + v6) | ((((tableIdx2 << 9) * (31 - v7)) >> 16) + v7)]);
+
+	    // intensityColorTable[256 * tableIdx + tableIdx2] = (colorTable[(((tableIdx2 << 9) * v7) >> 16) | (((tableIdx2 << 9) * v5) >> 16 << 10) | 32 * (((tableIdx2 << 9) * v6) >> 16)]);
+
+	    // intensityColorTable[256 * tableIdx + 128 + tableIdx2] = (colorTable[(((((tableIdx2 << 9) * (31 - v5)) >> 16)
+     //                                                                                   + v5) << 10) | 32 * ((((tableIdx2 << 9) * (31 - v6)) >> 16) + v6) | ((((tableIdx2 << 9) * (31 - v7)) >> 16) + v7)]);
+	}
+}
+
+$.get("color_rgb.json", function(_color_rgb) {
+$.get("colorTable.json", function(_colorTable) {
+	color_rgb = _color_rgb
+	colorTable = _colorTable
+
+	// set mapped colors
+	for(var i = 0; i < 256; i++) {
+		var r = color_rgb[i][0]
+		var g = color_rgb[i][1]
+		var b = color_rgb[i][2]
+
+		mappedColor[i] = (r > 0 || g > 0 || b > 0) // valid palette colors
+		/*if(mappedColor[i])
+			console.log("%d is mapped", i)*/
+	}
+
+	mappedColor[228] = 1 // HACK: 228 in color.pal is legitimately RGB (0, 0, 0) and we count it as unmapped, but it is
+
+	for(var tableIdx = 0; tableIdx < 256; tableIdx++) {
+		if(mappedColor[tableIdx])
+			setIntensityTableColor(tableIdx)
+		else {
+			// memset(intensityColorTable + 256*tableIdx, 0, 256)
+			/*var startIdx = 256 * tableIdx
+			intensityColorTable.fill(0, startIdx, startIdx + 256)*/
+			for(var i = 0; i < 256; i++)
+				intensityColorTable[256 * tableIdx + i] = 0
+		}
+	}
+
+	// var t = 1
+	// for(var i = 0; i < 256; i++) {
+	// 	console.log("intensityColorTable[256*%d + %d] = 0x%s", t, i, intensityColorTable[256*t + i].toString(16))
+	// }
+
+	// console.log("-----------------")
+	for(var i = 0; i < 65536; i++) {
+		if(intensityColorTable[i] !== Lighting.intensityColorTable[i])
+			console.log("%d (table %d) differs (%s, expected %s)", i, i / 256 | 0, intensityColorTable[i].toString(16), Lighting.intensityColorTable[i].toString(16))
+	}
+
+
+}, "json")
+}, "json")
+</script>
