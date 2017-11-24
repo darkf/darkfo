@@ -55,6 +55,7 @@ enum Skills {
 var skillMode: Skills = Skills.None
 
 var isLoading: boolean = true // are we currently loading a map?
+var isWaitingOnRemote: boolean = false; // are we waiting on the remote server to send critical info?
 var isInitializing: boolean = true // are we initializing the engine?
 var loadingAssetsLoaded: number = 0 // how many images we've loaded
 var loadingAssetsTotal: number = 0 // out of this total
@@ -731,7 +732,65 @@ function initGame() {
 
 	if(location.search !== "") {
 		// load map from query string (e.g. URL ending in ?modmain)
-		gMap.loadMap(location.search.slice(1))
+		// also check if it's trying to connect to a remote server
+
+		const query = location.search.slice(1);
+
+		if(query.indexOf("host=") === 0) { // host a multiplayer map
+			const mapName = query.split("host=")[1]
+			console.log("MP host map", mapName);
+			gMap.loadMap(mapName);
+
+			Netcode.connect("ws://localhost:8090", () => {
+				console.log("connected");
+
+				Netcode.identify("Host Player");
+				Netcode.host();
+			});
+		}
+		else if(query.indexOf("join=") === 0) { // join a multiplayer host
+			const host = query.split("join=")[1];
+			console.log("MP server host: %s", host);
+
+			// Disable scripts on the client as they'd differ from the remote host and muck up the simulation
+			Config.engine.doLoadScripts = false;
+			Config.engine.doUpdateCritters = false;
+			Config.engine.doTimedEvents = false;
+			Config.engine.doSaveDirtyMaps = false;
+
+			Config.engine.doSpatials = false;
+			Config.engine.doEncounters = false;
+
+			// Also disallow things such as combat, for now.
+			Config.engine.doCombat = false;
+
+			isWaitingOnRemote = true;
+
+			Netcode.connect(`ws://${host}:8090`, () => {
+				console.log("connected");
+
+				Netcode.identify("Guest Player");
+
+				Netcode.on("map", (msg: any) => {
+					console.log("Received remote map, loading...")
+					gMap.deserialize(msg.map);
+					console.log("Loaded serialized remote map.");
+
+					// TODO: Spawn the player somewhere sensible
+					player.position = msg.player.position;
+					player.orientation = 0;
+					player.inventory = [];
+					
+					gMap.changeElevation(msg.player.elevation, false);
+
+					isWaitingOnRemote = false;
+				});
+
+				Netcode.join();
+			});
+		}
+		else // single-player map
+			gMap.loadMap(location.search.slice(1))
 	}
 	else // load starting map
 		gMap.loadMap("artemple")
@@ -943,7 +1002,7 @@ function playerUse() {
 }
 
 heart.mousepressed = function(x, y, btn) {
-	if(isLoading)
+	if(isInitializing || isLoading || isWaitingOnRemote)
 		return
 	else if(btn === "l")
 		playerUse()
@@ -1134,7 +1193,7 @@ function getObjectUnderCursor(p) {
 }
 
 heart.update = function() {
-	if(isInitializing)
+	if(isInitializing || isWaitingOnRemote)
 		return;
 	else if(isLoading) {
 		if(loadingAssetsLoaded === loadingAssetsTotal) {
@@ -1261,6 +1320,8 @@ function objectOnScreen(obj) {
 }
 
 heart.draw = function() {
+	if(isWaitingOnRemote)
+		return;
 	return renderer.render()
 }
 

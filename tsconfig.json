@@ -48,6 +48,8 @@
         "src/saveload.ts",
         "src/idbcache.ts",
 
+        "src/net.ts",
+
         "src/main.ts"
     ]
 }
