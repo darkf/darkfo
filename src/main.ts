@@ -783,6 +783,12 @@ function initGame() {
 					
 					gMap.changeElevation(msg.player.elevation, false);
 
+					// Add host network player
+					const netPlayer = new Netcode.NetPlayer(msg.hostPlayer.name, msg.hostPlayer.uid);
+					netPlayer.position = msg.hostPlayer.position;
+					netPlayer.orientation = msg.hostPlayer.orientation;
+					gMap.addObject(netPlayer);
+
 					isWaitingOnRemote = false;
 				});
 

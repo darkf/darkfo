@@ -24,6 +24,12 @@ class GameContext:
         self.guest = None
         self.serializedMap = None
         self.elevation = None
+        self.lastUID = 0
+
+    def new_uid(self):
+        uid = self.lastUID
+        self.lastUID += 1
+        return uid
 
 context = GameContext()
 
@@ -34,6 +40,7 @@ class Connection:
         self.uid = None
         self.name = None
         self.pos = None
+        self.orientation = 0
 
     def _send(self, msg):
         self.sock.send(json.dumps(msg))
@@ -78,18 +85,34 @@ class Connection:
                     context.serializedMap = msg["map"]
                     context.elevation = msg["player"]["elevation"]
                     self.pos = msg["player"]["position"]
+                    self.uid = context.new_uid()
+                    self.orientation = msg["player"]["orientation"]
 
                     print("Got a host:", self.name)
+
 
                 elif t == "join":
                     context.guest = self
                     print("Got a guest:", self.name)
 
+                    self.uid = context.new_uid()
+
                     self.pos = context.host.pos.copy()
                     self.pos["x"] += 2
 
                     print("Sending map")
-                    self.send("map", {"map": context.serializedMap, "player": {"position": self.pos, "elevation": context.elevation}})
+                    self.send("map", { "map": context.serializedMap,
+                                       "player": {"position": self.pos, "elevation": context.elevation, "uid": self.uid},
+                                       "hostPlayer": {"position": context.host.pos, "uid": context.host.uid, "name": context.host.name, "orientation": context.host.orientation}
+                                     })
+
+                    print("Notifying host")
+                    context.host.send("guest_joined", {
+                        "name": self.name,
+                        "uid": self.uid,
+                        "position": self.pos,
+                        "orientation": self.orientation
+                    })
 
                 elif t == "close":
                     self.disconnected("close message received")
