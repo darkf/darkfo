@@ -1,7 +1,12 @@
-<script src="jquery-1.11.1.min.js"></script>
+<script src="lib/jquery-1.11.1.min.js"></script>
 <script>var Lighting = {}</script>
-<script src="intensityColorTable.js"></script>
+<script src="lut/intensityColorTable.js"></script>
 <script>
+// Generates an intensityColorTable from a palette (given by a set of color look-up tables -- index<->rgb)
+// Also verifies it against a dumped intensityColorTable for errors
+
+// TODO: Parse and load color.pal in TypeScript and generate this at load time instead of relying on LUTs
+
 var color_rgb = null
 var colorTable = null
 var intensityColorTable = new Uint8Array(65536)
@@ -37,8 +42,8 @@ function setIntensityTableColor(tableIdx) {
 	}
 }
 
-$.get("color_rgb.json", function(_color_rgb) {
-$.get("colorTable.json", function(_colorTable) {
+$.get("lut/color_rgb.json", function(_color_rgb) {
+$.get("lut/colorTable.json", function(_colorTable) {
 	color_rgb = _color_rgb
 	colorTable = _colorTable
 
@@ -73,10 +78,15 @@ $.get("colorTable.json", function(_colorTable) {
 	// }
 
 	// console.log("-----------------")
+	var numErrors = 0;
 	for(var i = 0; i < 65536; i++) {
-		if(intensityColorTable[i] !== Lighting.intensityColorTable[i])
+		if(intensityColorTable[i] !== Lighting.intensityColorTable[i]) {
 			console.log("%d (table %d) differs (%s, expected %s)", i, i / 256 | 0, intensityColorTable[i].toString(16), Lighting.intensityColorTable[i].toString(16))
+			numErrors++;
+		}
 	}
+
+	console.log("Done, " + numErrors + " errors");
 
 
 }, "json")
