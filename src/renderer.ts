@@ -60,7 +60,7 @@ class Renderer {
 		//var mouseTile = tileFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
 
 		if(Config.ui.showFloor)   this.renderFloor(this.floorTiles)
-		if(Config.ui.showCursor) {
+		if(Config.ui.showCursor && hexOverlay) {
 			var scr = hexToScreen(mouseHex.x, mouseHex.y)
 			this.image(hexOverlay, scr.x - 16 - cameraX, scr.y - 12 - cameraY)
 		}
