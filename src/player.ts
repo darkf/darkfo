@@ -59,6 +59,8 @@ class Player extends Critter {
 		if(!super.move(position, curIdx))
 			return false
 
+		Events.emit("playerMoved", position);
+
 		// check if the player has entered an exit grid
 		var objs = objectsAtPosition(this.position)
 		for(var i = 0; i < objs.length; i++) {

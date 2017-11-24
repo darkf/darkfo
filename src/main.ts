@@ -789,6 +789,8 @@ function initGame() {
 					netPlayer.orientation = msg.hostPlayer.orientation;
 					gMap.addObject(netPlayer);
 
+					Netcode.netPlayerMap[msg.hostPlayer.uid] = netPlayer;
+
 					isWaitingOnRemote = false;
 				});
 

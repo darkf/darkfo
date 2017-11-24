@@ -1,6 +1,10 @@
 from eventlet import wsgi, websocket
 import eventlet
 import json, time, string, os
+import signal
+
+# For ^C on Windows
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 def is_valid_name_char(c):
     return c in string.ascii_letters + string.digits + "-_"
@@ -37,6 +41,7 @@ context = GameContext()
 class Connection:
     def __init__(self, ws):
         self.sock = ws
+        self.is_host = None
         self.uid = None
         self.name = None
         self.pos = None
@@ -84,6 +89,7 @@ class Connection:
                     context.host = self
                     context.serializedMap = msg["map"]
                     context.elevation = msg["player"]["elevation"]
+                    self.is_host = True
                     self.pos = msg["player"]["position"]
                     self.uid = context.new_uid()
                     self.orientation = msg["player"]["orientation"]
@@ -95,6 +101,7 @@ class Connection:
                     context.guest = self
                     print("Got a guest:", self.name)
 
+                    self.is_host = False
                     self.uid = context.new_uid()
 
                     self.pos = context.host.pos.copy()
@@ -107,12 +114,22 @@ class Connection:
                                      })
 
                     print("Notifying host")
-                    context.host.send("guest_joined", {
+                    context.host.send("guestJoined", {
                         "name": self.name,
                         "uid": self.uid,
                         "position": self.pos,
                         "orientation": self.orientation
                     })
+
+                elif t == "moved":
+                    print("%s moved" % ("host" if self.is_host else "guest"))
+
+                    # Relay movement to the other party
+                    target = context.host
+                    if self.is_host:
+                        target = context.guest
+
+                    target.send("movePlayer", { "uid": self.uid, "position": {"x": msg["x"], "y": msg["y"]} })
 
                 elif t == "close":
                     self.disconnected("close message received")
