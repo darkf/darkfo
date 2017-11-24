@@ -746,6 +746,7 @@ function initGame() {
 
 				Netcode.identify("Host Player");
 				Netcode.host();
+				Netcode.changeMap();
 			});
 		}
 		else if(query.indexOf("join=") === 0) { // join a multiplayer host

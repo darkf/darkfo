@@ -70,6 +70,19 @@ class Connection:
 
     def error(self, request, msg):
         self.send("error", {"request": request, "message": msg})
+
+    def sendMap(self):
+        global context
+        
+        print("Sending map")
+
+        self.pos = context.host.pos.copy()
+        self.pos["x"] += 2
+
+        self.send("map", { "map": context.serializedMap,
+                           "player": {"position": self.pos, "elevation": context.elevation, "uid": self.uid},
+                           "hostPlayer": {"position": context.host.pos, "uid": context.host.uid, "name": context.host.name, "orientation": context.host.orientation}
+                         })
     
     def serve(self):
         global context
@@ -85,17 +98,20 @@ class Connection:
                     self.name = msg["name"]
                     print("Client identified as", msg["name"])
 
-                elif t == "host":
-                    context.host = self
+                elif t == "changeMap":
                     context.serializedMap = msg["map"]
                     context.elevation = msg["player"]["elevation"]
-                    self.is_host = True
                     self.pos = msg["player"]["position"]
-                    self.uid = context.new_uid()
                     self.orientation = msg["player"]["orientation"]
+                    
+                    print("Map changed to", msg["mapName"])
+
+                elif t == "host":
+                    context.host = self
+                    self.is_host = True
+                    self.uid = context.new_uid()
 
                     print("Got a host:", self.name)
-
 
                 elif t == "join":
                     context.guest = self
@@ -104,14 +120,7 @@ class Connection:
                     self.is_host = False
                     self.uid = context.new_uid()
 
-                    self.pos = context.host.pos.copy()
-                    self.pos["x"] += 2
-
-                    print("Sending map")
-                    self.send("map", { "map": context.serializedMap,
-                                       "player": {"position": self.pos, "elevation": context.elevation, "uid": self.uid},
-                                       "hostPlayer": {"position": context.host.pos, "uid": context.host.uid, "name": context.host.name, "orientation": context.host.orientation}
-                                     })
+                    self.sendMap()
 
                     print("Notifying host")
                     context.host.send("guestJoined", {
