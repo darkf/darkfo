@@ -350,7 +350,7 @@ class GameMap {
 		scriptingEngine.updateMap(this.mapScript, this.getObjectsAndSpatials(), this.currentElevation)
 	}
 
-	changeElevation(level: number, updateScripts: boolean=false) {
+	changeElevation(level: number, updateScripts: boolean=false, isMapLoading: boolean=false) {
 		var oldElevation = this.currentElevation
 		this.currentElevation = level
 		this.floorMap = this.mapObj.levels[level].tiles.floor
@@ -389,6 +389,8 @@ class GameMap {
 		}
 
 		centerCamera(player.position)
+
+		Events.emit("elevationChanged", { oldElevation, isMapLoading })
 	}
 
 	placeParty() {
@@ -441,9 +443,9 @@ class GameMap {
 
 			// set elevation
 			if(startingElevation !== undefined)
-				gMap.changeElevation(startingElevation, true);
+				gMap.changeElevation(startingElevation, true, true);
 			else // use default map elevation (0)
-				gMap.changeElevation(0, true);
+				gMap.changeElevation(0, true, true);
 
 			console.log(`[Main] Loaded from dirty map cache`);
 			loadedCallback && loadedCallback();
@@ -551,7 +553,7 @@ class GameMap {
 		}
 
 		// change to our new elevation (sets up map state)
-		this.changeElevation(elevation, false)
+		this.changeElevation(elevation, false, true)
 
 		// TODO: when exactly are these called?
 		// TODO: when objectsAndSpatials is updated, the scripting engine won't know
@@ -575,7 +577,7 @@ class GameMap {
 			scriptingEngine.updateMap(this.mapScript, objectsAndSpatials, elevation)
 
 			// change elevation with script updates
-			this.changeElevation(elevation, true)
+			this.changeElevation(elevation, true, true)
 		}
 
 		// TODO: is map_enter_p_proc called on elevation change?
@@ -791,7 +793,7 @@ function initGame() {
 					player.orientation = 0;
 					player.inventory = [];
 					
-					gMap.changeElevation(msg.player.elevation, false);
+					gMap.changeElevation(msg.player.elevation, false, false);
 
 					// Add host network player
 					const netPlayer = new Netcode.NetPlayer(msg.hostPlayer.name, msg.hostPlayer.uid);

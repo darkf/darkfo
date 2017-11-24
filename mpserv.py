@@ -122,6 +122,24 @@ class Connection:
                         print("Notifying guest")
                         context.guest.sendMap()
 
+                elif t == "changeElevation":
+                    print("Elevation changed")
+
+                    context.elevation = msg["elevation"]
+                    self.pos = msg["position"]
+                    self.orientation = msg["orientation"]
+
+                    # Notify guest
+                    if context.guest:
+                        context.guest.send("elevationChanged", { "elevation": context.elevation })
+
+                    self.moved()
+                    
+                    context.guest.pos = self.pos.copy()
+                    context.guest.pos["x"] += 2
+                    context.guest.moved()
+
+
                 elif t == "host":
                     context.host = self
                     self.is_host = True
