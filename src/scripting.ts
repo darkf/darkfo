@@ -194,17 +194,21 @@ module scriptingEngine {
 
 		if(canSee(obj, target)) {
 			reqDist = perception*5;
+
 			if(false /* some target flags & 2 */)
+				// @ts-ignore: Unreachable code error (this isn't implemented yet)
 				reqDist /= 2;
 
 			if(target === player) {
 				if(false /* is_pc_sneak_working */) {
+					// @ts-ignore: Unreachable code error (this isn't implemented yet)
 					reqDist /= 4;
 
 					if(sneakSkill > 120)
 						reqDist--;
 				}
 				else if(false /* is_sneaking */)
+					// @ts-ignore: Unreachable code error (this isn't implemented yet)
 					reqDist = reqDist * 2 / 3;
 			}
 
@@ -216,12 +220,14 @@ module scriptingEngine {
 
 		if(target === player) {
 			if(false /* is_pc_sneak_working */) {
+				// @ts-ignore: Unreachable code error (this isn't implemented yet)
 				reqDist /= 4;
 
 				if(sneakSkill > 120)
 					reqDist--;
 			}
 			else if(false /* is_sneaking */)
+				// @ts-ignore: Unreachable code error (this isn't implemented yet)
 				reqDist = reqDist * 2 / 3;
 		}
 
