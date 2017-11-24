@@ -53,8 +53,8 @@ class CanvasRenderer extends Renderer {
 		if(useColorTable) {
 			// XXX: hack
 			if(Lighting.colorLUT === null) {
-				Lighting.colorLUT = getFileJSON("color_lut.json")
-				Lighting.colorRGB = getFileJSON("color_rgb.json")
+				Lighting.colorLUT = getFileJSON("lut/color_lut.json")
+				Lighting.colorRGB = getFileJSON("lut/color_rgb.json")
 			}
 		}
 
@@ -142,7 +142,6 @@ class CanvasRenderer extends Renderer {
 								imageData.data[screenIndex + 0] = tileData.data[tileIndex + 0] * intensity | 0
 								imageData.data[screenIndex + 1] = tileData.data[tileIndex + 1] * intensity | 0
 								imageData.data[screenIndex + 2] = tileData.data[tileIndex + 2] * intensity | 0
-
 							}
 						}
 					}
@@ -179,7 +178,7 @@ class CanvasRenderer extends Renderer {
 
 	renderFloor(floor: TileMap): void {
 		if(Config.engine.doFloorLighting)
-			this.renderLitFloor(floor)
+			this.renderLitFloor(floor, Config.engine.useLightColorLUT)
 		else
 			this.drawTileMap(floor, 0)
 	}
