@@ -168,6 +168,9 @@ class CanvasRenderer extends Renderer {
 						continue
 					heart.graphics.draw(images[img], scr.x - cameraX, scr.y - cameraY)
 				}
+				else { // Try to lazy-load the missing tile
+					lazyLoadImage(img);	
+				}
 			}
 		}
 	}
