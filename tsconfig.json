@@ -4,7 +4,9 @@
         "preserveConstEnums": true,
         "noImplicitReturns": true,
         "skipLibCheck": true,
-        "outDir": "js"
+        "outDir": "js",
+        // "target": "es6",
+        "lib": ["ES6", "DOM", "es2017.object"]
     },
 
     "files": [

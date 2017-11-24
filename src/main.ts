@@ -422,8 +422,11 @@ class GameMap {
 			dirtyMapCache[this.name] = this.serialize();
 		}
 
+
 		if(mapName in dirtyMapCache) { // previously loaded; load from dirty map cache
 			console.log(`[Main] Loading map ${mapName} from dirty map cache`);
+
+			Events.emit("loadMapPre");
 			
 			const map = dirtyMapCache[mapName];
 			this.deserialize(map);
@@ -444,6 +447,8 @@ class GameMap {
 
 			console.log(`[Main] Loaded from dirty map cache`);
 			loadedCallback && loadedCallback();
+
+			Events.emit("loadMapPost");
 		}
 		else {
 			console.log(`[Main] Loading map ${mapName} from clean load`);
@@ -463,6 +468,8 @@ class GameMap {
 		}
 
 		this.name = mapName.toLowerCase()
+
+		Events.emit("loadMapPre");
 
 		isLoading = true
 		loadingAssetsTotal = 1 // this will remain +1 until we load the map, preventing it from exiting early
@@ -585,6 +592,8 @@ class GameMap {
 		audioEngine.stopAll()
 		if(curMapInfo && curMapInfo.music)
 			audioEngine.playMusic(curMapInfo.music)
+
+		Events.emit("loadMapPost");
 	}
 
 	loadMapByID(mapID: number, startingPosition?: Point, startingElevation?: number): void {

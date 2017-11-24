@@ -73,7 +73,7 @@ class Connection:
 
     def sendMap(self):
         global context
-        
+
         print("Sending map")
 
         self.pos = context.host.pos.copy()
@@ -83,6 +83,17 @@ class Connection:
                            "player": {"position": self.pos, "elevation": context.elevation, "uid": self.uid},
                            "hostPlayer": {"position": context.host.pos, "uid": context.host.uid, "name": context.host.name, "orientation": context.host.orientation}
                          })
+
+        self.moved()
+
+    def moved(self):
+        # Relay movement to the other party
+        target = context.host
+        if self.is_host:
+            target = context.guest
+
+        if target:
+            target.send("movePlayer", { "uid": self.uid, "position": self.pos })
     
     def serve(self):
         global context
@@ -105,6 +116,11 @@ class Connection:
                     self.orientation = msg["player"]["orientation"]
                     
                     print("Map changed to", msg["mapName"])
+
+                    # Notify guest of map change and send map
+                    if context.guest:
+                        print("Notifying guest")
+                        context.guest.sendMap()
 
                 elif t == "host":
                     context.host = self
@@ -133,12 +149,9 @@ class Connection:
                 elif t == "moved":
                     print("%s moved" % ("host" if self.is_host else "guest"))
 
-                    # Relay movement to the other party
-                    target = context.host
-                    if self.is_host:
-                        target = context.guest
-
-                    target.send("movePlayer", { "uid": self.uid, "position": {"x": msg["x"], "y": msg["y"]} })
+                    self.pos["x"] = msg["x"]
+                    self.pos["y"] = msg["y"]
+                    self.moved()
 
                 elif t == "close":
                     self.disconnected("close message received")
