@@ -38,6 +38,7 @@ module SaveLoad {
     function withTransaction(f: (trans: IDBTransaction) => void, finished?: () => void) {
         const trans = db.transaction("saves", "readwrite");
         trans.oncomplete = finished;
+        trans.onerror = (e: any) => { console.error("Database error: " + (<any>e.target).errorCode) };
         f(trans);
     }
 
