@@ -71,9 +71,9 @@ var player = null
 var renderer: Renderer = null
 var audioEngine: AudioEngine = null
 
-function repr(obj) { return JSON.stringify(obj, null, 2) }
+function repr(obj: any) { return JSON.stringify(obj, null, 2) }
 
-function lazyLoadImage(art: string, callback?: (x:any) => void, isHeartImg?: boolean) {
+function lazyLoadImage(art: string, callback?: (x: any) => void, isHeartImg?: boolean) {
 	if(images[art] !== undefined) {
 		if(callback)
 			callback(isHeartImg ? images[art] : images[art].img)
@@ -103,12 +103,12 @@ function lazyLoadImage(art: string, callback?: (x:any) => void, isHeartImg?: boo
 	img.src = art + '.png'
 }
 
-function getPROType(pid) {
+function getPROType(pid: number) {
 	var map = {0: 'items', 1: 'critters', 2: 'scenery', 3: 'walls', 4: 'tiles', 5: 'misc'}
 	return map[(pid >> 24) & 0xff]
 }
 
-function loadPRO(pid, pidID) {
+function loadPRO(pid: number, pidID: number) {
 	if(!proMap)
 		return null
 
@@ -122,7 +122,7 @@ function loadPRO(pid, pidID) {
 	return proMap[type][id]
 }
 
-function getPROTypeName(type) {
+function getPROTypeName(type: number) {
 	// singular
 	var map = {0: 'item', 1: 'critter', 2: 'scenery', 3: 'wall', 4: 'tile', 5: 'misc'}
 	return map[type]
@@ -133,11 +133,11 @@ function getPROSubTypeName(type: number): string {
 	return map[type]
 }
 
-function makePID(type, pid) {
+function makePID(type: number, pid: number) {
 	return (type << 24) | pid
 }
 
-function getCritterArtPath(frmPID) {
+function getCritterArtPath(frmPID: number) {
 	console.log("FRM PID: " + frmPID)
 	var idx = (frmPID & 0x00000fff)
 	var id1 = (frmPID & 0x0000f000) >> 12
@@ -190,11 +190,11 @@ function getCritterArtPath(frmPID) {
 	return path
 }
 
-function lookupInterfaceArt(idx) {
+function lookupInterfaceArt(idx: number) {
 	return "art/intrface/" + getLstId("art/intrface/intrface", idx).split('.')[0].toLowerCase()
 }
 
-function lookupArt(frmPID) {
+function lookupArt(frmPID: number) {
 	var type = getPROType(frmPID)
 	var pidID = frmPID & 0xffff
 
@@ -209,12 +209,12 @@ function lookupArt(frmPID) {
 	return path.toLowerCase()
 }
 
-function lookupScriptName(scriptID) {
+function lookupScriptName(scriptID: number) {
 	console.log("SID: " + scriptID)
 	return getLstId("scripts/scripts", scriptID - 1).split('.')[0].toLowerCase()
 }
 
-function dropObject(source, obj) {
+function dropObject(source: Obj, obj: Obj) {
 	// drop inventory object obj from source
 	var removed = false
 	for(var i = 0; i < source.inventory.length; i++) {

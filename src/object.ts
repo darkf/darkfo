@@ -341,13 +341,6 @@ function useElevator(): void {
 	uiElevator(elevator)
 }
 
-// TODO: find a better place for this
-
-interface Point {
-	x: number;
-	y: number;
-}
-
 interface SerializedObj {
 	pid: number;
 	pidID: number;

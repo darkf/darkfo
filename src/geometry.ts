@@ -21,6 +21,17 @@ var TILE_WIDTH = 80
 var TILE_HEIGHT = 36
 var HEX_GRID_SIZE = 200 // hex grid is 200x200
 
+interface Point {
+	x: number;
+	y: number;
+}
+
+interface Point3 {
+	x: number;
+	y: number;
+	z: number;
+}
+
 function toTileNum(position: Point): number {
 	return position.y * 200 + position.x
 }
@@ -29,7 +40,7 @@ function fromTileNum(tile: number): Point {
 	return {x: tile % 200, y: Math.floor(tile / 200)} // TODO: use x|0 instead of floor for some of these
 }
 
-function tileToScreen(x, y) {
+function tileToScreen(x: number, y: number): Point {
 	x = 99 - x // this algorithm expects x to be reversed
 	var sx = 4752 + (32 * y) - (48 * x)
 	var sy = (24 * y) + (12 * x)
@@ -37,7 +48,7 @@ function tileToScreen(x, y) {
    return {x: sx, y: sy}
 }
 
-function tileFromScreen(x, y) {
+function tileFromScreen(x: number, y: number): Point {
 	var off_x = -4800 + x
 	var off_y = y
 	var xx = off_x - off_y * 4 / 3
@@ -153,14 +164,14 @@ function tile_coord(tileNum: number): Point {
 	return {x: a2, y: a3}
 }*/
 
-function hexToScreen(x, y) {
+function hexToScreen(x: number, y: number): Point {
 	var sx = 4816 - ((((x + 1) >> 1) << 5) + ((x >> 1) << 4) - (y << 4))
 	var sy = ((12 * (x >> 1)) + (y * 12)) + 11
 
 	return {x: sx, y: sy}
 }
 
-function hexFromScreen(x, y) {
+function hexFromScreen(x: number, y: number): Point {
 	var x0 = 4800
 	var y0 = 0
 	var nx, ny
@@ -240,7 +251,7 @@ function hexFromScreen(x, y) {
 	return {x: Math.round(hx), y: Math.round(hy)}
 }
 
-function hexNeighbors(position) {
+function hexNeighbors(position: Point): Point[] {
 	var neighbors = []
 	var x = position.x
 	var y = position.y
@@ -284,7 +295,7 @@ function hexInDirectionDistance(position: Point, dir: number, distance: number):
 	return tile
 }
 
-function directionOfDelta(xa, ya, xb, yb) {
+function directionOfDelta(xa: number, ya: number, xb: number, yb: number): number|null {
 	var neighbors = hexNeighbors({x: xa, y: ya})
 	for(var i = 0; i < neighbors.length; i++) {
 		if(neighbors[i].x === xb && neighbors[i].y === yb)
@@ -294,14 +305,14 @@ function directionOfDelta(xa, ya, xb, yb) {
 	return null
 }
 
-function hexGridToCube(grid) {
+function hexGridToCube(grid: Point): Point3 {
 	//even-q layout -> cube layout
 	var z = grid.y - (grid.x + (grid.x & 1)) / 2
 	var y = -grid.x - z
 	return {x: grid.x, y: y, z: z}
 }
 
-function hexDistance(a, b) {
+function hexDistance(a: Point, b: Point): number {
 	// we convert our hex coordinates into cube coordinates and then
 	// we only have to see which of the 3 axes is the longest
 
@@ -350,7 +361,7 @@ function hexNearestNeighbor(a, b) {
 }
 
 // Draws a line between a and b, returning the list of coordinates (including b)
-function hexLine(a, b) {
+function hexLine(a: Point, b: Point) {
 	var path = []
 	var position = {x: a.x, y: a.y}
 
@@ -367,7 +378,7 @@ function hexLine(a, b) {
 	// throw "unreachable"
 }
 
-function hexesInRadius(center, radius) {
+function hexesInRadius(center: Point, radius: number) {
 	var hexes = []
 	for(var x = 0; x < 200; x++) {
 		for(var y = 0; y < 200; y++) {
@@ -385,7 +396,7 @@ function pointInBoundingBox(point, bbox) {
 		    bbox.y <= point.y && point.y <= bbox.y+bbox.h)
 }
 
-function tile_in_tile_rect(tile, a, b, c, d) {
+function tile_in_tile_rect(tile: Point, a: Point, b: Point, c: Point, d: Point) {
 
 	//our rect looks like this:
 	//a - - - - b
@@ -434,7 +445,7 @@ function tile_in_tile_rect(tile, a, b, c, d) {
 	return inside
 }
 
-function tile_in_tile_rect2(tile, a, c) {
+function tile_in_tile_rect2(tile: Point, a: Point, c: Point) {
 	var b = {x: a.x, y: c.y}
 	var d = {x: c.x, y: a.y}
 	return tile_in_tile_rect(tile, a, b, c, d)
