@@ -560,11 +560,12 @@ class GameMap {
 		else
 			this.spatials = map.levels.map(_ => [])
 
+		// TODO: Is here or above better? Are the map/spatial scripts loaded before or after object scripts?
 		// load map objects
-		this.objects = new Array(map.levels.length)
-		for(var level = 0; level < map.levels.length; level++) {
-			this.objects[level] = map.levels[level].objects.map(obj => objFromMapObject(obj))
-		}
+		// this.objects = new Array(map.levels.length)
+		// for(var level = 0; level < map.levels.length; level++) {
+		// 	this.objects[level] = map.levels[level].objects.map(obj => objFromMapObject(obj))
+		// }
 
 		// change to our new elevation (sets up map state)
 		this.changeElevation(elevation, false, true)
