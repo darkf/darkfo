@@ -1,6 +1,6 @@
 from eventlet import wsgi, websocket
 import eventlet
-import json, time, string, os
+import json, zlib, time, string, os
 import signal
 
 # For ^C on Windows
@@ -55,12 +55,17 @@ class Connection:
         self._send(msg)
 
     def _recv(self):
-        return json.loads(self.sock.wait())
+        msg = self.sock.wait()
+        if type(msg) is bytes:
+            return msg
+        return json.loads(msg)
 
     def recv(self):
         data = self.sock.wait()
         if data is None:
             raise EOFError()
+        if type(data) is bytes:
+            return None, data
         msg = json.loads(data)
         return msg["t"], msg
 
@@ -79,7 +84,11 @@ class Connection:
         self.pos = context.host.pos.copy()
         self.pos["x"] += 2
 
-        self.send("map", { "map": context.serializedMap,
+        # First send the map so the client has it in its buffer
+        self.sock.send(context.serializedMap)
+
+        # Then send the map change notification
+        self.send("map", {
                            "player": {"position": self.pos, "elevation": context.elevation, "uid": self.uid},
                            "hostPlayer": {"position": context.host.pos, "uid": context.host.uid, "name": context.host.name, "orientation": context.host.orientation}
                          })
@@ -105,12 +114,18 @@ class Connection:
                 t, msg = self.recv()
                 print("Received %s message from %r" % (t, self.name))
 
-                if t == "ident":
+                if t is None:
+                    print("Received binary/compressed data -- assuming it's a map")
+
+                    # We don't decompress it as we don't need the actual map data -- we can pass it along
+                    # compressed to the guest clients as well.
+                    context.serializedMap = msg
+
+                elif t == "ident":
                     self.name = msg["name"]
                     print("Client identified as", msg["name"])
 
                 elif t == "changeMap":
-                    context.serializedMap = msg["map"]
                     context.elevation = msg["player"]["elevation"]
                     self.pos = msg["player"]["position"]
                     self.orientation = msg["player"]["orientation"]
@@ -134,7 +149,7 @@ class Connection:
                         context.guest.send("elevationChanged", { "elevation": context.elevation })
 
                     self.moved()
-                    
+
                     context.guest.pos = self.pos.copy()
                     context.guest.pos["x"] += 2
                     context.guest.moved()

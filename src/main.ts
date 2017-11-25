@@ -23,6 +23,7 @@ declare var $;
 declare var _;
 declare var heart;
 declare var PF;
+declare var pako;
 
 var gMap: GameMap = null
 var images = {} // Image cache
@@ -783,9 +784,20 @@ function initGame() {
 
 				Netcode.identify("Guest Player");
 
+				let serializedMap: any = null;
+
+				Netcode.on("binary", (data: any) => {
+					console.log("Received binary remote map, decompressing...");
+					console.time("map decompression");
+					serializedMap = JSON.parse(pako.inflate(data, { to: "string" }));
+					console.timeEnd("map decompression");
+				});
+
 				Netcode.on("map", (msg: any) => {
-					console.log("Received remote map, loading...")
-					gMap.deserialize(msg.map);
+					console.log("Received map change request, loading...");
+					console.time("map deserialization");
+					gMap.deserialize(serializedMap);
+					console.timeEnd("map deserialization");
 					console.log("Loaded serialized remote map.");
 
 					// TODO: Spawn the player somewhere sensible
