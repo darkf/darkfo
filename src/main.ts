@@ -19,19 +19,25 @@ limitations under the License.
 "use strict";
 
 // make TypeScript happy about external libraries (TODO: use .d.ts files)
-declare var $;
-declare var _;
-declare var heart;
-declare var PF;
-declare var pako;
+declare var $: any;
+declare var _: any;
+declare var heart: any;
+declare var PF: any;
+declare var pako: any;
 
-var gMap: GameMap = null
-var images = {} // Image cache
+interface HeartImage {
+	img: HTMLImageElement;
+	getWidth(): number;
+	getHeight(): number;
+}
+
+var gMap: GameMap|null = null
+var images: { [name: string]: HeartImage } = {} // Image cache
 var imageInfo = null // Metadata about images (Number of frames, FPS, etc)
 var currentElevation = 0 // current map elevation
 var hexOverlay = null
-var tempCanvas: HTMLCanvasElement = null // temporary canvas used for detecting single pixels
-var tempCanvasCtx = null // and the context for it
+var tempCanvas: HTMLCanvasElement|null = null // temporary canvas used for detecting single pixels
+var tempCanvasCtx: CanvasRenderingContext2D|null = null // and the context for it
 
 // position of viewport camera (will be overriden by map starts or scripts)
 var cameraX: number = 3580
@@ -42,7 +48,7 @@ var SCREEN_HEIGHT: number = Config.ui.screenHeight
 
 var gameTickTime: number = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick: number = 0 // real time of the last game tick
-var combat: Combat = null // combat object
+var combat: Combat|null = null // combat object
 var inCombat: boolean = false // are we currently in combat?
 var gameHasFocus: boolean = false // do we have input focus?
 var lastMousePickTime: number = 0 // time when we last checked what's under the mouse cursor
@@ -60,16 +66,23 @@ var isWaitingOnRemote: boolean = false; // are we waiting on the remote server t
 var isInitializing: boolean = true // are we initializing the engine?
 var loadingAssetsLoaded: number = 0 // how many images we've loaded
 var loadingAssetsTotal: number = 0 // out of this total
-var loadingLoadedCallback: () => void = null // loaded callback
+var loadingLoadedCallback: (() => void)|null = null // loaded callback
 var lazyAssetLoadingQueue = {} // set of lazily-loaded assets being loaded
 
-var floatMessages = []
+interface FloatMessage {
+	msg: string;
+	obj: Obj;
+	startTime: number;
+	color: string;
+}
+
+var floatMessages: FloatMessage[] = []
 
 // the global player object
-var player = null
+var player: Player|null = null
 
-var renderer: Renderer = null
-var audioEngine: AudioEngine = null
+var renderer: Renderer|null = null
+var audioEngine: AudioEngine|null = null
 
 function repr(obj: any) { return JSON.stringify(obj, null, 2) }
 
@@ -239,7 +252,7 @@ function pickupObject(obj: Obj, source: Critter) {
 }
 
 // Draws a line between a and b, returning the first object hit
-function hexLinecast(a, b) {
+function hexLinecast(a: Point, b: Point): Obj|null {
 	var line = hexLine(a, b).slice(1, -1)
 	if(line === null)
 		return null

@@ -21,7 +21,7 @@ limitations under the License.
 interface AudioEngine {
 	playSfx(sfx: string): void;
 	playMusic(music: string): void;
-	playSound(soundName: string): HTMLAudioElement;
+	playSound(soundName: string): HTMLAudioElement|null;
 	stopMusic(): void;
 	stopAll(): void;
 	tick(): void;
@@ -30,7 +30,7 @@ interface AudioEngine {
 class NullAudioEngine implements AudioEngine {
 	playSfx(sfx: string): void {}
 	playMusic(music: string): void {}
-	playSound(soundName: string): HTMLAudioElement { return null }
+	playSound(soundName: string): HTMLAudioElement|null { return null }
 	stopMusic(): void {}
 	stopAll(): void {}
 	tick(): void {}
@@ -39,8 +39,8 @@ class NullAudioEngine implements AudioEngine {
 class HTMLAudioEngine implements AudioEngine {
 	//lastSfxTime: number = 0
 	nextSfxTime: number = 0
-	nextSfx: string = null
-	musicAudio: HTMLAudioElement = null
+	nextSfx: string|null = null
+	musicAudio: HTMLAudioElement|null = null
 
 	playSfx(sfx: string): void {
 		this.playSound("sfx/" + sfx)
@@ -51,7 +51,7 @@ class HTMLAudioEngine implements AudioEngine {
 		this.musicAudio = this.playSound("music/" + music)
 	}
 
-	playSound(soundName: string): HTMLAudioElement {
+	playSound(soundName: string): HTMLAudioElement|null {
 		var sound = new Audio()
 		sound.addEventListener("loadeddata", () => sound.play(), false)
 		sound.src = "audio/" + soundName + ".wav"
@@ -76,7 +76,7 @@ class HTMLAudioEngine implements AudioEngine {
 			return ""
 
 		var sfx = curMapInfo.ambientSfx
-		var sumFreqs = _.sum(sfx, x => x[1])
+		var sumFreqs = _.sum(sfx, (x: number[]) => x[1])
 		var roll = getRandomInt(0, sumFreqs)
 
 		for(var i = 0; i < sfx.length; i++) {

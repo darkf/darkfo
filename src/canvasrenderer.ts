@@ -43,7 +43,7 @@ class CanvasRenderer extends Renderer {
 		heart.graphics.setBackgroundColor(r, g, b)
 	}
 
-	renderLitFloor(matrix, useColorTable: boolean=false) {
+	renderLitFloor(matrix: string[][], useColorTable: boolean=false) {
 		// get the screen framebuffer
 		const imageData = heart.ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 		const screenWidth = imageData.width;
