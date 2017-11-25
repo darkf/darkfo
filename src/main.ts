@@ -32,7 +32,7 @@ interface HeartImage {
 }
 
 var gMap: GameMap|null = null
-var images: { [name: string]: HeartImage } = {} // Image cache
+const images: { [name: string]: HeartImage } = {} // Image cache
 var imageInfo = null // Metadata about images (Number of frames, FPS, etc)
 var currentElevation = 0 // current map elevation
 var hexOverlay = null
@@ -43,8 +43,8 @@ var tempCanvasCtx: CanvasRenderingContext2D|null = null // and the context for i
 var cameraX: number = 3580
 var cameraY: number = 1020
 
-var SCREEN_WIDTH: number = Config.ui.screenWidth
-var SCREEN_HEIGHT: number = Config.ui.screenHeight
+const SCREEN_WIDTH: number = Config.ui.screenWidth
+const SCREEN_HEIGHT: number = Config.ui.screenHeight
 
 var gameTickTime: number = 0 // in Fallout 2 ticks (elapsed seconds * 10)
 var lastGameTick: number = 0 // real time of the last game tick
@@ -76,7 +76,7 @@ interface FloatMessage {
 	color: string;
 }
 
-var floatMessages: FloatMessage[] = []
+const floatMessages: FloatMessage[] = []
 
 // the global player object
 var player: Player|null = null

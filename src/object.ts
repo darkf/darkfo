@@ -19,7 +19,7 @@ limitations under the License.
 "use strict";
 
 function objectGetMoney(obj: Obj): number {
-	var MONEY_PID = 41
+	const MONEY_PID = 41
 	for(var i = 0; i < obj.inventory.length; i++) {
 		if(obj.inventory[i].pid === MONEY_PID) {
 			return obj.inventory[i].amount

@@ -17,9 +17,9 @@ limitations under the License.
 // Geometry-related functions, for the hex and isometric grids
 
 // geometry constants
-var TILE_WIDTH = 80
-var TILE_HEIGHT = 36
-var HEX_GRID_SIZE = 200 // hex grid is 200x200
+const TILE_WIDTH = 80
+const TILE_HEIGHT = 36
+const HEX_GRID_SIZE = 200 // hex grid is 200x200
 
 interface Point {
 	x: number;

@@ -1,6 +1,6 @@
 // Configuration for the engine internals, controls and UI
 
-var Config = {
+const Config = {
 	ui: {
 		screenWidth: 800,
 		screenHeight: 600,

@@ -19,43 +19,43 @@ limitations under the License.
 
 "use strict";
 
-var animInfo = {"idle": {type: "static"},
-                "attack": {type: "static"},
-                "weapon-reload": {type: "static"},
-                "walk": {type: "move"},
-                "static-idle": {type: "static"},
-                "static": {type: "static"},
-                "use": {type: "static"},
-                "pickUp": {type: "static"},
-                "climb": {type: "static"},
-                "hitFront": {type: "static"},
-                "death": {type: "static"},
-                "death-explode": {type: "static"},
-                "run": {type: "move"}}
+const animInfo = {"idle": {type: "static"},
+                 "attack": {type: "static"},
+                 "weapon-reload": {type: "static"},
+                 "walk": {type: "move"},
+                 "static-idle": {type: "static"},
+                 "static": {type: "static"},
+                 "use": {type: "static"},
+                 "pickUp": {type: "static"},
+                 "climb": {type: "static"},
+                 "hitFront": {type: "static"},
+                 "death": {type: "static"},
+                 "death-explode": {type: "static"},
+                 "run": {type: "move"}}
 
-var weaponSkins = {"uzi": 'i', "rifle": 'j'}
+const weaponSkins = {"uzi": 'i', "rifle": 'j'}
 
-var weaponAnims = {'punch': {'idle': 'aa', 'attack': 'aq'}}
+const weaponAnims = {'punch': {'idle': 'aa', 'attack': 'aq'}}
 
-var attackMode = {'none': 0, 'punch': 1, 'kick': 2, 'swing': 3,
-				  'thrust': 4, 'throw': 5, 'fire single': 6,
-				  'fire burst': 7, 'flame': 8,
-				  0 : 'none', 1: 'punch', 2: 'kick', 3: 'swing',
-				  4: 'thrust', 5: 'throw', 6: 'fire single',
-				  7: 'fire burst', 8: 'flame'}
+const attackMode = {'none': 0, 'punch': 1, 'kick': 2, 'swing': 3,
+				    'thrust': 4, 'throw': 5, 'fire single': 6,
+				    'fire burst': 7, 'flame': 8,
+				    0 : 'none', 1: 'punch', 2: 'kick', 3: 'swing',
+				    4: 'thrust', 5: 'throw', 6: 'fire single',
+				    7: 'fire burst', 8: 'flame'}
 				  
 
-var damageType = {'Normal': 0, 'Laser': 1, 'Fire': 2, 'Plasma': 3,
-				  'Electrical': 4, 'EMP': 5, 'Explosive': 6,
-				  0:'Normal', 1: 'Laser', 2: 'Fire', 3: 'Plasma',
-				  4: 'Electrical', 5: 'EMP', 6: 'Explosive'}
+const damageType = {'Normal': 0, 'Laser': 1, 'Fire': 2, 'Plasma': 3,
+				    'Electrical': 4, 'EMP': 5, 'Explosive': 6,
+				    0:'Normal', 1: 'Laser', 2: 'Fire', 3: 'Plasma',
+				    4: 'Electrical', 5: 'EMP', 6: 'Explosive'}
 
-var weaponSkillMap = {'uzi': 'Small Guns',
-                      'rifle': 'Small Guns',
-                      'spear': 'Melee Weapons',
-                      'knife': 'Melee Weapons',
-                      'flamethr': 'Big Guns',
-                     }
+const weaponSkillMap = {'uzi': 'Small Guns',
+                       'rifle': 'Small Guns',
+                       'spear': 'Melee Weapons',
+                       'knife': 'Melee Weapons',
+                       'flamethr': 'Big Guns',
+                       }
 
 interface AttackInfo {
 	mode: number;
