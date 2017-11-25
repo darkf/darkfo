@@ -478,8 +478,6 @@ class Obj {
 		// etc? TODO: check this!
 
 		obj.init()
-		if(Config.engine.doLoadScripts)
-			obj.loadScript()
 
 		if(deserializing) {
 			obj.inventory = mobj.inventory.map(obj => deserializeObj(obj))
@@ -487,8 +485,10 @@ class Obj {
 
 			if(mobj._script)
 				obj._script = scriptingEngine.deserializeScript(mobj._script)
+
+			// TODO: Should we load the script if mobj._script does not exist?
 		}
-		else
+		else if(Config.engine.doLoadScripts)
 			obj.loadScript()
 
 		return obj
@@ -516,6 +516,7 @@ class Obj {
 
 		if(scriptName != null) {
 			console.log("loadScript: loading %s (sid=%d)", scriptName, sid)
+			// console.trace();
 			var script = scriptingEngine.loadScript(scriptName)
 			if(!script) {
 				console.log("loadScript: load script failed for %s (sid=%d)", scriptName, sid)
