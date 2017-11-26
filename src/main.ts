@@ -765,6 +765,10 @@ function initGame() {
 		if(query.indexOf("host=") === 0) { // host a multiplayer map
 			const mapName = query.split("host=")[1]
 			console.log("MP host map", mapName);
+
+			// Disallow combat, for now, since it breaks things with guest players.
+			Config.engine.doCombat = false;
+
 			gMap.loadMap(mapName);
 
 			Netcode.connect("ws://localhost:8090", () => {
