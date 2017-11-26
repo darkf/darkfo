@@ -47,7 +47,7 @@ module Netcode {
 		};
 
 		ws.onclose = (e: CloseEvent) => {
-			console.warn("WebSocket closed: %s", e.reason);
+			console.warn("WebSocket closed (%d): %s", e.code, e.reason);
 			connected = false;
 		};
 
