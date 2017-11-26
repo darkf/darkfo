@@ -173,6 +173,40 @@ function useExplosive(obj: Obj, source: Critter): void {
 	}})
 }
 
+// Set the object (door/container) open/closed; returns true if possible, false if not (e.g. locked)
+function setObjectOpen(obj: Obj, open: boolean, loot: boolean=true, signalEvent: boolean=true): boolean {
+	if(!objectIsDoor(obj) && !objectIsContainer(obj))
+		return false;
+
+	// Open/closable doors/containers
+	// TODO: Door/Container subclasses
+	if(obj.locked)
+		return false;
+
+	obj.open = open;
+
+	if(signalEvent) {
+		Events.emit("objSetOpen", { obj, open });
+		Events.emit(open ? "objOpen" : "objClose", { obj });
+	}
+
+	// Animate open/closed
+	objectSingleAnim(obj, !open, function() {
+		obj.anim = null
+		if(loot && objectIsContainer(obj) && open) {
+			// loot a container
+			uiLoot(obj);
+		}
+	});
+
+	return true;
+}
+
+// Toggle the object (door/container) open/closed; returns true if possible, false if not (e.g. locked)
+function toggleObjectOpen(obj: Obj, loot: boolean=true, signalEvent: boolean=true): boolean {
+	return setObjectOpen(obj, !obj.open, loot, signalEvent);
+}
+
 // Returns whether or not the object was used
 function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean {
 	if(canUseObject(obj, source) === false) {
@@ -197,22 +231,7 @@ function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean {
 	}
 
 	if(objectIsDoor(obj) || objectIsContainer(obj)) {
-		// open/closable doors/containers
-		// TODO: Door/Container subclasses
-		if(obj.locked) {
-			uiLog("That object is locked")
-			return false
-		}
-
-		obj.open = !obj.open
-
-		objectSingleAnim(obj, !obj.open, function() {
-			obj.anim = null
-			if(objectIsContainer(obj) && obj.open === true) {
-				// loot a container
-				uiLoot(obj)
-			}
-		})
+		toggleObjectOpen(obj, true, true);
 	}
 	else if(objectIsStairs(obj)) {
 		var destTile = fromTileNum(obj.extra.destination & 0xffff)

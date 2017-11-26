@@ -76,7 +76,12 @@ module Netcode {
 		send("ident", { name });
 	}
 
+	function findObjectByPID(pid: number): Obj|null {
+		return _.find(gMap.getObjects(), (obj: Obj) => obj.pid === pid) || null;
+	}
+
 	function setupCommonEvents(): void {
+		// Player movement
 		on("movePlayer", (msg: any) => {
 			if(msg.uid in netPlayerMap)
 				netPlayerMap[msg.uid].move(msg.position);
@@ -84,6 +89,17 @@ module Netcode {
 
 		Events.on("playerMoved", (msg: any) => {
 			send("moved", { x: msg.x, y: msg.y });
+		});
+
+		// Object open/close
+		on("objSetOpen", (msg: any) => {
+			const obj = findObjectByPID(msg.pid);
+			console.assert(obj !== null, "objSetOpen: No such object");
+			setObjectOpen(obj, msg.open, false, false);
+		});
+
+		Events.on("objSetOpen", (msg: any) => {
+			send("objSetOpen", { pid: msg.obj.pid, open: msg.open });
 		});
 	}
 

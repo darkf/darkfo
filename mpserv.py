@@ -108,6 +108,14 @@ class Connection:
 
         if target:
             target.send("movePlayer", { "uid": self.uid, "position": self.pos })
+
+    def target(self):
+        if self.is_host:
+            return context.guest
+        return context.host
+
+    def relay(self, msg):
+        self.target().send(msg["t"], msg)
     
     def serve(self):
         global context
@@ -190,6 +198,9 @@ class Connection:
                     self.pos["x"] = msg["x"]
                     self.pos["y"] = msg["y"]
                     self.moved()
+
+                elif t == "objSetOpen":
+                    self.relay(msg)
 
                 elif t == "close":
                     self.disconnected("close message received")
