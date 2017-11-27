@@ -115,7 +115,9 @@ class Connection:
         return context.host
 
     def relay(self, msg):
-        self.target().send(msg["t"], msg)
+        target = self.target()
+        if target:
+            target.send(msg["t"], msg)
     
     def serve(self):
         global context
