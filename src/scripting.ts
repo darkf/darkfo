@@ -560,7 +560,8 @@ module scriptingEngine {
 			// implementing all of it
 
 			// begin combat, turn starting with us
-			Combat.start(this.self_obj)
+			if(Config.engine.doCombat)
+				Combat.start(this.self_obj)
 		},
 		terminate_combat: function() {
 			info("[terminate_combat]")
