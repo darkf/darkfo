@@ -201,7 +201,7 @@ class Connection:
                     self.pos["y"] = msg["y"]
                     self.moved()
 
-                elif t == "objSetOpen":
+                elif t in ("objSetOpen", "objMove"):
                     self.relay(msg)
 
                 elif t == "close":

@@ -76,8 +76,8 @@ module Netcode {
 		send("ident", { name });
 	}
 
-	function findObjectByPID(pid: number): Obj|null {
-		return _.find(gMap.getObjects(), (obj: Obj) => obj.pid === pid) || null;
+	function findObjectByUID(uid: number): Obj|null {
+		return _.find(gMap.getObjects(), (obj: Obj) => obj.uid === uid) || null;
 	}
 
 	function setupCommonEvents(): void {
@@ -93,13 +93,13 @@ module Netcode {
 
 		// Object open/close
 		on("objSetOpen", (msg: any) => {
-			const obj = findObjectByPID(msg.pid);
-			console.assert(obj !== null, "objSetOpen: No such object");
+			const obj = findObjectByUID(msg.uid);
+			console.assert(obj !== null, "net.objSetOpen: No such object");
 			setObjectOpen(obj, msg.open, false, false);
 		});
 
 		Events.on("objSetOpen", (msg: any) => {
-			send("objSetOpen", { pid: msg.obj.pid, open: msg.open });
+			send("objSetOpen", { uid: msg.obj.uid, open: msg.open });
 		});
 	}
 
@@ -155,6 +155,10 @@ module Netcode {
 
 			send("changeElevation", { elevation: currentElevation, position: player.position, orientation: player.orientation });
 		});
+
+		Events.on("objMove", (e: any) => {
+			send("objMove", { uid: e.obj.uid, position: e.position });
+		});
 	}
 
 	export function join(): void {
@@ -173,6 +177,17 @@ module Netcode {
 				_.pull(gMap.objects[oldElevation], netPlayer);
 				gMap.objects[currentElevation].push(netPlayer);
 			}
+		});
+
+		on("objMove", (e: any) => {
+			const obj = findObjectByUID(e.uid);
+			console.assert(obj !== null, "net.objMove: No such object");
+
+			console.log("Move: uid %o, obj %o, pos %o", e.uid, obj, e.position);
+
+			// Doesn't matter if we signal events or not, we're on the guest -- we won't be sending them (for now).
+			// If this changes, we shouldn't signal events here.
+			obj.move(e.position);
 		});
 	}
 

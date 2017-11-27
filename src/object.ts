@@ -574,8 +574,11 @@ class Obj {
 
 	// Moves the object; returns `true` if successfully moved,
 	// or `false` if interrupted (such as by an exit grid).
-	move(position: Point, curIdx?: number): boolean {
+	move(position: Point, curIdx?: number, signalEvents: boolean=true): boolean {
 		this.position = position
+
+		if(signalEvents)
+			Events.emit("objMove", { obj: this, position })
 
 		// rebuild the lightmap
 		if(Config.engine.doFloorLighting)
