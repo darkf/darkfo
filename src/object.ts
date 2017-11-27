@@ -18,6 +18,8 @@ limitations under the License.
 
 "use strict";
 
+let _lastObjectUID = 0;
+
 function objectGetMoney(obj: Obj): number {
 	const MONEY_PID = 41
 	for(var i = 0; i < obj.inventory.length; i++) {
@@ -361,6 +363,8 @@ function useElevator(): void {
 }
 
 interface SerializedObj {
+	uid: number;
+
 	pid: number;
 	pidID: number;
 	type: string;
@@ -391,6 +395,8 @@ interface SerializedObj {
 }
 
 class Obj {
+	uid: number = -1; // Unique ID given to all objects, to distinguish objects with the same PIDs
+
 	pid: number; // PID (Prototype IDentifier)
 	pidID: number; // ID (not type) part of the PID
 	type: string = null; // TODO: enum // Type of object (critter, item, ...)
@@ -475,6 +481,7 @@ class Obj {
 	static fromMapObject_<T extends Obj>(obj: T, mobj: any, deserializing: boolean=false): T {
 		// Load an Obj from a map object
 		//console.log("fromMapObject: %o", mobj)
+		if(mobj.uid) obj.uid = mobj.uid;
 		obj.pid = mobj.pid
 		obj.pidID = mobj.pidID
 		obj.frmPID = mobj.frmPID
@@ -514,6 +521,9 @@ class Obj {
 	}
 
 	init() {
+		if(this.uid === -1)
+			this.uid = _lastObjectUID++;
+
 		//console.log("init: %o", this)
 		if(this.inventory !== undefined) // containers and critters
 			this.inventory = this.inventory.map(obj => objFromMapObject(obj))
@@ -678,6 +688,7 @@ class Obj {
 	// TODO: override this for subclasses
 	serialize(): SerializedObj {
 		return {
+			uid: this.uid,
 			pid: this.pid,
 			pidID: this.pidID,
 			type: this.type,
