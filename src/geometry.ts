@@ -32,6 +32,13 @@ interface Point3 {
 	z: number;
 }
 
+interface BoundingBox {
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+}
+
 function toTileNum(position: Point): number {
 	return position.y * 200 + position.x
 }
@@ -391,7 +398,7 @@ function hexesInRadius(center: Point, radius: number) {
 	return hexes
 }
 
-function pointInBoundingBox(point, bbox) {
+function pointInBoundingBox(point: Point, bbox: BoundingBox) {
 	return (bbox.x <= point.x && point.x <= bbox.x+bbox.w &&
 		    bbox.y <= point.y && point.y <= bbox.y+bbox.h)
 }

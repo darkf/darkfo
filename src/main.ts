@@ -1335,7 +1335,7 @@ function getPixelIndex(x: number, y: number, w: number) {
 }
 
 // get an object's bounding box in screen-space (note: not camera-space)
-function objectBoundingBox(obj: Obj) {
+function objectBoundingBox(obj: Obj): BoundingBox {
 	var scr = hexToScreen(obj.position.x, obj.position.y)
 
 	if(images[obj.art] === undefined) // no art
