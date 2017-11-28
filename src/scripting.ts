@@ -39,9 +39,16 @@ module scriptingEngine {
 	var scriptMessages: { [scriptName: string]: { [msgID: number]: string } } = {}
 	var dialogueOptionProcs: (() => void)[] = [] // Maps dialogue options to handler callbacks
 	var currentDialogueObject: Obj|null = null
-	export var timeEventList = []
+	export var timeEventList: TimedEvent[] = []
 
-	var statMap = {
+	export interface TimedEvent {
+		obj: Obj;
+		ticks: number;
+		userdata: any;
+		fn: () => void;
+	}
+
+	var statMap: { [stat: number]: string } = {
 		0: "STR", 1: "PER", 2: "END", 3: "CHA", 4: "INT",
 		5: "AGI", 6: "LUK",
 		35: "HP", 7: "Max HP"

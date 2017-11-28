@@ -33,7 +33,7 @@ interface HeartImage {
 
 var gMap: GameMap|null = null
 const images: { [name: string]: HeartImage } = {} // Image cache
-var imageInfo = null // Metadata about images (Number of frames, FPS, etc)
+var imageInfo: any = null // Metadata about images (Number of frames, FPS, etc)
 var currentElevation = 0 // current map elevation
 var hexOverlay: HeartImage|null = null
 var tempCanvas: HTMLCanvasElement|null = null // temporary canvas used for detecting single pixels
@@ -689,18 +689,21 @@ heart.update = function() {
 			var timedEvents = scriptingEngine.timeEventList
 			var numEvents = timedEvents.length
 			for(var i = 0; i < numEvents; i++) {
+				const event = timedEvents[i];
+				const obj = event.obj;
+
 				// remove events for dead objects
-				if(timedEvents[i].obj && timedEvents[i].obj.dead) {
+				if(obj && obj instanceof Critter && obj.dead) {
 				   	console.log("removing timed event for dead object")
 				   	timedEvents.splice(i--, 1)
 				   	numEvents--
 				    continue
 				}
 
-				timedEvents[i].ticks--
-				if(timedEvents[i].ticks <= 0) {
+				event.ticks--
+				if(event.ticks <= 0) {
 					scriptingEngine.info("timed event triggered", "timer")
-					timedEvents[i].fn()
+					event.fn()
 					timedEvents.splice(i--, 1)
 					numEvents--
 				}
