@@ -668,8 +668,8 @@ class Critter extends Obj {
 		return !!(this.path || this.animCallback)
 	}
 
-	move(position: Point, curIdx?: number): boolean {
-		if(!super.move(position, curIdx))
+	move(position: Point, curIdx?: number, signalEvents: boolean=true): boolean {
+		if(!super.move(position, curIdx, signalEvents))
 			return false
 
 		if(Config.engine.doSpatials !== false) {

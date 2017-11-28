@@ -55,11 +55,12 @@ class Player extends Critter {
 	          	   ], stats: null, skills: null, tempChanges: null}
 	*/
 
-	move(position: Point, curIdx?: number): boolean {
-		if(!super.move(position, curIdx))
+	move(position: Point, curIdx?: number, signalEvents: boolean=true): boolean {
+		if(!super.move(position, curIdx, signalEvents))
 			return false
 
-		Events.emit("playerMoved", position);
+		if(signalEvents)
+			Events.emit("playerMoved", position);
 
 		// check if the player has entered an exit grid
 		var objs = objectsAtPosition(this.position)
