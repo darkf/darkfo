@@ -351,7 +351,7 @@ module scriptingEngine {
 		random: function(min, max) { log("random", arguments); return getRandomInt(min, max) },
 		debug_msg: function(msg) { log("debug_msg", arguments); info("DEBUG MSG: [" + this.scriptName + "]: " + msg, "debugMessage") },
 		display_msg: function(msg) { log("display_msg", arguments); info("DISPLAY MSG: " + msg, "displayMessage"); uiLog(msg) },
-		message_str: function(msgList, msgNum) { return getScriptMessage(msgList, msgNum) },
+		message_str: function(msgList, msgNum: number) { return getScriptMessage(msgList, msgNum) },
 		metarule: function(id, target): any {
 			switch(id) {
 				case 14: return mapFirstRun // map_first_run
@@ -536,12 +536,12 @@ module scriptingEngine {
 			stub("critter_inven_obj", arguments)
 			return undefined
 		},
-		critter_attempt_placement: function(obj, tileNum, elevation) {
+		critter_attempt_placement: function(obj: Obj, tileNum: number, elevation: number) {
 			stub("critter_attempt_placement", arguments)
 			// TODO: it should find a place around tileNum if it's occupied
 			return this.move_to(obj, tileNum, elevation)
 		},
-		critter_state: function(obj) {
+		critter_state: function(obj: Critter) {
 			/*stub("critter_state", arguments);*/
 			if(!isGameObject(obj)) {
 				warn("critter_state: not game object: " + obj)
@@ -555,12 +555,12 @@ module scriptingEngine {
 
 			return state
 		},
-		kill_critter: function(obj: Critter, deathFrame) {
+		kill_critter: function(obj: Critter, deathFrame: number) {
 			log("kill_critter", arguments)
 			critterKill(obj, null)
 		},
-		get_poison: function(obj) { stub("get_poison", arguments); return 0 },
-		get_pc_stat: function(pcstat) {
+		get_poison: function(obj: Obj) { stub("get_poison", arguments); return 0 },
+		get_pc_stat: function(pcstat: number) {
 			switch(pcstat) {
 				case 0: // PCSTAT_unspent_skill_points
 				case 1: // PCSTAT_level
@@ -573,24 +573,24 @@ module scriptingEngine {
 				default: throw `get_pc_stat: unhandled ${pcstat}`
 			}
 		},
-		critter_injure: function(obj, how) { stub("critter_injure", arguments) },
-		critter_is_fleeing: function(obj) { stub("critter_is_fleeing", arguments); return 0 },
-		wield_obj_critter: function(obj, item) { stub("wield_obj_critter", arguments) },
-		critter_dmg: function(obj, damage, damageType) {
+		critter_injure: function(obj: Obj, how: number) { stub("critter_injure", arguments) },
+		critter_is_fleeing: function(obj: Obj) { stub("critter_is_fleeing", arguments); return 0 },
+		wield_obj_critter: function(obj: Obj, item) { stub("wield_obj_critter", arguments) },
+		critter_dmg: function(obj: Critter, damage: number, damageType: string) {
 			if(!isGameObject(obj)) {
 				warn("critter_dmg: not game object: " + obj)
 				return
 			}
 			critterDamage(obj, damage, this.self_obj, true, true, damageType)
 		},
-		critter_heal: function(obj, amount) {
+		critter_heal: function(obj: Obj, amount: number) {
 			stub("critter_heal", arguments)
 		},
-		poison: function(obj, amount) { stub("poison", arguments) },
-		radiation_dec: function(obj, amount) { stub("radiation_dec", arguments) },
+		poison: function(obj: Obj, amount: number) { stub("poison", arguments) },
+		radiation_dec: function(obj: Obj, amount: number) { stub("radiation_dec", arguments) },
 
 		// combat
-		attack_complex: function(obj, calledShot, numAttacks, bonus, minDmg, maxDmg, attackerResults, targetResults) {
+		attack_complex: function(obj: Obj, calledShot: number, numAttacks: number, bonus: number, minDmg: number, maxDmg: number, attackerResults, targetResults) {
 			info("[enter combat via attack_complex]")
 			//stub("attack_complex", arguments)
 			// since this isn't actually used beyond its basic form, we're not going to bother
@@ -604,13 +604,13 @@ module scriptingEngine {
 			info("[terminate_combat]")
 			combat.end()
 		},
-		critter_set_flee_state: function(obj, isFleeing) { stub("critter_set_flee_state", arguments) },
+		critter_set_flee_state: function(obj: Obj, isFleeing: number) { stub("critter_set_flee_state", arguments) },
 
 		// objects
 		obj_is_locked: function(obj: Obj) { log("obj_is_locked", arguments); return obj.locked ? 1 : 0 },
 		obj_lock: function(obj: Obj) { log("obj_lock", arguments); obj.locked = true },
 		obj_unlock: function(obj: Obj) { log("obj_unlock", arguments); obj.locked = false },
-		obj_is_open: function(obj) {
+		obj_is_open: function(obj: Obj) {
 			info("obj_is_open")
 			if(!isGameObject(obj)) {
 				warn("obj_is_open: not game object: " + obj)
@@ -638,8 +638,8 @@ module scriptingEngine {
 			useObject(obj, this.self_obj, false)
 			//stub("obj_open", arguments)
 		},
-		proto_data: function(pid:number, data_member:number) { stub("proto_data", arguments); return null },
-		create_object_sid: function(pid, tile, elev, sid) { // Create object of pid and possibly script
+		proto_data: function(pid: number, data_member: number) { stub("proto_data", arguments); return null },
+		create_object_sid: function(pid: number, tile: number, elev: number, sid: number) { // Create object of pid and possibly script
 			info("create_object_sid: pid=" + pid + " tile=" + tile + " elev=" + elev + " sid=" + sid)
 
 			if(elev < 0 || elev > 2)
@@ -666,8 +666,8 @@ module scriptingEngine {
 
 			return obj
 		},
-		obj_name: function(obj) { return obj.name },
-		obj_item_subtype: function(obj) {
+		obj_name: function(obj: Obj) { return obj.name },
+		obj_item_subtype: function(obj: Obj) {
 			if(!isGameObject(obj)) {
 				warn("obj_item_subtype: not game object: " + obj)
 				return null
@@ -678,7 +678,7 @@ module scriptingEngine {
 			stub("obj_item_subtype", arguments)
 			return null
 		},
-		anim_busy: function(obj) {
+		anim_busy: function(obj: Obj) {
 			log("anim_busy", arguments)
 			if(!isGameObject(obj)) {
 				warn("anim_busy: not game object: " + obj)
@@ -686,9 +686,9 @@ module scriptingEngine {
 			}
 			return obj.inAnim()
 		},
-		obj_art_fid: function(obj) { stub("obj_art_fid", arguments); return 0 },
-		art_anim: function(fid:number):number { stub("art_anim", arguments); return 0 },
-		set_obj_visibility: function(obj, visibility) {
+		obj_art_fid: function(obj: Obj) { stub("obj_art_fid", arguments); return 0 },
+		art_anim: function(fid: number): number { stub("art_anim", arguments); return 0 },
+		set_obj_visibility: function(obj: Obj, visibility: number) {
 			if(!isGameObject(obj)) {
 				warn("set_obj_visibility: not a game object: " + obj)
 				return
@@ -696,9 +696,9 @@ module scriptingEngine {
 
 			obj.visible = !visibility
 		},
-		use_obj_on_obj: function(obj, who) { stub("use_obj_on_obj", arguments) },
+		use_obj_on_obj: function(obj: Obj, who: Obj) { stub("use_obj_on_obj", arguments) },
 		use_obj: function(obj) { stub("use_obj", arguments) },
-		anim: function(obj, anim, param) {
+		anim: function(obj: Obj, anim: number, param: number) {
 			if(!isGameObject(obj)) {
 				warn("anim: not a game object: " + obj)
 				return
@@ -713,9 +713,9 @@ module scriptingEngine {
 		},
 
 		// environment
-		set_light_level: function(level) { stub("set_light_level", arguments) },
-		obj_set_light_level: function(obj, intensity, distance) { stub("obj_set_light_level", arguments) },
-		override_map_start: function(x, y, elevation, rotation) {
+		set_light_level: function(level: number) { stub("set_light_level", arguments) },
+		obj_set_light_level: function(obj: Obj, intensity: number, distance: number) { stub("obj_set_light_level", arguments) },
+		override_map_start: function(x: number, y: number, elevation: number, rotation: number) {
 			stub("override_map_start", arguments)
 			if(elevation !== currentElevation)
 				gMap.changeElevation(elevation, true)
@@ -723,14 +723,14 @@ module scriptingEngine {
 			dudeObject.orientation = rotation
 			centerCamera(dudeObject.position)
 		},
-		obj_pid: function(obj) {
+		obj_pid: function(obj: Obj) {
 			if(!isGameObject(obj)) {
 				warn("obj_pid: not game object: " + obj)
 				return null
 			}
 			return obj.pid
 		},
-		obj_on_screen: function(obj) {
+		obj_on_screen: function(obj: Obj) {
 			log("obj_on_screen", arguments)
 			if(!isGameObject(obj)) {
 				warn("obj_on_screen: not a game object: " + obj)
@@ -738,17 +738,17 @@ module scriptingEngine {
 			}
 			return objectOnScreen(obj) ? 1 : 0
 		},
-		obj_type: function(obj) {
+		obj_type: function(obj: Obj) {
 			if(!isGameObject(obj)) { warn("obj_type: not game object: " + obj); return null }
-			else if(obj.isPlayer) return 1 // critter
+			else if(obj.type === "critter") return 1 // critter
 			else if(obj.pid === undefined) { warn("obj_type: no PID"); return null }
 			return (obj.pid >> 24) & 0xff
 		},
-		destroy_object: function(obj) { // destroy object from world
+		destroy_object: function(obj: Obj) { // destroy object from world
 			log("destroy_object", arguments)
 			gMap.destroyObject(obj)
 		},
-		set_exit_grids: function(onElev, mapID, elevation, tileNum, rotation) {
+		set_exit_grids: function(onElev: number, mapID: number, elevation: number, tileNum: number, rotation: number) {
 			stub("set_exit_grids", arguments)
 			for(var i = 0; i < gameObjects.length; i++) {
 				var obj = gameObjects[i]
@@ -761,26 +761,26 @@ module scriptingEngine {
 		},
 
 		// tiles
-		tile_distance_objs: function(a, b) {
+		tile_distance_objs: function(a: Obj, b: Obj) {
 			if((!isSpatial(a) && !isSpatial(b)) && (!isGameObject(a) || !isGameObject(b))) {
 				warn("tile_distance_objs: " + a + " or " + b + " are not game objects")
 				return null
 			}
 			return hexDistance(a.position, b.position)
 		},
-		tile_distance: function(a, b) {
+		tile_distance: function(a: number, b: number) {
 			if(a === -1 || b === -1)
 				return 9999
 			return hexDistance(fromTileNum(a), fromTileNum(b))
 		},
-		tile_num: function(obj) {
+		tile_num: function(obj: Obj) {
 			if(!isSpatial(obj) && !isGameObject(obj)) {
 				console.log("tile_num: not a game object: " + obj)
 				return null
 			}
 			return toTileNum(obj.position)
 		},
-		tile_contains_pid_obj: function(tile, elevation, pid): any {
+		tile_contains_pid_obj: function(tile: number, elevation: number, pid: number): any {
 			stub("tile_contains_pid_obj", arguments, "tiles")
 			var pos = fromTileNum(tile)
 			var objects = gMap.getObjects(elevation)
@@ -792,28 +792,28 @@ module scriptingEngine {
 			}
 			return 0 // it's not there
 		},
-		tile_is_visible: function(tile) {
+		tile_is_visible: function(tile: number) {
 			stub("tile_is_visible", arguments, "tiles")
 			return 1
 		},
-		tile_num_in_direction: function(tile, direction, distance) {
+		tile_num_in_direction: function(tile: number, direction: number, distance: number) {
 			if(distance === 0) {
 				//warn("tile_num_in_direction: distance=" + distance)
 				return -1
 			}
-			tile = hexInDirection(fromTileNum(tile), direction)
+			let newTile = hexInDirection(fromTileNum(tile), direction)
 			for(var i = 0; i < distance-1; i++) // repeat for each further distance
-				tile = hexInDirection(tile, direction)
-			return toTileNum(tile)
+				newTile = hexInDirection(newTile, direction)
+			return toTileNum(newTile)
 		},
-		tile_in_tile_rect: function(ul, ur, ll, lr, t) {
+		tile_in_tile_rect: function(ul: number, ur: number, ll: number, lr: number, t: number) {
 			//stub("tile_in_tile_rect", arguments, "tiles")
-			ul = fromTileNum(ul); ur = fromTileNum(ur)
-			ll = fromTileNum(ll); lr = fromTileNum(lr)
-			t = fromTileNum(t)
-			return (tile_in_tile_rect(t, ur, lr, ll, ul) ? 1 : 0)
+			const _ul = fromTileNum(ul), _ur = fromTileNum(ur)
+			const _ll = fromTileNum(ll), _lr = fromTileNum(lr)
+			const _t = fromTileNum(t)
+			return (tile_in_tile_rect(_t, _ur, _lr, _ll, _ul) ? 1 : 0)
 		},
-		tile_contains_obj_pid: function(tile, elevation, pid) {
+		tile_contains_obj_pid: function(tile: number, elevation: number, pid: number) {
 			if(elevation !== currentElevation) {
 				warn("tile_contains_obj_pid: not same elevation")
 				return 0
@@ -825,7 +825,7 @@ module scriptingEngine {
 			}
 			return 0
 		},
-		rotation_to_tile: function(srcTile, destTile) {
+		rotation_to_tile: function(srcTile: number, destTile: number) {
 			var src = fromTileNum(srcTile), dest = fromTileNum(destTile)
 			var hex = hexNearestNeighbor(src, dest)
 			if(hex !== null)
@@ -833,7 +833,7 @@ module scriptingEngine {
 			warn("rotation_to_tile: invalid hex: " + srcTile + " / " + destTile)
 			return -1 // TODO/XXX: what does this return if invalid?
 		},
-		move_to: function(obj, tileNum, elevation) {
+		move_to: function(obj: Obj, tileNum: number, elevation: number) {
 			if(!isGameObject(obj)) {
 				warn("move_to: not a game object: " + obj)
 				return
@@ -841,7 +841,7 @@ module scriptingEngine {
 			if(elevation !== currentElevation) {
 				info("move_to: moving to elevation " + elevation)
 
-				if(obj.isPlayer)
+				if(obj instanceof Critter && obj.isPlayer)
 					gMap.changeElevation(elevation, true)
 				else {
 					gMap.removeObject(obj)
@@ -850,7 +850,7 @@ module scriptingEngine {
 			}
 			obj.position = fromTileNum(tileNum)
 
-			if(obj.isPlayer)
+			if(obj instanceof Critter && obj.isPlayer)
 				centerCamera(obj.position)
 		},
 
@@ -864,14 +864,14 @@ module scriptingEngine {
 			info("DIALOGUE EXIT (Node999)")
 			dialogueExit()
 		},
-		gdialog_set_barter_mod: function(mod) { stub("gdialog_set_barter_mod", arguments) },
-		gdialog_mod_barter: function(mod) { // switch to barter mode
+		gdialog_set_barter_mod: function(mod: number) { stub("gdialog_set_barter_mod", arguments) },
+		gdialog_mod_barter: function(mod: number) { // switch to barter mode
 			log("gdialog_mod_barter", arguments)
 			console.log("--> barter mode")
 			if(!this.self_obj) throw "need self_obj"
 			uiBarterMode(this.self_obj)
 		},
-		start_gdialog: function(msgFileID, obj, mood, headNum, backgroundID) {
+		start_gdialog: function(msgFileID: number, obj: Obj, mood: number, headNum: number, backgroundID: number) {
 			log("start_gdialog", arguments)
 			info("DIALOGUE START", "dialogue")
 			//$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
@@ -882,14 +882,14 @@ module scriptingEngine {
 		},
 		gsay_start: function() { stub("gSay_Start", arguments) },
 		//gSay_Option: function(msgList, msgID, target, reaction) { stub("gSay_Option", arguments) },
-		gsay_reply: function(msgList, msgID) {
+		gsay_reply: function(msgList, msgID: string|number) {
 			log("gSay_Reply", arguments)
 			var msg = getScriptMessage(msgList, msgID)
 			info("REPLY: " + msg, "dialogue")
 			//$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
 			uiSetDialogueReply(msg)
 		},
-		gsay_message: function(msgList, msgID, reaction) {
+		gsay_message: function(msgList, msgID: string|number, reaction: number) {
 			// TODO: update this for ui
 			log("gsay_message", arguments)
 			// message with [Done] option
@@ -900,7 +900,7 @@ module scriptingEngine {
 		},
 		gsay_end: function() { stub("gSay_End", arguments) },
 		end_dialogue: function() { stub("end_dialogue", arguments) },
-		giq_option: function(iqTest, msgList, msgID, target, reaction) {
+		giq_option: function(iqTest: number, msgList, msgID: string|number, target, reaction: number) {
 			log("giQ_Option", arguments)
 			var msg = getScriptMessage(msgList, msgID)
 			info("DIALOGUE OPTION: " + msg +
@@ -921,7 +921,7 @@ module scriptingEngine {
 			}
 			talk(this.self_obj._script, this.self_obj)
 		},
-		float_msg: function(obj, msg, type) {
+		float_msg: function(obj: Obj, msg: string, type: number) {
 			log("float_msg", arguments)
 			//info("FLOAT MSG: " + msg, "floatMessage")
 			if(!isGameObject(obj)) {
@@ -952,9 +952,9 @@ module scriptingEngine {
 		},
 
 		// animation
-		reg_anim_func: function(_1, _2) { stub("reg_anim_func", arguments, "animation") },
-		reg_anim_animate: function(obj, anim, delay) { stub("reg_anim_animate", arguments, "animation") },
-		reg_anim_animate_forever: function(obj, anim) {
+		reg_anim_func: function(_1: any, _2: any) { stub("reg_anim_func", arguments, "animation") },
+		reg_anim_animate: function(obj: Obj, anim: number, delay: number) { stub("reg_anim_animate", arguments, "animation") },
+		reg_anim_animate_forever: function(obj: Obj, anim: number) {
 			log("reg_anim_animate_forever", arguments, "animation")
 			if(!isGameObject(obj)) {
 				warn("reg_anim_animate_forever: not a game object")
@@ -966,7 +966,7 @@ module scriptingEngine {
 			function animate() { objectSingleAnim(obj, false, animate) }
 			animate()
 		},
-		animate_move_obj_to_tile: function(obj, tileNum, isRun) {
+		animate_move_obj_to_tile: function(obj: Critter, tileNum: any, isRun: number) {
 			log("animate_move_obj_to_tile", arguments, "movement")
 			if(!isGameObject(obj)) {
 				warn("animate_move_obj_to_tile: not a game object")
@@ -994,8 +994,8 @@ module scriptingEngine {
 				return
 			}
 		},
-		reg_anim_obj_move_to_tile: function(obj, tileNum, delay) { stub("reg_anim_obj_move_to_tile", arguments, "movement") },
-		explosion: function(tile, elevation, damage) {
+		reg_anim_obj_move_to_tile: function(obj: Obj, tileNum: number, delay: number) { stub("reg_anim_obj_move_to_tile", arguments, "movement") },
+		explosion: function(tile: number, elevation: number, damage: number) {
 			log("explosion", arguments)
 
 			// TODO: objectExplode should defer to an auxillary tile explode function, which we should use
@@ -1007,11 +1007,11 @@ module scriptingEngine {
 			gMap.removeObject(explosives)
 		},
 
-		gfade_out: function(time) { stub("gfade_out", arguments) },
-		gfade_in: function(time) { stub("gfade_in", arguments) },
+		gfade_out: function(time: number) { stub("gfade_out", arguments) },
+		gfade_in: function(time: number) { stub("gfade_in", arguments) },
 
 		// timing
-		add_timer_event: function(obj, ticks, userdata) {
+		add_timer_event: function(obj: Obj, ticks: number, userdata: any) {
 			log("add_timer_event", arguments)
 			if(!obj || !obj._script) {
 				warn("add_timer_event: not a scriptable object: " + obj)
@@ -1023,7 +1023,7 @@ module scriptingEngine {
 				timedEvent(obj._script, userdata)
 			}.bind(this)})
 		},
-		rm_timer_event: function(obj) {
+		rm_timer_event: function(obj: Obj) {
 		   	log("rm_timer_event", arguments)
 		   	info("rm_timer_event: " + obj + ", " + obj.pid)
 			for(var i = 0; i < timeEventList.length; i++) {
@@ -1034,15 +1034,15 @@ module scriptingEngine {
 				}
 			}
 		},
-		game_ticks: function(seconds) { return seconds*10 },
-		game_time_advance: function(ticks) {
+		game_ticks: function(seconds: number) { return seconds*10 },
+		game_time_advance: function(ticks: number) {
 			log("game_time_advance", arguments)
 			info("advancing time " + ticks + " ticks " + "(" + ticks/10 + " seconds)")
 			gameTickTime += ticks
 		},
 
 		// game
-		load_map: function(map, startLocation) {
+		load_map: function(map: number|string, startLocation: number) {
 			log("load_map", arguments)
 			info("load_map: " + map)
 			if(typeof map === "string")
@@ -1050,8 +1050,8 @@ module scriptingEngine {
 			else
 				gMap.loadMapByID(map)
 		},
-		play_gmovie: function(movieID) { stub("play_gmovie", arguments) },
-		mark_area_known: function(areaType, area, markState) {
+		play_gmovie: function(movieID: number) { stub("play_gmovie", arguments) },
+		mark_area_known: function(areaType: number, area: number, markState: number) {
 			if(areaType === 0) { // MARK_TYPE_TOWN
 				switch(markState) {
 					case 0: break // MARK_STATE_UNKNOWN
@@ -1076,15 +1076,15 @@ module scriptingEngine {
 		play_sfx: function(sfx) { stub("play_sfx", arguments) },
 
 		// party
-		party_member_obj: function(pid) {
+		party_member_obj: function(pid: number) {
 			log("party_member_obj", arguments, "party")
 			return gParty.getPartyMemberByPID(pid) || 0
 		},
-		party_add: function(obj) {
+		party_add: function(obj: Critter) {
 			log("party_add", arguments)
 			gParty.addPartyMember(obj)
 		},
-		party_remove: function(obj) {
+		party_remove: function(obj: Critter) {
 			log("party_remove", arguments)
 			gParty.removePartyMember(obj)
 		},
