@@ -34,7 +34,7 @@ module scriptingEngine {
 		357: 2, // GVAR_NEW_RENO_LIL_JESUS_REFERS (lil_jesus_refers_yes)
 	}
 	var currentMapID: number|null = null
-	var currentMapObject = null
+	var currentMapObject: ScriptType|null = null
 	var mapFirstRun = true
 	var scriptMessages: { [scriptName: string]: { [msgID: number]: string } } = {}
 	var dialogueOptionProcs = []
@@ -348,11 +348,11 @@ module scriptingEngine {
 			}
 			return globalVars[gvar]
 		},
-		random: function(min, max) { log("random", arguments); return getRandomInt(min, max) },
-		debug_msg: function(msg) { log("debug_msg", arguments); info("DEBUG MSG: [" + this.scriptName + "]: " + msg, "debugMessage") },
-		display_msg: function(msg) { log("display_msg", arguments); info("DISPLAY MSG: " + msg, "displayMessage"); uiLog(msg) },
+		random: function(min: number, max: number) { log("random", arguments); return getRandomInt(min, max) },
+		debug_msg: function(msg: string) { log("debug_msg", arguments); info("DEBUG MSG: [" + this.scriptName + "]: " + msg, "debugMessage") },
+		display_msg: function(msg: string) { log("display_msg", arguments); info("DISPLAY MSG: " + msg, "displayMessage"); uiLog(msg) },
 		message_str: function(msgList, msgNum: number) { return getScriptMessage(msgList, msgNum) },
-		metarule: function(id, target): any {
+		metarule: function(id: number, target: number): any {
 			switch(id) {
 				case 14: return mapFirstRun // map_first_run
 				case 15: // elevator
@@ -373,7 +373,7 @@ module scriptingEngine {
 				default: stub("metarule", arguments); break
 			}
 		},
-		metarule3: function(id, obj, userdata, radius): any {
+		metarule3: function(id: number, obj: any, userdata: any, radius: number): any {
 			if(id === 100) { // METARULE3_CLR_FIXED_TIMED_EVENTS
 				for(var i = 0; i < timeEventList.length; i++) {
 					if(timeEventList[i].obj === obj && 
@@ -406,22 +406,25 @@ module scriptingEngine {
 		},
 
 		// player
-		give_exp_points: function(xp) { stub("give_exp_points", arguments) },
+		give_exp_points: function(xp: number) { stub("give_exp_points", arguments) },
 
 		// critters
-		get_critter_stat: function(obj, stat) {
-			if(stat === 34) // STAT_gender
-				return obj.gender === "female" ? 1 : 0
+		get_critter_stat: function(obj: Critter, stat: number) {
+			if(stat === 34) { // STAT_gender
+				if(obj.isPlayer)
+					return (<Player>obj).gender === "female" ? 1 : 0
+				return 0 // Default to male
+			}
 			var namedStat = statMap[stat]
 			if(namedStat !== undefined)
 				return critterGetStat(obj, namedStat)
 			stub("get_critter_stat", arguments)
 			return 5
 		},
-		has_trait: function(traitType, obj, trait) {
+		has_trait: function(traitType: number, obj: Obj, trait: number) {
 			if(!isGameObject(obj)) {
 				warn("has_trait: not game object: " + obj)
-				return
+				return 0
 			}
 
 			if(traitType === 1) {
@@ -438,13 +441,13 @@ module scriptingEngine {
 			stub("has_trait", arguments)
 			return 0
 		},
-		critter_add_trait: function(obj, traitType, trait, amount) { stub("critter_add_trait", arguments) },
-		item_caps_total: function(obj) {
+		critter_add_trait: function(obj: Obj, traitType: number, trait: number, amount: number) { stub("critter_add_trait", arguments) },
+		item_caps_total: function(obj: Obj) {
 			if(!isGameObject(obj)) throw "item_caps_total: not game object"
 			return objectGetMoney(obj)
 		},
-		item_caps_adjust: function(obj, amount) { stub("item_caps_adjust", arguments) },
-		move_obj_inven_to_obj: function(obj, other) {
+		item_caps_adjust: function(obj: Obj, amount: number) { stub("item_caps_adjust", arguments) },
+		move_obj_inven_to_obj: function(obj: Obj, other: Obj) {
 			if(obj === null || other === null) {
 				warn("move_obj_inven_to_obj: null pointer passed in")
 				return
@@ -460,7 +463,7 @@ module scriptingEngine {
 			obj.inventory = []
 			drawPlayerInventory()
 		},
-		obj_is_carrying_obj_pid: function(obj, pid) { // Number of inventory items with matching PID
+		obj_is_carrying_obj_pid: function(obj: Obj, pid: number) { // Number of inventory items with matching PID
 			log("obj_is_carrying_obj_pid", arguments)
 			if(!isGameObject(obj)) {
 				warn("obj_is_carrying_obj_pid: not a game object")
@@ -477,7 +480,7 @@ module scriptingEngine {
 			}
 			return count
 		},
-		add_mult_objs_to_inven: function(obj, item, count) { // Add count copies of item to obj's inventory
+		add_mult_objs_to_inven: function(obj: Obj, item: Obj, count: number) { // Add count copies of item to obj's inventory
 			if(!isGameObject(obj)) {
 				warn("add_mult_objs_to_inven: not a game object")
 				return
@@ -494,16 +497,16 @@ module scriptingEngine {
 			obj.addInventoryItem(item, count)
 			drawPlayerInventory()
 		},
-		rm_mult_objs_from_inven: function(obj, item, count) { // Remove count copies of item from obj's inventory
+		rm_mult_objs_from_inven: function(obj: Obj, item: Obj, count: number) { // Remove count copies of item from obj's inventory
 			stub("rm_mult_objs_from_inven", arguments)
 		},
-		add_obj_to_inven: function(obj, item) {
+		add_obj_to_inven: function(obj: Obj, item: Obj) {
 			this.add_mult_objs_to_inven(obj, item, 1)
 		},
-		rm_obj_from_inven: function(obj, item) {
+		rm_obj_from_inven: function(obj: Obj, item: Obj) {
 			this.rm_mult_objs_from_inven(obj, item, 1)
 		},
-		obj_carrying_pid_obj: function(obj, pid) {
+		obj_carrying_pid_obj: function(obj: Obj, pid: number) {
 			log("obj_carrying_pid_obj", arguments)
 			if(!isGameObject(obj)) {
 				warn("obj_carrying_pid_obj: not a game object: " + obj)
@@ -516,18 +519,18 @@ module scriptingEngine {
 			}	
 			return 0
 		},
-		elevation: function(obj) { if(isSpatial(obj) || isGameObject(obj)) return currentElevation
-								   else { warn("elevation: not an object: " + obj); return -1 } },
-		obj_can_see_obj: function(a, b) { log("obj_can_see_obj", arguments); return +objCanSeeObj(a, b) },
-		obj_can_hear_obj: function(a, b) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
-		critter_mod_skill: function(obj, skill, amount) { stub("critter_mod_skill", arguments); return 0 },
-		using_skill: function(obj, skill) { stub("using_skill", arguments); return 0 },
-		has_skill: function(obj, skill) { stub("has_skill", arguments); return 100 },
-		roll_vs_skill: function(obj, skill, bonus) { stub("roll_vs_skill", arguments); return 1 },
-		do_check: function(obj, check, modifier) { stub("do_check", arguments); return 1 },
-		is_success: function(roll) { stub("is_success", arguments); return 1 },
-		is_critical: function(roll) { stub("is_critical", arguments); return 0 },
-		critter_inven_obj: function(obj, where) {
+		elevation: function(obj: Obj) { if(isSpatial(obj) || isGameObject(obj)) return currentElevation
+								        else { warn("elevation: not an object: " + obj); return -1 } },
+		obj_can_see_obj: function(a: Critter, b: Critter) { log("obj_can_see_obj", arguments); return +objCanSeeObj(a, b) },
+		obj_can_hear_obj: function(a: Obj, b: Obj) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
+		critter_mod_skill: function(obj: Obj, skill: number, amount: number) { stub("critter_mod_skill", arguments); return 0 },
+		using_skill: function(obj: Obj, skill: number) { stub("using_skill", arguments); return 0 },
+		has_skill: function(obj: Obj, skill: number) { stub("has_skill", arguments); return 100 },
+		roll_vs_skill: function(obj: Obj, skill: number, bonus: number) { stub("roll_vs_skill", arguments); return 1 },
+		do_check: function(obj: Obj, check: number, modifier: number) { stub("do_check", arguments); return 1 },
+		is_success: function(roll: number) { stub("is_success", arguments); return 1 },
+		is_critical: function(roll: number) { stub("is_critical", arguments); return 0 },
+		critter_inven_obj: function(obj: Critter, where: number) {
 			if(!isGameObject(obj)) throw "critter_inven_obj: not game object"
 			if(where === 0) {} // INVEN_TYPE_WORN
 			else if(where === 1) return obj.rightHand // INVEN_TYPE_RIGHT_HAND
@@ -575,7 +578,7 @@ module scriptingEngine {
 		},
 		critter_injure: function(obj: Obj, how: number) { stub("critter_injure", arguments) },
 		critter_is_fleeing: function(obj: Obj) { stub("critter_is_fleeing", arguments); return 0 },
-		wield_obj_critter: function(obj: Obj, item) { stub("wield_obj_critter", arguments) },
+		wield_obj_critter: function(obj: Obj, item: Obj) { stub("wield_obj_critter", arguments) },
 		critter_dmg: function(obj: Critter, damage: number, damageType: string) {
 			if(!isGameObject(obj)) {
 				warn("critter_dmg: not game object: " + obj)
@@ -697,7 +700,7 @@ module scriptingEngine {
 			obj.visible = !visibility
 		},
 		use_obj_on_obj: function(obj: Obj, who: Obj) { stub("use_obj_on_obj", arguments) },
-		use_obj: function(obj) { stub("use_obj", arguments) },
+		use_obj: function(obj: Obj) { stub("use_obj", arguments) },
 		anim: function(obj: Obj, anim: number, param: number) {
 			if(!isGameObject(obj)) {
 				warn("anim: not a game object: " + obj)
@@ -900,7 +903,7 @@ module scriptingEngine {
 		},
 		gsay_end: function() { stub("gSay_End", arguments) },
 		end_dialogue: function() { stub("end_dialogue", arguments) },
-		giq_option: function(iqTest: number, msgList, msgID: string|number, target, reaction: number) {
+		giq_option: function(iqTest: number, msgList, msgID: string|number, target: any, reaction: number) {
 			log("giQ_Option", arguments)
 			var msg = getScriptMessage(msgList, msgID)
 			info("DIALOGUE OPTION: " + msg +
