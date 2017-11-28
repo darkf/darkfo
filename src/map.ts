@@ -195,9 +195,9 @@ class GameMap {
 
 			// set elevation
 			if(startingElevation !== undefined)
-				gMap.changeElevation(startingElevation, true, true);
+				this.changeElevation(startingElevation, true, true);
 			else // use default map elevation (0)
-				gMap.changeElevation(0, true, true);
+				this.changeElevation(0, true, true);
 
 			console.log(`[Main] Loaded from dirty map cache`);
 			loadedCallback && loadedCallback();
