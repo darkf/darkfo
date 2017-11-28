@@ -54,8 +54,10 @@ module scriptingEngine {
 		35: "HP", 7: "Max HP"
 	}
 
-	function stub(name: string, args: IArguments, type?: string) {
-		if(Config.scripting.debugLogShowType.stub === false || Config.scripting.debugLogShowType[type] === false) return
+	type DebugLogShowType = keyof typeof Config.scripting.debugLogShowType;
+
+	function stub(name: string, args: IArguments, type?: DebugLogShowType) {
+		if(!Config.scripting.debugLogShowType.stub || !Config.scripting.debugLogShowType[type]) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
 			if(i === args.length-1) a += args[i]
@@ -63,8 +65,8 @@ module scriptingEngine {
 		console.log("STUB: " + name + ": " + a)
 	}
 
-	function log(name: string, args: IArguments, type?: string) {
-		if(Config.scripting.debugLogShowType.log === false || Config.scripting.debugLogShowType[type] === false) return
+	function log(name: string, args: IArguments, type?: DebugLogShowType) {
+		if(!Config.scripting.debugLogShowType.log || !Config.scripting.debugLogShowType[type]) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
 			if(i === args.length-1) a += args[i]
@@ -72,13 +74,13 @@ module scriptingEngine {
 		console.log("log: " + name + ": " + a)
 	}
 
-	function warn(msg: string, type?: string) {
-		if(type !== undefined && Config.scripting.debugLogShowType[type] === false) return
+	function warn(msg: string, type?: DebugLogShowType) {
+		if(type !== undefined && !Config.scripting.debugLogShowType[type]) return
 		console.log("WARNING: " + msg)
 	}
 
-	export function info(msg: string, type?: string) {
-		if(type !== undefined && Config.scripting.debugLogShowType[type] === false) return
+	export function info(msg: string, type?: DebugLogShowType) {
+		if(type !== undefined && !Config.scripting.debugLogShowType[type]) return
 		console.log("INFO: " + msg)
 	}
 
@@ -939,7 +941,7 @@ module scriptingEngine {
 				warn("float_msg: not game object: " + obj)
 				return
 			}
-			var colorMap = {
+			var colorMap: { [color: number]: string } = {
 				// todo: take the exact values from some palette. also, yellow is ugly.
 				0: "white", //0: "yellow",
 				1: "black",
