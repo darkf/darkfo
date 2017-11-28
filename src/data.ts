@@ -18,10 +18,10 @@ limitations under the License.
 
 var mapAreas = null
 
-var proMap = null
+var proMap: any = null // TODO: type
 var lstFiles = {}
 var messageFiles = {}
-var mapInfo = null
+var mapInfo: any = null // TODO: type
 var elevatorInfo = null
 var dirtyMapCache: { [mapName: string]: SerializedMap } = {}
 

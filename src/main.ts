@@ -35,7 +35,7 @@ var gMap: GameMap|null = null
 const images: { [name: string]: HeartImage } = {} // Image cache
 var imageInfo = null // Metadata about images (Number of frames, FPS, etc)
 var currentElevation = 0 // current map elevation
-var hexOverlay = null
+var hexOverlay: HeartImage|null = null
 var tempCanvas: HTMLCanvasElement|null = null // temporary canvas used for detecting single pixels
 var tempCanvasCtx: CanvasRenderingContext2D|null = null // and the context for it
 
@@ -67,7 +67,7 @@ var isInitializing: boolean = true // are we initializing the engine?
 var loadingAssetsLoaded: number = 0 // how many images we've loaded
 var loadingAssetsTotal: number = 0 // out of this total
 var loadingLoadedCallback: (() => void)|null = null // loaded callback
-var lazyAssetLoadingQueue = {} // set of lazily-loaded assets being loaded
+var lazyAssetLoadingQueue: { [name: string]: ((img: any) => void)[] } = {} // set of lazily-loaded assets being loaded
 
 interface FloatMessage {
 	msg: string;
@@ -266,15 +266,15 @@ function hexLinecast(a: Point, b: Point): Obj|null {
 	return null
 }
 
-function objectsAtPosition(position: Point) {
-	return gMap.getObjects().filter(obj => obj.position.x === position.x && obj.position.y === position.y)
+function objectsAtPosition(position: Point): Obj[] {
+	return gMap.getObjects().filter((obj: Obj) => obj.position.x === position.x && obj.position.y === position.y)
 }
 
-function critterAtPosition(position: Point) {
-	return _.find(objectsAtPosition(position), obj => obj.type === "critter") || null
+function critterAtPosition(position: Point): Critter|null {
+	return _.find(objectsAtPosition(position), (obj: Obj) => obj.type === "critter") || null
 }
 
-function centerCamera(around) {
+function centerCamera(around: Point) {
 	var scr = hexToScreen(around.x, around.y)
 	cameraX = Math.max(0, scr.x - SCREEN_WIDTH/2 | 0)
 	cameraY = Math.max(0, scr.y - SCREEN_HEIGHT/2 | 0)
@@ -476,7 +476,7 @@ class GameMap {
 		function load(file: string, callback?: (x:any) => void) {
 			if(images[file] !== undefined) return // don't load more than once
 			loadingAssetsTotal++
-			heart.graphics.newImage(file+".png", function(r) {
+			heart.graphics.newImage(file+".png", (r: HeartImage) => {
 				images[file] = r
 				loadingAssetsLoaded++
 				if(callback) callback(r)
@@ -517,7 +517,7 @@ class GameMap {
 		// load map objects
 		this.objects = new Array(map.levels.length)
 		for(var level = 0; level < map.levels.length; level++) {
-			this.objects[level] = map.levels[level].objects.map(obj => objFromMapObject(obj))
+			this.objects[level] = map.levels[level].objects.map((obj: any) => objFromMapObject(obj))
 		}
 
 		if(Config.engine.doLoadScripts) {
@@ -539,11 +539,11 @@ class GameMap {
 		player.orientation = map.startOrientation
 
 		if(Config.engine.doSpatials) {
-			this.spatials = map.levels.map(level => level.spatials)
+			this.spatials = map.levels.map((level: any) => level.spatials)
 
 			if(Config.engine.doLoadScripts) {
 				// initialize spatial scripts
-				this.spatials.forEach(level => level.forEach(spatial => {
+				this.spatials.forEach((level: any) => level.forEach(spatial => {
 					var script = scriptingEngine.loadScript(spatial.script)
 					if(script === null)
 						console.log("load script failed for spatial " + spatial.script)
@@ -558,7 +558,7 @@ class GameMap {
 			}
 		}
 		else
-			this.spatials = map.levels.map(_ => [])
+			this.spatials = map.levels.map((_: any) => [])
 
 		// TODO: Is here or above better? Are the map/spatial scripts loaded before or after object scripts?
 		// load map objects
@@ -600,7 +600,7 @@ class GameMap {
 
 		// load some testing art
 		load("art/critters/hmjmpsat")
-		load("hex_outline", r => { hexOverlay = r })
+		load("hex_outline", (r: any) => { hexOverlay = r })
 
 		loadingAssetsTotal-- // we should know all of the assets we need by now
 
@@ -626,7 +626,7 @@ class GameMap {
 			name: this.name,
 			mapID: this.mapID,
 			numLevels: this.numLevels,
-			mapObj: { levels: this.mapObj.levels.map(level => { return {tiles: level.tiles} })
+			mapObj: { levels: this.mapObj.levels.map((level: any) => ({tiles: level.tiles}))
 			        , startPosition: this.mapObj.startPosition
 			        , startOrientation: this.mapObj.startOrientation
 		            },
@@ -636,8 +636,8 @@ class GameMap {
 			floorMap: this.floorMap,
 
 			mapScript: this.mapScript ? this.mapScript._serialize() : null,
-			objects: this.objects.map(level =>
-				_.without(level, player).map(obj => obj.serialize())), // TODO: Should be without entire party?
+			objects: this.objects.map((level: Obj[]) =>
+				_.without(level, player).map((obj: Obj) => obj.serialize())), // TODO: Should be without entire party?
 			spatials: null //this.spatials.map(level => level.map(spatial:> spatial.serialize()))
 		}
 	}
@@ -667,7 +667,7 @@ function parseMapInfo() {
 	// parse map info from data/data/maps.txt
 	mapInfo = {}
 	var text = getFileText("data/data/maps.txt")
-	var ini = parseIni(text)
+	var ini: any = parseIni(text)
 	for(var category in ini) {
 		var id: any = category.match(/Map (\d+)/)[1]
 		if(id === null) throw "maps.txt: invalid category: " + category
@@ -703,7 +703,7 @@ function parseMapInfo() {
 	}
 }
 
-function lookupMapFromLookup(lookupName) {
+function lookupMapFromLookup(lookupName: string) {
 	if(mapInfo === null)
 		parseMapInfo()
 
@@ -714,7 +714,7 @@ function lookupMapFromLookup(lookupName) {
 	return null
 }
 
-function lookupMapNameFromLookup(lookupName) {
+function lookupMapNameFromLookup(lookupName: string) {
 	if(mapInfo === null)
 		parseMapInfo()
 
@@ -725,7 +725,7 @@ function lookupMapNameFromLookup(lookupName) {
 	return null
 }
 
-function lookupMapName(mapID) {
+function lookupMapName(mapID: number): string|null {
 	if(mapInfo === null)
 		parseMapInfo()
 
@@ -962,7 +962,7 @@ function playerUse() {
 	var who = <Critter>obj
 
 	if(uiMode === UI_MODE_USE_SKILL) { // using a skill on object
-		obj = getObjectUnderCursor(_ => true) // obj might not be usable, so select non-usable ones too
+		obj = getObjectUnderCursor((_: Obj) => true) // obj might not be usable, so select non-usable ones too
 		if(!obj)
 			return
 		playerUseSkill(skillMode, obj)
@@ -1007,7 +1007,7 @@ function playerUse() {
 
 				console.log("art: %s", art)
 
-				uiCalledShot(art, who, function(region) {
+				uiCalledShot(art, who, (region: string) => {
 					player.AP.subtractCombatAP(4)
 					console.log("Attacking %s...", region)
 					combat.attack(player, <Critter>obj, region)
@@ -1051,7 +1051,7 @@ function playerUse() {
 		player.walkInFrontOf(obj.position, callback)
 }
 
-heart.mousepressed = function(x, y, btn) {
+heart.mousepressed = (x: number, y: number, btn: string) => {
 	if(isInitializing || isLoading || isWaitingOnRemote)
 		return
 	else if(btn === "l")
@@ -1064,7 +1064,7 @@ heart.mousepressed = function(x, y, btn) {
 	}
 }
 
-heart.keydown = function(k) {
+heart.keydown = (k: string) => {
 	if(isLoading === true) return
 	var mousePos = heart.mouse.getPosition()
 	var mouseHex = hexFromScreen(mousePos[0] + cameraX, mousePos[1] + cameraY)
@@ -1207,11 +1207,11 @@ function recalcPath(start: Point, goal: Point, isGoalBlocking?: boolean) {
 	return finder.findPath(start.x, start.y, goal.x, goal.y, grid)
 }
 
-function changeCursor(image) {
+function changeCursor(image: string) {
 	$("#cnv").css("cursor", image)
 }
 
-function objectTransparentAt(obj, position, bbox) {
+function objectTransparentAt(obj: Obj, position: Point) {
 	var frame = obj.frame !== undefined ? obj.frame : 0
 	var sx = imageInfo[obj.art].frameOffsets[obj.orientation][frame].sx
 
@@ -1222,7 +1222,7 @@ function objectTransparentAt(obj, position, bbox) {
 	return (pixelAlpha === 0)
 }
 
-function getObjectUnderCursor(p) {
+function getObjectUnderCursor(p: (obj: Obj) => boolean) {
 	var mouse = heart.mouse.getPosition()
 	mouse = {x: mouse[0] + cameraX, y: mouse[1] + cameraY}
 
@@ -1234,7 +1234,7 @@ function getObjectUnderCursor(p) {
 		if(pointInBoundingBox(mouse, bbox))
 			if(p === undefined || p(objects[i]) === true) {
 				var mouseRel = {x: mouse.x - bbox.x, y: mouse.y - bbox.y}
-				if(!objectTransparentAt(objects[i], mouseRel, bbox))
+				if(!objectTransparentAt(objects[i], mouseRel))
 					return objects[i]
 			}
 	}
@@ -1329,12 +1329,13 @@ heart.update = function() {
 	})
 }
 
-function getPixelIndex(x, y, w) {
+// Hopefully this gets inlined!
+function getPixelIndex(x: number, y: number, w: number) {
 	return (x + y * w) * 4
 }
 
 // get an object's bounding box in screen-space (note: not camera-space)
-function objectBoundingBox(obj) {
+function objectBoundingBox(obj: Obj) {
 	var scr = hexToScreen(obj.position.x, obj.position.y)
 
 	if(images[obj.art] === undefined) // no art
@@ -1358,7 +1359,7 @@ function objectBoundingBox(obj) {
 	return {x: scr.x - offsetX, y: scr.y - offsetY, w: frameInfo.w, h: frameInfo.h}
 }
 
-function objectOnScreen(obj) {
+function objectOnScreen(obj: Obj): boolean {
 	var bbox = objectBoundingBox(obj)
 	if(bbox === null)
 		return false
@@ -1369,7 +1370,7 @@ function objectOnScreen(obj) {
 	return true
 }
 
-heart.draw = function() {
+heart.draw = () => {
 	if(isWaitingOnRemote)
 		return;
 	return renderer.render()
@@ -1379,5 +1380,5 @@ heart.draw = function() {
 function allCritters() { return gMap.getObjects().filter(obj => obj instanceof Critter) }
 
 // global callbacks for dialogue UI
-function dialogueReply(id) { scriptingEngine.dialogueReply(id) }
+function dialogueReply(id: number) { scriptingEngine.dialogueReply(id) }
 function dialogueEnd() { scriptingEngine.dialogueEnd() }
