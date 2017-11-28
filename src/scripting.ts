@@ -19,8 +19,8 @@ Scripting system/engine for DarkFO
 "use strict";
 
 module scriptingEngine {
-	var gameObjects: any = null
-	var dudeObject: any = null
+	var gameObjects: Obj[]|null = null
+	var dudeObject: Player|null = null
 	var mapVars: any = null
 	var globalVars: any = {
 		0: 50, // GVAR_PLAYER_REPUTATION
@@ -33,7 +33,7 @@ module scriptingEngine {
 		345: 16, // GVAR_NEW_RENO_FLAG_2 (16 = know_mordino_bit)
 		357: 2, // GVAR_NEW_RENO_LIL_JESUS_REFERS (lil_jesus_refers_yes)
 	}
-	var currentMapID = null
+	var currentMapID: number|null = null
 	var currentMapObject = null
 	var mapFirstRun = true
 	var scriptMessages: { [scriptName: string]: { [msgID: number]: string } } = {}
@@ -250,8 +250,43 @@ module scriptingEngine {
 		lvars: any[];
 	}
 
+	// The type of scripts -- everything that's in ScriptProto plus the script procedures and some script-local built-in vars
+	type ScriptType = typeof ScriptProto & {
+		// Stuff we hacked in
+		scriptName: string,
+		lvars: { [lvar: number]: any },
+
+		// Special built-in variables
+		self_obj: { _script: ScriptType },
+		self_tile: number,
+		cur_map_index: number,
+		fixed_param: number,
+
+		combat_is_initialized: 0 | 1,
+		game_time: number,
+
+		// Script procedures
+		map_enter_p_proc: () => void,
+		map_update_p_proc: () => void,
+
+		timed_event_p_proc: () => void,
+
+		critter_p_proc: () => void,
+		spatial_p_proc: () => void,
+		
+		use_p_proc: () => void,
+		talk_p_proc: () => void,
+		pickup_p_proc: () => void,
+
+		combat_p_proc: () => void,
+		damage_p_proc: () => void,
+		destroy_p_proc: () => void,
+
+		use_skill_on_p_proc: () => void,
+	};
+
 	export var ScriptProto = {
-		dude_obj: "<Dude Object>",
+		dude_obj: null,
 		'true': true,
 		'false': false,
 		_didOverride: false,
@@ -1060,7 +1095,7 @@ module scriptingEngine {
 		}
 	}
 
-	export function deserializeScript(obj: SerializedScript) {
+	export function deserializeScript(obj: SerializedScript): ScriptType {
 		var script = loadScript(obj.name)
 		script.lvars = obj.lvars
 		// TODO: do some kind of logic like enterMap/updateMap
@@ -1103,11 +1138,11 @@ module scriptingEngine {
 		}
 	}
 
-	export function setMapScript(script) {
+	export function setMapScript(script: ScriptType) {
 		currentMapObject = script
 	}
 
-	export function loadScript(name: string) {
+	export function loadScript(name: string): ScriptType {
 		var obj = null
 
 		info("loading script " + name, "load")
@@ -1134,14 +1169,14 @@ module scriptingEngine {
 		return vm.scriptObj
 	}
 
-	export function initScript(script, obj) {
+	export function initScript(script: ScriptType, obj: Obj) {
 		obj._script.self_obj = obj
 		obj._script.cur_map_index = currentMapID
 		if(obj._script.start !== undefined)
 			obj._script.start()
 	}
 
-	export function timedEvent(script, userdata) {
+	export function timedEvent(script: ScriptType, userdata: any): boolean {
 		info("timedEvent: " + script.scriptName + ": " + userdata, "timer")
 		if(script.timed_event_p_proc === undefined) {
 			warn(`timedEvent called on script without a timed_event_p_proc! script: ${script.scriptName} userdata: ${userdata}`)
@@ -1154,7 +1189,7 @@ module scriptingEngine {
 		return script._didOverride
 	}
 
-	export function use(obj, source) {
+	export function use(obj: Obj, source: Obj): boolean {
 		if(!obj._script || obj._script.use_p_proc === undefined)
 			return null
 
@@ -1165,7 +1200,7 @@ module scriptingEngine {
 		return obj._script._didOverride
 	}
 
-	export function talk(script, obj) {
+	export function talk(script: ScriptType, obj: Obj): boolean {
 		script.self_obj = obj
 		script.game_time = Math.max(1, gameTickTime)
 		script.cur_map_index = currentMapID
@@ -1174,10 +1209,10 @@ module scriptingEngine {
 		return script._didOverride
 	}
 
-	export function updateCritter(script, obj) {
+	export function updateCritter(script: ScriptType, obj: Critter): boolean {
 		// critter heartbeat (critter_p_proc)
 		if(script.critter_p_proc === undefined)
-			return
+			return false // TODO: Should we override or not if it doesn't exist? Probably not.
 
 		script.game_time = gameTickTime
 		script.cur_map_index = currentMapID
@@ -1188,7 +1223,7 @@ module scriptingEngine {
 		return script._didOverride
 	}
 
-	export function spatial(spatialObj, source) {
+	export function spatial(spatialObj, source: Obj) { // TODO: Spatial type
 		var script = spatialObj._script
 		if(script.spatial_p_proc === undefined)
 			throw "spatial script without a spatial_p_proc triggered"
@@ -1200,7 +1235,7 @@ module scriptingEngine {
 		script.spatial_p_proc()
 	}
 
-	export function destroy(obj, source) {
+	export function destroy(obj: Obj, source: Obj) {
 		if(!obj._script || obj._script.destroy_p_proc === undefined)
 			return null
 
@@ -1213,7 +1248,7 @@ module scriptingEngine {
 		return obj._script._didOverride
 	}
 
-	export function damage(obj, target, source, damage) {
+	export function damage(obj: Obj, target: Obj, source: Obj, damage: number) {
 		if(!obj._script || obj._script.damage_p_proc === undefined)
 			return null
 
@@ -1246,7 +1281,7 @@ module scriptingEngine {
 		return obj._script._didOverride
 	}
 
-	export function combatEvent(obj, event): boolean {
+	export function combatEvent(obj: Obj, event: "turnBegin"): boolean {
 		var fixed_param = null
 		switch(event) {
 			case "turnBegin": fixed_param = 4; break // COMBAT_SUBTYPE_TURN
@@ -1281,7 +1316,7 @@ module scriptingEngine {
 		return doTerminate
 	}
 
-	export function updateMap(mapScript, objects, elevation) {
+	export function updateMap(mapScript: ScriptType, objects: Obj[], elevation: number) {
 		gameObjects = objects
 		mapFirstRun = false
 
@@ -1310,7 +1345,7 @@ module scriptingEngine {
 		// info("updated " + updated + " objects")
 	}
 
-	export function enterMap(mapScript, objects, elevation, mapID, isFirstRun) {
+	export function enterMap(mapScript: ScriptType, objects: Obj[], elevation: number, mapID: number, isFirstRun: boolean) {
 		gameObjects = objects
 		currentMapID = mapID
 		mapFirstRun = isFirstRun
@@ -1339,7 +1374,7 @@ module scriptingEngine {
 		}
 	}
 
-	export function reset(dude, mapName, mapID?: number) {
+	export function reset(dude: Player, mapName: string, mapID?: number) {
 		timeEventList.length = 0 // clear timed events
 		dialogueOptionProcs.length = 0
 		gameObjects = null
@@ -1351,7 +1386,7 @@ module scriptingEngine {
 		ScriptProto.dude_obj = dudeObject
 	}
 
-	export function init(dude: any, mapName: string, mapID?: number) {
+	export function init(dude: Player, mapName: string, mapID?: number) {
 		seed(123)
 		reset(dude, mapName, mapID)
 	}

@@ -711,10 +711,10 @@ heart.update = function() {
 	}
 
 	gMap.getObjects().forEach(obj => {
-		if(obj.type == "critter") {
+		if(obj.type === "critter") {
 			if(didTick && Config.engine.doUpdateCritters && inCombat !== true && !(<Critter>obj).dead &&
 				!obj.inAnim() && obj._script)
-				scriptingEngine.updateCritter(obj._script, obj)
+				scriptingEngine.updateCritter(obj._script, obj as Critter)
 		}
 
 		obj.updateAnim()
