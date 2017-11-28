@@ -228,41 +228,6 @@ function initGame() {
 				console.log("connected");
 
 				Netcode.identify("Guest Player");
-
-				let serializedMap: any = null;
-
-				Netcode.on("binary", (data: any) => {
-					console.log("Received binary remote map, decompressing...");
-					console.time("map decompression");
-					serializedMap = JSON.parse(pako.inflate(data, { to: "string" }));
-					console.timeEnd("map decompression");
-				});
-
-				Netcode.on("map", (msg: any) => {
-					console.log("Received map change request, loading...");
-					console.time("map deserialization");
-					gMap.deserialize(serializedMap);
-					console.timeEnd("map deserialization");
-					console.log("Loaded serialized remote map.");
-
-					// TODO: Spawn the player somewhere sensible
-					player.position = msg.player.position;
-					player.orientation = 0;
-					player.inventory = [];
-					
-					gMap.changeElevation(msg.player.elevation, false, false);
-
-					// Add host network player
-					const netPlayer = new Netcode.NetPlayer(msg.hostPlayer.name, msg.hostPlayer.uid);
-					netPlayer.position = msg.hostPlayer.position;
-					netPlayer.orientation = msg.hostPlayer.orientation;
-					gMap.addObject(netPlayer);
-
-					Netcode.netPlayerMap[msg.hostPlayer.uid] = netPlayer;
-
-					isWaitingOnRemote = false;
-				});
-
 				Netcode.join();
 			});
 		}
