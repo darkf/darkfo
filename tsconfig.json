@@ -55,6 +55,7 @@
 
         "src/net.ts",
 
+        "src/map.ts",
         "src/main.ts"
     ]
 }
