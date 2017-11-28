@@ -84,7 +84,7 @@ module Netcode {
 		// Player movement
 		on("movePlayer", (msg: any) => {
 			if(msg.uid in netPlayerMap)
-				netPlayerMap[msg.uid].move(msg.position);
+				netPlayerMap[msg.uid].move(msg.position, undefined, false);
 		});
 
 		Events.on("playerMoved", (msg: any) => {
@@ -157,6 +157,8 @@ module Netcode {
 		});
 
 		Events.on("objMove", (e: any) => {
+			if(e.obj.isPlayer)
+				return;
 			send("objMove", { uid: e.obj.uid, position: e.position });
 		});
 	}
@@ -240,6 +242,7 @@ module Netcode {
 	}
 
 	export class NetPlayer extends Critter {
+		// TODO: This should mean userid, it conflicts with Obj.uid
 		uid: number;
 
 		constructor(name: string, uid: number) {
