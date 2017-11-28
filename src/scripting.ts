@@ -36,7 +36,7 @@ module scriptingEngine {
 	var currentMapID = null
 	var currentMapObject = null
 	var mapFirstRun = true
-	var scriptMessages = {}
+	var scriptMessages: { [scriptName: string]: { [msgID: number]: string } } = {}
 	var dialogueOptionProcs = []
 	var currentDialogueObject = null
 	export var timeEventList = []
@@ -47,7 +47,7 @@ module scriptingEngine {
 		35: "HP", 7: "Max HP"
 	}
 
-	function stub(name, args, type?) {
+	function stub(name: string, args: IArguments, type?: string) {
 		if(Config.scripting.debugLogShowType.stub === false || Config.scripting.debugLogShowType[type] === false) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
@@ -56,7 +56,7 @@ module scriptingEngine {
 		console.log("STUB: " + name + ": " + a)
 	}
 
-	function log(name, args, type?) {
+	function log(name: string, args: IArguments, type?: string) {
 		if(Config.scripting.debugLogShowType.log === false || Config.scripting.debugLogShowType[type] === false) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
@@ -65,20 +65,21 @@ module scriptingEngine {
 		console.log("log: " + name + ": " + a)
 	}
 
-	function warn(msg, type?) {
+	function warn(msg: string, type?: string) {
 		if(type !== undefined && Config.scripting.debugLogShowType[type] === false) return
 		console.log("WARNING: " + msg)
 	}
 
-	export function info(msg, type?) {
+	export function info(msg: string, type?: string) {
 		if(type !== undefined && Config.scripting.debugLogShowType[type] === false) return
 		console.log("INFO: " + msg)
 	}
 
 	// http://stackoverflow.com/a/23304189/1958152
-	function seed(s) {
-	    Math.random = function() {
-	        s = Math.sin(s) * 10000; return s - Math.floor(s)
+	function seed(s: number) {
+	    Math.random = () => {
+	        s = Math.sin(s) * 10000;
+	        return s - Math.floor(s)
 	    }
 	}
 
@@ -90,7 +91,7 @@ module scriptingEngine {
 		return globalVars
 	}
 
-	function isGameObject(obj) {
+	function isGameObject(obj: any) {
 		// TODO: just use isinstance Obj?
 		if(obj === undefined || obj === null) return false
 		if(obj.isPlayer === true) return true
@@ -110,19 +111,19 @@ module scriptingEngine {
 		return obj.isSpatial === true
 	}
 
-	function getScriptName(id) {
+	function getScriptName(id: number) {
 		return getLstId("scripts/scripts", id - 1).split(".")[0].toLowerCase()
 	}
 
-	function getScriptMessage(id, msg) {
+	function getScriptMessage(id: number, msg: string|number) {
+		if(typeof msg === "string") // passed in a string message
+			return msg
+
 		var name = getScriptName(id)
 		if(name === null) {
 			warn("getScriptMessage: no script with ID " + id)
 			return null
 		}
-
-		if(typeof msg === "string") // passed in a string message
-			return msg
 
 		if(scriptMessages[name] === undefined)
 			loadMessageFile(name)
@@ -134,7 +135,7 @@ module scriptingEngine {
 		return scriptMessages[name][msg]
 	}
 
-	export function dialogueReply(id) {
+	export function dialogueReply(id: number): void {
 		var f = dialogueOptionProcs[id]
 		dialogueOptionProcs = []
 		f()
@@ -255,19 +256,20 @@ module scriptingEngine {
 		'false': false,
 		_didOverride: false,
 
-		floor: function(x) { return Math.floor(x) }, // TODO: does the language have floats (<- yes)? Are we handling division incorrectly? Test. (TODO: |0?)
+		// TODO: Does float and integer division in scripts work the same? Does floor truncate or floor? Test.
+		floor: function(x: number) { return Math.floor(x) },
 
-		set_global_var: function(gvar, value) {
+		set_global_var: function(gvar: number, value: any) {
 			globalVars[gvar] = value
 			info("set_global_var: " + gvar + " = " + value, "gvars")
 			log("set_global_var", arguments, "gvars")
 		},
-		set_local_var: function(lvar, value) {
+		set_local_var: function(lvar: number, value: any) {
 			this.lvars[lvar] = value
 			info("set_local_var: " + lvar + " = " + value + " [" + this.scriptName + "]", "lvars")
 			log("set_local_var", arguments, "lvars")
 		},
-		local_var: function(lvar) {
+		local_var: function(lvar: number) {
 			log("local_var", arguments, "lvars")
 			if(this.lvars[lvar] === undefined) {
 				warn("local_var: setting default value (0) for LVAR " + lvar, "lvars")
@@ -275,7 +277,7 @@ module scriptingEngine {
 			}
 			return this.lvars[lvar]
 		},
-		map_var: function(mvar) {
+		map_var: function(mvar: number) {
 			if(this._mapScript === undefined) {
 				warn("map_var: no map script")
 				return
@@ -293,7 +295,7 @@ module scriptingEngine {
 			}
 			return mapVars[scriptName][mvar]
 		},
-		set_map_var: function(mvar, value) {
+		set_map_var: function(mvar: number, value: any) {
 			var scriptName = this._mapScript.scriptName
 			if(scriptName === undefined) {
 				warn("map_var: map script has no name")
@@ -304,7 +306,7 @@ module scriptingEngine {
 				mapVars[scriptName] = {}
 			mapVars[scriptName][mvar] = value
 		},
-		global_var: function(gvar) {
+		global_var: function(gvar: number) {
 			if(globalVars[gvar] === undefined) {
 				warn("global_var: unknown gvar " + gvar + ", using default (0)", "gvars")
 				globalVars[gvar] = 0
@@ -519,7 +521,7 @@ module scriptingEngine {
 			return state
 		},
 		kill_critter: function(obj: Critter, deathFrame) {
-			info("kill_critter", arguments)
+			log("kill_critter", arguments)
 			critterKill(obj, null)
 		},
 		get_poison: function(obj) { stub("get_poison", arguments); return 0 },
@@ -959,7 +961,7 @@ module scriptingEngine {
 		},
 		reg_anim_obj_move_to_tile: function(obj, tileNum, delay) { stub("reg_anim_obj_move_to_tile", arguments, "movement") },
 		explosion: function(tile, elevation, damage) {
-			info("explosion", arguments)
+			log("explosion", arguments)
 
 			// TODO: objectExplode should defer to an auxillary tile explode function, which we should use
 			// Make dummy object so we can explode at the tile
@@ -1044,11 +1046,11 @@ module scriptingEngine {
 			return gParty.getPartyMemberByPID(pid) || 0
 		},
 		party_add: function(obj) {
-			info("party_add", arguments)
+			log("party_add", arguments)
 			gParty.addPartyMember(obj)
 		},
 		party_remove: function(obj) {
-			info("party_remove", arguments)
+			log("party_remove", arguments)
 			gParty.removePartyMember(obj)
 		},
 
@@ -1058,14 +1060,14 @@ module scriptingEngine {
 		}
 	}
 
-	export function deserializeScript(obj) {
+	export function deserializeScript(obj: SerializedScript) {
 		var script = loadScript(obj.name)
 		script.lvars = obj.lvars
 		// TODO: do some kind of logic like enterMap/updateMap
 		return script
 	}
 
-	function loadMessageFile(name) {
+	function loadMessageFile(name: string) {
 		name = name.toLowerCase()
 		info("loading message file: " + name, "load")
 		var msg = getFileText("data/text/english/dialog/" + name + ".msg")
