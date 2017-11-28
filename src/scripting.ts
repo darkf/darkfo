@@ -37,8 +37,8 @@ module scriptingEngine {
 	var currentMapObject: ScriptType|null = null
 	var mapFirstRun = true
 	var scriptMessages: { [scriptName: string]: { [msgID: number]: string } } = {}
-	var dialogueOptionProcs = []
-	var currentDialogueObject = null
+	var dialogueOptionProcs: (() => void)[] = [] // Maps dialogue options to handler callbacks
+	var currentDialogueObject: Obj|null = null
 	export var timeEventList = []
 
 	var statMap = {
@@ -286,7 +286,7 @@ module scriptingEngine {
 	};
 
 	export var ScriptProto = {
-		dude_obj: null,
+		dude_obj: null as Player|null,
 		'true': true,
 		'false': false,
 		_didOverride: false,
@@ -351,7 +351,7 @@ module scriptingEngine {
 		random: function(min: number, max: number) { log("random", arguments); return getRandomInt(min, max) },
 		debug_msg: function(msg: string) { log("debug_msg", arguments); info("DEBUG MSG: [" + this.scriptName + "]: " + msg, "debugMessage") },
 		display_msg: function(msg: string) { log("display_msg", arguments); info("DISPLAY MSG: " + msg, "displayMessage"); uiLog(msg) },
-		message_str: function(msgList, msgNum: number) { return getScriptMessage(msgList, msgNum) },
+		message_str: function(msgList: number, msgNum: number) { return getScriptMessage(msgList, msgNum) },
 		metarule: function(id: number, target: number): any {
 			switch(id) {
 				case 14: return mapFirstRun // map_first_run
@@ -593,7 +593,8 @@ module scriptingEngine {
 		radiation_dec: function(obj: Obj, amount: number) { stub("radiation_dec", arguments) },
 
 		// combat
-		attack_complex: function(obj: Obj, calledShot: number, numAttacks: number, bonus: number, minDmg: number, maxDmg: number, attackerResults, targetResults) {
+		attack_complex: function(obj: Obj, calledShot: number, numAttacks: number, bonus: number,
+			                     minDmg: number, maxDmg: number, attackerResults: number, targetResults: number) {
 			info("[enter combat via attack_complex]")
 			//stub("attack_complex", arguments)
 			// since this isn't actually used beyond its basic form, we're not going to bother
@@ -641,7 +642,7 @@ module scriptingEngine {
 			useObject(obj, this.self_obj, false)
 			//stub("obj_open", arguments)
 		},
-		proto_data: function(pid: number, data_member: number) { stub("proto_data", arguments); return null },
+		proto_data: function(pid: number, data_member: number): any { stub("proto_data", arguments); return null },
 		create_object_sid: function(pid: number, tile: number, elev: number, sid: number) { // Create object of pid and possibly script
 			info("create_object_sid: pid=" + pid + " tile=" + tile + " elev=" + elev + " sid=" + sid)
 
@@ -885,14 +886,14 @@ module scriptingEngine {
 		},
 		gsay_start: function() { stub("gSay_Start", arguments) },
 		//gSay_Option: function(msgList, msgID, target, reaction) { stub("gSay_Option", arguments) },
-		gsay_reply: function(msgList, msgID: string|number) {
+		gsay_reply: function(msgList: number, msgID: string|number) {
 			log("gSay_Reply", arguments)
 			var msg = getScriptMessage(msgList, msgID)
 			info("REPLY: " + msg, "dialogue")
 			//$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
 			uiSetDialogueReply(msg)
 		},
-		gsay_message: function(msgList, msgID: string|number, reaction: number) {
+		gsay_message: function(msgList: number, msgID: string|number, reaction: number) {
 			// TODO: update this for ui
 			log("gsay_message", arguments)
 			// message with [Done] option
@@ -903,7 +904,7 @@ module scriptingEngine {
 		},
 		gsay_end: function() { stub("gSay_End", arguments) },
 		end_dialogue: function() { stub("end_dialogue", arguments) },
-		giq_option: function(iqTest: number, msgList, msgID: string|number, target: any, reaction: number) {
+		giq_option: function(iqTest: number, msgList: number, msgID: string|number, target: any, reaction: number) {
 			log("giQ_Option", arguments)
 			var msg = getScriptMessage(msgList, msgID)
 			info("DIALOGUE OPTION: " + msg +
@@ -1076,7 +1077,7 @@ module scriptingEngine {
 		game_ui_enable: function() { stub("game_ui_enable", arguments) },
 
 		// sound
-		play_sfx: function(sfx) { stub("play_sfx", arguments) },
+		play_sfx: function(sfx: string) { stub("play_sfx", arguments) },
 
 		// party
 		party_member_obj: function(pid: number) {
@@ -1226,7 +1227,7 @@ module scriptingEngine {
 		return script._didOverride
 	}
 
-	export function spatial(spatialObj, source: Obj) { // TODO: Spatial type
+	export function spatial(spatialObj: Obj, source: Obj) { // TODO: Spatial type
 		var script = spatialObj._script
 		if(script.spatial_p_proc === undefined)
 			throw "spatial script without a spatial_p_proc triggered"
