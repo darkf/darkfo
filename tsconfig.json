@@ -14,6 +14,8 @@
 
         "src/util.ts",
         "src/geometry.ts",
+
+        "src/pro.ts",
         
         "src/scripting.ts",
         "src/intfile.ts",
@@ -31,7 +33,6 @@
         "src/data.ts",
         "src/worldmap.ts",
         "src/encounters.ts",
-
 
         "src/lightmap.ts",
         "src/lighting.ts",
