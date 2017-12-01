@@ -20,7 +20,8 @@ module SaveLoad {
     let db: IDBDatabase = null;
 
     // Save game metadata + maps
-    interface SaveGame {
+    export interface SaveGame {
+        id?: number;
         version: number;
         name: string;
         timestamp: number;
@@ -99,7 +100,7 @@ module SaveLoad {
         console.log(`[SaveLoad] Saving ${1 + dirtyMapNames.length} maps (current: ${gMap.name} plus dirty maps: ${dirtyMapNames.join(", ")})`);
 
         if(slot !== -1)
-            (<any>save).id = slot;
+            save.id = slot;
 
         withTransaction(trans => {
             trans.objectStore("saves").put(save);
