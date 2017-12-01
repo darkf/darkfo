@@ -1208,73 +1208,66 @@ function uiCalledShot(art, target, callback) {
 
 function uiSaveLoad(isSave: boolean): void {
     uiMode = UI_MODE_SAVELOAD;
-    $("#saveloadBox").show();
 
-    $("#saveloadList").html("");
+    const saveList = new Ui.List({ x: 55, y: 50, w: "auto", h: "auto" });
+    const saveInfo = new Ui.Label(404, 262, "", "#00FF00");
+    // TODO: CSSBoundingBox's width and height should be optional (and default to `auto`), then Label can accept one
+    Object.assign(saveInfo.elem.style, {
+         width: "154px", height: "33px",
+        fontSize: "8pt",
+        overflow: "hidden",
+    });
 
-    $("#saveloadHeader").text(isSave ? "Save Game" : "Load Game");
+    const saveLoadWindow = new Ui.WindowFrame("art/intrface/lsgame.png", { x: 80, y: 20, w: 640, h: 480 })
+                                 .add(new Ui.Widget("art/intrface/lscover.png", { x: 340, y: 40, w: 275, h: 173 }))
+                                 .add(new Ui.Label(50, 26, isSave ? "Save Game" : "Load Game"))
+                                 .add(new Ui.SmallButton(391, 349).onClick(selected)).add(new Ui.Label(391+18, 349, "Done"))
+                                 .add(new Ui.SmallButton(495, 349).onClick(done)).add(new Ui.Label(495+18, 349, "Cancel"))
+                                 .add(saveInfo)
+                                 .add(saveList)
+                                 .show();
 
-    let selectedSaveID= -1;
-    let saveList = null;
+    if(isSave) {
+        saveList.select(saveList.addItem({ text: "<New Slot>", id: -1, onSelected: () => {
+            saveInfo.setText("New save");
+        } }));
+    }
+
+    // List saves, and write them to the UI list
+    SaveLoad.saveList((saves: SaveLoad.SaveGame[]) => {
+        for(const save of saves) {
+            saveList.addItem({ text: save.name, id: save.id, onSelected: () => {
+                saveInfo.setText(SaveLoad.formatSaveDate(save) + "<br>" + save.currentMap);
+            } });
+        }
+    });
 
     function done() {
         uiMode = UI_MODE_NONE;
-        $("#saveloadBox").hide();
-
-        // unbind previous event listeners
-        $("#saveloadCancelBtn").off("click");
-        $("#saveloadDoneBtn").off("click");
+        saveLoadWindow.close();
     }
 
-    $("#saveloadCancelBtn").click(done);
+    function selected() { // Done was clicked, so save/load the slot
+        const item = saveList.getSelection();
+        if(!item) return; // No slot selected
 
-    $("#saveloadDoneBtn").click(() => {
-        if(!isSave && selectedSaveID === -1)
-            return;
+        const saveID = item.id;
 
-        console.log("[UI] %s save #%d.", isSave ? "Saving" : "Loading", selectedSaveID);
+        console.log("[UI] %s save #%d.", isSave ? "Saving" : "Loading", saveID);
 
-        // save/load in slot
         if(isSave) {
             const name = prompt("Save Name?");
 
-            if(selectedSaveID !== -1) {
+            if(saveID !== -1) {
                 if(!confirm("Are you sure you want to overwrite that save slot?"))
                     return;
             }
 
-            SaveLoad.save(name, selectedSaveID === -1 ? undefined : selectedSaveID, done);
+            SaveLoad.save(name, saveID === -1 ? undefined : saveID, done);
         }
         else {
-            SaveLoad.load(selectedSaveID);
+            SaveLoad.load(saveID);
             done();
         }
-    });
-
-
-    console.log("[UI] Requesting and populating save list...");
-
-    if(isSave) {
-        $("#saveloadList").append($("<li>").text("<New Slot>").click(function() {
-            // highlight new slot
-            $("#saveloadList li").removeClass("saveloadListSelected");
-            $(this).addClass("saveloadListSelected");
-            $("#saveloadInfo").text("New save");
-            selectedSaveID = -1;
-        }).addClass("saveloadListSelected"));
     }
-
-    // List saves, and write them to the UI list
-    SaveLoad.saveList(saves => {
-        for(const save of saves) {
-            $("#saveloadList").append($("<li>").text(save.name).click(function() {
-                // highlight the item
-                $("#saveloadList li").removeClass("saveloadListSelected");
-                $(this).addClass("saveloadListSelected");
-                selectedSaveID = (<any>save).id;
-
-                $("#saveloadInfo").html(SaveLoad.formatSaveDate(save) + "<br>" + save.currentMap);
-            }));
-        }
-    })
 }
