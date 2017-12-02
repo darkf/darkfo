@@ -1050,7 +1050,7 @@ function uiWorldMapWorldView() {
     Worldmap.start()
 }
 
-function uiWorldMapShowArea(area) {
+function uiWorldMapShowArea(area) { // TODO: any
     uiWorldMapAreaView()
 
     $("#areamap").css({
@@ -1088,18 +1088,14 @@ function uiWorldMapLabels() {
     $("#worldMapLabels").html("<div id='worldMapLabelsBackground'></div>")
 
     var i = 0
-    for(var areaID in mapAreas) {
+    for(const areaID in mapAreas) {
         var area = mapAreas[areaID]
         if(!area.labelArt) continue
 
         var label = $("<img>").addClass("worldMapLabelImage").
                                attr("src", area.labelArt + ".png")
-        var labelButton = $("<div>").addClass("worldMapLabelButton").
-              click((function(areaID) {
-                return function() {
-                    uiWorldMapShowArea(mapAreas[areaID])
-                }
-              })(areaID))
+        var labelButton = $("<div>").addClass("worldMapLabelButton")
+                                    .click(() => { uiWorldMapShowArea(mapAreas[areaID]) })
 
         var areaLabel = $("<div>").addClass("worldMapLabel").
                                    css({top: 1 + i*(27)}).
