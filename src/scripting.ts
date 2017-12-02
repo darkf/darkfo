@@ -183,8 +183,6 @@ module scriptingEngine {
 		// End barter mode -- back to dialogue mode
 		$("#dialogue").css("visibility", "visible")
 		$("#barterLeft, #barterRight").css("visibility", "hidden")
-
-		drawPlayerInventory()
 		$("#inventory").html("")
 	}
 
@@ -470,7 +468,6 @@ module scriptingEngine {
 			info("move_obj_inven_to_obj: " + obj.inventory.length + " to " + other.inventory.length, "inventory")
 			other.inventory = obj.inventory
 			obj.inventory = []
-			drawPlayerInventory()
 		},
 		obj_is_carrying_obj_pid: function(obj: Obj, pid: number) { // Number of inventory items with matching PID
 			log("obj_is_carrying_obj_pid", arguments)
@@ -504,7 +501,6 @@ module scriptingEngine {
 			//info("add_mult_objs_to_inven: " + count + " counts of " + item.toString(), "inventory")
 			console.log("add_mult_objs_to_inven: %d counts of %o to %o", count, item, obj)
 			obj.addInventoryItem(item, count)
-			drawPlayerInventory()
 		},
 		rm_mult_objs_from_inven: function(obj: Obj, item: Obj, count: number) { // Remove count copies of item from obj's inventory
 			stub("rm_mult_objs_from_inven", arguments)

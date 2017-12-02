@@ -647,44 +647,6 @@ function drawDigits(idPrefix, amount, maxDigits, hasSign) {
     }
 }
 
-function drawInventory($el, obj, clickCallback) {
-    $el.html("")
-    for(var i = 0; i < obj.inventory.length; i++) {
-        if(obj.inventory[i].invArt === undefined) { // make a guess
-            var s = obj.inventory[i].art.split('/')
-            var inventoryImage = 'art/inven/' + s[s.length-1]
-        } else
-            var inventoryImage = <string>obj.inventory[i].invArt // TODO: we should drop the cast @critter
-
-        //console.log("inv img: " + inventoryImage)
-        if(images[inventoryImage] === undefined)
-            lazyLoadImage(inventoryImage, null, false)
-        var img = $("<img>").attr("src", inventoryImage+'.png').
-                  attr("width", 72).attr("height", 60) // 90x60 // 70x40
-        img.attr("title", obj.inventory[i].name)
-        if(clickCallback !== undefined)
-            (function(invObj) {
-                img.click(function(e) { clickCallback(invObj, obj, e) })
-            })(obj.inventory[i])
-        $el.append(img).append("x" + obj.inventory[i].amount)
-    }
-}
-
-function drawPlayerInventory() {
-    // draw the player inventory with click handlers for
-    // using or dropping items
-
-    drawInventory($("#inventoryBoxList"), player, (item, _, event) => {
-        if(event.shiftKey) { // shift+click -> drop item
-            dropObject(player, item)
-            drawPlayerInventory()
-        }
-        else { // click -> use item
-            useObject(item, player)
-        }
-    })
-}
-
 function uiStartDialogue(force: boolean, target?: any) {
     if(uiMode === UI_MODE_BARTER && force !== true)
         return
