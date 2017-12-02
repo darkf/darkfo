@@ -357,9 +357,12 @@ function playerUse() {
 		obj = getObjectUnderCursor((_: Obj) => true) // obj might not be usable, so select non-usable ones too
 		if(!obj)
 			return
-		playerUseSkill(skillMode, obj)
-		skillMode = Skills.None
-		uiMode = UI_MODE_NONE
+		try { playerUseSkill(skillMode, obj) }
+		finally {
+			skillMode = Skills.None
+			uiMode = UI_MODE_NONE
+		}
+		
 		return
 	}
 

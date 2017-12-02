@@ -136,46 +136,6 @@ body {
     background-image: url("art/intrface/bigreddn.png");
 }
 
-#skilldex {
-    display: none;
-    position: absolute;
-    right: 10; bottom: 105;
-    width: 185; height: 368;
-    background-image: url("art/intrface/skldxbox.png");
-
-    /* skldxon.png / skldxoff.png */
-}
-
-#skilldexPlate {
-    position: absolute;
-    top: 13; left: 65;
-}
-
-.skilldexFont {
-    color: yellow;
-}
-
-.skilldex-digit1 { left: 0; }
-.skilldex-digit2 { left: 9; }
-.skilldex-digit3 { left: 18; }
-.skilldex-digit4 { left: 27; }
-
-#skilldex-lockpick {
-    position: absolute;
-    left: 25; top: 85;
-}
-
-#skilldex-lockpick-number {
-    position: absolute;
-    left: 110; top: 85;
-}
-
-
-#skilldex-repair {
-    position: absolute;
-    left: 25; top: 300;
-}
-
 #displayLog {
     position: absolute;
     left: 26; top: 30;

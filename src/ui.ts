@@ -32,6 +32,8 @@ module Ui {
 
     export function init() {
         $uiContainer = document.getElementById("game-container");
+
+        initSkilldex();
     }
 
     // Bounding box that accepts strings as well as numbers
@@ -82,6 +84,12 @@ module Ui {
             if(!this.showing) return;
             this.showing = false;
             this.elem.parentNode.removeChild(this.elem);
+        }
+
+        toggle(): this {
+            if(this.showing) this.close();
+            else this.show();
+            return this;
         }
     }
 
@@ -244,6 +252,25 @@ module Ui {
             return item;
         }
     }
+
+    export let skilldexWindow: WindowFrame|null = null;
+
+    function initSkilldex() {
+        function useSkill(skill: Skills) {
+            return () => {
+                skilldexWindow.close();
+                uiMode = UI_MODE_USE_SKILL;
+                skillMode = skill;
+                console.log("[UI] Using skill:", skill);
+            }
+        }
+
+        skilldexWindow = new WindowFrame("art/intrface/skldxbox.png",
+                                         { x: Config.ui.screenWidth - 185 - 5, y: Config.ui.screenHeight - 368, w: 185, h: 368 })
+                             .add(new Label(65, 13, "Skilldex"))
+                             .add(new Label(25, 85, "Lockpick").onClick(useSkill(Skills.Lockpick)))
+                             .add(new Label(25, 300, "Repair").onClick(useSkill(Skills.Repair)));
+    }
 }
 
 // TODO: enum this
@@ -324,7 +351,7 @@ function initUI() {
     $("#endContainer").bind("animationiteration", uiEndCombatAnimationDone)
     $("#endContainer").bind("webkitAnimationIteration", uiEndCombatAnimationDone)
 
-    $("#skilldexButton").click(() => uiToggleSkilldex())
+    $("#skilldexButton").click(() => Ui.skilldexWindow.toggle())
 
     function makeScrollable($el: any, scroll?: number) {
         $el.bind("mousewheel DOMMouseScroll", function(e) {
@@ -347,18 +374,6 @@ function initUI() {
 
     drawHP(critterGetStat(player, "HP"))
     uiDrawWeapon()
-
-    function useSkill(skill) {
-        return function() {
-            uiHideSkilldex()
-            uiMode = UI_MODE_USE_SKILL
-            skillMode = skill
-            console.log("using skill:", skill)
-        }
-    }
-
-    $("#skilldex-lockpick").click(useSkill(Skills.Lockpick))
-    $("#skilldex-repair").click(useSkill(Skills.Repair))
 }
 
 function uiHideContextMenu() {
@@ -397,23 +412,6 @@ function uiContextMenu(obj: Obj, evt: any) {
     if(canUseObject(obj))
         $menu.append(useBtn)
     $menu.append(pickupBtn)
-}
-
-function uiShowSkilldex() {
-    uiMode = UI_MODE_SKILLDEX
-    $("#skilldex").show()
-}
-
-function uiHideSkilldex() {
-    uiMode = UI_MODE_NONE
-    $("#skilldex").hide()
-}
-
-function uiToggleSkilldex() {
-    if(uiMode === UI_MODE_SKILLDEX)
-        uiHideSkilldex()
-    else
-        uiShowSkilldex()
 }
 
 function uiStartCombat() {
