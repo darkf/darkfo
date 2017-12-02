@@ -85,6 +85,7 @@ class Player extends Critter {
 						// same map, different elevation
 						gMap.changeElevation(startingElevation, true)
 						player.move(startingPosition)
+						centerCamera(player.position)
 					}
 					else
 						gMap.loadMapByID(exitMapID, startingPosition, startingElevation)
