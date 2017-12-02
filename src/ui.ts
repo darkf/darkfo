@@ -674,7 +674,7 @@ function drawPlayerInventory() {
     // draw the player inventory with click handlers for
     // using or dropping items
 
-    drawInventory($("#inventoryBoxList"), player, function(item, _, event) {
+    drawInventory($("#inventoryBoxList"), player, (item, _, event) => {
         if(event.shiftKey) { // shift+click -> drop item
             dropObject(player, item)
             drawPlayerInventory()
@@ -685,7 +685,7 @@ function drawPlayerInventory() {
     })
 }
 
-function uiStartDialogue(force, target?: any) {
+function uiStartDialogue(force: boolean, target?: any) {
     if(uiMode === UI_MODE_BARTER && force !== true)
         return
 
@@ -856,7 +856,7 @@ function uiBarterMode(merchant) {
         }
     }
 
-    function drawInventory($el, who, objects) {
+    function drawInventory($el, who: "p"|"m"|"l"|"r", objects: Obj[]) {
         $el.html("")
 
         for(var i = 0; i < objects.length; i++) {
@@ -869,7 +869,7 @@ function uiBarterMode(merchant) {
         }
     }
 
-    function uiBarterMove(data, where) {
+    function uiBarterMove(data: string, where: "left"|"right"|"leftInv"|"rightInv") {
         console.log("barter: move " + data + " to " + where)
 
         var from = {"p": workingPlayerInventory,
@@ -908,10 +908,10 @@ function uiBarterMode(merchant) {
     }
 
     // bartering drop targets
-    makeDropTarget($("#barterBoxLeft"), function(data) { uiBarterMove(data, "left") })
-    makeDropTarget($("#barterBoxRight"), function(data) { uiBarterMove(data, "right") })
-    makeDropTarget($("#barterBoxInventoryLeft"), function(data) { uiBarterMove(data, "leftInv") })
-    makeDropTarget($("#barterBoxInventoryRight"), function(data) { uiBarterMove(data, "rightInv") })
+    makeDropTarget($("#barterBoxLeft"), (data: string) => { uiBarterMove(data, "left") })
+    makeDropTarget($("#barterBoxRight"), (data: string) => { uiBarterMove(data, "right") })
+    makeDropTarget($("#barterBoxInventoryLeft"), (data: string) => { uiBarterMove(data, "leftInv") })
+    makeDropTarget($("#barterBoxInventoryRight"), (data: string) => { uiBarterMove(data, "rightInv") })
 
     $("#barterTalkButton").click(uiEndBarterMode)
     $("#barterOfferButton").click(offer)
@@ -941,10 +941,10 @@ function uiEndLoot() {
     $("#lootBoxTakeAllButton").off("click")
 }
 
-function uiLoot(object) {
+function uiLoot(object: Obj) {
     uiMode = UI_MODE_LOOT
 
-    function uiLootMove(data, where) {
+    function uiLootMove(data: string /* "l"|"r" */, where: "left"|"right") {
         console.log("loot: move " + data + " to " + where)
 
         var from = {"l": player.inventory,
@@ -970,7 +970,7 @@ function uiLoot(object) {
         drawLoot()
     }
 
-    function drawInventory($el, who, objects) {
+    function drawInventory($el, who: "p"|"m"|"l"|"r", objects: Obj[]) {
         $el.html("")
 
         for(var i = 0; i < objects.length; i++) {
@@ -988,10 +988,10 @@ function uiLoot(object) {
     $("#lootBox").css("visibility", "visible")
 
     // loot drop targets
-    makeDropTarget($("#lootBoxLeft"), function(data) { uiLootMove(data, "left") })
-    makeDropTarget($("#lootBoxRight"), function(data) { uiLootMove(data, "right") })
+    makeDropTarget($("#lootBoxLeft"), (data: string) => { uiLootMove(data, "left") })
+    makeDropTarget($("#lootBoxRight"), (data: string) => { uiLootMove(data, "right") })
 
-    $("#lootBoxTakeAllButton").click(function() {
+    $("#lootBoxTakeAllButton").click(() => {
         console.log("take all...")
         var inv = object.inventory.slice(0) // clone inventory
         for(var i = 0; i < inv.length; i++)
@@ -1007,7 +1007,7 @@ function uiLoot(object) {
     drawLoot()
 }
 
-function uiLog(msg) {
+function uiLog(msg: string) {
     var $log = $("#displayLog")
     $log.append("<li>" + msg + "</li>").scrollTop($log[0].scrollHeight)
 }
@@ -1168,7 +1168,7 @@ function uiCloseCalledShot() {
     $("#calledShotBox").hide()
 }
 
-function uiCalledShot(art, target, callback) {
+function uiCalledShot(art: string, target: Critter, callback?: (regionHit: string) => void) {
     uiMode = UI_MODE_CALLED_SHOT
     $("#calledShotBox").show()
 
@@ -1191,7 +1191,7 @@ function uiCalledShot(art, target, callback) {
 
     $("#calledShotBackground").css("background-image", "url('" + art + ".png')")
 
-    $(".calledShotLabel").click(function(evt) {
+    $(".calledShotLabel").click((evt: MouseEvent) => {
         var id = $(evt.target).attr("id")
         var regionHit = id.split("-")[1]
         console.log("clicked a called location (%s)", regionHit)
