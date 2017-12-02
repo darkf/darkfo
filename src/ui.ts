@@ -283,9 +283,9 @@ var uiMode: number = UI_MODE_NONE
 function initUI() {
     Ui.init();
 
-    makeDropTarget($("#inventoryBoxList"), function(data) { uiMoveSlot(data, "inventory") })
-    makeDropTarget($("#inventoryBoxItem1"), function(data) { uiMoveSlot(data, "leftHand") })
-    makeDropTarget($("#inventoryBoxItem2"), function(data) { uiMoveSlot(data, "rightHand") })
+    makeDropTarget($("#inventoryBoxList"), (data: string) => { uiMoveSlot(data, "inventory") })
+    makeDropTarget($("#inventoryBoxItem1"), (data: string) => { uiMoveSlot(data, "leftHand") })
+    makeDropTarget($("#inventoryBoxItem2"), (data: string) => { uiMoveSlot(data, "rightHand") })
 
     for(var i = 0; i < 2; i++) {
         $("#calledShotBox .calledShotChance")
@@ -293,17 +293,15 @@ function initUI() {
               $("<div class='number'>").css("left", i*9).attr("id", "digit" + (i+1)))
     }
 
-    $("#calledShotCancelBtn").click(function() {
-        uiCloseCalledShot()
-    })
+    $("#calledShotCancelBtn").click(() => { uiCloseCalledShot() })
 
-    $("#worldmapViewButton").click(function() {
+    $("#worldmapViewButton").click(() => {
         var onAreaMap = ($("#areamap").css("visibility") === "visible")
         if(onAreaMap)
             uiWorldMapWorldView()
         else {
             var currentArea = areaContainingMap(gMap.name)
-            if(currentArea !== null)
+            if(currentArea)
                 uiWorldMapShowArea(currentArea)
             else
                 uiWorldMapAreaView()
@@ -311,7 +309,7 @@ function initUI() {
     })
 
     $("#inventoryButton").click(uiInventoryScreen)
-    $("#inventoryDoneButton").click(function() {
+    $("#inventoryDoneButton").click(() => {
         uiMode = UI_MODE_NONE
         $("#inventoryBox").css("visibility", "hidden")
         uiDrawWeapon()
@@ -319,18 +317,18 @@ function initUI() {
 
     $("#lootBoxDoneButton").click(uiEndLoot)
 
-    $("#attackButtonContainer").click(function() {
+    $("#attackButtonContainer").click(() => {
         if(!Config.engine.doCombat) return
-        if(inCombat === true) {
+        if(inCombat) {
             // TODO: targeting reticle for attacks
         }
         else {
             // begin combat
             Combat.start()
         }
-    }).bind("contextmenu", function() { // right mouse button (cycle weapon modes)
+    }).bind("contextmenu", () => { // right mouse button (cycle weapon modes)
         var wep = critterGetEquippedWeapon(player)
-        if(wep === null) return false
+        if(!wep) return false
         wep.weapon.cycleMode()
         uiDrawWeapon()
         return false
@@ -354,7 +352,8 @@ function initUI() {
     $("#skilldexButton").click(() => Ui.skilldexWindow.toggle())
 
     function makeScrollable($el: any, scroll?: number) {
-        $el.bind("mousewheel DOMMouseScroll", function(e) {
+        // TODO: Get rid of jQuery and originalEvent, then use e: MouseEvent
+        $el.bind("mousewheel DOMMouseScroll", (e /* jqe */) => {
             var delta = (e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) ? -1 : 1
             $el.scrollTop($el.scrollTop() + (scroll || 60)*delta)
         })
@@ -384,7 +383,7 @@ function uiHideContextMenu() {
 function uiContextMenu(obj: Obj, evt: any) {
     uiMode = UI_MODE_CONTEXT_MENU
 
-    function button(obj, action, onclick) {
+    function button(obj: Obj, action: string, onclick: () => void) {
         return $("<img>").attr("id", "context_" + action).
                           addClass("itemContextMenuButton").
                           click(function() {
@@ -475,7 +474,7 @@ function uiDrawWeapon() {
         $("#attackButtonCalled").hide()
 }
 
-function uiMoveSlot(data, target) {
+function uiMoveSlot(data: string, target: string) {
     var obj = null
     if(data[0] === "i") {
         if(target === "inventory")
@@ -510,24 +509,23 @@ function uiMoveSlot(data, target) {
     uiInventoryScreen()
 }
 
-function makeDropTarget($el, dropCallback) {
-    $el.on("drop", function(e) {
+function makeDropTarget($el /* jq */, dropCallback: (data: string, e? /* jqe */) => void) {
+    $el.on("drop", (e /* jqe */) => {
         var data = e.originalEvent.dataTransfer.getData("text/plain")
         dropCallback(data, e)
         return false
-    }).on("dragenter", function() { return false }).
-       on("dragover",  function() { return false })
+    }).on("dragenter", () => false).
+       on("dragover",  () => false)
 }
 
-function makeDraggable($el, data, endCallback?: any) { // TODO: any
-    $el.attr("draggable", "true").on("dragstart", function(e) {
+function makeDraggable($el /* jq */, data: string, endCallback?: () => void) {
+    $el.attr("draggable", "true").on("dragstart", (e /* jqe */) => {
         e.originalEvent.dataTransfer.setData('text/plain', data)
         console.log("start drag")
-    }).on("dragend", function(e) {
+    }).on("dragend", (e /* jqe */) => {
         if(e.originalEvent.dataTransfer.dropEffect !== 'none') {
             //$(this).remove()
-            if(endCallback !== undefined)
-                endCallback($(this))
+            endCallback && endCallback()
         }
     })
 }
@@ -536,30 +534,28 @@ function uiInventoryScreen() {
     uiMode = UI_MODE_INVENTORY
 
     $("#inventoryBox").css("visibility", "visible")
-    drawInventory($("#inventoryBoxList"), player.inventory, function(obj, e) {
+    drawInventory($("#inventoryBoxList"), player.inventory, (obj: Obj, e: MouseEvent) => {
         makeItemContextMenu(e, obj, "inventory")
     })
 
-    function drawInventory($el, objects, clickCallback) {
+    function drawInventory($el /* jq */, objects: Obj[], clickCallback?: (item: Obj, e: MouseEvent) => void) {
         $el.html("")
         $("#inventoryBoxItem1").html("")
         $("#inventoryBoxItem2").html("")
 
-        for(var i = 0; i < objects.length; i++) {
-            var inventoryImage = objects[i].invArt
-            var img = $("<img>").attr("src", inventoryImage+'.png').
-                      attr("width", 72).attr("height", 60) // 90x60 // 70x40
-            img.attr("title", objects[i].name)
-            if(clickCallback !== undefined)
-                (function(invObj) {
-                    img.click(function(e) { clickCallback(invObj, e) })
-                })(objects[i])
-            $el.append(img).append("x" + objects[i].amount)
-            makeDraggable(img, "i" + i, function() { uiInventoryScreen() })
+        for(let i = 0; i < objects.length; i++) {
+            const invObj = objects[i]
+            const img = $("<img>").attr("src", invObj.invArt+'.png').
+                        attr("width", 72).attr("height", 60) // 90x60 // 70x40
+            img.attr("title", invObj.name)
+            if(clickCallback)
+                    img.click((e: MouseEvent) => { clickCallback(invObj, e) })
+            $el.append(img).append("x" + invObj.amount)
+            makeDraggable(img, "i" + i, () => { uiInventoryScreen() })
         }
     }
 
-    function itemAction(obj, slot, action) {
+    function itemAction(obj: Obj, slot: keyof Player, action: "cancel"|"use"|"drop") {
         switch(action) {
             case "cancel": break
             case "use":
@@ -582,16 +578,16 @@ function uiInventoryScreen() {
         }
     }
 
-    function makeContextButton(obj, slot, action) {
+    function makeContextButton(obj: Obj, slot: keyof Player, action: "cancel"|"use"|"drop") {
         return $("<img>").attr("id", "context_" + action).
                           addClass("itemContextMenuButton").
-                          click(function() {
+                          click(() => {
                               itemAction(obj, slot, action)
                               $("#itemContextMenu").css("visibility", "hidden")
         })
     }
 
-    function makeItemContextMenu(e, obj, slot) {
+    function makeItemContextMenu(e: MouseEvent, obj: Obj, slot: keyof Player) {
         var $menu = $("#itemContextMenu").css("visibility", "visible").html("").
                                           css({left: e.clientX,
                                                top: e.clientY})
@@ -605,12 +601,12 @@ function uiInventoryScreen() {
         $menu.append(dropBtn)
     }
 
-    function drawSlot(slot, slotID) {
+    function drawSlot(slot: keyof Player, slotID: string) {
         var art = player[slot].invArt
         var img = $("<img>").attr("src", art+'.png').
                   attr("width", 72).attr("height", 60) // 90x60 // 70x40
         img.attr("title", player[slot].name)
-        img.click(function(e) {
+        img.click((e: MouseEvent) => {
             makeItemContextMenu(e, player[slot], slot)
         })
         makeDraggable(img, slot)
@@ -623,11 +619,11 @@ function uiInventoryScreen() {
         drawSlot("rightHand", "#inventoryBoxItem2")
 }
 
-function drawHP(hp) {
+function drawHP(hp: number) {
     drawDigits("#hpDigit", hp, 4, true)
 }
 
-function drawDigits(idPrefix, amount, maxDigits, hasSign) {
+function drawDigits(idPrefix: string, amount: number, maxDigits: number, hasSign: boolean) {
     var CHAR_W = 9, CHAR_NEG = 12
     var sign = (amount < 0) ? CHAR_NEG : 0
     if(amount < 0) amount = -amount
@@ -647,7 +643,7 @@ function drawDigits(idPrefix, amount, maxDigits, hasSign) {
     }
 }
 
-function uiStartDialogue(force: boolean, target?: any) {
+function uiStartDialogue(force: boolean, target?: Critter) {
     if(uiMode === UI_MODE_BARTER && force !== true)
         return
 
@@ -675,17 +671,17 @@ function uiEndDialogue() {
     $("#dialogueBoxReply").html("")
 }
 
-function uiSetDialogueReply(reply) {
+function uiSetDialogueReply(reply: string) {
     $("#dialogueBoxReply").html(reply).scrollTop(0)
     $("#dialogueBoxTextArea").html("")
 }
 
-function uiAddDialogueOption(msg, optionID) {
+function uiAddDialogueOption(msg: string, optionID: number) {
     $("#dialogueBoxTextArea").append(
         "<li><a href=\"javascript:dialogueReply(" + optionID + ")\">" + msg + "</a></li>")
 }
 
-function uiGetAmount(item) {
+function uiGetAmount(item: Obj) {
     while(true) {
         var amount: any = prompt("How many?")
         if(amount === null)
@@ -750,7 +746,7 @@ function uiEndBarterMode() {
     })
 }
 
-function uiBarterMode(merchant) {
+function uiBarterMode(merchant: Critter) {
     uiMode = UI_MODE_BARTER
 
     // hide dialogue screen for now
@@ -765,14 +761,14 @@ function uiBarterMode(merchant) {
     // TODO: would it be better if we dropped the "working" copies?
 
     // a copy of inventories for both parties
-    var workingPlayerInventory = player.inventory.map(cloneItem)
-    var workingMerchantInventory = merchant.inventory.map(cloneItem)
+    let workingPlayerInventory = player.inventory.map(cloneItem)
+    let workingMerchantInventory = merchant.inventory.map(cloneItem)
 
     // and our working barter tables
-    var playerBarterTable = []
-    var merchantBarterTable = []
+    let playerBarterTable: Obj[] = []
+    let merchantBarterTable: Obj[] = []
 
-    function totalAmount(objects) {
+    function totalAmount(objects: Obj[]): number {
         var total = 0
         for(var i = 0; i < objects.length; i++) {
             total += objects[i].pro.extra.cost * objects[i].amount
@@ -818,7 +814,7 @@ function uiBarterMode(merchant) {
         }
     }
 
-    function drawInventory($el, who: "p"|"m"|"l"|"r", objects: Obj[]) {
+    function drawInventory($el /* jq */, who: "p"|"m"|"l"|"r", objects: Obj[]) {
         $el.html("")
 
         for(var i = 0; i < objects.length; i++) {
@@ -932,7 +928,7 @@ function uiLoot(object: Obj) {
         drawLoot()
     }
 
-    function drawInventory($el, who: "p"|"m"|"l"|"r", objects: Obj[]) {
+    function drawInventory($el /* jq */, who: "p"|"m"|"l"|"r", objects: Obj[]) {
         $el.html("")
 
         for(var i = 0; i < objects.length; i++) {
@@ -1134,7 +1130,7 @@ function uiCalledShot(art: string, target: Critter, callback?: (regionHit: strin
     uiMode = UI_MODE_CALLED_SHOT
     $("#calledShotBox").show()
 
-    function drawChance(region) {
+    function drawChance(region: string) {
         var chance: any = Combat.prototype.getHitChance(player, target, region).hit
         console.log("id: %s | chance: %d", "#calledShot-"+region+"-chance #digit", chance)
         if(chance <= 0)
