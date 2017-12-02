@@ -1114,7 +1114,7 @@ function uiElevatorDone() {
     $("#elevatorLabel").css("visibility", "hidden")
 }
 
-function uiElevator(elevator) {
+function uiElevator(elevator: Elevator) {
     uiMode = UI_MODE_ELEVATOR
     var art = lookupInterfaceArt(elevator.type)
     console.log("elevator art: " + art)

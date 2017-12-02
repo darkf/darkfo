@@ -25,7 +25,14 @@ var mapInfo: any = null // TODO: type
 var elevatorInfo = null
 var dirtyMapCache: { [mapName: string]: SerializedMap } = {}
 
-function getElevator(type) {
+interface Elevator {
+	buttons: { tileNum: number; mapID: number; level: number; }[];
+	buttonCount: number;
+	labels: number;
+	type: number;
+}
+
+function getElevator(type): Elevator {
 	if(elevatorInfo === null) {
 		console.log("loading elevator info")
 		elevatorInfo = getFileJSON("elevators.json")
