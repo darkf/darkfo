@@ -147,6 +147,11 @@ module Ui {
 
             return this;
         }
+
+        css(props: object): this {
+            Object.assign(this.elem.style, props);
+            return this;
+        }
     }
 
     export class SmallButton extends Widget {
