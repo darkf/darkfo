@@ -34,6 +34,7 @@ module Ui {
         $uiContainer = document.getElementById("game-container");
 
         initSkilldex();
+        initCharacterScreen();
     }
 
     // Bounding box that accepts strings as well as numbers
@@ -259,6 +260,7 @@ module Ui {
     }
 
     export let skilldexWindow: WindowFrame|null = null;
+    export let characterWindow: WindowFrame|null = null;
 
     function initSkilldex() {
         function useSkill(skill: Skills) {
@@ -276,13 +278,75 @@ module Ui {
                              .add(new Label(25, 85, "Lockpick").onClick(useSkill(Skills.Lockpick)))
                              .add(new Label(25, 300, "Repair").onClick(useSkill(Skills.Repair)));
     }
+
+    function initCharacterScreen() {
+        const skillList = new List({ x: 380, y: 27, w: "auto", h: "auto" });
+
+        skillList.css({fontSize: "0.75em"});
+
+        characterWindow = new WindowFrame("art/intrface/edtredt.png",
+                                         { x: Config.ui.screenWidth/2 - 640/2, y: Config.ui.screenHeight/2 - 480/2, w: 640, h: 480 })
+                              .add(new Ui.SmallButton(455, 454).onClick(() => { })).add(new Ui.Label(455+18, 454, "Done"))
+                              .add(new Ui.SmallButton(552, 454).onClick(() => { characterWindow.close(); })).add(new Ui.Label(552+18, 454, "Cancel"))
+                              .add(new Label(22,  6, "Name"))
+                              .add(new Label(160, 6, "Age"))
+                              .add(new Label(242, 6, "Gender"))
+                              .add(new Label(33, 280, `Level: ${critterGetStat(player, "Level")}`).css({fontSize: "0.75em", color: "#00FF00"}))
+                              .add(new Label(33, 292, `Exp: ${critterGetStat(player, "Experience")}`).css({fontSize: "0.75em", color: "#00FF00"}))
+                              .add(new Label(380, 5, "Skill"))
+                              .add(new Label(399, 233, "Skill Points"))
+                              .add(new Label(194, 45, `Hit Points ${critterGetStat(player, "HP")}/${critterGetStat(player, "Max HP")}`)
+                                       .css({fontSize: "0.75em", color: "#00FF00"}))
+                              .add(skillList)
+                              // .show();
+
+        const skills = [
+            "Small Guns",
+            "Big Guns",
+            "Energy Weapons",
+            "Unarmed",
+            "Melee Weapons",
+            "Throwing",
+            "First Aid",
+            "Doctor",
+            "Sneak",
+            "Lockpick",
+            "Steal",
+            "Traps",
+            "Science",
+            "Repair",
+            "Speech",
+            "Barter",
+            "Gambling",
+            "Outdoorsman"
+        ];
+
+        for(const skill of skills)
+            skillList.addItem({ text: `${skill} ${critterGetSkill(player, skill)}%` });
+
+        const stats = [
+            "STR",
+            "PER",
+            "END",
+            "CHA",
+            "INT",
+            "AGI",
+            "LUK"
+        ];
+
+        let n = 0;
+        for(const stat of stats) {
+            characterWindow.add(new Label(20, 39 + n, `${stat} - ${critterGetStat(player, stat)}`).css({background: "black", padding: "5px"}));
+            n += 33;
+        }
+    }
 }
 
 // TODO: enum this
 var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3,
     UI_MODE_INVENTORY = 4, UI_MODE_WORLDMAP = 5, UI_MODE_ELEVATOR = 6,
     UI_MODE_CALLED_SHOT = 7, UI_MODE_SKILLDEX = 8, UI_MODE_USE_SKILL = 9,
-    UI_MODE_CONTEXT_MENU = 10, UI_MODE_SAVELOAD = 11
+    UI_MODE_CONTEXT_MENU = 10, UI_MODE_SAVELOAD = 11, UI_MODE_CHAR = 12
 var uiMode: number = UI_MODE_NONE
 
 function initUI() {
