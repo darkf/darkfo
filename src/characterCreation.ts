@@ -58,7 +58,7 @@ class SkillSet {
         let skillValue = base;
         for(const dep of skillDep.dependencies) {
             if(dep.statType)
-                skillValue += Math.floor(stats.get(dep.statType) * dep.multiplicator);
+                skillValue += Math.floor(stats.get(dep.statType) * dep.multiplier);
         }
 
         return skillValue;
@@ -122,7 +122,7 @@ class StatSet {
         let statValue = base;
         for(const dep of statDep.dependencies) {
             if(dep.statType)
-                statValue += Math.floor(this.get(dep.statType) * dep.multiplicator);
+                statValue += Math.floor(this.get(dep.statType) * dep.multiplier);
         }
 
         return clamp(statDep.min, statDep.max, statValue);

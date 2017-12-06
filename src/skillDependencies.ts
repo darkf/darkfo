@@ -27,12 +27,7 @@ class Skill {
 }
 
 class Dependency {
-    statType: string;
-    multiplicator: number;
-
-    constructor(_statType, _multiplicator) {
-        this.statType = _statType
-        this.multiplicator = _multiplicator
+    constructor(public statType: string, public multiplier: number) {
     }
 }
 
