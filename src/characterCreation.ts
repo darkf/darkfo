@@ -45,7 +45,7 @@ class SkillSet {
         if(!skillDep)
             throw Error(`No dependencies for skill '${skill}'`);
 
-        return this.baseSkills[skill] || skillDep.startvalue;
+        return this.baseSkills[skill] || skillDep.startValue;
     }
 
     get(skill: string, stats: StatSet): number {
@@ -108,7 +108,7 @@ class StatSet {
         if(!statDep)
             throw Error(`No dependencies for stat '${stat}'`);
 
-        return this.baseStats[stat] || statDep.defaultVal;
+        return this.baseStats[stat] || statDep.defaultValue;
     }
 
     get(stat: string): number {

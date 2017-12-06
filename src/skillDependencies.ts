@@ -22,26 +22,8 @@ limitations under the License.
 enum StatType { STR, PER, END, CHR, INT, AGI, LCK, One }
 
 class Skill {
-	startvalue: number;
-	dependencies: Dependency[];
-
-	constructor(_startvalue, _dependencies) {
-		this.startvalue = _startvalue
-		this.dependencies = _dependencies
+	constructor(public startValue: number, public dependencies: Dependency[]) {
 	}
-
-	calculateValue(obj: any) {
-		var addedValue = 0
-		//console.log(this)
-		//console.log(this.dependencies)
-		for(var i = 0; i < this.dependencies.length; i++)
-		{
-			var stat = critterGetStat(obj,this.dependencies[i].statType)
-			if(stat !== undefined)
-				addedValue += Math.floor(stat * this.dependencies[i].multiplicator)
-		}
-		return (this.startvalue + addedValue)
-	} 
 }
 
 class Dependency {
@@ -54,8 +36,15 @@ class Dependency {
 	}
 }
 
-//FO2 specific, FO1 uses its own, possibly extracting this to an outside file that is loaded in would thus make sense
-var skillDependencies = {};
+class Stat {
+	constructor(public min: number, public max: number, public defaultValue: number, public dependencies: Dependency[]) {
+	}
+}
+
+// Skills
+
+// Fallout 2 specific, FO1 uses its own, possibly extracting this to an outside file that is loaded in would thus make sense
+var skillDependencies: { [name: string]: Skill } = {};
 skillDependencies['Small Guns'] = new Skill(5, [new Dependency('AGI', 4)])
 skillDependencies['Big Guns'] = new Skill(0, [new Dependency('AGI', 2)])
 skillDependencies['Energy Weapons'] = new Skill(0, [new Dependency('AGI',2)])
@@ -75,15 +64,9 @@ skillDependencies['Barter'] = new Skill(0, [new Dependency('CHA',4)])
 skillDependencies['Gambling'] = new Skill(5, [new Dependency('LUK',5)])
 skillDependencies['Outdoorsman'] = new Skill(0, [new Dependency('END',2), new Dependency('INT',2)])
 
+// Stats
 
-var Stat = function(_min, _max, _default, _dependencies) {
-	this.min = _min
-	this.max = _max
-	this.defaultVal = _default
-	this.dependencies = _dependencies
-}
-
-var statDependencies = {};
+var statDependencies: { [name: string]: Stat } = {};
 statDependencies['STR'] = new Stat(1, 10, 5, [])
 statDependencies['PER'] = new Stat(1, 10, 5, [])
 statDependencies['END'] = new Stat(1, 10, 5, [])
@@ -159,22 +142,4 @@ function getImprovementCost(obj, skill) {
 		return 6
 	else
 		return 999999999
-}
-
-function calculateStatValueAddition(obj, stat)
-{
-	var statDependency = statDependencies[stat]
-	var addedValue = 0
-	if(statDependency === undefined)
-	{
-		console.log('Stat dependency not found: ' + stat)
-		return 0
-	}
-	for(var i = 0; i < statDependency.dependencies.length; i++)
-	{
-		var statVal = critterGetStat(obj, statDependency.dependencies[i].statType)
-		if(statVal !== undefined)
-			addedValue += Math.floor(statVal * statDependency.dependencies[i].multiplicator)
-	}
-	return addedValue
 }
