@@ -393,50 +393,12 @@ function critterDamage(obj: Critter, damage: number, source: Critter, useScript?
 	}
 }
 
-function cloneStats(stats) { return $.extend({}, stats) }
-function addStats(a, b) {
-	var w = cloneStats(a)
-	if(w["HP"] !== undefined)
-		w["Max HP"] = w["HP"]
-	for(var prop in b)
-		w[prop] += b[prop]
-	return w
-}
-function calcStats(obj, pro) {
-	var stats = addStats(pro.extra.baseStats, pro.extra.bonusStats)
-	// todo: armor, appears to be hardwired into the proto?
-	return stats
-}
-function reprStats(stats) {
-	return JSON.stringify(stats) // todo
-}
-
-// todo: bring Unity to how stats and skills are calculated
-
 function critterGetStat(obj: Critter, stat: string) {
-	var rawStat = critterGetRawStat(obj, stat)
-	if(rawStat !== undefined) {
-		var retval = clamp(statDependencies[stat].min, statDependencies[stat].max, rawStat + calculateStatValueAddition(obj, stat))
-		//console.log("With derived bonuses " + stat + " is: " + retval)
-		return retval
-	}
-	return null
+	return obj.stats.get(stat);
 }
 
 function critterGetRawStat(obj: Critter, stat: string) {
-	//console.log("STAT: " + stat + " IS: " + obj.stats[stat])
-	if(obj.stats[stat] === undefined) {
-		//console.log("NO STAT: " + stat + " - attempting to add it")
-		if(statDependencies[stat] !== undefined)
-			obj.stats[stat] = statDependencies[stat].defaultVal
-		else
-			console.log('FAILED TO ADD STAT: ' + stat)
-
-		// special case for HP
-		if(stat === "HP")
-			obj.stats[stat] = critterGetStat(obj, "Max HP")
-	}
-	return obj.stats[stat]
+	return obj.stats.getBase(stat);
 }
 
 function critterSetRawStat(obj: Critter, stat: string, amount: number) {
@@ -444,21 +406,12 @@ function critterSetRawStat(obj: Critter, stat: string, amount: number) {
 	//console.log(stat + " changed to: " + obj.stats[stat])
 }
 
-function critterGetSkill(obj, skill) {
-	var rawSkill = critterGetRawSkill(obj,skill)
-	var skillDep = skillDependencies[skill]
-	if(skillDep !== undefined)
-		rawSkill += skillDep.calculateValue(obj)
-	return rawSkill
+function critterGetSkill(obj: Critter, skill: string) {
+	return obj.skills.get(skill, obj.stats);
 }
 
 function critterGetRawSkill(obj: Critter, skill: string) {
-	//console.log("SKILL: " + skill + " IS: " + obj.skills[skill])
-	if(obj.skills[skill] === undefined) {
-		console.log("NO SKILL: " + skill + " - adding it")
-		obj.skills[skill] = 0
-	}
-	return obj.skills[skill]
+	return obj.skills.getBase(skill);
 }
 
 function critterSetRawSkill(obj: Critter, skill: string, amount: number) {
@@ -486,9 +439,8 @@ interface SerializedCritter extends SerializedObj {
 const SERIALIZED_CRITTER_PROPS = ["stats", "skills", "aiNum", "teamNum", "hostile", "isPlayer", "dead"];
 
 class Critter extends Obj {
-	// TODO: any
-	stats: any;
-	skills: any;
+	stats: StatSet;
+	skills: SkillSet;
 
 	leftHand: WeaponObj; // Left-hand object slot (TODO: Obj?)
 	rightHand: WeaponObj; // Right-hand object slot
@@ -521,6 +473,15 @@ class Critter extends Obj {
 				// console.log(`loading prop ${prop} from SerializedCritter = ${mobj[prop]}`);
 				obj[prop] = mobj[prop];
 			}
+
+			if(mobj.stats) {
+				obj.stats = new StatSet(mobj.stats.baseStats);
+				console.warn("Deserializing stat set: %o to: %o", mobj.stats, obj.stats)
+			}
+			if(mobj.skills) {
+				obj.skills = new SkillSet(mobj.skills.baseSkills, mobj.skills.tagged);
+				console.warn("Deserializing skill set: %o to: %o", mobj.skills, obj.skills)
+			}
 		}
 
 		return obj;
@@ -529,8 +490,9 @@ class Critter extends Obj {
 	init() {
 		super.init()
 
-		this.stats = calcStats(this, this.pro)
-		this.skills = this.pro.extra.skills
+		this.stats = StatSet.fromPro(this.pro)
+		this.skills = SkillSet.fromPro(this.pro.extra.skills)
+		console.log("Loaded stats/skills from PRO: HP=%d Melee=%d", this.stats.get("HP"), this.stats.get("Speech"))
 		this.name = getMessage("pro_crit", this.pro.textID)
 
 		// initialize AI packet / team number

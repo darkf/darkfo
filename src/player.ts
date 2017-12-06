@@ -1,5 +1,5 @@
 /*
-Copyright 2014-2015 darkf
+Copyright 2014 darkf
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,17 +19,13 @@ limitations under the License.
 "use strict";
 
 class Player extends Critter {
-	// TODO: make it so this gets added whenever needed so that other things than just the player can use it
-	// It is however only used for tag skills and temporary levelup menu stuff, so it's not crucial
-	tempChanges = {skills: {}, stats: {}};
-
 	name = "Player"
 
 	isPlayer = true;
 	art = "art/critters/hmjmpsaa";
 
-	stats = {AGI: 8, INT: 8, STR: 8, CHA: 8, HP: 100}
-	skills = {}
+	stats = new StatSet({AGI: 8, INT: 8, STR: 8, CHA: 8, HP: 100})
+	skills = new SkillSet()
 
 	teamNum = 0 // TODO: what team is the player actually on?
 
