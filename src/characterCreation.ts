@@ -40,7 +40,12 @@ class SkillSet {
     }
 
     getBase(skill: string): number {
-        return this.baseSkills[skill] || 0;
+        const skillDep = skillDependencies[skill];
+
+        if(!skillDep)
+            throw Error(`No dependencies for skill '${skill}'`);
+
+        return this.baseSkills[skill] || skillDep.startvalue;
     }
 
     get(skill: string, stats: StatSet): number {
@@ -98,20 +103,33 @@ class StatSet {
     }
 
     getBase(stat: string): number {
-        // TODO: statDependencies[stat].defaultVal
-        return this.baseStats[stat] || 5;
+        const statDep = statDependencies[stat];
+
+        if(!statDep)
+            throw Error(`No dependencies for stat '${stat}'`);
+
+        return this.baseStats[stat] || statDep.defaultVal;
     }
 
     get(stat: string): number {
-        return this.getBase(stat);
+        const base = this.getBase(stat);
 
-        /* TODO: clamp
-        clamp(statDependencies[stat].min, statDependencies[stat].max, rawStat + calculateStatValueAddition(obj, stat))
-        */
+        const statDep = statDependencies[stat];
+
+        if(!statDep)
+            throw Error(`No dependencies for stat '${stat}'`);
+
+        let statValue = base;
+        for(const dep of statDep.dependencies) {
+            if(dep.statType)
+                statValue += Math.floor(this.get(dep.statType) * dep.multiplicator);
+        }
+
+        return clamp(statDep.min, statDep.max, statValue);
     }
 }
 
-/*
+/* Tagged skills
 if(obj.tempChanges.skills[skill] !== undefined) {
     obj.tempChanges.skills[skill] = 2 * obj.tempChanges.skills[skill] + 20
 }else{

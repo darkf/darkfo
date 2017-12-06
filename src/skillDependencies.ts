@@ -22,9 +22,8 @@ limitations under the License.
 enum StatType { STR, PER, END, CHR, INT, AGI, LCK, One }
 
 class Skill {
-	// TODO
-	startvalue: any;
-	dependencies: any;
+	startvalue: number;
+	dependencies: Dependency[];
 
 	constructor(_startvalue, _dependencies) {
 		this.startvalue = _startvalue
@@ -46,9 +45,8 @@ class Skill {
 }
 
 class Dependency {
-	// TODO
-	statType: any;
-	multiplicator: any;
+	statType: string;
+	multiplicator: number;
 
 	constructor(_statType, _multiplicator) {
 		this.statType = _statType
