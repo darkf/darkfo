@@ -257,6 +257,14 @@ module Ui {
 
             return item;
         }
+
+        clear(): void {
+            this.items.length = 0;
+            
+            const node = this.elem;
+            while(node.firstChild)
+                node.removeChild(node.firstChild);
+        }
     }
 
     export let skilldexWindow: WindowFrame|null = null;
