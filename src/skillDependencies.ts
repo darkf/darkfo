@@ -118,24 +118,14 @@ const statDependencies: { [name: string]: Stat } = {
 //helper
 statDependencies['One'] = new Stat(1, 1, 1, [])
 
-//FO2 specific, in FO1 it's always 1
-function getImprovementCost(obj, skill) {
-    var skillPoints = critterGetSkill(obj, skill)
-    if(skillPoints == null)
-        return null
-    
-    if(skillPoints<101)
-        return 1
-    else if(skillPoints<126)
-        return 2
-    else if(skillPoints<151)
-        return 3
-    else if(skillPoints<176)
-        return 4
-    else if(skillPoints<201)
-        return 5
-    else if(skillPoints<301)
-        return 6
-    else
-        return 999999999
+function skillImprovementCost(skillPoints: number): number {
+    // Fallout 2 specific, in FO1 it's always 1
+
+    if(skillPoints < 101) return 1;
+    if(skillPoints < 126) return 2;
+    if(skillPoints < 151) return 3;
+    if(skillPoints < 176) return 4;
+    if(skillPoints < 201) return 5;
+    if(skillPoints < 301) return 6;
+    return 999999999;
 }

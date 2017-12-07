@@ -63,6 +63,14 @@ class SkillSet {
 
         return skillValue;
     }
+
+    setBase(skill: string, skillValue: number) {
+        this.baseSkills[skill] = skillValue;
+    }
+
+    modifyBase(skill: string, change: number) {
+        this.setBase(skill, this.getBase(skill) + change);
+    }
 }
 
 class StatSet {
