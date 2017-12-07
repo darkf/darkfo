@@ -294,8 +294,8 @@ module Ui {
 
         characterWindow = new WindowFrame("art/intrface/edtredt.png",
                                          { x: Config.ui.screenWidth/2 - 640/2, y: Config.ui.screenHeight/2 - 480/2, w: 640, h: 480 })
-                              .add(new Ui.SmallButton(455, 454).onClick(() => { })).add(new Ui.Label(455+18, 454, "Done"))
-                              .add(new Ui.SmallButton(552, 454).onClick(() => { characterWindow.close(); })).add(new Ui.Label(552+18, 454, "Cancel"))
+                              .add(new SmallButton(455, 454).onClick(() => { })).add(new Ui.Label(455+18, 454, "Done"))
+                              .add(new SmallButton(552, 454).onClick(() => { characterWindow.close(); })).add(new Ui.Label(552+18, 454, "Cancel"))
                               .add(new Label(22,  6, "Name"))
                               .add(new Label(160, 6, "Age"))
                               .add(new Label(242, 6, "Gender"))
@@ -329,9 +329,6 @@ module Ui {
             "Outdoorsman"
         ];
 
-        for(const skill of skills)
-            skillList.addItem({ text: `${skill} ${critterGetSkill(player, skill)}%` });
-
         const stats = [
             "STR",
             "PER",
@@ -342,10 +339,42 @@ module Ui {
             "LUK"
         ];
 
+        // TODO: Redraw this (maybe use a list of widgets?)
         let n = 0;
         for(const stat of stats) {
             characterWindow.add(new Label(20, 39 + n, `${stat} - ${critterGetStat(player, stat)}`).css({background: "black", padding: "5px"}));
             n += 33;
+        }
+
+        // TODO: (Re-)run this after window is shown / a level-up is invoked
+        const newStatSet = player.stats.clone();
+        const newSkillSet = player.skills.clone();
+
+        const redrawStatsSkills = () => {
+            skillList.clear();
+            
+            for(const skill of skills)
+                skillList.addItem({ text: `${skill} ${newSkillSet.get(skill, newStatSet)}%`, id: skill });
+        };
+
+        redrawStatsSkills();
+
+        const isLevelUp = true; // TODO
+        if(isLevelUp) {
+
+            const modifySkill = (change: number) => {
+                const skill = skillList.getSelection().id;
+                console.log("skill: %s currently: %d", skill, newSkillSet.get(skill, newStatSet));
+
+                // TODO: Cost (need a pool of skill points)
+                // const cost = skillImprovementCost(skill);
+
+                newSkillSet.modifyBase(skill, change);
+                redrawStatsSkills();
+            }
+
+            characterWindow.add(new Label(580,  236, "-").onClick(() => { console.log("-"); modifySkill(-1); }));
+            characterWindow.add(new Label(600,  236, "+").onClick(() => { console.log("+"); modifySkill(+1); }));
         }
     }
 }
