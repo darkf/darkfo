@@ -339,10 +339,17 @@ module Ui {
             "LUK"
         ];
 
-        // TODO: Redraw this (maybe use a list of widgets?)
+        // TODO: Use a list of widgets or something for stats instead of this hack
+        const statWidgets: Label[] = [];
+
+        let selectedStat = stats[0];
+
         let n = 0;
         for(const stat of stats) {
-            characterWindow.add(new Label(20, 39 + n, `${stat} - ${critterGetStat(player, stat)}`).css({background: "black", padding: "5px"}));
+            const widget = new Label(20, 39 + n, "").css({background: "black", padding: "5px"});
+            widget.onClick(() => { selectedStat = stat; });
+            statWidgets.push(widget);
+            characterWindow.add(widget);
             n += 33;
         }
 
@@ -351,10 +358,17 @@ module Ui {
         const newSkillSet = player.skills.clone();
 
         const redrawStatsSkills = () => {
-            skillList.clear();
+            // Draw skills
+            skillList.clear(); // TODO: setItemText or something
             
             for(const skill of skills)
                 skillList.addItem({ text: `${skill} ${newSkillSet.get(skill, newStatSet)}%`, id: skill });
+
+            // Draw stats
+            for(let i = 0; i < stats.length; i++) {
+                const stat = stats[i];
+                statWidgets[i].setText(`${stat} - ${newStatSet.get(stat)}`);
+            }
         };
 
         redrawStatsSkills();
@@ -373,8 +387,22 @@ module Ui {
                 redrawStatsSkills();
             }
 
+            const modifyStat = (change: number) => {
+                console.log("stat: %s currently: %d", selectedStat, newStatSet.get(selectedStat));
+
+                // TODO: Cost (need a pool of stat points)
+
+                newStatSet.modifyBase(selectedStat, change);
+                redrawStatsSkills();
+            }
+
+            // Skill level up buttons
             characterWindow.add(new Label(580,  236, "-").onClick(() => { console.log("-"); modifySkill(-1); }));
             characterWindow.add(new Label(600,  236, "+").onClick(() => { console.log("+"); modifySkill(+1); }));
+
+            // Stat level up buttons
+            characterWindow.add(new Label(115,  260, "-").onClick(() => { console.log("-"); modifyStat(-1); }));
+            characterWindow.add(new Label(135,  260, "+").onClick(() => { console.log("+"); modifyStat(+1); }));
         }
     }
 }
