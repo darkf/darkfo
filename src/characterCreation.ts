@@ -135,6 +135,14 @@ class StatSet {
 
         return clamp(statDep.min, statDep.max, statValue);
     }
+
+    setBase(stat: string, statValue: number) {
+        this.baseStats[stat] = statValue;
+    }
+
+    modifyBase(stat: string, change: number) {
+        this.setBase(stat, this.getBase(stat) + change);
+    }
 }
 
 /* Tagged skills
