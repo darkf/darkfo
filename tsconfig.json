@@ -3,6 +3,7 @@
         "removeComments": true,
         "preserveConstEnums": true,
         "noImplicitReturns": true,
+        "alwaysStrict": true, // emit "use strict"
         "skipLibCheck": true,
         "outDir": "js",
         // "target": "es6",
