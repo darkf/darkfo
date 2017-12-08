@@ -376,14 +376,20 @@ module Ui {
         const isLevelUp = true; // TODO
         if(isLevelUp) {
 
-            const modifySkill = (change: number) => {
+            const modifySkill = (inc: boolean) => {
                 const skill = skillList.getSelection().id;
                 console.log("skill: %s currently: %d", skill, newSkillSet.get(skill, newStatSet));
 
-                // TODO: Cost (need a pool of skill points)
-                // const cost = skillImprovementCost(skill);
+                if(inc) {
+                    const changed = newSkillSet.incBase(skill);
+                    if(!changed) {
+                        console.warn("Not enough skill points!");
+                    }
+                }
+                else {
+                    newSkillSet.decBase(skill);
+                }
 
-                newSkillSet.modifyBase(skill, change);
                 redrawStatsSkills();
             }
 
@@ -397,8 +403,8 @@ module Ui {
             }
 
             // Skill level up buttons
-            characterWindow.add(new Label(580,  236, "-").onClick(() => { console.log("-"); modifySkill(-1); }));
-            characterWindow.add(new Label(600,  236, "+").onClick(() => { console.log("+"); modifySkill(+1); }));
+            characterWindow.add(new Label(580,  236, "-").onClick(() => { console.log("-"); modifySkill(false); }));
+            characterWindow.add(new Label(600,  236, "+").onClick(() => { console.log("+"); modifySkill(true); }));
 
             // Stat level up buttons
             characterWindow.add(new Label(115,  260, "-").onClick(() => { console.log("-"); modifyStat(-1); }));

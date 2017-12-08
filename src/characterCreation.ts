@@ -70,21 +70,33 @@ class SkillSet {
         this.baseSkills[skill] = skillValue;
     }
 
-    modifyBase(skill: string, change: number, useSkillPoints: boolean=true): boolean {
-        if(useSkillPoints) {
-            // XXX: If change is greater than 1, this will be inaccurate bordering a change in improvement cost
-            const cost = skillImprovementCost(this.getBase(skill));
+    incBase(skill: string, useSkillPoints: boolean=true): boolean {
+        const base = this.getBase(skill);
 
-            if(change > 0 && this.skillPoints < cost*change) {
+        if(useSkillPoints) {
+            const cost = skillImprovementCost(base);
+
+            if(this.skillPoints < cost) {
                 // Not enough skill points to increment
                 return false;
             }
 
-            this.skillPoints += cost*change * -Math.sign(change);
+            this.skillPoints -= cost;
         }
 
-        this.setBase(skill, this.getBase(skill) + change);
+        this.setBase(skill, base + 1);
         return true;
+    }
+
+    decBase(skill: string, useSkillPoints: boolean=true) {
+        const base = this.getBase(skill);
+
+        if(useSkillPoints) {
+            const cost = skillImprovementCost(base - 1);
+            this.skillPoints += cost;
+        }
+
+        this.setBase(skill, base - 1);
     }
 }
 
