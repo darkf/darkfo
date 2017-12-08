@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Character Creation
+// Character Stats and Skills
 
 // TODO: "Melee Weapons" skill is called "Melee" in the PRO
 
@@ -76,6 +76,8 @@ class SkillSet {
         this.baseSkills[skill] = skillValue;
     }
 
+    // TODO: Respect min and max bounds in inc/dec
+
     incBase(skill: string, useSkillPoints: boolean=true): boolean {
         const base = this.getBase(skill);
 
@@ -108,6 +110,8 @@ class SkillSet {
     isTagged(skill: string): boolean {
         return this.tagged.indexOf(skill) !== -1;
     }
+
+    // TODO: There should be a limit on the number of tagged skills (3 by default)
 
     tag(skill: string) {
         this.tagged.push(skill);
@@ -191,37 +195,7 @@ class StatSet {
     }
 }
 
-/* Tagged skills
-if(obj.tempChanges.skills[skill] !== undefined) {
-    obj.tempChanges.skills[skill] = 2 * obj.tempChanges.skills[skill] + 20
-}else{
-    obj.tempChanges.skills[skill] = 20
-}
-*/
-
-function increaseStat(obj, stat, amount, useTemp, costsPoints, allowOverBounds) {
-    var statValue = critterGetStat(obj, stat)
-    var curTemp =  (useTemp && obj.tempChanges.stats[stat] !== undefined) ? obj.tempChanges.stats[stat] : 0
-    if(allowOverBounds === false && statValue !== null && curTemp + critterGetRawStat(obj, stat) + amount > statDependencies[stat].max) {
-        amount = statDependencies[stat].max - (critterGetRawStat(obj, stat) + curTemp)
-        if(amount <= 0)
-            return false
-    }
-    if(costsPoints === true) {
-        if(obj.StatPoints === undefined || obj.StatPoints < amount)
-            return false
-        obj.StatPoints -= amount
-    }
-    if(useTemp) {
-        if(obj.tempChanges.stats[stat] === undefined)
-            obj.tempChanges.stats[stat] = 0
-        obj.tempChanges.stats[stat] += amount
-    }else{
-        critterSetRawStat(obj, stat, statValue + amount)
-    }
-    return true
-}
-
+// TODO: Replace this with StatSet.modifyBase
 function decreaseStat(obj, stat, amount, useTemp, costsPoints, allowOverBounds) {
     if(obj.stats[stat] === undefined || (useTemp && obj.tempChanges.stats[stat] === undefined))
         return false
