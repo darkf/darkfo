@@ -479,7 +479,7 @@ class Critter extends Obj {
 				console.warn("Deserializing stat set: %o to: %o", mobj.stats, obj.stats)
 			}
 			if(mobj.skills) {
-				obj.skills = new SkillSet(mobj.skills.baseSkills, mobj.skills.tagged);
+				obj.skills = new SkillSet(mobj.skills.baseSkills, mobj.skills.tagged, mobj.skills.skillPoints);
 				console.warn("Deserializing skill set: %o to: %o", mobj.skills, obj.skills)
 			}
 		}

@@ -22,15 +22,17 @@ limitations under the License.
 class SkillSet {
     baseSkills: { [name: string]: number } = {};
     tagged: string[] = [];
+    skillPoints: number = 0;
 
-    constructor(baseSkills?: { [name: string]: number }, tagged?: string[]) {
+    constructor(baseSkills?: { [name: string]: number }, tagged?: string[], skillPoints?: number) {
         // Copy construct a SkillSet
         if(baseSkills) this.baseSkills = baseSkills;
         if(tagged) this.tagged = tagged;
+        if(skillPoints) this.skillPoints = skillPoints;
     }
 
     clone(): SkillSet {
-        return new SkillSet(this.baseSkills, this.tagged);
+        return new SkillSet(this.baseSkills, this.tagged, this.skillPoints);
     }
 
     static fromPro(skills: any): SkillSet {
@@ -68,8 +70,21 @@ class SkillSet {
         this.baseSkills[skill] = skillValue;
     }
 
-    modifyBase(skill: string, change: number) {
+    modifyBase(skill: string, change: number, useSkillPoints: boolean=true): boolean {
+        if(useSkillPoints) {
+            // XXX: If change is greater than 1, this will be inaccurate bordering a change in improvement cost
+            const cost = skillImprovementCost(this.getBase(skill));
+
+            if(change > 0 && this.skillPoints < cost*change) {
+                // Not enough skill points to increment
+                return false;
+            }
+
+            this.skillPoints += cost*change * -Math.sign(change);
+        }
+
         this.setBase(skill, this.getBase(skill) + change);
+        return true;
     }
 }
 
