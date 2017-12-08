@@ -357,6 +357,10 @@ module Ui {
         const newStatSet = player.stats.clone();
         const newSkillSet = player.skills.clone();
 
+        // Skill Points / Tag Skills counter
+        const skillPointCounter = new Label(522, 230, "").css({background: "black", padding: "5px"});
+        characterWindow.add(skillPointCounter);
+
         const redrawStatsSkills = () => {
             // Draw skills
             skillList.clear(); // TODO: setItemText or something
@@ -369,11 +373,16 @@ module Ui {
                 const stat = stats[i];
                 statWidgets[i].setText(`${stat} - ${newStatSet.get(stat)}`);
             }
+
+            // Update skill point counter
+            skillPointCounter.setText(pad(newSkillSet.skillPoints, 2));
         };
 
         redrawStatsSkills();
 
         const isLevelUp = true; // TODO
+        const canChangeStats = true; // TODO
+
         if(isLevelUp) {
 
             const modifySkill = (inc: boolean) => {
@@ -421,8 +430,10 @@ module Ui {
             characterWindow.add(new Label(620,  236, "Tag").onClick(() => { console.log("Tag"); toggleTagSkill(); }));
 
             // Stat level up buttons
-            characterWindow.add(new Label(115,  260, "-").onClick(() => { console.log("-"); modifyStat(-1); }));
-            characterWindow.add(new Label(135,  260, "+").onClick(() => { console.log("+"); modifyStat(+1); }));
+            if(canChangeStats) {
+                characterWindow.add(new Label(115,  260, "-").onClick(() => { console.log("-"); modifyStat(-1); }));
+                characterWindow.add(new Label(135,  260, "+").onClick(() => { console.log("+"); modifyStat(+1); }));
+            }
         }
     }
 }
