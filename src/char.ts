@@ -58,6 +58,12 @@ class SkillSet {
             throw Error(`No dependencies for skill '${skill}'`);
 
         let skillValue = base;
+
+        if(this.isTagged(skill)) {
+            // Tagged skills add +20 skill value to the minimum, and increments afterwards by 2x
+            skillValue = skillDep.startValue + (skillValue - skillDep.startValue) * 2 + 20;
+        }
+
         for(const dep of skillDep.dependencies) {
             if(dep.statType)
                 skillValue += Math.floor(stats.get(dep.statType) * dep.multiplier);
@@ -97,6 +103,19 @@ class SkillSet {
         }
 
         this.setBase(skill, base - 1);
+    }
+
+    isTagged(skill: string): boolean {
+        return this.tagged.indexOf(skill) !== -1;
+    }
+
+    tag(skill: string) {
+        this.tagged.push(skill);
+    }
+
+    untag(skill: string) {
+        if(this.isTagged(skill))
+            this.tagged.splice(this.tagged.indexOf(skill), 1);
     }
 }
 

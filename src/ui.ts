@@ -391,7 +391,20 @@ module Ui {
                 }
 
                 redrawStatsSkills();
-            }
+            };
+
+            const toggleTagSkill = () => {
+                const skill = skillList.getSelection().id;
+                const tagged = newSkillSet.isTagged(skill);
+                console.log("skill: %s currently: %d tagged: %s", skill, newSkillSet.get(skill, newStatSet), tagged);
+
+                if(!tagged)
+                    newSkillSet.tag(skill);
+                else
+                    newSkillSet.untag(skill);
+                
+                redrawStatsSkills();
+            };
 
             const modifyStat = (change: number) => {
                 console.log("stat: %s currently: %d", selectedStat, newStatSet.get(selectedStat));
@@ -400,11 +413,12 @@ module Ui {
 
                 newStatSet.modifyBase(selectedStat, change);
                 redrawStatsSkills();
-            }
+            };
 
             // Skill level up buttons
             characterWindow.add(new Label(580,  236, "-").onClick(() => { console.log("-"); modifySkill(false); }));
             characterWindow.add(new Label(600,  236, "+").onClick(() => { console.log("+"); modifySkill(true); }));
+            characterWindow.add(new Label(620,  236, "Tag").onClick(() => { console.log("Tag"); toggleTagSkill(); }));
 
             // Stat level up buttons
             characterWindow.add(new Label(115,  260, "-").onClick(() => { console.log("-"); modifyStat(-1); }));
