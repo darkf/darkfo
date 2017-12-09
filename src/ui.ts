@@ -634,7 +634,7 @@ function uiDrawWeapon() {
 
     // draw weapon type (single, burst, called, punch, ...)
     // TODO: all melee weapons
-    var type = {"melee": "punch", "gun": "single"}[weapon.weapon.type]
+    var type = ({"melee": "punch", "gun": "single"} as any)[weapon.weapon.type]
     $("#attackButtonType").attr("src", "art/intrface/" + type + ".png")
 
     // hide or show called shot sigil?
@@ -644,8 +644,11 @@ function uiDrawWeapon() {
         $("#attackButtonCalled").hide()
 }
 
+// TODO: Rewrite this sanely (and not directly modify the player object's properties...)
 function uiMoveSlot(data: string, target: string) {
+    const playerUnsafe = player as any;    
     var obj = null
+
     if(data[0] === "i") {
         if(target === "inventory")
             return // disallow inventory -> inventory
@@ -656,8 +659,8 @@ function uiMoveSlot(data: string, target: string) {
         player.inventory.splice(idx, 1) // remove object from inventory
     }
     else {
-        obj = player[data]
-        player[data] = null // remove object from slot
+        obj = playerUnsafe[data]
+        playerUnsafe[data] = null // remove object from slot
     }
 
     console.log("obj: " + obj + " (data: " + data + ", target: " + target + ")")
@@ -665,15 +668,15 @@ function uiMoveSlot(data: string, target: string) {
     if(target === "inventory")
         player.inventory.push(obj)
     else {
-        if(player[target] !== undefined && player[target] !== null) {
+        if(playerUnsafe[target] !== undefined && playerUnsafe[target] !== null) {
             // perform a swap
             if(data[0] === "i")
-                player.inventory.push(player[target]) // inventory -> slot
+                player.inventory.push(playerUnsafe[target]) // inventory -> slot
             else
-                player[data] = player[target] // slot -> slot
+                playerUnsafe[data] = playerUnsafe[target] // slot -> slot
         }
 
-        player[target] = obj // move the object over
+        playerUnsafe[target] = obj // move the object over
     }
 
     uiInventoryScreen()
@@ -1000,10 +1003,10 @@ function uiBarterMode(merchant: Critter) {
     function uiBarterMove(data: string, where: "left"|"right"|"leftInv"|"rightInv") {
         console.log("barter: move " + data + " to " + where)
 
-        var from = {"p": workingPlayerInventory,
+        var from = ({"p": workingPlayerInventory,
                     "m": workingMerchantInventory,
                     "l": playerBarterTable,
-                    "r": merchantBarterTable}[data[0]]
+                    "r": merchantBarterTable} as any)[data[0]]
 
         if(from === undefined) throw "uiBarterMove: wrong data: " + data
 
@@ -1075,8 +1078,8 @@ function uiLoot(object: Obj) {
     function uiLootMove(data: string /* "l"|"r" */, where: "left"|"right") {
         console.log("loot: move " + data + " to " + where)
 
-        var from = {"l": player.inventory,
-                    "r": object.inventory}[data[0]]
+        var from = ({"l": player.inventory,
+                    "r": object.inventory} as any)[data[0]]
 
         if(from === undefined) throw "uiLootMove: wrong data: " + data
 
@@ -1154,7 +1157,7 @@ function uiWorldMap(onAreaMap: boolean=false) {
     uiMode = UI_MODE_WORLDMAP
     $("#worldMapContainer").show()
 
-    if(mapAreas === null)
+    if(!mapAreas)
         mapAreas = loadAreas()
 
     if(onAreaMap)
