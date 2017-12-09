@@ -597,7 +597,7 @@ function uiEndCombat() {
     $("#endCombatButton").css("visibility", "hidden")
 }
 
-function uiEndCombatAnimationDone() {
+function uiEndCombatAnimationDone(this: HTMLElement) {
     $(this).css({animationPlayState: "paused", webkitAnimationPlayState: "paused"})
 
     if(inCombat === true) {
@@ -616,7 +616,7 @@ function uiDrawWeapon() {
 
     if(weapon.weapon.type !== "melee") {
         $("#attackButtonWeapon").off("load")
-        $("#attackButtonWeapon").load(function() {
+        $("#attackButtonWeapon").load(function(this: HTMLImageElement) {
             if(!this.complete) return
             $(this).css({position: "absolute",
                          top: 5,

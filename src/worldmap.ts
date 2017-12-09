@@ -404,7 +404,7 @@ module Worldmap {
 		if(mapAreas === null)
 			mapAreas = loadAreas()
 
-		$worldmap.click(function(e) {
+		$worldmap.click(function(this: HTMLElement, e /* jqe */) {
 			const offset = $(this).offset()
 			const x = e.pageX - parseInt(offset.left)
 			const y = e.pageY - parseInt(offset.top)
