@@ -196,6 +196,7 @@ class StatSet {
 }
 
 // TODO: Replace this with StatSet.modifyBase
+// @ts-ignore
 function decreaseStat(obj, stat, amount, useTemp, costsPoints, allowOverBounds) {
     if(obj.stats[stat] === undefined || (useTemp && obj.tempChanges.stats[stat] === undefined))
         return false
