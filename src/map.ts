@@ -18,6 +18,9 @@ limitations under the License.
 
 "use strict";
 
+// TODO: Spatial type
+type Spatial = any;
+
 interface SerializedMap {
 	name: string;
 	mapID: number;
@@ -281,7 +284,7 @@ class GameMap {
 
 			if(Config.engine.doLoadScripts) {
 				// initialize spatial scripts
-				this.spatials.forEach((level: any) => level.forEach(spatial => {
+				this.spatials.forEach((level: any) => level.forEach((spatial: Spatial) => {
 					var script = scriptingEngine.loadScript(spatial.script)
 					if(script === null)
 						console.log("load script failed for spatial " + spatial.script)
@@ -295,8 +298,8 @@ class GameMap {
 				}))
 			}
 		}
-		else
-			this.spatials = map.levels.map((_: any) => [])
+		else // TODO: Spatial type
+			this.spatials = map.levels.map((_: any) => [] as Spatial[])
 
 		// TODO: Is here or above better? Are the map/spatial scripts loaded before or after object scripts?
 		// load map objects
