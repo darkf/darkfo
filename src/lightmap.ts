@@ -144,7 +144,7 @@ module Lightmap {
 
 		var isLightBlocked // var_C
 
-		function light_blocked(index) {
+		function light_blocked(index: number) {
 			return _light_blocked[index];
 		}
 
