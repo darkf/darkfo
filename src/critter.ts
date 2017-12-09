@@ -19,7 +19,8 @@ limitations under the License.
 
 "use strict";
 
-const animInfo = {"idle": {type: "static"},
+const animInfo: { [anim: string]: { type: string } } = {
+                 "idle": {type: "static"},
                  "attack": {type: "static"},
                  "weapon-reload": {type: "static"},
                  "walk": {type: "move"},
@@ -31,31 +32,44 @@ const animInfo = {"idle": {type: "static"},
                  "hitFront": {type: "static"},
                  "death": {type: "static"},
                  "death-explode": {type: "static"},
-                 "run": {type: "move"}}
+                 "run": {type: "move"}
+                };
 
-const weaponSkins = {"uzi": 'i', "rifle": 'j'}
+const weaponSkins: { [weapon: string]: string } = {
+    "uzi": 'i', "rifle": 'j'
+};
 
-const weaponAnims = {'punch': {'idle': 'aa', 'attack': 'aq'}}
+const weaponAnims: { [weapon: string]: { [anim: string]: string } } = {
+    'punch': {'idle': 'aa', 'attack': 'aq'}
+};
 
-const attackMode = {'none': 0, 'punch': 1, 'kick': 2, 'swing': 3,
-				    'thrust': 4, 'throw': 5, 'fire single': 6,
-				    'fire burst': 7, 'flame': 8,
-				    0 : 'none', 1: 'punch', 2: 'kick', 3: 'swing',
-				    4: 'thrust', 5: 'throw', 6: 'fire single',
-				    7: 'fire burst', 8: 'flame'}
-				  
+// TODO: (Double-sided) enum
+const attackMode: { [mode: string]: string|number } = {
+    'none': 0, 'punch': 1, 'kick': 2, 'swing': 3,
+    'thrust': 4, 'throw': 5, 'fire single': 6,
+    'fire burst': 7, 'flame': 8,
+    
+    0 : 'none', 1: 'punch', 2: 'kick', 3: 'swing',
+    4: 'thrust', 5: 'throw', 6: 'fire single',
+    7: 'fire burst', 8: 'flame'
+};
 
-const damageType = {'Normal': 0, 'Laser': 1, 'Fire': 2, 'Plasma': 3,
-				    'Electrical': 4, 'EMP': 5, 'Explosive': 6,
-				    0:'Normal', 1: 'Laser', 2: 'Fire', 3: 'Plasma',
-				    4: 'Electrical', 5: 'EMP', 6: 'Explosive'}
+// TODO: (Double-sided) enum
+const damageType: { [type: string]: string|number } = {
+    'Normal': 0, 'Laser': 1, 'Fire': 2, 'Plasma': 3,
+    'Electrical': 4, 'EMP': 5, 'Explosive': 6,
 
-const weaponSkillMap = {'uzi': 'Small Guns',
-                       'rifle': 'Small Guns',
-                       'spear': 'Melee Weapons',
-                       'knife': 'Melee Weapons',
-                       'flamethr': 'Big Guns',
-                       }
+    0:'Normal', 1: 'Laser', 2: 'Fire', 3: 'Plasma',
+    4: 'Electrical', 5: 'EMP', 6: 'Explosive'
+};
+
+const weaponSkillMap: { [weapon: string]: string } = {
+    'uzi': 'Small Guns',
+    'rifle': 'Small Guns',
+    'spear': 'Melee Weapons',
+    'knife': 'Melee Weapons',
+    'flamethr': 'Big Guns',
+};
 
 interface AttackInfo {
 	mode: number;
@@ -65,8 +79,8 @@ interface AttackInfo {
 
 function parseAttack(weapon: WeaponObj): {first: AttackInfo; second: AttackInfo} {
 	var attackModes = weapon.pro.extra['attackMode']
-	var modeOne: number = attackMode[attackModes & 0xf]
-	var modeTwo: number = attackMode[(attackModes >> 4) & 0xf]
+	var modeOne = attackMode[attackModes & 0xf] as number
+	var modeTwo = attackMode[(attackModes >> 4) & 0xf] as number
 	var attackOne: AttackInfo = {mode: modeOne, APCost: 0, maxRange: 0}
 	var attackTwo: AttackInfo = {mode: modeTwo, APCost: 0, maxRange: 0}
 	
@@ -163,7 +177,8 @@ class Weapon {
 	getSkin(): string {
 		if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
 			return null
-		var animCodeMap = {0: 'a',// None
+		const animCodeMap: { [animCode: number]: string } = {
+                           0: 'a',// None
 						   1: 'd', // Knife
 						   2: 'e', // Club
 						   3: 'f', // Sledgehammer
@@ -182,7 +197,7 @@ class Weapon {
 			return null
 		if(this.weapon === 'punch') return 'q'
 
-		var modeSkinMap = {
+		const modeSkinMap: { [mode: string]: string } = {
 			'punch': 'q',
 			'kick': 'r',
 			'swing': 'g',
@@ -323,9 +338,15 @@ function getDirectionalOffset(obj: Critter): Point {
 	return info.directionOffsets[obj.orientation]
 }
 
-function getAnimPartialActions(art, anim) {
-	var partialActions = {movement: null, actions: []}
-	var numPartials = 1
+interface PartialAction {
+    startFrame: number;
+    endFrame: number;
+    step: number;
+}
+
+function getAnimPartialActions(art: string, anim: string): { movement: number, actions: PartialAction[] } {
+	const partialActions = { movement: 0, actions: [] as PartialAction[] };
+	let numPartials = 1
 
 	if(anim === "walk" || anim === "run") {
 		numPartials = getAnimDistance(art)
@@ -402,8 +423,8 @@ function critterGetRawStat(obj: Critter, stat: string) {
 }
 
 function critterSetRawStat(obj: Critter, stat: string, amount: number) {
-	obj.stats[stat] = amount
-	//console.log(stat + " changed to: " + obj.stats[stat])
+	// obj.stats[stat] = amount
+	console.warn(`TODO: Change stat ${stat} to ${amount}`);
 }
 
 function critterGetSkill(obj: Critter, skill: string) {
@@ -415,8 +436,8 @@ function critterGetRawSkill(obj: Critter, skill: string) {
 }
 
 function critterSetRawSkill(obj: Critter, skill: string, amount: number) {
-	obj.skills[skill] = amount
-	console.log(skill + " changed to: " + obj.skills[skill])
+    // obj.skills[skill] = amount
+    console.warn(`TODO: Change skill ${skill} to ${amount}`);
 }
 
 interface SerializedCritter extends SerializedObj {
@@ -471,7 +492,7 @@ class Critter extends Obj {
 
 			for(const prop of SERIALIZED_CRITTER_PROPS) {
 				// console.log(`loading prop ${prop} from SerializedCritter = ${mobj[prop]}`);
-				obj[prop] = mobj[prop];
+				(<any>obj)[prop] = mobj[prop];
 			}
 
 			if(mobj.stats) {
@@ -727,7 +748,7 @@ class Critter extends Obj {
 
 		for(const prop of SERIALIZED_CRITTER_PROPS) {
 			// console.log(`saving prop ${prop} from SerializedCritter = ${this[prop]}`);
-			obj[prop] = this[prop];
+			(<any>obj)[prop] = (<any>this)[prop];
 		}
 
 		return obj;
