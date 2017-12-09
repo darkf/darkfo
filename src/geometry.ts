@@ -259,11 +259,11 @@ function hexFromScreen(x: number, y: number): Point {
 }
 
 function hexNeighbors(position: Point): Point[] {
-	var neighbors = []
+	const neighbors: Point[] = []
 	var x = position.x
 	var y = position.y
 
-	function n(x, y) {
+	function n(x: number, y: number) {
 		neighbors.push({x: x, y: y})
 	}
 
@@ -274,7 +274,7 @@ function hexNeighbors(position: Point): Point[] {
 	  n(x+1,y+1)
 	  n(x+1,y)
 	  n(x,y-1)
-	} else{
+	} else {
 	  n(x-1,y-1)
 	  n(x-1,y)
 	  n(x,y+1)
@@ -347,12 +347,12 @@ function hexDirectionTo(a: Point, b: Point): number {
     return 2;
 }
 
-function hexOppositeDirection(direction) {
+function hexOppositeDirection(direction: number) {
 	return (direction + 3) % 6
 }
 
 // The adjacent hex around a nearest to b
-function hexNearestNeighbor(a, b) {
+function hexNearestNeighbor(a: Point, b: Point) {
 	var neighbors = hexNeighbors(a)
 	var min = Infinity, minIdx = -1
 	for(var i = 0; i < neighbors.length; i++) {
