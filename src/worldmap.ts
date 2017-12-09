@@ -21,9 +21,9 @@ limitations under the License.
 module Worldmap {
 	let worldmap = null
 	let worldmapPlayer = null
-	let $worldmap = null
-	let $worldmapPlayer = null
-	let $worldmapTarget = null
+	let $worldmap: Jq|null = null
+	let $worldmapPlayer: Jq|null = null
+	let $worldmapTarget: Jq|null = null
 	let worldmapTimer = null
 	let lastEncounterCheck = 0
 
