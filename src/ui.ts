@@ -522,8 +522,8 @@ function initUI() {
     $("#skilldexButton").click(() => Ui.skilldexWindow.toggle())
 
     function makeScrollable($el: any, scroll?: number) {
-        // TODO: Get rid of jQuery and originalEvent, then use e: MouseEvent
-        $el.bind("mousewheel DOMMouseScroll", (e /* jqe */) => {
+        // TODO: Use WheelEvent instead (and deltaX/Y/Z)
+        $el.bind("mousewheel DOMMouseScroll", (e: JqEvent<MouseWheelEvent>) => {
             var delta = (e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) ? -1 : 1
             $el.scrollTop($el.scrollTop() + (scroll || 60)*delta)
         })
@@ -682,8 +682,8 @@ function uiMoveSlot(data: string, target: string) {
     uiInventoryScreen()
 }
 
-function makeDropTarget($el /* jq */, dropCallback: (data: string, e? /* jqe */) => void) {
-    $el.on("drop", (e /* jqe */) => {
+function makeDropTarget($el: Jq, dropCallback: (data: string, e?: JqEvent<DragEvent>) => void) {
+    $el.on("drop", (e: JqEvent<DragEvent>) => {
         var data = e.originalEvent.dataTransfer.getData("text/plain")
         dropCallback(data, e)
         return false
@@ -691,11 +691,11 @@ function makeDropTarget($el /* jq */, dropCallback: (data: string, e? /* jqe */)
        on("dragover",  () => false)
 }
 
-function makeDraggable($el /* jq */, data: string, endCallback?: () => void) {
-    $el.attr("draggable", "true").on("dragstart", (e /* jqe */) => {
+function makeDraggable($el: Jq, data: string, endCallback?: () => void) {
+    $el.attr("draggable", "true").on("dragstart", (e: JqEvent<DragEvent>) => {
         e.originalEvent.dataTransfer.setData('text/plain', data)
         console.log("start drag")
-    }).on("dragend", (e /* jqe */) => {
+    }).on("dragend", (e: JqEvent<DragEvent>) => {
         if(e.originalEvent.dataTransfer.dropEffect !== 'none') {
             //$(this).remove()
             endCallback && endCallback()
@@ -711,7 +711,7 @@ function uiInventoryScreen() {
         makeItemContextMenu(e, obj, "inventory")
     })
 
-    function drawInventory($el /* jq */, objects: Obj[], clickCallback?: (item: Obj, e: MouseEvent) => void) {
+    function drawInventory($el: Jq, objects: Obj[], clickCallback?: (item: Obj, e: MouseEvent) => void) {
         $el.html("")
         $("#inventoryBoxItem1").html("")
         $("#inventoryBoxItem2").html("")
@@ -987,7 +987,7 @@ function uiBarterMode(merchant: Critter) {
         }
     }
 
-    function drawInventory($el /* jq */, who: "p"|"m"|"l"|"r", objects: Obj[]) {
+    function drawInventory($el: Jq, who: "p"|"m"|"l"|"r", objects: Obj[]) {
         $el.html("")
 
         for(var i = 0; i < objects.length; i++) {
@@ -1101,7 +1101,7 @@ function uiLoot(object: Obj) {
         drawLoot()
     }
 
-    function drawInventory($el /* jq */, who: "p"|"m"|"l"|"r", objects: Obj[]) {
+    function drawInventory($el: Jq, who: "p"|"m"|"l"|"r", objects: Obj[]) {
         $el.html("")
 
         for(var i = 0; i < objects.length; i++) {
