@@ -19,96 +19,104 @@ limitations under the License.
 "use strict";
 
 module CriticalEffects {
-	type EffectsFunction = (target: Critter) => void;
-
-	var generalRegionName = {0: "head", 1: "leftArm", 2: "rightArm", 3: "torso", 4: "rightLeg", 5: "leftLeg", 6: "eyes", 7: "groin", 8: "uncalled"};
-
-	// TODO: make this table account for different weapon types. It appears melee weapons use a second one
-	// though it appears to only be a /2 for melee
-	export var regionHitChanceDecTable = {"torso": 0, "leftLeg": 20, "rightLeg": 20, "groin": 30, "leftArm": 30, "rightArm": 30, "head": 40, "eyes": 60};
-
 	interface Dict<T> {
 		[key: string]: T;
 	}
 
-	var critterTable: Dict<CritType[]>[];
+	interface NumDict<T> {
+		[key: number]: T;
+	}
+	
+	type EffectsFunction = (target: Critter) => void;
 
-	var critFailEffects = {
-		damageSelf: function(target) {
+	const generalRegionName: { [region: number]: string } = {
+		0: "head", 1: "leftArm", 2: "rightArm", 3: "torso", 4: "rightLeg", 5: "leftLeg", 6: "eyes", 7: "groin", 8: "uncalled"
+	};
+
+	// TODO: make this table account for different weapon types. It appears melee weapons use a second one
+	// though it appears to only be a /2 for melee
+	export const regionHitChanceDecTable: { [region: string]: number } = {
+		"torso": 0, "leftLeg": 20, "rightLeg": 20, "groin": 30, "leftArm": 30, "rightArm": 30, "head": 40, "eyes": 60
+	};
+
+	let critterTable: Dict<CritType[]>[];
+
+	const critFailEffects: Dict<EffectsFunction> = {
+		damageSelf: function(target: Critter) {
 			console.log(target.name + " has damaged themselves. This does not do anything yet")
 		},
 
-		crippleRandomAppendage: function(target) {
+		crippleRandomAppendage: function(target: Critter) {
 			console.log(target.name + " has crippled a random appendage. This does not do anything yet")
 		},
 
-		hitRandomly: function(target) {
+		hitRandomly: function(target: Critter) {
 			console.log(target.name + " has hit randomly. This does not do anything yet")
 		},
 
-		hitSelf: function(target) {
+		hitSelf: function(target: Critter) {
 			console.log(target.name + " has hit themselves. This does not do anything yet")
 		},
 
-		loseAmmo: function(target) {
+		loseAmmo: function(target: Critter) {
 			console.log(target.name + " has lost their ammo. This does not do anything yet")
 		},
 
-		destroyWeapon: function(target) {
+		destroyWeapon: function(target: Critter) {
 			console.log(target.name + " has had their weapon blow up in their face. Ouch. This does not do anything yet")
 		}
 	}
 
-	var critterEffects = {
-		knockout: function(target) {
+	const critterEffects: Dict<(target: Critter) => void> = {
+		knockout: function(target: Critter) {
 			console.log(target.name + " has been knocked out. This does not do anything yet")
 		},
 
-		knockdown: function(target) {
+		knockdown: function(target: Critter) {
 			console.log(target.name + " has been knocked down. This does not do anything yet")
 		},
 
-		crippledLeftLeg: function(target) {
+		crippledLeftLeg: function(target: Critter) {
 			console.log(target.name + " has been crippled in the left leg. This does not do anything yet")
 		},
 
-		crippledRightLeg: function(target) {
+		crippledRightLeg: function(target: Critter) {
 			console.log(target.name + " has been crippled in the right leg. This does not do anything yet")
 		},
 
-		crippledLeftArm: function(target) {
+		crippledLeftArm: function(target: Critter) {
 			console.log(target.name + " has been crippled in the left arm. This does not do anything yet")
 		},
 
-		crippledRightArm: function(target) {
+		crippledRightArm: function(target: Critter) {
 			console.log(target.name + " has been crippled in the right arm. This does not do anything yet")
 		},
 
-		blinded: function(target) {
+		blinded: function(target: Critter) {
 			console.log(target.name + " has been blinded by delight. This does not do anything yet")
 		},
 
-		death: function(target) {
+		death: function(target: Critter) {
 			console.log(target.name + " has met the reaperpony. This does not do anything yet")
 		},
 
-		onFire: function(target) {
+		onFire: function(target: Critter) {
 			console.log(target.name + " just got a flame lit in their heart. This does not do anything yet")
 		},
 
-		bypassArmor: function(target) {
+		bypassArmor: function(target: Critter) {
 			console.log(target.name + " is being hit by an armor bypassing bullet, blame the Zebras. This does not do anything yet")
 		},
 
-		droppedWeapon: function(target) {
+		droppedWeapon: function(target: Critter) {
 			console.log(target.name + " needs to drop their weapon like it's hot. The documentation claims this is broken. This does not do anything yet")
 		},
 
-		loseNextTurn: function(target) {
+		loseNextTurn: function(target: Critter) {
 			console.log(target.name + " lost their next turn. This does not do anything yet")
 		},
 
-		random: function(target) {
+		random: function(target: Critter) {
 			console.log(target.name + " is affected by a random effect. How random! This does not do anything yet")
 		}
 	}
@@ -161,12 +169,12 @@ module CriticalEffects {
 	}
 
 	class CritType {
-		DM : number
-		effects : Effects
-		statCheck : StatCheck
-		msgID : number
+		DM: number
+		effects: Effects
+		statCheck: StatCheck
+		msgID: number
 
-		constructor(damageMultiplier, effects, statCheck, effectMsg) {
+		constructor(damageMultiplier: number, effects: Effects, statCheck: StatCheck, effectMsg: number) {
 			this.DM = damageMultiplier
 			this.effects = effects
 			this.statCheck = statCheck
@@ -214,37 +222,37 @@ module CriticalEffects {
 	}
 
 	// tries to obtain the CritType object partaining to the critLevel of the region of the critterType in question, returns a default CritType object otherwise
-	export function getCritical(critterType, region, critLevel): CritType {
+	export function getCritical(critterKillType: number, region: string, critLevel: number): CritType {
 		var ret: CritType = undefined
 
 		try {
 			// ensure we aren't exceeding the highest crit level existing for this type of critter and region
-			var actualLevel: number = Math.min(critLevel, critterTable[critterType][region].length - 1)
+			const actualLevel = Math.min(critLevel, critterTable[critterKillType][region].length - 1)
 			// get the appropriate CritType from the table
-			ret = critterTable[critterType][region][actualLevel]
+			ret = critterTable[critterKillType][region][actualLevel]
 		}
 		catch(e) {
 		}
 
 		if(ret === undefined) {
-			console.log("error: could not find critical: " + critterType + "/" + region + "/" + critLevel)
-			ret = defaultCritType(critterType, region, critLevel)
+			console.log("error: could not find critical: " + critterKillType + "/" + region + "/" + critLevel)
+			ret = defaultCritType(critterKillType, region, critLevel)
 		}
 
 		return ret
 	}
 
 	// constructs a default Crit Type object which doesn't apply any modifications to the shot, only changes the logging.
-	function defaultCritType(critterType, region, critLevel): CritType
+	function defaultCritType(critterKillType: number, region: string, critLevel: number): CritType
 	{
 		return new CritType(2, new Effects([]), new StatCheck(undefined, undefined, undefined, undefined),undefined)
 	}
 
-	export function getCriticalFail(weaponType, failLevel): EffectsFunction
+	export function getCriticalFail(weaponType: string, failLevel: number): EffectsFunction[]
 	{
-		var ret: EffectsFunction = undefined
+		var ret: EffectsFunction[] = undefined
 		try {
-			//get the appropriate Critical Fail from the table
+			// get the appropriate Critical Fail from the table
 			ret = criticalFailTable[weaponType][failLevel]
 		}
 		catch(e) {
@@ -252,7 +260,7 @@ module CriticalEffects {
 
 		if(ret === undefined)
 			//default crit fail error, which doesn't do anything but print an error message
-			ret = function(critter) { console.log("error: could not find critical fail: " + weaponType + "/" + failLevel); };
+			ret = [function(critter) { console.log("error: could not find critical fail: " + weaponType + "/" + failLevel); }];
 
 		return ret;
 	}
@@ -285,7 +293,7 @@ module CriticalEffects {
 		//console.log("parsed critical table with " + critterTable.length + " entries")
 	}
 
-	export var criticalFailTable = {
+	export const criticalFailTable: Dict<NumDict<EffectsFunction[]>> = {
 		unarmed: {
 			1: [],
 			2: [critterEffects.loseNextTurn],
@@ -337,7 +345,7 @@ module CriticalEffects {
 		}
 	}
 
-	export function temporaryDoCritFail(critFail, target) {
+	export function temporaryDoCritFail(critFail: EffectsFunction[], target: Critter) {
 		for (var i = 0; i < critFail.length; i++) {
 			critFail[i](target)
 		}
