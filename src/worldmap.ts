@@ -19,12 +19,12 @@ limitations under the License.
 "use strict";
 
 module Worldmap {
-	let worldmap = null
+	let worldmap: Worldmap = null
 	let worldmapPlayer = null
 	let $worldmap: Jq|null = null
 	let $worldmapPlayer: Jq|null = null
 	let $worldmapTarget: Jq|null = null
-	let worldmapTimer = null
+	let worldmapTimer: number = -1
 	let lastEncounterCheck = 0
 
 	const WORLDMAP_UNDISCOVERED = 0
@@ -50,7 +50,48 @@ module Worldmap {
 		state: number // WORLDMAP_UNDISCOVERED etc (TODO: make an enum)
 	}
 
-	function parseWorldmap(data: string) {
+	interface Worldmap {
+		squares: Square[][];
+		encounterTables: { [encounterType: string]: EncounterTable };
+		encounterGroups: { [groupName: string]: EncounterGroup };
+		encounterRates: { [frequency: string]: number };
+		terrainSpeed: { [terrainType: string]: number };
+	}
+
+	interface EncounterTable {
+		maps: string[];
+		encounters: Encounter[];
+	}
+
+	interface Encounter {
+		chance: number;
+		scenery: any; // TODO: scenery type (string?)
+		enc: EncounterRef; //enc.enc ? parseEncounterReference(enc.enc) : enc.enc,
+		cond: any; // TODO: condition type
+		condOrig: string|null; // Original condition string
+		special: string|null;
+	}
+
+	interface EncounterRef {
+		type: "ambush" | "fighting";
+		target?: "player";
+		// party?: ?;
+		// firstParty?: ?;
+		// secondParty?: ?;
+	}
+
+	interface EncounterGroup {
+		critters: EncounterCritter[];
+		position: EncounterPosition;
+	}
+
+	interface EncounterCritter {
+	}
+
+	interface EncounterPosition {
+	}
+
+	function parseWorldmap(data: string): Worldmap {
 		// 20 tiles, 7x6 squares each
 		// each tile is 350x300
 		// 4 tiles horizontally, 5 vertically
@@ -96,7 +137,7 @@ module Worldmap {
 			}
 		}
 
-		function parseEncounter(data: string) {
+		function parseEncounter(data: string): Encounter {
 			const s = data.trim().split(",")
 			const enc: any = {}
 			let isSpecial = false
@@ -171,7 +212,7 @@ module Worldmap {
 		// Parse a "key:value, key:value" format
 		function parseKeyed(data: string) {
 			const items = data.split(",").map(x => x.trim())
-			const out = {}
+			const out: { [key: string]: string|number } = {}
 			for(let i = 0; i < items.length; i++) {
 				const s: any = items[i].split(":")
 				if($.isNumeric(s[1]))
@@ -182,8 +223,8 @@ module Worldmap {
 		}
 
 		const ini: any = parseIni(data)
-		const encounterTables = {}
-		const encounterGroups = {}
+		const encounterTables: { [name: string]: EncounterTable } = {}
+		const encounterGroups: { [groupName: string]: EncounterGroup } = {}
 
 		const squares: Square[][] = new Array(NUM_SQUARES_X) // (4*7) x (5*6) array (i.e., number of tiles -- 840)
 		for(let i = 0; i < NUM_SQUARES_X; i++)
@@ -215,7 +256,7 @@ module Worldmap {
 			else if(key.indexOf("Encounter Table") === 0) {
 				const name = ini[key].lookup_name.toLowerCase()
 				const maps = ini[key].maps.split(",").map((x: string) => x.trim())
-				const encounter = {maps: maps, encounters: []}
+				const encounter: EncounterTable = {maps: maps, encounters: []}
 
 				for(const prop in ini[key]) {
 					if(prop.indexOf("enc_") === 0) {
@@ -236,7 +277,7 @@ module Worldmap {
 					position = {type: "surrounding", spacing: 5, distance: "Player(Perception)"}
 				}
 
-				const group = {critters: [], position: position}
+				const group: EncounterGroup = {critters: [], position: position}
 				for(const prop in ini[key]) {
 					if(prop.indexOf("type_") === 0) {
 						group.critters.push(parseEncounterCritter(ini[key][prop]))
@@ -246,7 +287,7 @@ module Worldmap {
 			}
 		}
 
-		const encounterRates = {}
+		const encounterRates: { [frequency: string]: number } = {}
 		for(const key in ini.Data) {
 			encounterRates[key.toLowerCase()] = parseInt(ini.Data[key])
 		}
@@ -255,7 +296,8 @@ module Worldmap {
 		// console.log(encounterTables)
 		// console.log(encounterGroups)
 
-		return {squares, encounterTables, encounterGroups, encounterRates, terrainSpeed: parseKeyed(ini.Data.terrain_types)}
+		return { squares, encounterTables, encounterGroups, encounterRates,
+			     terrainSpeed: parseKeyed(ini.Data.terrain_types) as { [terrainType: string]: number } }
 	}
 
 	export function getEncounterGroup(groupName: string): any {
@@ -462,7 +504,7 @@ module Worldmap {
 
 		for(let x = 0; x < NUM_SQUARES_X; x++) {
 			for(let y = 0; y < NUM_SQUARES_Y; y++) {
-				let state = worldmap.squares[x][y].state
+				let state: string|number = worldmap.squares[x][y].state
 				if(state === WORLDMAP_UNDISCOVERED) state = "undiscovered"
 				else if(state === WORLDMAP_DISCOVERED) state = "discovered"
 				else if(state === WORLDMAP_SEEN) state = "seen"
