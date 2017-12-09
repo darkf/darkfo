@@ -17,7 +17,7 @@ limitations under the License.
 // Functions handling FO2 prototypes and lookups performed on them
 
 function getPROType(pid: number) {
-	var map = {0: 'items', 1: 'critters', 2: 'scenery', 3: 'walls', 4: 'tiles', 5: 'misc'}
+	const map: { [pid: number]: string } = {0: 'items', 1: 'critters', 2: 'scenery', 3: 'walls', 4: 'tiles', 5: 'misc'}
 	return map[(pid >> 24) & 0xff]
 }
 
@@ -27,7 +27,8 @@ function loadPRO(pid: number, pidID: number) {
 
 	// use the proto/ .lst files to look up type/pid
 	const type = getPROType(pid)
-	const lsts = {"items": "proto/items/items", "critters": "proto/critters/critters",
+	const lsts: { [lst: string]: string } = {
+		        "items": "proto/items/items", "critters": "proto/critters/critters",
                 "scenery": "proto/scenery/scenery", "misc": "proto/misc/misc",
                 "walls": "proto/walls/walls"}
 	const id = lsts[type] ? parseInt(getLstId(lsts[type], pidID - 1).split(".")[0], 10) : pidID
@@ -37,12 +38,12 @@ function loadPRO(pid: number, pidID: number) {
 
 function getPROTypeName(type: number) {
 	// singular
-	var map = {0: 'item', 1: 'critter', 2: 'scenery', 3: 'wall', 4: 'tile', 5: 'misc'}
+	const map: { [type: number]: string } = {0: 'item', 1: 'critter', 2: 'scenery', 3: 'wall', 4: 'tile', 5: 'misc'}
 	return map[type]
 }
 
 function getPROSubTypeName(type: number): string {
-	var map = {0: 'armor', 1: 'container', 2: 'drug', 3: 'weapon', 4: 'ammo', 5: 'misc', 6: 'key'}
+	const map: { [type: number]: string } = {0: 'armor', 1: 'container', 2: 'drug', 3: 'weapon', 4: 'ammo', 5: 'misc', 6: 'key'}
 	return map[type]
 }
 
@@ -114,7 +115,8 @@ function lookupArt(frmPID: number) {
     if(type === "critters")
     	return getCritterArtPath(frmPID)
 
-	var lsts = {"items": "art/items/items",
+	var lsts: { [lst: string]: string } = {
+		        "items": "art/items/items",
                 "scenery": "art/scenery/scenery", "misc": "art/misc/misc"}
 	var path = "art/" + type + "/" + getLstId(lsts[type], pidID).split('.')[0]
 
