@@ -21,9 +21,9 @@ limitations under the License.
 
 function parseIni(text: string) {
 	// Parse a .ini-style categorized key-value format
-	var lines = text.split('\n')
-	var category = null
-	var ini = {}
+	const ini: { [category: string]: any } = {}
+	const lines = text.split('\n')
+	let category = null
 
 	for(var i = 0; i < lines.length; i++) {
 		var line = lines[i].replace(/\s*;.*/, "") // replace comments
@@ -47,26 +47,26 @@ function parseIni(text: string) {
 	return ini
 }
 
-function getFileText(path: string, err?: () => void) {
-	var r = null
+function getFileText(path: string, err?: () => void): string {
+	let r = null
 	$.ajax(path, {async: false,
-		          success: function(text) { r = text },
-		          error: err || function() { throw "getFileText: error getting path " + path },
+		          success: (text: string) => { r = text },
+		          error: err || (() => { throw "getFileText: error getting path " + path }),
 		          dataType: "text"})
-	return r
+	return r as string
 }
 
-function getFileJSON(path: string, err?: () => void) {
+function getFileJSON(path: string, err?: () => void): any {
 	var r = null
 	$.ajax(path, {async: false,
-		          success: function(text) { r = text },
-		          error: err || function() { throw "getFileText: error getting path " + path },
+		          success: (obj: any) => { r = obj },
+		          error: err || (() => { throw "getFileText: error getting path " + path }),
 		          dataType: "json"})
 	return r
 }
 
 // GET binary data into a DataView
-function getFileBinaryAsync(path: string, callback: (DataView) => void) {
+function getFileBinaryAsync(path: string, callback: (data: DataView) => void) {
 	var xhr = new XMLHttpRequest()
 	xhr.open("GET", path, true)
 	xhr.responseType = "arraybuffer"
@@ -99,13 +99,12 @@ function getRandomInt(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-function rollSkillCheck(skill, modifier, isBounded) {
-	var tempSkill = skill + modifier
-	if(isBounded === true) {
-		clamp(0,95,tempSkill)
-	}
+function rollSkillCheck(skill: number, modifier: number, isBounded: boolean) {
+	const tempSkill = skill + modifier
+	if(isBounded)
+		clamp(0, 95, tempSkill)
 
-	var roll = getRandomInt(0,100)
+	const roll = getRandomInt(0,100)
 	return roll < tempSkill
 }
 
@@ -134,23 +133,20 @@ function rollIsCritical(roll: number) {
 	return (roll == 0) || (roll == 3)
 }
 
-function arrayRemove(array, value)
-{
-	var index = array.indexOf(value)
-	if(index !== -1)
-	{
-		array.splice(index,1)
+function arrayRemove<T>(array: T[], value: T) {
+	const index = array.indexOf(value)
+	if(index !== -1) {
+		array.splice(index, 1)
 		return true
 	}
 	return false
 }
 
-function clamp(min, max, value)
-{
-	return Math.max(min,Math.min(max,value))
+function clamp(min: number, max: number, value: number) {
+	return Math.max(min, Math.min(max, value))
 }
 
-function getMessage(name, id) {
+function getMessage(name: string, id: number) {
 	if(messageFiles[name] !== undefined && messageFiles[name][id] !== undefined)
 		return messageFiles[name][id]
 	else {
@@ -161,7 +157,7 @@ function getMessage(name, id) {
 	}
 }
 
-function getProtoMsg(id) {
+function getProtoMsg(id: number) {
 	return getMessage("proto", id)
 }
 
