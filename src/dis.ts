@@ -18,11 +18,13 @@ limitations under the License.
 
 // Map of opcode -> function that returns a list of arguments
 // If not present, it is assumed that the opcode is nullary
-var opArgs = {0xC001: function(reader) { return [reader.read32()] } // op_push_d
-             ,0x9001: function(reader) { return [reader.read32()]} // 9001 op_push_d
-             }
+const opArgs: { [opcode: number]: (reader: BinaryReader) => number[] } = {
+                0xC001: function(reader: BinaryReader) { return [reader.read32()] } // op_push_d
+               ,0x9001: function(reader: BinaryReader) { return [reader.read32()]} // 9001 op_push_d
+               }
 
-var opNames = {0x8004: "op_jmp"
+const opNames: { [opcode: number]: string } = {
+               0x8004: "op_jmp"
               ,0x8005: "op_call"
               ,0x800C: "op_a_to_d"
               ,0x800D: "op_d_to_a"
@@ -138,7 +140,7 @@ function disassemble(intfile: IntFile, reader: BinaryReader): string {
 		disasm(2)
 	emit("")
 
-	var procOffsets = {}
+	const procOffsets: { [offset: number]: string } = {}
 	for(var procName in intfile.procedures) {
 		var proc = intfile.procedures[procName]
 		procOffsets[proc.offset] = procName
