@@ -1181,7 +1181,7 @@ function uiWorldMapWorldView() {
     Worldmap.start()
 }
 
-function uiWorldMapShowArea(area) { // TODO: any
+function uiWorldMapShowArea(area: Area) {
     uiWorldMapAreaView()
 
     $("#areamap").css({

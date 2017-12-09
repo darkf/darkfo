@@ -16,7 +16,7 @@ limitations under the License.
 
 "use strict";
 
-var mapAreas = null // TODO: type
+var mapAreas: AreaMap|null = null
 
 var proMap: any = null // TODO: type
 var lstFiles = {}
@@ -24,6 +24,33 @@ var messageFiles = {}
 var mapInfo: any = null // TODO: type
 var elevatorInfo: { elevators: Elevator[] }|null = null
 var dirtyMapCache: { [mapName: string]: SerializedMap } = {}
+
+interface AreaMap {
+    // XXX: Why does using a number key break areas?
+    [areaID: string]: Area;
+}
+
+interface Area {
+    name: string;
+    id: number;
+    size: string;
+    state: boolean;
+    worldPosition: Point;
+    mapArt?: string;
+    labelArt?: string;
+    entrances: AreaEntrance[];
+}
+
+interface AreaEntrance {
+    startState: string;
+    x: number;
+    y: number;
+    mapLookupName: string;
+    mapName: string;
+    elevation: number;
+    tileNum: number;
+    orientation: number;
+}
 
 interface Elevator {
 	buttons: { tileNum: number; mapID: number; level: number; }[];
@@ -41,9 +68,9 @@ function getElevator(type: number): Elevator {
 	return elevatorInfo.elevators[type]
 }
 
-function parseAreas(data: string) {
+function parseAreas(data: string): AreaMap {
 	var areas = parseIni(data)
-	var out = {}
+	var out: AreaMap = {}
 
 	for(var _area in areas) {
 		var area = areas[_area]
@@ -52,11 +79,14 @@ function parseAreas(data: string) {
 		var areaID = parseInt(match[1])
 		var worldPos = area.world_pos.split(",").map((x: string) => parseInt(x))
 
-		var newArea: any = {name: area.area_name,
-			           id: areaID,
-			           size: area.size.toLowerCase(),
-			           state: area.start_state.toLowerCase() === "on",
-			       	   worldPosition: {x: worldPos[0], y: worldPos[1]}}
+		var newArea: Area = {
+            name: area.area_name,
+            id: areaID,
+            size: area.size.toLowerCase(),
+            state: area.start_state.toLowerCase() === "on",
+            worldPosition: {x: worldPos[0], y: worldPos[1]},
+            entrances: []
+        }
 
 	    // map/label art
 		var mapArtIdx = parseInt(area.townmap_art_idx)
@@ -70,7 +100,6 @@ function parseAreas(data: string) {
 			newArea.labelArt = lookupInterfaceArt(labelArtIdx)
 
 		// entrances
-		newArea.entrances = []
 		for(var _key in area) {
 			// entrance_N
 			// e.g.: entrance_0=On,345,230,Destroyed Arroyo Bridge,-1,26719,0
