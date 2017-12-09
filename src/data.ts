@@ -16,13 +16,13 @@ limitations under the License.
 
 "use strict";
 
-var mapAreas = null
+var mapAreas = null // TODO: type
 
 var proMap: any = null // TODO: type
 var lstFiles = {}
 var messageFiles = {}
 var mapInfo: any = null // TODO: type
-var elevatorInfo = null
+var elevatorInfo: { elevators: Elevator[] }|null = null
 var dirtyMapCache: { [mapName: string]: SerializedMap } = {}
 
 interface Elevator {
@@ -32,8 +32,8 @@ interface Elevator {
 	type: number;
 }
 
-function getElevator(type): Elevator {
-	if(elevatorInfo === null) {
+function getElevator(type: number): Elevator {
+	if(!elevatorInfo) {
 		console.log("loading elevator info")
 		elevatorInfo = getFileJSON("elevators.json")
 	}
@@ -41,7 +41,7 @@ function getElevator(type): Elevator {
 	return elevatorInfo.elevators[type]
 }
 
-function parseAreas(data) {
+function parseAreas(data: string) {
 	var areas = parseIni(data)
 	var out = {}
 
@@ -50,7 +50,7 @@ function parseAreas(data) {
 		var match = _area.match(/Area (\d+)/)
 		if(match === null) throw "city.txt: invalid area name: " + area.area_name
 		var areaID = parseInt(match[1])
-		var worldPos = area.world_pos.split(",").map(function(x) { return parseInt(x) })
+		var worldPos = area.world_pos.split(",").map((x: string) => parseInt(x))
 
 		var newArea: any = {name: area.area_name,
 			           id: areaID,
@@ -100,7 +100,7 @@ function parseAreas(data) {
 	return out
 }
 
-function areaContainingMap(mapName) {
+function areaContainingMap(mapName: string) {
 	for(var area in mapAreas) {
 		var entrances = mapAreas[area].entrances
 		for(var i = 0; i < entrances.length; i++) {
@@ -124,7 +124,7 @@ function allAreas() {
 	return areas
 }
 
-function loadMessage(name) {
+function loadMessage(name: string) {
 	name = name.toLowerCase()
 	var msg = getFileText("data/text/english/game/" + name + ".msg")
 	if(messageFiles[name] === undefined)
@@ -160,11 +160,11 @@ function loadMessage(name) {
 }
 
 
-function loadLst(lst) {
+function loadLst(lst: string): string[] {
 	return getFileText("data/" + lst + ".lst").split('\n')
 }
 
-function getLstId(lst, id) {
+function getLstId(lst: string, id: number): string {
 	if(lstFiles[lst] === undefined)
 		lstFiles[lst] = loadLst(lst)
 	if(lstFiles[lst] === undefined)
