@@ -20,7 +20,7 @@ limitations under the License.
 
 module Worldmap {
 	let worldmap: Worldmap = null
-	let worldmapPlayer = null
+	let worldmapPlayer: WorldmapPlayer = null
 	let $worldmap: Jq|null = null
 	let $worldmapPlayer: Jq|null = null
 	let $worldmapTarget: Jq|null = null
@@ -48,6 +48,12 @@ module Worldmap {
 		encounterType: string,
 		difficulty: number,
 		state: number // WORLDMAP_UNDISCOVERED etc (TODO: make an enum)
+	}
+
+	interface WorldmapPlayer {
+		x: number;
+		y: number;
+		target: Point;
 	}
 
 	interface Worldmap {
