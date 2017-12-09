@@ -1,6 +1,6 @@
 class WebGLRenderer extends Renderer {
-	canvas: any;
-	gl: any;
+	canvas: HTMLCanvasElement;
+	gl: WebGLRenderingContext;
 	offsetLocation: any;
 	positionLocation: any;
 	texCoordLocation: any;
@@ -94,7 +94,7 @@ class WebGLRenderer extends Renderer {
 	}
 
 	init(): void {
-	    this.canvas = document.getElementById("cnv")
+	    this.canvas = document.getElementById("cnv") as HTMLCanvasElement
 
 	    // TODO: hack
 	    heart.canvas = this.canvas
@@ -227,8 +227,7 @@ class WebGLRenderer extends Renderer {
 	    }
 	}
 
-	rectangleBuffer(gl, x, y, width, height) {
-		var gl = this.gl
+	rectangleBuffer(gl: WebGLRenderingContext, x: number, y: number, width: number, height: number) {
 		var buffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 		var x1 = x;
@@ -245,7 +244,7 @@ class WebGLRenderer extends Renderer {
 		return buffer
 	}
 
-	getShader(gl, id) {
+	getShader(gl: WebGLRenderingContext, id: string) {
 	    var el: any = document.getElementById(id) // TODO
 	    var source = el.text
 	    var shader = gl.createShader(el.type === "x-shader/x-fragment" ? gl.FRAGMENT_SHADER : gl.VERTEX_SHADER)
@@ -260,7 +259,7 @@ class WebGLRenderer extends Renderer {
 	    return shader
 	}
 
-	getProgram(gl, vid, fid) {
+	getProgram(gl: WebGLRenderingContext, vid: string, fid: string) {
 	    var fsh = this.getShader(gl, fid)
 	    var vsh = this.getShader(gl, vid)
 	    var program = gl.createProgram()
@@ -296,7 +295,7 @@ class WebGLRenderer extends Renderer {
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 	}
 
-	renderLitFloor(tilemap, useColorTable: boolean=true) {
+	renderLitFloor(tilemap: string[][], useColorTable: boolean=true) {
 		// iniitalize color tables if necessary (TODO: hack, should be initialized elsewhere)
 		if(useColorTable) {
 			if(Lighting.colorLUT === null) {
