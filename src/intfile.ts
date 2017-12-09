@@ -25,7 +25,7 @@ interface Procedure {
 }
 
 interface IntFile {
-	procedures: { [name: number]: Procedure };
+	procedures: { [name: string]: Procedure };
 	proceduresTable: Procedure[];
 	identifiers: { [offset: number]: string };
 	strings: { [offset: number]: string };
@@ -40,7 +40,7 @@ function parseIntFile(reader: BinaryReader, name: string=""): IntFile {
 	// read procedure table
 	var numProcs = reader.read32()
 	var procs: Procedure[] = []
-	var procedures: { [name: number]: Procedure } = {}
+	var procedures: { [name: string]: Procedure } = {}
 	//console.log("procs: %d", numProcs)
 	//console.log("")
 
