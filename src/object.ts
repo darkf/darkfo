@@ -36,7 +36,7 @@ function objectSingleAnim(obj: Obj, reversed?: boolean, callback?: () => void): 
 	else obj.frame = 0
 	obj.lastFrameTime = 0
 	obj.anim = reversed ? "reverse" : "single"
-	obj.animCallback = callback || (() => obj.anim = null)
+	obj.animCallback = callback || (() => { obj.anim = null })
 }
 
 function canUseObject(obj: Obj, source?: Obj): boolean {
@@ -269,7 +269,7 @@ function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean {
 }
 
 function objectFindIndex(obj: Obj): number {
-	return _.findIndex(gMap.getObjects(), object => object === obj)
+	return _.findIndex(gMap.getObjects(), (object: Obj) => object === obj)
 }
 
 function objectZCompare(a: Obj, b: Obj): number {
@@ -506,7 +506,7 @@ class Obj {
 		obj.init()
 
 		if(deserializing) {
-			obj.inventory = mobj.inventory.map(obj => deserializeObj(obj))
+			obj.inventory = mobj.inventory.map((obj: SerializedObj) => deserializeObj(obj))
 			obj.script = mobj.script
 
 			if(mobj._script)
@@ -674,11 +674,14 @@ class Obj {
 	}
 
 	getMessageCategory(): string {
-		return {"item": "pro_item",
+		const categories: { [category: string]: string } = {
+			    "item": "pro_item",
 		        "critter": "pro_crit",
 	            "scenery": "pro_scen",
 	            "wall": "pro_wall",
-	            "misc": "pro_misc"}[this.type]
+				"misc": "pro_misc"
+		};
+		return categories[this.type];
 	}
 
 	getDescription(): string {
@@ -767,14 +770,17 @@ class Scenery extends Obj {
 	}
 
 	init() {
-		super.init()
+		super.init();
 		//console.log("Scenery init")
 
-		if(this.pro === null)
-			return
-		var subtypeMap = {0: "door", 1: "stairs", 2: "elevator", 3: "ladder",
-						  4: "ladder", 5: "generic"}
-		this.subtype = subtypeMap[this.pro.extra.subType]
+		if(!this.pro)
+			return;
+		
+		const subtypeMap: { [subtype: number]: string } = {
+			0: "door", 1: "stairs", 2: "elevator", 3: "ladder",
+			4: "ladder", 5: "generic"
+		};
+		this.subtype = subtypeMap[this.pro.extra.subType];
 	}
 }
 
