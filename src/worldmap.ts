@@ -214,7 +214,7 @@ module Worldmap {
 			}
 			else if(key.indexOf("Encounter Table") === 0) {
 				const name = ini[key].lookup_name.toLowerCase()
-				const maps = ini[key].maps.split(",").map(x => x.trim())
+				const maps = ini[key].maps.split(",").map((x: string) => x.trim())
 				const encounter = {maps: maps, encounters: []}
 
 				for(const prop in ini[key]) {
@@ -229,7 +229,7 @@ module Worldmap {
 				let position = null
 
 				if(ini[key].position !== undefined) {
-					const position_ = ini[key].position.split(",").map(x => x.trim().toLowerCase())
+					const position_ = ini[key].position.split(",").map((x: string) => x.trim().toLowerCase())
 					position = {type: position_[0], spacing: 3} // TODO: verify defaults (3 spacing?)
 				}
 				else { // default
@@ -281,7 +281,7 @@ module Worldmap {
 		// console.log( worldmap.squares[squarePos.x][squarePos.y].fillType )
 
 		// the square element at squarePos
-		const stateName = {}
+		const stateName: { [state: number]: string } = {}
 		stateName[WORLDMAP_UNDISCOVERED] = "undiscovered"
 		stateName[WORLDMAP_DISCOVERED] = "discovered"
 		stateName[WORLDMAP_SEEN] = "seen"
@@ -401,7 +401,7 @@ module Worldmap {
 
 		worldmap = parseWorldmap(getFileText("data/data/worldmap.txt"))
 
-		if(mapAreas === null)
+		if(!mapAreas)
 			mapAreas = loadAreas()
 
 		$worldmap.click(function(this: HTMLElement, e /* jqe */) {
