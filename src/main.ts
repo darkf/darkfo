@@ -19,7 +19,6 @@ limitations under the License.
 "use strict";
 
 // make TypeScript happy about external libraries (TODO: use .d.ts files)
-declare var $: any;
 declare var _: any;
 declare var heart: any;
 declare var PF: any;
@@ -244,7 +243,7 @@ function initGame() {
 	$("#cnv").mouseenter(function() { gameHasFocus = true }).
 	          mouseleave(function() { gameHasFocus = false })
 
-	tempCanvas = $("<canvas>")[0]
+	tempCanvas = $("<canvas>")[0] as HTMLCanvasElement
 	tempCanvasCtx = tempCanvas.getContext("2d")
 
 	SaveLoad.init()
