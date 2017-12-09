@@ -404,7 +404,7 @@ module Worldmap {
 		if(!mapAreas)
 			mapAreas = loadAreas()
 
-		$worldmap.click(function(this: HTMLElement, e /* jqe */) {
+		$worldmap.click(function(this: HTMLElement, e: JqEvent<MouseEvent>) {
 			const offset = $(this).offset()
 			const x = e.pageX - parseInt(offset.left)
 			const y = e.pageY - parseInt(offset.top)

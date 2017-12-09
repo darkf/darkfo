@@ -722,7 +722,7 @@ function uiInventoryScreen() {
                         attr("width", 72).attr("height", 60) // 90x60 // 70x40
             img.attr("title", invObj.name)
             if(clickCallback)
-                    img.click((e: MouseEvent) => { clickCallback(invObj, e) })
+                    img.click((e: JqEvent<MouseEvent>) => { clickCallback(invObj, e.originalEvent) })
             $el.append(img).append("x" + invObj.amount)
             makeDraggable(img, "i" + i, () => { uiInventoryScreen() })
         }
@@ -779,8 +779,8 @@ function uiInventoryScreen() {
         var img = $("<img>").attr("src", art+'.png').
                   attr("width", 72).attr("height", 60) // 90x60 // 70x40
         img.attr("title", player[slot].name)
-        img.click((e: MouseEvent) => {
-            makeItemContextMenu(e, player[slot], slot)
+        img.click((e: JqEvent<MouseEvent>) => {
+            makeItemContextMenu(e.originalEvent, player[slot], slot)
         })
         makeDraggable(img, slot)
         $(slotID).html("").append(img)
@@ -1322,7 +1322,7 @@ function uiCalledShot(art: string, target: Critter, callback?: (regionHit: strin
 
     $("#calledShotBackground").css("background-image", "url('" + art + ".png')")
 
-    $(".calledShotLabel").click((evt: MouseEvent) => {
+    $(".calledShotLabel").click((evt: JqEvent<MouseEvent>) => {
         var id = $(evt.target).attr("id")
         var regionHit = id.split("-")[1]
         console.log("clicked a called location (%s)", regionHit)
