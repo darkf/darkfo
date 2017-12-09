@@ -16,14 +16,15 @@ limitations under the License.
 
 // Scripting VM for .INT files
 
-function binop(f) {
-	return function() {
+function binop(f: (x: any, y: any) => any) {
+	return function(this: ScriptVM) {
 		var rhs = this.pop()
 		this.push(f(this.pop(), rhs))
 	}
 }
 
-var opMap = {0x8002: function() { } // start critical (nop)
+var opMap: { [opcode: number]: (this: ScriptVM) => void } = {
+             0x8002: function() { } // start critical (nop)
             ,0xC001: function() { this.push(this.script.read32()) } // op_push_d
             ,0x800D: function() { this.retStack.push(this.pop()) } // op_d_to_a
             ,0x800C: function() { this.push(this.popAddr()) } // op_a_to_d

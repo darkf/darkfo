@@ -19,7 +19,7 @@ limitations under the License.
 module ScriptVMBridge {
 	// create a bridged function that calls procedures on scriptObj
 	function bridged(procName: string, argc: number, pushResult: boolean=true) {
-		return function() {
+		return function(this: GameScriptVM) {
 			var args = []
 			for(var i = 0; i < argc; i++)
 				args.push(this.pop())
@@ -31,13 +31,13 @@ module ScriptVMBridge {
 		}
 	}
 
-    function varName(value: any): string {
-        if(typeof value == "number")
+    function varName(this: ScriptVM, value: any): string {
+        if(typeof value === "number")
             return this.intfile.identifiers[value]
         return value
     }
 
-	var bridgeOpMap = {
+	var bridgeOpMap: { [opcode: number]: (this: GameScriptVM) => void } = {
 	    0x80BF: function() { this.push(player) } // dude_obj
 	   ,0x80BC: function() { this.push(this.scriptObj.self_obj) } // self_obj
        ,0x8128: function() { this.push(this.scriptObj.combat_is_initialized) } // combat_is_initialized
@@ -52,8 +52,8 @@ module ScriptVMBridge {
        ,0x80F7: function() { this.push(this.scriptObj.fixed_param) } // fixed_param
 
        ,0x8016: function() { this.mapScript()[this.pop()] = 0 } // op_export_var
-       ,0x8015: function() { var name = varName(this.pop()); this.mapScript()[name] = this.pop() } // op_store_external
-       ,0x8014: function() { this.push(this.mapScript()[varName(this.pop())]) } // op_fetch_external
+       ,0x8015: function() { var name = varName.call(this, this.pop()); this.mapScript()[name] = this.pop() } // op_store_external
+       ,0x8014: function() { this.push(this.mapScript()[varName.call(this, this.pop())]) } // op_fetch_external
 
        ,0x80B9: bridged("script_overrides", 0, false)
        ,0x80B4: bridged("random", 2)
