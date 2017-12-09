@@ -34,7 +34,12 @@ module Ui {
         $uiContainer = document.getElementById("game-container");
 
         initSkilldex();
-        initCharacterScreen();
+        // initCharacterScreen();
+
+        document.getElementById("chrButton").onclick = () => {
+            characterWindow && characterWindow.close();
+            initCharacterScreen();
+        };
     }
 
     // Bounding box that accepts strings as well as numbers
@@ -294,8 +299,8 @@ module Ui {
 
         characterWindow = new WindowFrame("art/intrface/edtredt.png",
                                          { x: Config.ui.screenWidth/2 - 640/2, y: Config.ui.screenHeight/2 - 480/2, w: 640, h: 480 })
-                              .add(new SmallButton(455, 454).onClick(() => { })).add(new Ui.Label(455+18, 454, "Done"))
-                              .add(new SmallButton(552, 454).onClick(() => { characterWindow.close(); })).add(new Ui.Label(552+18, 454, "Cancel"))
+                              .add(new SmallButton(455, 454).onClick(() => { })).add(new Label(455+18, 454, "Done"))
+                              .add(new SmallButton(552, 454).onClick(() => { characterWindow.close(); })).add(new Label(552+18, 454, "Cancel"))
                               .add(new Label(22,  6, "Name"))
                               .add(new Label(160, 6, "Age"))
                               .add(new Label(242, 6, "Gender"))
@@ -306,7 +311,9 @@ module Ui {
                               .add(new Label(194, 45, `Hit Points ${critterGetStat(player, "HP")}/${critterGetStat(player, "Max HP")}`)
                                        .css({fontSize: "0.75em", color: "#00FF00"}))
                               .add(skillList)
-                              // .show();
+                              .show();
+
+        // TODO: Move these constants to their proper place
 
         const skills = [
             "Small Guns",
@@ -417,8 +424,6 @@ module Ui {
 
             const modifyStat = (change: number) => {
                 console.log("stat: %s currently: %d", selectedStat, newStatSet.get(selectedStat));
-
-                // TODO: Cost (need a pool of stat points)
 
                 newStatSet.modifyBase(selectedStat, change);
                 redrawStatsSkills();
