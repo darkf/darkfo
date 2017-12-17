@@ -16,7 +16,7 @@ limitations under the License.
 
 // Random Encounter system
 
-var Encounters = (function() {
+module Encounters {
 	var T_IF = 0,
 	    T_LPAREN = 1,
 	    T_RPAREN = 2,
@@ -117,7 +117,7 @@ var Encounters = (function() {
 		return expr()
 	}
 
-	function parseConds(data) {
+	export function parseConds(data) {
 		// conditions are formed by conjunctions, so
 		// x AND y AND z can just be collapsed to [x, y, z] here
 
@@ -292,7 +292,7 @@ var Encounters = (function() {
 		return succEncounters[idx]
 	}
 
-	function positionCritters(groups, playerPos, map) {
+	export function positionCritters(groups, playerPos, map) {
 		// set up critters' positions in their formations
 
 		groups.forEach(function(group) {
@@ -355,7 +355,7 @@ var Encounters = (function() {
 		})
 	}
 
-	function evalEncounter(encTable) {
+	export function evalEncounter(encTable) {
 		var mapIndex = getRandomInt(0, encTable.maps.length - 1)
 		var mapLookupName = encTable.maps[mapIndex]
 		var mapName = lookupMapNameFromLookup(mapLookupName)
@@ -419,13 +419,4 @@ var Encounters = (function() {
 		        encounterType: encounter.enc.type,
 		        groups: groups}
 	}
-
-	return {evalEncounterCritter: evalEncounterCritter,
-		    evalEncounterCritters: evalEncounterCritters,
-		    evalEncounter: evalEncounter,
-		    evalCond: evalCond,
-		    evalConds: evalConds,
-			parseCond: parseCond,
-			parseConds: parseConds,
-			positionCritters: positionCritters}
-})()
+}
