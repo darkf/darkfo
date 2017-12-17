@@ -744,7 +744,7 @@ class Item extends Obj {
 }
 
 class WeaponObj extends Item {
-	weapon: any = null;
+	weapon?: Weapon = null;
 
 	static fromPID(pid: number, sid?: number): WeaponObj { return Obj.fromPID_(new WeaponObj(), pid, sid) }
 

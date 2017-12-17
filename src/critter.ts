@@ -236,17 +236,16 @@ class Weapon {
 	}
 
 	getDamageType(): string {
-		return this.weapon.pro.extra.dmgType
+		return damageType[this.weapon.pro.extra.dmgType] as string
 	}
-
 }
 
 function critterGetBase(obj: Critter): string {
 	return obj.art.slice(0, -2)
 }
 
-function critterGetEquippedWeapon(obj: Critter): WeaponObj {
-	//todo: get actual selection
+function critterGetEquippedWeapon(obj: Critter): WeaponObj|null {
+	// TODO: Get actual selection
 	if(objectIsWeapon(obj.leftHand)) return obj.leftHand
 	if(objectIsWeapon(obj.rightHand)) return obj.rightHand
 	return null

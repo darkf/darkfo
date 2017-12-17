@@ -228,7 +228,7 @@ class Combat {
 		else
 			weaponSkill = critterGetSkill(obj, weapon.weaponSkillType)
 
-		var hitDistanceModifier = this.getHitDistanceModifier(obj, target, weapon)
+		var hitDistanceModifier = this.getHitDistanceModifier(obj, target, weaponObj)
 		var bonusAC = 0 // TODO: AP at end of turn bonus
 		var AC = critterGetStat(target, "AC") + bonusAC
 		var bonusCrit = 0 // TODO: perk bonuses, other crit influencing things
@@ -281,13 +281,13 @@ class Combat {
 
 	getDamageDone(obj: Critter, target: Critter, critModifer: number) {
 		var wep = critterGetEquippedWeapon(obj).weapon
-		var typeOfDamage = damageType[wep.getDamageType()]
+		var damageType = wep.getDamageType()
 
 		var RD = getRandomInt(wep.minDmg, wep.maxDmg) // rand damage min..max
 		var RB = 0 // ranged bonus (via perk)
 		var CM = critModifer // critical hit damage multiplier
-		var ADR = critterGetStat(target, "DR " + typeOfDamage) // damage resistance (TODO: armor)
-		var ADT = critterGetStat(target, "DT " + typeOfDamage) // damage threshold (TODO: armor)
+		var ADR = critterGetStat(target, "DR " + damageType) // damage resistance (TODO: armor)
+		var ADT = critterGetStat(target, "DT " + damageType) // damage threshold (TODO: armor)
 		var X = 2 // ammo dividend
 		var Y = 1 // ammo divisor
 		var RM = 0 // ammo resistance modifier
@@ -297,7 +297,7 @@ class Combat {
 		
 		var baseDamage = (CM/2) * ammoDamageMult * (RD+RB) * (CD / 100)
 		var adjustedDamage = Math.max(0, baseDamage - ADT)
-		console.log("RD: "+RD+" CM: "+CM+" ADR: "+ADR+" ADT: "+ADT+" baseDamage: "+baseDamage+" adjustedDamage: "+adjustedDamage)
+		console.log(`RD: ${RD} | CM: ${CM} | ADR: ${ADR} | ADT: ${ADT} | Base Dmg: ${baseDamage} Adj Dmg: ${adjustedDamage} | Type: ${damageType}`)
 
 		return Math.ceil(adjustedDamage * (1 - (ADR+RM)/100))
 	}
