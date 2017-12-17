@@ -112,9 +112,6 @@ class GameMap {
 		this.roofMap  = this.mapObj.levels[level].tiles.roof
 		//this.spatials = this.mapObj.levels[level]["spatials"]
 
-		// temporary
-		currentElevation = this.currentElevation
-
 		player.clearAnim()
 
 		// remove the player/party from the old objects list
@@ -134,7 +131,7 @@ class GameMap {
 			// TODO: we need some kind of active/inactive flag on scripts to toggle here,
 			// since scripts should already be loaded
 			//loadObjectScripts(gObjects)
-			scriptingEngine.updateMap(this.mapScript, this.getObjectsAndSpatials(), currentElevation)
+			scriptingEngine.updateMap(this.mapScript, this.getObjectsAndSpatials(), level)
 		}
 
 		// rebuild the lightmap
