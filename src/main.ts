@@ -366,15 +366,21 @@ function playerUse() {
 	}
 
 	if(obj === null) { // walk to the destination if there is no usable object
+		if(inCombat && !(combat.inPlayerTurn || Config.combat.allowWalkDuringAnyTurn)) {
+			console.log("Wait your turn.");
+			return;
+		}
+		
 		if(!player.walkTo(mouseHex, Config.engine.doAlwaysRun))
-			console.log("Cannot walk there")
-		return
+			console.log("Cannot walk there");
+		
+		return;
 	}
 
 	if(obj.type === "critter") {
 		if(obj === player) return // can't use yourself
 
-		if(inCombat === true && who.dead !== true) {
+		if(inCombat && !who.dead) {
 			// attack a critter
 			if(!combat.inPlayerTurn || player.inAnim()) {
 				console.log("You can't do that yet.")

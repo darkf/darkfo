@@ -39,6 +39,10 @@ const Config = {
 		doAudio: false, // enable audio?
 	},
 
+	combat: {
+		allowWalkDuringAnyTurn: true, // Allows the player to walk AP-free out of their turn
+	},
+
 	controls: {
 		cameraDown: "down",
 		cameraUp: "up",
