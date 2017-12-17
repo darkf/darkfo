@@ -99,7 +99,7 @@ def parse_elevator_table():
 		try:
 			with open(EXE_PATH, "rb") as fp:
 				elevators = parseElevatorTable.parseElevators(fp)
-				json.dump(elevators, open("elevators.json", "w"))
+				json.dump(elevators, open("lut/elevators.json", "w"))
 				info("Done parsing elevator table")
 		except Exception:
 			traceback.print_exc()

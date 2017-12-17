@@ -88,7 +88,7 @@ def main():
 
 	with open(sys.argv[1], "rb") as f:
 		elevators = parseElevators(f, verbose=True)
-		with open("elevators.json", "w") as g:
+		with open("lut/elevators.json", "w") as g:
 			json.dump(elevators, g)
 
 	print "done"

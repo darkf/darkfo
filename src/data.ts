@@ -70,7 +70,7 @@ interface Elevator {
 function getElevator(type: number): Elevator {
 	if(!elevatorInfo) {
 		console.log("loading elevator info")
-		elevatorInfo = getFileJSON("elevators.json")
+		elevatorInfo = getFileJSON("lut/elevators.json")
 	}
 
 	return elevatorInfo.elevators[type]
