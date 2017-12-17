@@ -279,7 +279,7 @@ class Combat {
 		return {hit: false, crit: isCrit} // miss
 	}
 
-	getDamageDone(obj, target, critModifer) {
+	getDamageDone(obj: Critter, target: Critter, critModifer: number) {
 		var wep = critterGetEquippedWeapon(obj).weapon
 		var typeOfDamage = damageType[wep.getDamageType()]
 
@@ -302,7 +302,7 @@ class Combat {
 		return Math.ceil(adjustedDamage * (1 - (ADR+RM)/100))
 	}
 
-	getCombatMsg(id) {
+	getCombatMsg(id: number) {
 		return getMessage("combat", id)
 	}
 
@@ -357,11 +357,11 @@ class Combat {
 		}
 	}
 
-	perish(obj) {
+	perish(obj: Critter) {
 		this.log("...And killed them.")
 	}
 
-	getCombatAIMessage(id) {
+	getCombatAIMessage(id: number) {
 		return getMessage("combatai", id)
 	}
 
@@ -512,7 +512,7 @@ class Combat {
 		}
 	}
 
-	nextTurn() {
+	nextTurn(): void {
 		// update range checks
 		var numActive = 0
 		for(var i = 0; i < this.combatants.length; i++) {
@@ -549,7 +549,6 @@ class Combat {
 			// todo: convert unused AP into AC
 			critter.AP.resetAP()
 			this.doAITurn(critter, this.whoseTurn)
-		}
-		
+		}	
 	}
 }
