@@ -236,7 +236,10 @@ class Weapon {
 	}
 
 	getDamageType(): string {
-		return damageType[this.weapon.pro.extra.dmgType] as string
+		// Return the (string) damage type of the weapon, e.g. "Normal", "Laser", ...
+		// Defaults to "Normal" if the weapon's PRO does not provide one.
+		const rawDmgType = this.weapon.pro.extra.dmgType;
+		return rawDmgType !== undefined ? damageType[rawDmgType] as string : "Normal";
 	}
 }
 
