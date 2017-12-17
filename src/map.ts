@@ -112,6 +112,9 @@ class GameMap {
 		this.roofMap  = this.mapObj.levels[level].tiles.roof
 		//this.spatials = this.mapObj.levels[level]["spatials"]
 
+		// If we're in combat, end it since we're moving off of that elevation
+		inCombat && combat.end();
+
 		player.clearAnim()
 
 		// remove the player/party from the old objects list
