@@ -1143,7 +1143,7 @@ module scriptingEngine {
 			if(m === null)
 				throw "message parsing: not a valid line: " + lines[i]
 			// HACK: replace unicode replacement character with an apostrophe (because the Web sucks at character encodings)
-			scriptMessages[name][m[1]] = m[2].replace(/\ufffd/g, "'")
+			scriptMessages[name][parseInt(m[1])] = m[2].replace(/\ufffd/g, "'")
 		}
 	}
 
