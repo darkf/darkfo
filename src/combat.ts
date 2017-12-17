@@ -391,7 +391,12 @@ class Combat {
 		return false
 	}
 
-	doAITurn(obj: Critter, idx: number): void {
+	doAITurn(obj: Critter, idx: number, depth: number): void {
+		if(depth > Config.combat.maxAIDepth) {
+			console.warn(`Bailing out of ${depth}-deep AI turn recursion`);
+			return this.nextTurn();
+		}
+		
 		var that = this
 		var target = this.findTarget(obj)
 		var distance = hexDistance(obj.position, target.position)
@@ -414,14 +419,17 @@ class Combat {
 
 			// todo: pick the closest edge of the map
 			this.maybeTaunt(obj, "run", messageRoll)
-			var targetPos = {x: 128, y: obj.position.y} // left edge
-			if(this.walkUpTo(obj, idx, targetPos, AP.getAvailableMoveAP(), function() {
-				obj.clearAnim()
-				that.doAITurn(obj, idx) // if we can, do another turn
-			}) === false)
-				return this.nextTurn() // not a valid path, just move on
+			const targetPos = {x: 128, y: obj.position.y} // left edge
+			const callback = () => {
+				obj.clearAnim();
+				that.doAITurn(obj, idx, depth+1); // if we can, do another turn
+			};
+
+			if(!this.walkUpTo(obj, idx, targetPos, AP.getAvailableMoveAP(), callback)) {
+				return this.nextTurn(); // not a valid path, just move on
+			}
 			
-			return
+			return;
 		}
 
 		var weaponObj = critterGetEquippedWeapon(obj)
@@ -443,7 +451,7 @@ class Combat {
 			for(var i = 0; i < neighbors.length; i++) {
 				if(obj.walkTo(neighbors[i], false, function() {
 					obj.clearAnim()
-					that.doAITurn(obj, idx) // if we can, do another turn
+					that.doAITurn(obj, idx, depth+1) // if we can, do another turn
 				}, maxDistance) !== false) {
 					// OK
 					didCreep = true
@@ -457,7 +465,7 @@ class Combat {
 			if(!didCreep) {
 				// no path
 				this.log("[NO PATH]")
-				that.doAITurn(obj, idx) // if we can, do another turn
+				that.doAITurn(obj, idx, depth+1) // if we can, do another turn
 			}
 		}
 		else if(AP.getAvailableCombatAP() >= 4) { // if we are in range, do we have enough AP to attack?
@@ -469,7 +477,7 @@ class Combat {
 
 			this.attack(obj, target, "torso", function() {
 				obj.clearAnim()
-				that.doAITurn(obj, idx) // if we can, do another turn
+				that.doAITurn(obj, idx, depth+1) // if we can, do another turn
 			})
 		}
 		else this.nextTurn()
@@ -517,10 +525,10 @@ class Combat {
 		var numActive = 0
 		for(var i = 0; i < this.combatants.length; i++) {
 			var obj = this.combatants[i]
-			if(obj.dead === true || obj.isPlayer === true) continue
+			if(obj.dead || obj.isPlayer) continue
 			var inRange = hexDistance(obj.position, this.player.position) <= obj.ai.info.max_dist
 
-			if(inRange === true || obj.hostile === true) {
+			if(inRange || obj.hostile) {
 				obj.hostile = true
 				numActive++
 			}
@@ -546,9 +554,9 @@ class Combat {
 			if(critter.dead === true || critter.hostile !== true)
 				return this.nextTurn()
 
-			// todo: convert unused AP into AC
+			// TODO: convert unused AP into AC
 			critter.AP.resetAP()
-			this.doAITurn(critter, this.whoseTurn)
+			this.doAITurn(critter, this.whoseTurn, 1)
 		}	
 	}
 }
