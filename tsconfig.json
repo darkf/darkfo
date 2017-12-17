@@ -5,9 +5,10 @@
         "noImplicitReturns": true,
         "alwaysStrict": true, // emit "use strict"
         "skipLibCheck": true,
+        // "noImplicitAny": true,
         "outDir": "js",
         // "target": "es6",
-        "lib": ["ES6", "DOM", "es2017.object"]
+        "lib": ["es6", "dom", "es2017.object"]
     },
 
     "files": [
