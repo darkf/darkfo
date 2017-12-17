@@ -17,15 +17,18 @@ limitations under the License.
 // Random Encounter system
 
 module Encounters {
+	// TODO: Enum
 	var T_IF = 0,
 	    T_LPAREN = 1,
 	    T_RPAREN = 2,
 	    T_IDENT = 3,
 	    T_OP = 4,
-	    T_INT = 5
+		T_INT = 5
+		
+	type Token = [number /* Token type */, string /* Matched text */, number];
 
-	function tokenizeCond(data) {
-		var tokensRe = {
+	function tokenizeCond(data: string) {
+		var tokensRe: { [re: string]: number } = {
 			"if": T_IF,
 			"and": T_OP,
 			"[a-z_]+": T_IDENT,
@@ -35,7 +38,7 @@ module Encounters {
 			"\\)": T_RPAREN,
 		}
 
-		function match(str) {
+		function match(str: string): Token|null {
 			for(var re in tokensRe) {
 				var m = str.match(new RegExp("^\\s*(" + re + ")\\s*"))
 				if(m !== null)
@@ -57,7 +60,7 @@ module Encounters {
 		return toks
 	}
 
-	function parseCond(data) {
+	function parseCond(data: string) {
 		data = data.replace("%", "") // percentages don't really matter
 		var tokens = tokenizeCond(data)
 		var curTok = 0
@@ -117,7 +120,7 @@ module Encounters {
 		return expr()
 	}
 
-	export function parseConds(data) {
+	export function parseConds(data: string) {
 		// conditions are formed by conjunctions, so
 		// x AND y AND z can just be collapsed to [x, y, z] here
 
@@ -137,7 +140,7 @@ module Encounters {
 		return out
 	}
 
-	function printTree(node, s) {
+	function printTree(node, s: string) {
 		switch(node.type) {
 			case "if":
 				console.log(s + "if")
@@ -225,7 +228,7 @@ module Encounters {
 		return {items: items, pid: critter.pid, script: critter.script, dead: critter.dead}
 	}
 
-	function evalEncounterCritters(count, group) {
+	function evalEncounterCritters(count: number, group) {
 		var critters = []
 
 		for(var i = 0; i < group.critters.length; i++) {
@@ -298,7 +301,7 @@ module Encounters {
 		groups.forEach(function(group) {
 			var dir = getRandomInt(0, 5)
 			var formation = group.position.type
-			var pos = null
+			var pos: Point|null = null
 
 			if(formation === "surrounding")
 				pos = {x: playerPos.x, y: playerPos.y}
