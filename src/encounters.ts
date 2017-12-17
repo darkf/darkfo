@@ -26,7 +26,7 @@ module Encounters {
         INT = 5
 	}
 		
-    type Token = [Tok, string /* Matched text */, number];
+    type Token = [Tok, string /* Matched text */, number /* length (or number value for Tok.INT tokens) */];
     
     interface IfNode { type: "if", cond: Node }
     interface OpNode { type: "op", op: string, lhs: Node, rhs: Node }
@@ -57,17 +57,16 @@ module Encounters {
 		}
 
 		var acc = data
-		var toks = [] // TODO: Token[]
+		var toks: Token[] = []
 		while(acc.length > 0) {
 			var m = match(acc)
 			if(m === null)
                 throw "error parsing condition: '" + data + "': choked on '" + acc + "'"
-            // TODO: Make this fit Token
-			toks.push(m[0] === Tok.INT ? [Tok.INT, parseInt(m[1])] : m)
+			toks.push(m[0] === Tok.INT ? [Tok.INT, m[1], parseInt(m[1])] : m)
 			acc = acc.slice(m[2])
 		}
 
-		return toks as Token[]
+		return toks
 	}
 
 	function parseCond(data: string) {
@@ -121,7 +120,7 @@ module Encounters {
 						return checkOp(call(t[1]))
 					return checkOp({type: 'var', name: t[1]})
 				case Tok.INT:
-					return checkOp({type: 'int', value: t[1] as any}) // TODO
+					return checkOp({type: 'int', value: t[2]})
 				default:
 					throw "unhandled/unexpected token: " + t + " in: " + data
 			}
