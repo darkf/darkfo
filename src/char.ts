@@ -36,7 +36,7 @@ class SkillSet {
     }
 
     static fromPro(skills: any): SkillSet {
-        console.warn("fromPro: %o", skills);
+        console.log("fromPro: %o", skills);
 
         return new SkillSet(skills);
     }
@@ -136,7 +136,7 @@ class StatSet {
     }
 
     static fromPro(pro: any): StatSet {
-        console.warn("stats fromPro: %o", pro);
+        console.log("stats fromPro: %o", pro);
 
         const { baseStats, bonusStats } = pro.extra;
 
