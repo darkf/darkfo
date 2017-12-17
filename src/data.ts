@@ -21,7 +21,7 @@ var mapAreas: AreaMap|null = null
 var proMap: any = null // TODO: type
 var lstFiles: { [lsgFile: string]: string[] } = {}
 var messageFiles: { [msgFile: string]: { [msgID: string]: string } } = {}
-var mapInfo: any = null // TODO: type
+var mapInfo: { [mapID: number]: MapInfo }|null = null
 var elevatorInfo: { elevators: Elevator[] }|null = null
 var dirtyMapCache: { [mapName: string]: SerializedMap } = {}
 
@@ -50,6 +50,14 @@ interface AreaEntrance {
     elevation: number;
     tileNum: number;
     orientation: number;
+}
+
+interface MapInfo {
+	name: string;
+	lookupName: string;
+	ambientSfx: [string, number][];
+	music: string;
+	randomStartPoints: { elevation: number, tileNum: number }[];
 }
 
 interface Elevator {
@@ -229,7 +237,7 @@ function parseMapInfo() {
 		}
 
 		// parse ambient sfx list
-		var ambientSfx = []
+		var ambientSfx: [string, number][] = []
 		var ambient_sfx = ini[category].ambient_sfx
 		if(ambient_sfx) {
 			var s = ambient_sfx.split(",")

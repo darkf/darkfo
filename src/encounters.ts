@@ -309,7 +309,7 @@ module Encounters {
 		return succEncounters[idx]
 	}
 
-	export function positionCritters(groups: Worldmap.EncounterGroup[], playerPos: Point, map) {
+	export function positionCritters(groups: Worldmap.EncounterGroup[], playerPos: Point, map: MapInfo) {
 		// set up critters' positions in their formations
 
 		groups.forEach(function(group) {
