@@ -366,11 +366,30 @@ function playerUse() {
 	}
 
 	if(obj === null) { // walk to the destination if there is no usable object
-		if(inCombat && !(combat.inPlayerTurn || Config.combat.allowWalkDuringAnyTurn)) {
-			console.log("Wait your turn.");
-			return;
+		// Walking in combat (TODO: This should probably be in Combat...)
+		if(inCombat) {
+			if(!(combat.inPlayerTurn || Config.combat.allowWalkDuringAnyTurn)) {
+				console.log("Wait your turn.");
+				return;
+			}
+
+			if(player.AP.getAvailableMoveAP() === 0) {
+				uiLog(getProtoMsg(700)); // "You don't have enough action points."
+				return;
+			}
+
+			const maxWalkingDist = player.AP.getAvailableMoveAP();
+			if(!player.walkTo(mouseHex, Config.engine.doAlwaysRun, undefined, maxWalkingDist)) {
+				console.log("Cannot walk there");
+			}
+			else {
+				if(!player.AP.subtractMoveAP(player.path.path.length - 1))
+					throw "subtraction issue: has AP: " + player.AP.getAvailableMoveAP() +
+						" needs AP:"+player.path.path.length+" and maxDist was:"+maxWalkingDist;
+			}
 		}
-		
+
+		// Walking out of combat
 		if(!player.walkTo(mouseHex, Config.engine.doAlwaysRun))
 			console.log("Cannot walk there");
 		
@@ -388,7 +407,7 @@ function playerUse() {
 			}
 
 			if(player.AP.getAvailableCombatAP() < 4) {
-				uiLog(getProtoMsg(700))
+				uiLog(getProtoMsg(700)) // "You don't have enough action points."
 				return
 			}
 
