@@ -17,25 +17,26 @@ limitations under the License.
 // Random Encounter system
 
 module Encounters {
-	// TODO: Enum
-	var T_IF = 0,
-	    T_LPAREN = 1,
-	    T_RPAREN = 2,
-	    T_IDENT = 3,
-	    T_OP = 4,
-		T_INT = 5
+	enum Tok {
+        IF = 0,
+	    LPAREN = 1,
+	    RPAREN = 2,
+	    IDENT = 3,
+	    OP = 4,
+        INT = 5
+	}
 		
-	type Token = [number /* Token type */, string /* Matched text */, number];
+	type Token = [Tok, string /* Matched text */, number];
 
 	function tokenizeCond(data: string) {
 		var tokensRe: { [re: string]: number } = {
-			"if": T_IF,
-			"and": T_OP,
-			"[a-z_]+": T_IDENT,
-			"-?[0-9]+": T_INT,
-			"[><=&]+": T_OP,
-			"\\(": T_LPAREN,
-			"\\)": T_RPAREN,
+			"if": Tok.IF,
+			"and": Tok.OP,
+			"[a-z_]+": Tok.IDENT,
+			"-?[0-9]+": Tok.INT,
+			"[><=&]+": Tok.OP,
+			"\\(": Tok.LPAREN,
+			"\\)": Tok.RPAREN,
 		}
 
 		function match(str: string): Token|null {
@@ -53,7 +54,7 @@ module Encounters {
 			var m = match(acc)
 			if(m === null)
 				throw "error parsing condition: '" + data + "': choked on '" + acc + "'"
-			toks.push(m[0] === T_INT ? [T_INT, parseInt(m[1])] : m)
+			toks.push(m[0] === Tok.INT ? [Tok.INT, parseInt(m[1])] : m)
 			acc = acc.slice(m[2])
 		}
 
@@ -65,7 +66,7 @@ module Encounters {
 		var tokens = tokenizeCond(data)
 		var curTok = 0
 
-		function expect(t) {
+		function expect(t: Tok) {
 			if(tokens[curTok++][0] !== t)
 				throw "expect: expected " + t + ", got " + tokens[curTok-1] +
 			          ", input: " + data
@@ -81,16 +82,16 @@ module Encounters {
 			return tokens[curTok]
 		}
 
-		function call(name) {
-			expect(T_LPAREN)
+		function call(name: string) {
+			expect(Tok.LPAREN)
 			var arg = expr()
-			expect(T_RPAREN)
-			return {type: 'call', name: name, arg: arg}
+			expect(Tok.RPAREN)
+			return {type: 'call', name, arg}
 		}
 
 		function checkOp(node) {
 			var t = peek()
-			if(t === null || t[0] !== T_OP)
+			if(t === null || t[0] !== Tok.OP)
 				return node
 
 			curTok++
@@ -101,16 +102,16 @@ module Encounters {
 		function expr() {
 			var t = next()
 			switch(t[0]) {
-				case T_IF:
-					expect(T_LPAREN)
+				case Tok.IF:
+					expect(Tok.LPAREN)
 					var cond = expr()
-					expect(T_RPAREN)
+					expect(Tok.RPAREN)
 					return checkOp({type: 'if', cond: cond})
-				case T_IDENT:
-					if(peek()[0] === T_LPAREN)
+				case Tok.IDENT:
+					if(peek()[0] === Tok.LPAREN)
 						return checkOp(call(t[1]))
 					return checkOp({type: 'var', name: t[1]})
-				case T_INT:
+				case Tok.INT:
 					return checkOp({type: 'int', value: t[1]})
 				default:
 					throw "unhandled/unexpected token: " + t + " in: " + data
