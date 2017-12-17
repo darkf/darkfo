@@ -461,9 +461,9 @@ function $img(id: string): HTMLImageElement {
 function initUI() {
     Ui.init();
 
-    makeDropTarget($("#inventoryBoxList"), (data: string) => { uiMoveSlot(data, "inventory") })
-    makeDropTarget($("#inventoryBoxItem1"), (data: string) => { uiMoveSlot(data, "leftHand") })
-    makeDropTarget($("#inventoryBoxItem2"), (data: string) => { uiMoveSlot(data, "rightHand") })
+    makeDropTarget($id("inventoryBoxList"), (data: string) => { uiMoveSlot(data, "inventory") })
+    makeDropTarget($id("inventoryBoxItem1"), (data: string) => { uiMoveSlot(data, "leftHand") })
+    makeDropTarget($id("inventoryBoxItem2"), (data: string) => { uiMoveSlot(data, "rightHand") })
 
     for(var i = 0; i < 2; i++) {
         $("#calledShotBox .calledShotChance")
@@ -693,25 +693,28 @@ function uiMoveSlot(data: string, target: string) {
     uiInventoryScreen()
 }
 
-function makeDropTarget($el: Jq, dropCallback: (data: string, e?: JqEvent<DragEvent>) => void) {
-    $el.on("drop", (e: JqEvent<DragEvent>) => {
-        var data = e.originalEvent.dataTransfer.getData("text/plain")
+function makeDropTarget($el: HTMLElement, dropCallback: (data: string, e?: DragEvent) => void) {    
+    $el.ondrop = (e: DragEvent) => {
+        var data = e.dataTransfer.getData("text/plain")
         dropCallback(data, e)
         return false
-    }).on("dragenter", () => false).
-       on("dragover",  () => false)
+    };
+    $el.ondragenter = () => false;
+    $el.ondragover =  () => false;
 }
 
-function makeDraggable($el: Jq, data: string, endCallback?: () => void) {
-    $el.attr("draggable", "true").on("dragstart", (e: JqEvent<DragEvent>) => {
-        e.originalEvent.dataTransfer.setData('text/plain', data)
+function makeDraggable($el: HTMLElement, data: string, endCallback?: () => void) {
+    $el.setAttribute("draggable", "true");
+    $el.ondragstart = (e: DragEvent) => {
+        e.dataTransfer.setData('text/plain', data)
         console.log("start drag")
-    }).on("dragend", (e: JqEvent<DragEvent>) => {
-        if(e.originalEvent.dataTransfer.dropEffect !== 'none') {
+    };
+    $el.ondragend = (e: DragEvent) => {
+        if(e.dataTransfer.dropEffect !== "none") {
             //$(this).remove()
             endCallback && endCallback()
         }
-    })
+    };
 }
 
 function uiInventoryScreen() {
@@ -735,7 +738,7 @@ function uiInventoryScreen() {
             if(clickCallback)
                     img.click((e: JqEvent<MouseEvent>) => { clickCallback(invObj, e.originalEvent) })
             $el.append(img).append("x" + invObj.amount)
-            makeDraggable(img, "i" + i, () => { uiInventoryScreen() })
+            makeDraggable(img[0], "i" + i, () => { uiInventoryScreen() })
         }
     }
 
@@ -793,7 +796,7 @@ function uiInventoryScreen() {
         img.click((e: JqEvent<MouseEvent>) => {
             makeItemContextMenu(e.originalEvent, player[slot], slot)
         })
-        makeDraggable(img, slot)
+        makeDraggable(img[0], slot)
         $(slotID).html("").append(img)
     }
 
@@ -1007,7 +1010,7 @@ function uiBarterMode(merchant: Critter) {
                       attr("width", 72).attr("height", 60) // 90x60 // 70x40
             img.attr("title", objects[i].name)
             $el.append(img).append("x" + objects[i].amount)
-            makeDraggable(img, who + i)
+            makeDraggable(img[0], who + i)
         }
     }
 
@@ -1050,10 +1053,10 @@ function uiBarterMode(merchant: Critter) {
     }
 
     // bartering drop targets
-    makeDropTarget($("#barterBoxLeft"), (data: string) => { uiBarterMove(data, "left") })
-    makeDropTarget($("#barterBoxRight"), (data: string) => { uiBarterMove(data, "right") })
-    makeDropTarget($("#barterBoxInventoryLeft"), (data: string) => { uiBarterMove(data, "leftInv") })
-    makeDropTarget($("#barterBoxInventoryRight"), (data: string) => { uiBarterMove(data, "rightInv") })
+    makeDropTarget($id("barterBoxLeft"), (data: string) => { uiBarterMove(data, "left") })
+    makeDropTarget($id("barterBoxRight"), (data: string) => { uiBarterMove(data, "right") })
+    makeDropTarget($id("barterBoxInventoryLeft"), (data: string) => { uiBarterMove(data, "leftInv") })
+    makeDropTarget($id("barterBoxInventoryRight"), (data: string) => { uiBarterMove(data, "rightInv") })
 
     $("#barterTalkButton").click(uiEndBarterMode)
     $("#barterOfferButton").click(offer)
@@ -1121,7 +1124,7 @@ function uiLoot(object: Obj) {
                       attr("width", 72).attr("height", 60) // 90x60 // 70x40
             img.attr("title", objects[i].name)
             $el.append(img).append("x" + objects[i].amount)
-            makeDraggable(img, who + i)
+            makeDraggable(img[0], who + i)
         }
     }
 
@@ -1130,8 +1133,8 @@ function uiLoot(object: Obj) {
     $("#lootBox").css("visibility", "visible")
 
     // loot drop targets
-    makeDropTarget($("#lootBoxLeft"), (data: string) => { uiLootMove(data, "left") })
-    makeDropTarget($("#lootBoxRight"), (data: string) => { uiLootMove(data, "right") })
+    makeDropTarget($id("lootBoxLeft"), (data: string) => { uiLootMove(data, "left") })
+    makeDropTarget($id("lootBoxRight"), (data: string) => { uiLootMove(data, "right") })
 
     $("#lootBoxTakeAllButton").click(() => {
         console.log("take all...")
