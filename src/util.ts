@@ -146,14 +146,14 @@ function clamp(min: number, max: number, value: number) {
 	return Math.max(min, Math.min(max, value))
 }
 
-function getMessage(name: string, id: number) {
+function getMessage(name: string, id: number): string|null {
 	if(messageFiles[name] !== undefined && messageFiles[name][id] !== undefined)
 		return messageFiles[name][id]
 	else {
 		loadMessage(name)
 		if(messageFiles[name] !== undefined && messageFiles[name][id] !== undefined)
 			return messageFiles[name][id]
-		else null
+		else return null
 	}
 }
 

@@ -19,8 +19,8 @@ limitations under the License.
 var mapAreas: AreaMap|null = null
 
 var proMap: any = null // TODO: type
-var lstFiles = {}
-var messageFiles = {}
+var lstFiles: { [lsgFile: string]: string[] } = {}
+var messageFiles: { [msgFile: string]: { [msgID: string]: string } } = {}
 var mapInfo: any = null // TODO: type
 var elevatorInfo: { elevators: Elevator[] }|null = null
 var dirtyMapCache: { [mapName: string]: SerializedMap } = {}
