@@ -34,7 +34,7 @@ module Encounters {
     interface VarNode { type: "var", name: string }
     interface IntNode { type: "int", value: number }
     
-    type Node = IfNode | OpNode | CallNode | VarNode | IntNode;
+    export type Node = IfNode | OpNode | CallNode | VarNode | IntNode;
 
 	function tokenizeCond(data: string): Token[] {
 		var tokensRe: { [re: string]: number } = {
@@ -225,7 +225,7 @@ module Encounters {
 		return true
 	}
 
-	function evalEncounterCritter(critter) {
+	function evalEncounterCritter(critter: Worldmap.EncounterCritter): Worldmap.EncounterCritter {
 		var items = []
 		for(var i = 0; i < critter.items.length; i++) {
 			var item = critter.items[i]
@@ -242,8 +242,8 @@ module Encounters {
 		return {items: items, pid: critter.pid, script: critter.script, dead: critter.dead}
 	}
 
-	function evalEncounterCritters(count: number, group) {
-		var critters = []
+	function evalEncounterCritters(count: number, group: Worldmap.EncounterGroup): Worldmap.EncounterCritter[] {
+		var critters: Worldmap.EncounterCritter[] = []
 
 		for(var i = 0; i < group.critters.length; i++) {
 			var critter = group.critters[i]
@@ -271,7 +271,7 @@ module Encounters {
 		return critters
 	}
 
-	function pickEncounter(encounters) {
+	function pickEncounter(encounters: Worldmap.Encounter[]) {
 		// Pick an encounter from an encounter list based on a roll
 
 		var succEncounters = encounters.filter(function(enc) {
@@ -309,7 +309,7 @@ module Encounters {
 		return succEncounters[idx]
 	}
 
-	export function positionCritters(groups, playerPos, map) {
+	export function positionCritters(groups: Worldmap.EncounterGroup[], playerPos: Point, map) {
 		// set up critters' positions in their formations
 
 		groups.forEach(function(group) {
@@ -372,11 +372,11 @@ module Encounters {
 		})
 	}
 
-	export function evalEncounter(encTable) {
+	export function evalEncounter(encTable: Worldmap.EncounterTable) {
 		var mapIndex = getRandomInt(0, encTable.maps.length - 1)
 		var mapLookupName = encTable.maps[mapIndex]
 		var mapName = lookupMapNameFromLookup(mapLookupName)
-		var groups = []
+		var groups: Worldmap.EncounterGroup[] = []
 		var encounter = pickEncounter(encTable.encounters)
 
 		if(encounter.special !== null) {

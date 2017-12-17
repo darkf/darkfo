@@ -64,12 +64,12 @@ module Worldmap {
 		terrainSpeed: { [terrainType: string]: number };
 	}
 
-	interface EncounterTable {
+	export interface EncounterTable {
 		maps: string[];
 		encounters: Encounter[];
 	}
 
-	interface Encounter {
+	export interface Encounter {
 		chance: number;
 		scenery: any; // TODO: scenery type (string?)
 		enc: EncounterRef; //enc.enc ? parseEncounterReference(enc.enc) : enc.enc,
@@ -78,23 +78,53 @@ module Worldmap {
 		special: string|null;
 	}
 
-	interface EncounterRef {
+	export interface EncounterRef {
 		type: "ambush" | "fighting";
 		target?: "player";
-		// party?: ?;
-		// firstParty?: ?;
-		// secondParty?: ?;
+		party: EncounterParty;
+		firstParty?: EncounterParty;
+		secondParty?: EncounterParty;
 	}
 
-	interface EncounterGroup {
+	interface EncounterParty {
+		start: number;
+		end: number;
+		name: string;
+	}
+
+	export interface EncounterGroup {
 		critters: EncounterCritter[];
 		position: EncounterPosition;
+		target?: "player" | number;
 	}
 
-	interface EncounterCritter {
+	interface Range {
+		start: number;
+		end: number;
 	}
 
-	interface EncounterPosition {
+	interface EncounterItem {
+		range?: Range;
+		amount?: number;
+
+		pid: number;
+		wielded: boolean;
+	}
+
+	export interface EncounterCritter {
+		position?: Point;
+		cond?: Encounters.Node[];
+		ratio?: number;
+
+		items: EncounterItem[];
+		pid: number;
+		script: number;
+		dead: boolean;
+	}
+
+	export interface EncounterPosition {
+		type: string; // Formation
+		spacing: number;
 	}
 
 	function parseWorldmap(data: string): Worldmap {
@@ -164,7 +194,7 @@ module Worldmap {
 			return {chance: parseInt(enc.chance), // integeral percentage
 				    scenery: enc.scenery,
 				    enc: enc.enc ? parseEncounterReference(enc.enc) : enc.enc,
-				    cond: cond ? Encounters.parseConds(cond) : cond,
+				    cond: cond ? Encounters.parseConds(cond) : null,
 				    special: isSpecial ? enc.map : null,
 				    condOrig: cond
 			       }
@@ -189,7 +219,7 @@ module Worldmap {
 		function parseEncounterCritter(data: string) {
 			const s = data.trim().split(",")
 			const enc: any = {}
-			const items = []
+			const items: EncounterItem[] = []
 			let i = 0
 
 			for(; i < s.length; i++) {
@@ -212,7 +242,7 @@ module Worldmap {
 				    script: enc.script ? parseInt(enc.script) : null,
 				    items: items,
 				    dead: isDead,
-				    cond: cond ? Encounters.parseConds(cond) : cond}
+				    cond: cond ? Encounters.parseConds(cond) : null}
 		}
 
 		// Parse a "key:value, key:value" format
@@ -280,7 +310,7 @@ module Worldmap {
 					position = {type: position_[0], spacing: 3} // TODO: verify defaults (3 spacing?)
 				}
 				else { // default
-					position = {type: "surrounding", spacing: 5, distance: "Player(Perception)"}
+					position = {type: "surrounding", spacing: 5} // TODO: What is distance: "Player(Perception)" ?
 				}
 
 				const group: EncounterGroup = {critters: [], position: position}
@@ -306,7 +336,7 @@ module Worldmap {
 			     terrainSpeed: parseKeyed(ini.Data.terrain_types) as { [terrainType: string]: number } }
 	}
 
-	export function getEncounterGroup(groupName: string): any {
+	export function getEncounterGroup(groupName: string): EncounterGroup {
 		return worldmap.encounterGroups[groupName]
 	}
 
@@ -357,7 +387,7 @@ module Worldmap {
 		}
 	}
 
-	function execEncounter(encTable: any): void {
+	function execEncounter(encTable: EncounterTable): void {
 		const enc = Encounters.evalEncounter(encTable)
 		console.log("final: map %s, groups %o", enc.mapName, enc.groups)
 
