@@ -450,6 +450,14 @@ var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3
     UI_MODE_CONTEXT_MENU = 10, UI_MODE_SAVELOAD = 11, UI_MODE_CHAR = 12
 var uiMode: number = UI_MODE_NONE
 
+function $id(id: string): HTMLElement {
+    return document.getElementById(id);
+}
+
+function $img(id: string): HTMLImageElement {
+    return document.getElementById(id) as HTMLImageElement;
+}
+
 function initUI() {
     Ui.init();
 
@@ -463,9 +471,10 @@ function initUI() {
               $("<div class='number'>").css("left", i*9).attr("id", "digit" + (i+1)))
     }
 
-    $("#calledShotCancelBtn").click(() => { uiCloseCalledShot() })
+    $id("calledShotCancelBtn").onclick = () => { uiCloseCalledShot() }
 
-    $("#worldmapViewButton").click(() => {
+    /*
+    $id("worldmapViewButton").onclick = () => {
         var onAreaMap = ($("#areamap").css("visibility") === "visible")
         if(onAreaMap)
             uiWorldMapWorldView()
@@ -476,16 +485,17 @@ function initUI() {
             else
                 uiWorldMapAreaView()
         }
-    })
+    }
+    */
 
-    $("#inventoryButton").click(uiInventoryScreen)
-    $("#inventoryDoneButton").click(() => {
+    $id("inventoryButton").onclick = () => { uiInventoryScreen() }
+    $id("inventoryDoneButton").onclick = () => {
         uiMode = UI_MODE_NONE
-        $("#inventoryBox").css("visibility", "hidden")
+        $id("inventoryBox").style.visibility = "hidden"
         uiDrawWeapon()
-    })
+    }
 
-    $("#lootBoxDoneButton").click(uiEndLoot)
+    $id("lootBoxDoneButton").onclick = () => { uiEndLoot(); }
 
     $("#attackButtonContainer").click(() => {
         if(!Config.engine.doCombat) return
@@ -504,22 +514,22 @@ function initUI() {
         return false
     })
 
-    $("#endTurnButton").click(function() {
-        if(inCombat === true && combat.inPlayerTurn === true) {
+    $id("endTurnButton").onclick = () => {
+        if(inCombat && combat.inPlayerTurn) {
             console.log("[TURN]")
             combat.nextTurn()
         }
-    })
+    }
 
-    $("#endCombatButton").click(function() {
-        if(inCombat === true)
+    $id("endCombatButton").onclick = () => {
+        if(inCombat)
             combat.end()
-    })
+    }
 
     $("#endContainer").bind("animationiteration", uiEndCombatAnimationDone)
     $("#endContainer").bind("webkitAnimationIteration", uiEndCombatAnimationDone)
 
-    $("#skilldexButton").click(() => Ui.skilldexWindow.toggle())
+    $id("skilldexButton").onclick = () => { Ui.skilldexWindow.toggle() }
 
     function makeScrollable($el: any, scroll?: number) {
         // TODO: Use WheelEvent instead (and deltaX/Y/Z)
@@ -547,7 +557,7 @@ function initUI() {
 
 function uiHideContextMenu() {
     uiMode = UI_MODE_NONE
-    $("#itemContextMenu").css("visibility", "hidden")
+    $id("itemContextMenu").style.visibility = "hidden"
 }
 
 function uiContextMenu(obj: Obj, evt: any) {
@@ -610,7 +620,7 @@ function uiEndCombatAnimationDone(this: HTMLElement) {
 function uiDrawWeapon() {
     // draw the active weapon in the interface bar
     var weapon = critterGetEquippedWeapon(player)
-    $("#attackButton").html("")
+    $id("attackButton").innerHTML = ""
     if(weapon === null)
         return
 
@@ -630,12 +640,13 @@ function uiDrawWeapon() {
     var digit = weapon.weapon.getAPCost(1)
     if(digit === undefined || digit > 9)
         return // TODO: Weapon AP >9?
-    $("#attackButtonAPDigit").css("background-position", 0 - CHAR_W*digit)
+    $id("attackButtonAPDigit").style.backgroundPosition = (0 - CHAR_W*digit) + "px"
 
     // draw weapon type (single, burst, called, punch, ...)
     // TODO: all melee weapons
-    var type = ({"melee": "punch", "gun": "single"} as any)[weapon.weapon.type]
-    $("#attackButtonType").attr("src", "art/intrface/" + type + ".png")
+    var wepTypes: { [wepType: string]: string } = {"melee": "punch", "gun": "single"};
+    var type = wepTypes[weapon.weapon.type];
+    $img("attackButtonType").src = `art/intrface/${type}.png`
 
     // hide or show called shot sigil?
     if(weapon.weapon.mode === "called")
