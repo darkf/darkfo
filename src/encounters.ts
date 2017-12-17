@@ -26,9 +26,17 @@ module Encounters {
         INT = 5
 	}
 		
-	type Token = [Tok, string /* Matched text */, number];
+    type Token = [Tok, string /* Matched text */, number];
+    
+    interface IfNode { type: "if", cond: Node }
+    interface OpNode { type: "op", op: string, lhs: Node, rhs: Node }
+    interface CallNode { type: "call", name: string, arg: Node }
+    interface VarNode { type: "var", name: string }
+    interface IntNode { type: "int", value: number }
+    
+    type Node = IfNode | OpNode | CallNode | VarNode | IntNode;
 
-	function tokenizeCond(data: string) {
+	function tokenizeCond(data: string): Token[] {
 		var tokensRe: { [re: string]: number } = {
 			"if": Tok.IF,
 			"and": Tok.OP,
@@ -49,16 +57,17 @@ module Encounters {
 		}
 
 		var acc = data
-		var toks = []
+		var toks = [] // TODO: Token[]
 		while(acc.length > 0) {
 			var m = match(acc)
 			if(m === null)
-				throw "error parsing condition: '" + data + "': choked on '" + acc + "'"
+                throw "error parsing condition: '" + data + "': choked on '" + acc + "'"
+            // TODO: Make this fit Token
 			toks.push(m[0] === Tok.INT ? [Tok.INT, parseInt(m[1])] : m)
 			acc = acc.slice(m[2])
 		}
 
-		return toks
+		return toks as Token[]
 	}
 
 	function parseCond(data: string) {
@@ -82,14 +91,14 @@ module Encounters {
 			return tokens[curTok]
 		}
 
-		function call(name: string) {
+		function call(name: string): Node {
 			expect(Tok.LPAREN)
 			var arg = expr()
 			expect(Tok.RPAREN)
 			return {type: 'call', name, arg}
 		}
 
-		function checkOp(node) {
+		function checkOp(node: Node): Node {
 			var t = peek()
 			if(t === null || t[0] !== Tok.OP)
 				return node
@@ -99,7 +108,7 @@ module Encounters {
 			return {type: 'op', op: t[1], lhs: node, rhs: rhs}
 		}
 
-		function expr() {
+		function expr(): Node {
 			var t = next()
 			switch(t[0]) {
 				case Tok.IF:
@@ -112,7 +121,7 @@ module Encounters {
 						return checkOp(call(t[1]))
 					return checkOp({type: 'var', name: t[1]})
 				case Tok.INT:
-					return checkOp({type: 'int', value: t[1]})
+					return checkOp({type: 'int', value: t[1] as any}) // TODO
 				default:
 					throw "unhandled/unexpected token: " + t + " in: " + data
 			}
@@ -126,9 +135,9 @@ module Encounters {
 		// x AND y AND z can just be collapsed to [x, y, z] here
 
 		var cond = parseCond(data)
-		var out = []
+		var out: Node[] = []
 
-		function visit(node) {
+		function visit(node: Node) {
 			if(node.type === "op" && node.op === "and") {
 				visit(node.lhs)
 				visit(node.rhs)
@@ -141,7 +150,7 @@ module Encounters {
 		return out
 	}
 
-	function printTree(node, s: string) {
+	function printTree(node: Node, s: string) {
 		switch(node.type) {
 			case "if":
 				console.log(s + "if")
@@ -166,19 +175,22 @@ module Encounters {
 	}
 
 	// evaluates conditions against game state
-	function evalCond(node) {
+	function evalCond(node: Node): number|boolean {
 		switch(node.type) {
 			case "if": // condition
 				return evalCond(node.cond)
 			case "call": // call (more like a property access)
 				switch(node.name) {
-					case "global": // GVAR
+                    case "global": // GVAR
+                        if(node.arg.type !== "int") throw "evalCond: GVAR not a number";
 						return scriptingEngine.getGlobalVar(node.arg.value)
-					case "player":
+                    case "player":
+                        if(node.arg.type !== "var") throw "evalCond: player arg not a var";
 						if(node.arg.name !== "level")
 							throw "player( " + node.arg.name + ")"
 						return 0 // player level
-					case "rand": // random percentage
+                    case "rand": // random percentage
+                        if(node.arg.type !== "int") throw "evalCond: rand arg not a number";
 						return getRandomInt(0, 100) <= node.arg.value
 					default: throw "unhandled call: " + node.name
 				}
@@ -192,10 +204,12 @@ module Encounters {
 			case "op":
 				var lhs = evalCond(node.lhs)
 				var rhs = evalCond(node.rhs)
-				var op = {"<": function(l,r) { return l < r },
-				          ">": function(l,r) { return l > r },
-				          "and": function(l,r) { return l && r }
-				         }
+                var op: { [op: string]: (l: boolean|number, r: boolean|number) => boolean|number } =  {
+                    "<": (l, r) => l < r,
+                    ">": (l, r) => l > r,
+                    "and": (l, r) => l && r
+                }
+
 				if(op[node.op] === undefined)
 					throw "unhandled op: " + node.op
 				return op[node.op](lhs, rhs)
@@ -203,7 +217,7 @@ module Encounters {
 		}
 	}
 
-	function evalConds(conds) {
+	function evalConds(conds: Node[]): boolean {
 		// TODO: _.every
 		for(var i = 0; i < conds.length; i++) {
 			if(evalCond(conds[i]) === false)
