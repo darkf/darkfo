@@ -98,7 +98,7 @@ def main():
 
 	with open(sys.argv[1], "rb") as f:
 		critTables = readCriticalTables(f, 0x000fef78, 0x00106597)
-	json.dump(critTables, open("criticalTables.json", "w"))
+	json.dump(critTables, open("lut/criticalTables.json", "w"))
 	print "done"
 		
 if __name__ == '__main__':

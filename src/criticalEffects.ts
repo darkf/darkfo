@@ -270,12 +270,12 @@ module CriticalEffects {
 		var haveTable = true;
 
 		//console.log("loading critical table...");
-		var table = getFileJSON("criticalTables.json", () => {
+		var table = getFileJSON("lut/criticalTables.json", () => {
 			haveTable = false;
 		});
 
 		if(!haveTable) {
-			console.log("criticalTables.json not found, not loading critical hit/miss table");
+			console.log("lut/criticalTables.json not found, not loading critical hit/miss table");
 			return;
 		}
 

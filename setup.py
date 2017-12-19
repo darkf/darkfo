@@ -83,7 +83,7 @@ def parse_crit_table():
 			with open(EXE_PATH, "rb") as fp:
 				# TODO: Don't hardcode paths, and need version check!
 				critTables = parseCritTable.readCriticalTables(fp, 0x000fef78, 0x00106597)
-				json.dump(critTables, open("criticalTables.json", "w"))
+				json.dump(critTables, open("lut/criticalTables.json", "w"))
 				info("Done parsing critical table")
 		except Exception:
 			traceback.print_exc()
