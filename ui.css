@@ -32,15 +32,15 @@ body {
 
 #game-container {
   position: relative;
-  width: 800;
-  height: 699; /* 600 + 99 (size of bar) */
+  width: 800px;
+  height: 699px; /* 600 + 99 (size of bar) */
   background-color: black;
 }
 
 /* canvas overlay */
 #overlay-container {
   position: absolute;
-  left: 0; top: 0;
+  left: 0px; top: 0px;
   color: white;
   font-family: monospace;
   font-size: 8pt;
@@ -56,24 +56,24 @@ body {
 
 #fpsOverlay {
   position: absolute;
-  right: 10; top: 5;
+  right: 10px; top: 5px;
 }
 
 #bar {
   position: absolute;
-  left: 80; /* (canvas width - 640) / 2 */
-  bottom: 0;
-  width: 640;
+  left: 80px; /* (canvas width - 640) / 2 */
+  bottom: 0px;
+  width: 640px;
   transform: scaleX(1.25); /* (canvas width) / 640 */
-  height: 99;
+  height: 99px;
   background-image: url("art/intrface/iface.png");
 }
 
 #endContainer {
     position: absolute;
-    /*left: 578; top: 36;*/
-    bottom: 2; right: 2;
-    width: 57; height: 58;
+    /*left: 578px; top: 36px;*/
+    bottom: 2px; right: 2px;
+    width: 57px; height: 58px;
     background-image: url("art/intrface/endanim.png");
     /*background-position: -228px;*/
 
@@ -104,8 +104,8 @@ body {
 
 #endTurnButton {
     position: absolute;
-    top: 5; left: 10;
-    width: 38; height: 22;
+    top: 5px; left: 10px;
+    width: 38px; height: 22px;
     visibility: hidden;
     background-image: url("art/intrface/endturnu.png");
 }
@@ -116,8 +116,8 @@ body {
 
 #endCombatButton {
     position: absolute;
-    top: 27; left: 10;
-    width: 38; height: 22;
+    top: 27px; left: 10px;
+    width: 38px; height: 22px;
     visibility: hidden;
     background-image: url("art/intrface/endcmbtu.png");
 }
@@ -128,8 +128,8 @@ body {
 
 #skilldexButton {
     position: absolute;
-    left: 522; top: 5;
-    width: 22; height: 21;
+    left: 522px; top: 5px;
+    width: 22px; height: 21px;
 }
 
 #skilldexButton:active {
@@ -138,8 +138,8 @@ body {
 
 #displayLog {
     position: absolute;
-    left: 26; top: 30;
-    width: 158; height: 54;
+    left: 26px; top: 30px;
+    width: 158px; height: 54px;
     color: #00FF00;
     font-size: 8pt;
     overflow: hidden;
@@ -147,38 +147,38 @@ body {
 
 #attackButtonContainer {
     position: absolute;
-    left: 265; top: 26;
-    width: 188;
-    height: 67;
+    left: 265px; top: 26px;
+    width: 188px;
+    height: 67px;
 }
 
 #attackButtonCalled {
     position: absolute;
-    right: 7; bottom: 7;
-    width: 18; height: 18;
+    right: 7px; bottom: 7px;
+    width: 18px; height: 18px;
     background-image: url("art/intrface/bullseye.png");
     display: none;
 }
 
 #attackButtonAP {
     position: absolute;
-    bottom: 7; left: 7;
-    width: 64; height: 12;
+    bottom: 7px; left: 7px;
+    width: 64px; height: 12px;
     background-image: url("art/intrface/mvepnt.png");
     background-repeat: no-repeat;
 }
 
 #attackButtonAPDigit {
     position: absolute;
-    top: 0; left: 20;
-    width: 9; height: 12;
+    top: 0px; left: 20px;
+    width: 9px; height: 12px;
     background-image: url("art/intrface/mvenum.png");
 }
 
 #attackButtonType {
     position: absolute;
-    top: 5; right: 5;
-    width: 64; height: 12;
+    top: 5px; right: 5px;
+    width: 64px; height: 12px;
 }
 
 #attackButtonWeapon {
@@ -191,9 +191,9 @@ body {
 
 #attackButton {
   position: absolute;
-  left: 0; top: 0;
-  width: 188;
-  height: 67;
+  left: 0px; top: 0px;
+  width: 188px;
+  height: 67px;
   background-image: url("art/intrface/sattkbup.png");
 }
 
@@ -203,8 +203,8 @@ body {
 
 #inventoryButton {
   position: absolute;
-  left: 213; top: 40;
-  width: 32; height: 21;
+  left: 213px; top: 40px;
+  width: 32px; height: 21px;
   background-image: url("art/intrface/invbutup.png");
 }
 
@@ -214,8 +214,8 @@ body {
 
 #chrButton {
   position: absolute;
-  left: 526; top: 59;
-  width: 41; height: 19;
+  left: 526px; top: 59px;
+  width: 41px; height: 19px;
   background-image: url("art/intrface/chaup.png");
 }
 
@@ -226,24 +226,24 @@ body {
 /* inventory box */
 #inventoryBox {
   position: absolute;
-  left: 130; top: 50;
-  width: 499; height: 377;
+  left: 130px; top: 50px;
+  width: 499px; height: 377px;
   visibility: hidden;
   background-image: url("art/intrface/invbox.png");
 }
 
 #inventoryBoxList {
   position: absolute;
-  left: 40; top: 40;
-  width: 70; height: 300;
+  left: 40px; top: 40px;
+  width: 70px; height: 300px;
   /*background-color: gray;*/
   overflow: hidden;
 }
 
 #inventoryDoneButton {
   position: absolute;
-  left: 433; top: 325;
-  width: 26; height: 26;
+  left: 433px; top: 325px;
+  width: 26px; height: 26px;
   background-image: url("art/intrface/menuup.png");
 }
 
@@ -257,50 +257,50 @@ body {
 
 #inventoryBoxItem1, #inventoryBoxItem2, #inventoryBoxArmor {
   position: absolute;
-  width: 90; height: 64;
+  width: 90px; height: 64px;
 }
 
-#inventoryBoxItem1 { left: 155; top: 285; }
-#inventoryBoxItem2 { left: 245; top: 285; }
-#inventoryBoxArmor { left: 155; top: 180; }
+#inventoryBoxItem1 { left: 155px; top: 285px; }
+#inventoryBoxItem2 { left: 245px; top: 285px; }
+#inventoryBoxArmor { left: 155px; top: 180px; }
 
 #inventoryBoxInfo {
   position: absolute;
-  left: 295; top: 45;
-  width: 150; height: 190;
+  left: 295px; top: 45px;
+  width: 150px; height: 190px;
 }
 
 .number {
   position: absolute;
   /* 0 1 2 3 4 5 6 7 8 9 turn1 turn2 - */
   background-image: url("art/intrface/numbers.png");
-  width: 9; height: 17;
+  width: 9px; height: 17px;
 }
 
 #hpNumber {
   position: absolute;
-  left: 472; top: 40;
+  left: 472px; top: 40px;
 }
 
 #acNumber {
 position: absolute;
-left: 472; top: 75;
+left: 472px; top: 75px;
 }
 
-#hpDigit1 { left: 0; }
-#hpDigit2 { left: 9; }
-#hpDigit3 { left: 18; }
-#hpDigit4 { left: 27; }
+#hpDigit1 { left: 0px; }
+#hpDigit2 { left: 9px; }
+#hpDigit3 { left: 18px; }
+#hpDigit4 { left: 27px; }
 
-#acDigit1 { left: 0; }
-#acDigit2 { left: 9; }
-#acDigit3 { left: 18; }
-#acDigit4 { left: 27; }
+#acDigit1 { left: 0px; }
+#acDigit2 { left: 9px; }
+#acDigit3 { left: 18px; }
+#acDigit4 { left: 27px; }
 
 #itemContextMenu {
   position: absolute;
-  width: 40; height: 260; /* height? */
-  top: 0; /* this will be overriden by the UI script */
+  width: 40px; height: 260px; /* height? */
+  top: 0px; /* this will be overriden by the UI script */
   background-color: gray;
   visibility: hidden;
   z-index: 10;
@@ -308,7 +308,7 @@ left: 472; top: 75;
 
 .itemContextMenuButton {
   /*position: absolute;*/
-  width: 40; height: 40;
+  width: 40px; height: 40px;
 }
 
 #context_cancel { background-image: url("art/intrface/canceln.png"); }
@@ -334,8 +334,8 @@ left: 472; top: 75;
 
 #dialogueContainer {
   position: absolute;
-  left: 80; top: 20;
-  width: 640; height: 480;
+  left: 80px; top: 20px;
+  width: 640px; height: 480px;
 
   visibility: hidden;
   background-image: url("art/intrface/alltlk.png");
@@ -344,8 +344,8 @@ left: 472; top: 75;
 
 #dialogueBox {
   position: absolute;
-  left: 0; top: 300;
-  width: 640; height: 190;
+  left: 0px; top: 300px;
+  width: 640px; height: 190px;
 
   visibility: hidden;
   background-image: url("art/intrface/di_talk.png");
@@ -353,8 +353,8 @@ left: 472; top: 75;
 
 #dialogueBoxReply {
   position: absolute;
-  left: 138; top: 232;
-  width: 375; height: 47;
+  left: 138px; top: 232px;
+  width: 375px; height: 47px;
   color: #00FF00;
   font-size: .75em;
   overflow: hidden;
@@ -362,8 +362,8 @@ left: 472; top: 75;
 
 #dialogueBoxTextArea {
   position: absolute;
-  left: 130; top: 50;
-  width: 390; height: 112;
+  left: 130px; top: 50px;
+  width: 390px; height: 112px;
   color: #00FF00;
   font-size: .75em;
   overflow: auto;
@@ -380,8 +380,8 @@ left: 472; top: 75;
 
 #barterBox {
   position: absolute;
-  left: 0; top: 300;
-  width: 640; height: 190;
+  left: 0px; top: 300px;
+  width: 640px; height: 190px;
 
   visibility: hidden;
   background-image: url("art/intrface/barter.png");
@@ -390,8 +390,8 @@ left: 472; top: 75;
 /* barter screen "talk" button */
 #barterTalkButton {
   position: absolute;
-  left: 580; top: 160;
-  width: 26; height: 26;
+  left: 580px; top: 160px;
+  width: 26px; height: 26px;
   background-image: url("art/intrface/menuup.png");
 }
 
@@ -401,8 +401,8 @@ left: 472; top: 75;
 /* barter screen "offer" button */
 #barterOfferButton {
   position: absolute;
-  left: 36; top: 160;
-  width: 26; height: 26;
+  left: 36px; top: 160px;
+  width: 26px; height: 26px;
   background-image: url("art/intrface/menuup.png");
 }
 
@@ -412,8 +412,8 @@ left: 472; top: 75;
 /* left (player) inventory box */
 #barterBoxInventoryLeft {
   position: absolute;
-  left: 110; top: 40;
-  width: 70; height: 130;
+  left: 110px; top: 40px;
+  width: 70px; height: 130px;
   /*background-color: gray;*/
   overflow: hidden;
 }
@@ -421,8 +421,8 @@ left: 472; top: 75;
 /* right (merchant) inventory box */
 #barterBoxInventoryRight {
   position: absolute;
-  left: 470; top: 40;
-  width: 70; height: 130;
+  left: 470px; top: 40px;
+  width: 70px; height: 130px;
   /*background-color: gray;*/
   overflow: hidden;
 }
@@ -430,8 +430,8 @@ left: 472; top: 75;
 /* left (player) bartering table */
 #barterBoxLeft {
   position: absolute;
-  left: 248; top: 12;
-  width: 55; height: 155;
+  left: 248px; top: 12px;
+  width: 55px; height: 155px;
   /*background-color: gray;*/
   overflow: hidden;
 }
@@ -439,8 +439,8 @@ left: 472; top: 75;
 /* right (merchant) bartering table */
 #barterBoxRight {
   position: absolute;
-  left: 330; top: 12;
-  width: 55; height: 155;
+  left: 330px; top: 12px;
+  width: 55px; height: 155px;
   /*background-color: gray;*/
   overflow: hidden;
 }
@@ -448,7 +448,7 @@ left: 472; top: 75;
 /* monetary amount for right (merchant) bartering table */
 #barterBoxRightAmount {
   position: absolute;
-  left: 340; top: 168;
+  left: 340px; top: 168px;
   color: white;
   font-size: 0.75em;
 }
@@ -456,7 +456,7 @@ left: 472; top: 75;
 /* monetary amount for left (player) bartering table */
 #barterBoxLeftAmount {
   position: absolute;
-  left: 248; top: 168;
+  left: 248px; top: 168px;
   color: white;
   font-size: 0.75em;
 }
@@ -464,8 +464,8 @@ left: 472; top: 75;
 /* loot box */
 #lootBox {
   position: absolute;
-  left: 80; top: 20;
-  width: 537; height: 376;
+  left: 80px; top: 20px;
+  width: 537px; height: 376px;
   visibility: hidden;
   background-image: url("art/intrface/loot.png");
 }
@@ -473,23 +473,23 @@ left: 472; top: 75;
 /* left loot inventory */
 #lootBoxLeft {
   position: absolute;
-  left: 180; top: 40;
-  width: 64; height: 290;
+  left: 180px; top: 40px;
+  width: 64px; height: 290px;
   overflow: hidden;
 }
 
 /* right loot inventory */
 #lootBoxRight {
   position: absolute;
-  left: 300; top: 40;
-  width: 64; height: 290;
+  left: 300px; top: 40px;
+  width: 64px; height: 290px;
   overflow: hidden;
 }
 
 #lootBoxDoneButton {
   position: absolute;
-  left: 475; top: 325;
-  width: 26; height: 26;
+  left: 475px; top: 325px;
+  width: 26px; height: 26px;
   background-image: url("art/intrface/menuup.png");
 }
 
@@ -498,8 +498,8 @@ left: 472; top: 75;
 
 #lootBoxTakeAllButton {
   position: absolute;
-  left: 430; top: 205;
-  width: 39; height: 41;
+  left: 430px; top: 205px;
+  width: 39px; height: 41px;
   background-image: url("art/intrface/invmaup.png");
 }
 
@@ -508,23 +508,23 @@ left: 472; top: 75;
 
 #worldMapContainer {
     position: absolute;
-    left: 0; top: 0;
-    width: 800; height: 600;
+    left: 0px; top: 0px;
+    width: 800px; height: 600px;
     background-color: black;
     display: none;
 }
 
 #worldMapBox {    
     position: absolute;
-    left: 80; top: 60;
-    width: 640; height: 480;
+    left: 80px; top: 60px;
+    width: 640px; height: 480px;
     background-image: url("art/intrface/wmapbox.png");
 }
 
 #worldmapViewButton {
     position: absolute;
-    left: 519; top: 440;
-    width: 15; height: 16;
+    left: 519px; top: 440px;
+    width: 15px; height: 16px;
     background-image: url("art/intrface/lilredup.png");
 }
 
@@ -534,13 +534,13 @@ left: 472; top: 75;
 
 #worldMapWorld {
     position: absolute;
-    left: 105; top: 82;
-    width: 445; height: 438;
+    left: 105px; top: 82px;
+    width: 445px; height: 438px;
 }
 
 #areamap {
     position: absolute;
-    left: 0; top: 0;
+    left: 0px; top: 0px;
     /*overflow: auto;*/
     overflow: hidden;
     width: 100%; height: 100%;
@@ -548,34 +548,34 @@ left: 472; top: 75;
 
 #worldMapLabels {
     position: absolute;
-    left: 503; top: 133;
-    width: 120; height: 182;
+    left: 503px; top: 133px;
+    width: 120px; height: 182px;
     overflow: hidden;
 }
 
 #worldMapLabelsBackground {
     position: absolute;
-    left: -13; top: -27;
-    width: 145; height: 480;
+    left: -13px; top: -27px;
+    width: 145px; height: 480px;
     background-image: url("art/intrface/wmtabs.png");
 }
 
 .worldMapLabel {
     position: absolute;
-    left: 3;
-    width: 110; height: 24;
+    left: 3px;
+    width: 110px; height: 24px;
 }
 
 .worldMapLabelImage {
     position: absolute;
-    left: 21; top: 2;
-    width: 82; height: 18;
+    left: 21px; top: 2px;
+    width: 82px; height: 18px;
 }
 
 .worldMapLabelButton {
     position: absolute;
-    left: 0; top: 2;
-    width: 15; height: 16;
+    left: 0px; top: 2px;
+    width: 15px; height: 16px;
     background-image: url("art/intrface/lilredup.png");
 }
 
@@ -585,13 +585,13 @@ left: 472; top: 75;
 
 .worldmapEntrance {
     position: absolute;
-    width: 100;
-    height: 32;
+    width: 100px;
+    height: 32px;
     color: #00FF00;
 }
 
 .worldmapEntranceHotspot {
-    width: 25; height: 13;
+    width: 25px; height: 13px;
     background-image: url("art/intrface/hotspot1.png");
 }
 
@@ -601,8 +601,8 @@ left: 472; top: 75;
 
 #elevatorBox {
     position: absolute;
-    width: 230; height: 284;
-    left: 285; top: 158; /* center */
+    width: 230px; height: 284px;
+    left: 285px; top: 158px; /* center */
     visibility: hidden;
 
     /* background-image varies per elevator type */
@@ -610,8 +610,8 @@ left: 472; top: 75;
 
 #elevatorLabel {
     position: absolute;
-    width: 107; height: 248;
-    left: 0; top: 37;
+    width: 107px; height: 248px;
+    left: 0px; top: 37px;
     visibility: hidden;
 
     /* background-image varies per elevator type */
@@ -623,8 +623,8 @@ left: 472; top: 75;
 
 .elevatorButton {
     position: absolute;
-    width: 48; height: 50;
-    left: 16; /* left/x constant for all elevator buttons, top/y changes */
+    width: 48px; height: 50px;
+    left: 16px; /* left/x constant for all elevator buttons, top/y changes */
     visibility: hidden;
     background-image: url("art/intrface/ebut_out.png");
 }
@@ -633,10 +633,10 @@ left: 472; top: 75;
     background-image: url("art/intrface/ebut_in.png");
 }
 
-#elevatorButton1 { top: 42; }
-#elevatorButton2 { top: 102; }
-#elevatorButton3 { top: 162; }
-#elevatorButton4 { top: 222; }
+#elevatorButton1 { top: 42px; }
+#elevatorButton2 { top: 102px; }
+#elevatorButton3 { top: 162px; }
+#elevatorButton4 { top: 222px; }
 
 /* ------- */
 /* world map */
@@ -649,7 +649,7 @@ left: 472; top: 75;
 
 #worldmap {
     position: absolute;
-    left: 0; top: 0;
+    left: 0px; top: 0px;
     /*overflow: auto;*/
     overflow: hidden;
     width: 100%; height: 100%;
@@ -657,9 +657,9 @@ left: 472; top: 75;
 }
 
 #worldmapImage {
-    position: absolute; left: 0; top: 0;
+    position: absolute; left: 0px; top: 0px;
     /*background-image: url("worldmap.png");*/
-    /*width: 525; height: 450;*/
+    /*width: 525px; height: 450px;*/
 }
 
 .area {
@@ -675,20 +675,20 @@ left: 472; top: 75;
 
 .areaCircle {
     position: absolute;
-    /*width: 100; height: 100;*/
+    /*width: 100px; height: 100px;*/
     border: 2px solid #00FF00;
     border-radius: 50%; /* circle */
     background: #007F00;
     opacity: 0.25;
 }
 
-.areaSize-small { width: 8; height: 8; }
-.areaSize-medium { width: 32; height: 32; }
-.areaSize-large { width: 64; height: 64; }
+.areaSize-small { width: 8px; height: 8px; }
+.areaSize-medium { width: 32px; height: 32px; }
+.areaSize-large { width: 64px; height: 64px; }
 
 .worldmapSquare {
     position: absolute;
-    width: 51; height: 51;
+    width: 51px; height: 51px;
 }
 
 .worldmapSquare-undiscovered { background-color: black; z-index: 2; }
@@ -698,7 +698,7 @@ left: 472; top: 75;
 /* The player marker on the world map. Hidden until travelling. */
 #worldmapPlayer {
     position: absolute;
-    width: 25; height: 13;
+    width: 25px; height: 13px;
     background-repeat: no-repeat;
     background-image: url("art/intrface/wmaploc.png");
     /*visibility: hidden;*/
@@ -708,31 +708,31 @@ left: 472; top: 75;
 /* Target. Changes into a hotspot when reached by the player. */
 #worldmapTarget {
     position: absolute;
-    width: 25; height: 13;
+    width: 25px; height: 13px;
     background-repeat: no-repeat;           
     z-index: 100;
 }
 
 #calledShotBox {
     position: absolute;
-    left: 135; top: 135;
-    width: 504; height: 309;
+    left: 135px; top: 135px;
+    width: 504px; height: 309px;
     display: none;
     background-image: url("art/intrface/called.png");
 }
 
 #calledShotBackground {
     position: absolute;
-    left: 170; top: 31;
-    width: 170; height: 225;
+    left: 170px; top: 31px;
+    width: 170px; height: 225px;
     /*border: 1px solid cyan;*/
     background-image: url("art/critters/masratna.png");
 }
 
 #calledShotCancelBtn {
     position: absolute;
-    left: 208; top: 268;
-    width: 15; height: 16;
+    left: 208px; top: 268px;
+    width: 15px; height: 16px;
     background-image: url("art/intrface/lilredup.png");
 }
 
@@ -742,43 +742,43 @@ left: 472; top: 75;
 
 .calledShotLabel {
     position: absolute;
-    width: 100;
+    width: 100px;
     color: #00FF00;
     font-size: small;
 }
 
 .calledShotLabel:hover {
-    cursor: hand;
+    cursor: pointer;
 }
 
 .calledShotChance {
     position: absolute;
-    width: 25; height: 25;
+    width: 25px; height: 25px;
     /*border: 1px solid cyan;*/
 }
 
 /* right side of called shot screen */
-#calledShot-torso-chance { right: 26; top: 35; }
-#calledShot-torso-label { left: 380; top: 30; }
+#calledShot-torso-chance { right: 26px; top: 35px; }
+#calledShot-torso-label { left: 380px; top: 30px; }
 
-#calledShot-groin-chance { right: 26; top: 102; }
-#calledShot-groin-label { left: 380; top: 90; }
+#calledShot-groin-chance { right: 26px; top: 102px; }
+#calledShot-groin-label { left: 380px; top: 90px; }
 
-#calledShot-leftArm-chance { right: 26; top: 164; }
-#calledShot-leftArm-label { left: 360; top: 160; }
+#calledShot-leftArm-chance { right: 26px; top: 164px; }
+#calledShot-leftArm-label { left: 360px; top: 160px; }
 
-#calledShot-leftLeg-chance { right: 26; top: 230; }
-#calledShot-leftLeg-label { left: 370; top: 225; }
+#calledShot-leftLeg-chance { right: 26px; top: 230px; }
+#calledShot-leftLeg-label { left: 370px; top: 225px; }
 
 /* left side */
-#calledShot-head-chance { left: 33; top: 35; }
-#calledShot-head-label { left: 75; top: 30; }
+#calledShot-head-chance { left: 33px; top: 35px; }
+#calledShot-head-label { left: 75px; top: 30px; }
 
-#calledShot-eyes-chance { left: 33; top: 102; }
-#calledShot-eyes-label { left: 75; top: 95; }
+#calledShot-eyes-chance { left: 33px; top: 102px; }
+#calledShot-eyes-label { left: 75px; top: 95px; }
 
-#calledShot-rightArm-chance { left: 33; top: 164; }
-#calledShot-rightArm-label { left: 75; top: 160; }
+#calledShot-rightArm-chance { left: 33px; top: 164px; }
+#calledShot-rightArm-label { left: 75px; top: 160px; }
 
-#calledShot-rightLeg-chance { left: 33; top: 230; }
-#calledShot-rightLeg-label { left: 75; top: 225; }
+#calledShot-rightLeg-chance { left: 33px; top: 230px; }
+#calledShot-rightLeg-label { left: 75px; top: 225px; }
