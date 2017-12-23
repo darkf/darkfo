@@ -11,9 +11,6 @@ interface Jq {
     html(): string;
     html(value: string): this;
 
-    text(): string;
-    text(value: string): this;
-
     append(value: Jq|string): this;
     appendTo(other: Jq): this;
     

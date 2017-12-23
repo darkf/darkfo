@@ -83,6 +83,8 @@ var player: Player|null = null
 var renderer: Renderer|null = null
 var audioEngine: AudioEngine|null = null
 
+let $fpsOverlay: HTMLElement|null = null;
+
 function repr(obj: any) { return JSON.stringify(obj, null, 2) }
 
 function lazyLoadImage(art: string, callback?: (x: any) => void, isHeartImg?: boolean) {
@@ -257,6 +259,8 @@ function initGame() {
 
 heart.load = function() {
 	isInitializing = true;
+
+	$fpsOverlay = document.getElementById("fpsOverlay");
 
 	// initialize renderer
 	if(Config.engine.renderer === "canvas")
@@ -679,8 +683,8 @@ heart.update = function() {
 	var time = heart.timer.getTime()
 
 	if(time - _lastFPSTime >= 500) {
-		$("#fpsOverlay").text("fps: " + heart.timer.getFPS())
-		_lastFPSTime = time
+		$fpsOverlay.textContent = "fps: " + heart.timer.getFPS();
+		_lastFPSTime = time;
 	}
 
 	if(gameHasFocus) {
