@@ -1377,7 +1377,7 @@ function uiCalledShot(art: string, target: Critter, callback?: (regionHit: strin
     $("#calledShotBackground").css("background-image", "url('" + art + ".png')")
 
     $(".calledShotLabel").click((evt: JqEvent<MouseEvent>) => {
-        var id = $(evt.target).attr("id")
+        var id = evt.target.id
         var regionHit = id.split("-")[1]
         console.log("clicked a called location (%s)", regionHit)
         if(callback)

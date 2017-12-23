@@ -14,7 +14,6 @@ interface Jq {
     append(value: Jq|string): this;
     appendTo(other: Jq): this;
     
-    attr(attrib: string): any;
     attr(attrib: string, value: any): this;
     
     addClass(cls: string): this;
