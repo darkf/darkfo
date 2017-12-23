@@ -240,9 +240,10 @@ function initGame() {
 	if(Config.engine.doCombat === true)
 		CriticalEffects.loadTable()
 
-    document.oncontextmenu = function() { return false }
-	$("#cnv").mouseenter(function() { gameHasFocus = true }).
-	          mouseleave(function() { gameHasFocus = false })
+	document.oncontextmenu = () => false;
+	const $cnv = document.getElementById("cnv");
+	$cnv.onmouseenter = () => { gameHasFocus = true; };
+	$cnv.onmouseleave = () => { gameHasFocus = false; };
 
 	tempCanvas = $("<canvas>")[0] as HTMLCanvasElement
 	tempCanvasCtx = tempCanvas.getContext("2d")

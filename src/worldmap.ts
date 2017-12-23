@@ -487,11 +487,8 @@ module Worldmap {
 			const x = e.pageX - parseInt(offset.left)
 			const y = e.pageY - parseInt(offset.top)
 
-			const scrollLeft = $(this).scrollLeft()
-			const scrollTop = $(this).scrollTop()
-
-			const ax = x + scrollLeft
-			const ay = y + scrollTop
+			const ax = x + this.scrollLeft
+			const ay = y + this.scrollTop
 
 			worldmapPlayer.target = {x: ax, y: ay}
 			$worldmapPlayer.css("visibility", "visible")
@@ -628,7 +625,9 @@ module Worldmap {
 			const height = $worldmap.height()
 			const sx = clamp(0, width, Math.floor(worldmapPlayer.x - width/2))
 			const sy = clamp(0, height, Math.floor(worldmapPlayer.y - height/2))
-			$worldmap.scrollLeft(sx).scrollTop(sy)
+
+			$worldmap[0].scrollLeft = sx;
+			$worldmap[0].scrollTop = sy;
 
 		    
 		    if(currentSquare.state !== WORLDMAP_DISCOVERED)

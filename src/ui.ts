@@ -1193,8 +1193,9 @@ function uiLoot(object: Obj) {
 }
 
 function uiLog(msg: string) {
-    var $log = $("#displayLog")
-    $log.append("<li>" + msg + "</li>").scrollTop($log[0].scrollHeight)
+    const $log = $id("displayLog");
+    $log.insertAdjacentHTML("beforeend", `<li>${msg}</li>`);
+    $log.scrollTop = $log.scrollHeight;
 }
 
 function uiCloseWorldMap() {
