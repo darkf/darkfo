@@ -950,7 +950,9 @@ function uiSwapItem(a: Obj[], item: Obj, b: Obj[], amount: number) {
 }
 
 function uiEndBarterMode() {
-    $("#barterBox").animate({top: 480}, 1000, function() {
+    const $barterBox = $id("barterBox");
+
+    uiAnimateBox($barterBox, null, 480, () => {
         $("#barterBox").css("visibility", "hidden")
         $("#barterBoxLeft").off("drop dragenter dragover")
         $("#barterBoxRight").off("drop dragenter dragover")
@@ -961,7 +963,7 @@ function uiEndBarterMode() {
         $("#barterBox").css("visibility", "hidden")
         
         uiStartDialogue(true) // force dialogue mode
-    })
+    });
 }
 
 function uiBarterMode(merchant: Critter) {
