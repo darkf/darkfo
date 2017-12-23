@@ -483,9 +483,13 @@ module Worldmap {
 			mapAreas = loadAreas()
 
 		$worldmap.click(function(this: HTMLElement, e: JqEvent<MouseEvent>) {
-			const offset = $(this).offset()
-			const x = e.pageX - parseInt(offset.left)
-			const y = e.pageY - parseInt(offset.top)
+			// Calculate viewport-relative offset
+			const box = this.getBoundingClientRect();
+			const offsetLeft = box.left|0 + window.pageXOffset;
+			const offsetTop = box.top|0 + window.pageYOffset;
+
+			const x = e.pageX - offsetLeft
+			const y = e.pageY - offsetTop
 
 			const ax = x + this.scrollLeft
 			const ay = y + this.scrollTop

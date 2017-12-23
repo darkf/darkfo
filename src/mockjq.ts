@@ -28,8 +28,6 @@ interface Jq {
     click<T extends Event>(_: (e?: JqEvent<T>) => void): this;
     load<T extends Event>(_: (e?: JqEvent<T>) => void): this;
     off(event: string): this;
-    
-    offset(): { left: string; top: string };
 }
 
 interface JqEvent<EventType extends Event> {
