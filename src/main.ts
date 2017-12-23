@@ -98,7 +98,8 @@ function lazyLoadImage(art: string, callback?: (x: any) => void, isHeartImg?: bo
 		return
 	}
 
-	console.log("lazy loading " + art + "...")
+	if(Config.engine.doLogLazyLoads)
+		console.log("lazy loading " + art + "...")
 
 	lazyAssetLoadingQueue[art] = (callback ? [callback] : [])
 

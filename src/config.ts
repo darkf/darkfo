@@ -37,6 +37,7 @@ const Config = {
 		doFloorLighting: false, // use FO2-realistic floor lighting?
 		useLightColorLUT: true, // Use intensityColorTable/colorLUT/colorRGB for accurate lighting colors?
 		doAudio: false, // enable audio?
+		doLogLazyLoads: false, // Log lazy-loading of images? (Noisy)
 	},
 
 	combat: {
