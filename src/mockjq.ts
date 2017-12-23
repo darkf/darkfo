@@ -32,9 +32,6 @@ interface Jq {
     load<T extends Event>(_: (e?: JqEvent<T>) => void): this;
     off(event: string): this;
     
-    scrollLeft(): number;
-    scrollLeft(_: number): this;
-
     offset(): { left: string; top: string };
 }
 

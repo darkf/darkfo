@@ -963,7 +963,6 @@ function uiEndBarterMode() {
         $("#barterBoxInventoryRight").off("drop dragenter dragover")
         $("#barterTalkButton").off("click")
         $("#barterOfferButton").off("click")
-        $("#barterBox").css("visibility", "hidden")
         
         uiStartDialogue(true) // force dialogue mode
     });
