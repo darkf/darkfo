@@ -830,13 +830,44 @@ function drawDigits(idPrefix: string, amount: number, maxDigits: number, hasSign
     }
 }
 
+// Smoothly transition an element's top property from an origin to a target position over a duration
+function uiAnimateBox($el: HTMLElement, origin: number|null, target: number, callback?: () => void): void {
+    const style = $el.style;
+
+    // Reset to origin, instantly
+    if(origin !== null) {
+        style.transition = "none";
+        style.top = `${origin}px`;
+    }
+
+    // We need to wait for the browser to process the updated CSS position, so we need to wait here
+    setTimeout(() => {
+        // Set up our transition finished callback if necessary
+        if(callback) {
+            let listener = () => {
+                console.error("cb called");
+                callback();
+                $el.removeEventListener("transitionend", listener);
+                listener = null; // Allow listener to be GC'd
+            };
+
+            $el.addEventListener("transitionend", listener);
+        }
+        
+        // Ease into the target position over 1 second
+        $el.style.transition = "top 1s ease";
+        $el.style.top = `${target}px`;
+    }, 1);
+}
+
 function uiStartDialogue(force: boolean, target?: Critter) {
     if(uiMode === UI_MODE_BARTER && force !== true)
         return
 
     uiMode = UI_MODE_DIALOGUE
-    $("#dialogueContainer").css("visibility", "visible")
-    $("#dialogueBox").css("visibility", "visible").css("top", 480).animate({top: 290}, 1000)
+    $id("dialogueContainer").style.visibility = "visible"
+    $id("dialogueBox").style.visibility = "visible";
+    uiAnimateBox($id("dialogueBox"), 480, 290);
 
     // center around the dialogue target
     if(!target) return
