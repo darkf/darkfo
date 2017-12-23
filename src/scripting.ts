@@ -526,7 +526,14 @@ module scriptingEngine {
 		},
 		elevation: function(obj: Obj) { if(isSpatial(obj) || isGameObject(obj)) return currentElevation
 								        else { warn("elevation: not an object: " + obj); return -1 } },
-		obj_can_see_obj: function(a: Critter, b: Critter) { log("obj_can_see_obj", arguments); return +objCanSeeObj(a, b) },
+		obj_can_see_obj: function(a: Critter, b: Critter) {
+			log("obj_can_see_obj", arguments);
+			if(!isGameObject(a) || !isGameObject(b)) {
+				warn("obj_can_see_obj: not game object");
+				return 0;
+			}
+			return +objCanSeeObj(a, b);
+		},
 		obj_can_hear_obj: function(a: Obj, b: Obj) { /*stub("obj_can_hear_obj", arguments);*/ return 0 },
 		critter_mod_skill: function(obj: Obj, skill: number, amount: number) { stub("critter_mod_skill", arguments); return 0 },
 		using_skill: function(obj: Obj, skill: number) { stub("using_skill", arguments); return 0 },
