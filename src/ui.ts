@@ -966,14 +966,18 @@ function uiEndBarterMode() {
 
 function uiBarterMode(merchant: Critter) {
     uiMode = UI_MODE_BARTER
-
-    // hide dialogue screen for now
-    $("#dialogueBox").animate({top: 480}, 1000, "swing", function() {
-        $("#dialogueBox").css("visibility", "hidden")
-        console.log("going to pop up")
-        // pop up the bartering screen
-        $("#barterBox").css("visibility", "visible").css("top", 480).animate({top: 290}, 1000)
-    })
+    
+    // Hide dialogue screen for now (animate down)
+    const $dialogueBox = $id("dialogueBox");
+    uiAnimateBox($dialogueBox, null, 480, () => {
+        $dialogueBox.style.visibility = "hidden";
+        console.log("going to pop up barter box");
+        
+        // Pop up the bartering screen (animate up)
+        const $barterBox = $id("barterBox");
+        $barterBox.style.visibility = "visible";
+        uiAnimateBox($barterBox, 480, 290);
+    });
 
     // logic + UI for bartering
     // TODO: would it be better if we dropped the "working" copies?
