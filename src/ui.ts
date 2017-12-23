@@ -845,7 +845,6 @@ function uiAnimateBox($el: HTMLElement, origin: number|null, target: number, cal
         // Set up our transition finished callback if necessary
         if(callback) {
             let listener = () => {
-                console.error("cb called");
                 callback();
                 $el.removeEventListener("transitionend", listener);
                 listener = null; // Allow listener to be GC'd
@@ -883,20 +882,24 @@ function uiStartDialogue(force: boolean, target?: Critter) {
 }
 
 function uiEndDialogue() {
-    uiMode = UI_MODE_NONE
-    $("#dialogueContainer").css("visibility", "hidden")
-    $("#dialogueBox").css("visibility", "hidden")
-    $("#dialogueBoxReply").html("")
+    uiMode = UI_MODE_NONE;
+
+    $id("dialogueContainer").style.visibility = "hidden";
+    $id("dialogueBox").style.visibility = "hidden";
+    $id("dialogueBoxReply").innerHTML = "";
 }
 
 function uiSetDialogueReply(reply: string) {
-    $("#dialogueBoxReply").html(reply).scrollTop(0)
-    $("#dialogueBoxTextArea").html("")
+    const $dialogueBoxReply = $id("dialogueBoxReply");
+    $dialogueBoxReply.innerHTML = reply;
+    $dialogueBoxReply.scrollTop = 0;
+
+    $id("dialogueBoxTextArea").innerHTML = "";
 }
 
 function uiAddDialogueOption(msg: string, optionID: number) {
-    $("#dialogueBoxTextArea").append(
-        "<li><a href=\"javascript:dialogueReply(" + optionID + ")\">" + msg + "</a></li>")
+    $id("dialogueBoxTextArea").insertAdjacentHTML("beforeend",
+        `<li><a href="javascript:dialogueReply(${optionID})">${msg}</a></li>`);
 }
 
 function uiGetAmount(item: Obj) {
