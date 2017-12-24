@@ -658,12 +658,12 @@ function uiContextMenu(obj: Obj, evt: any) {
 
 function uiStartCombat() {
     // play end container animation
-    $("#endContainer").css({animationPlayState: "running", webkitAnimationPlayState: "running"})
+    Object.assign($id("endContainer").style, {animationPlayState: "running", webkitAnimationPlayState: "running"});
 }
 
 function uiEndCombat() {
     // play end container animation
-    $("#endContainer").css({animationPlayState: "running", webkitAnimationPlayState: "running"})
+    Object.assign($id("endContainer").style, {animationPlayState: "running", webkitAnimationPlayState: "running"});
 
     // disable buttons
     hidev($id("endTurnButton"));
@@ -671,9 +671,9 @@ function uiEndCombat() {
 }
 
 function uiEndCombatAnimationDone(this: HTMLElement) {
-    $(this).css({animationPlayState: "paused", webkitAnimationPlayState: "paused"})
+    Object.assign(this.style, {animationPlayState: "paused", webkitAnimationPlayState: "paused"});
 
-    if(inCombat === true) {
+    if(inCombat) {
         // enable buttons
         showv($id("endTurnButton"));
         showv($id("endCombatButton"));
@@ -1386,12 +1386,14 @@ function uiElevator(elevator: Elevator) {
         var labelArt = lookupInterfaceArt(elevator.labels)
         console.log("elevator label art: " + labelArt)
 
-        $("#elevatorLabel").css({visibility: "visible",
-                                 backgroundImage: "url('" + labelArt + ".png')"})
+        const $elevatorLabel = $id("elevatorLabel");
+        showv($elevatorLabel);
+        $elevatorLabel.style.backgroundImage = `url('${labelArt}.png')`;
     }
 
-    $("#elevatorBox").css({visibility: "visible",
-                           backgroundImage: "url('" + art + ".png')"})
+    const $elevatorBox = $id("elevatorBox");
+    showv($elevatorBox);
+    $elevatorBox.style.backgroundImage = `url('${art}.png')`;
 
     // flip the buttons we need visible
     for(var i = 1; i <= elevator.buttonCount; i++) {
