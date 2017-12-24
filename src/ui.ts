@@ -630,8 +630,8 @@ function uiDrawWeapon() {
             if(!this.complete) return
             $(this).css({position: "absolute",
                          top: 5,
-                         left: $("#attackButton").width() / 2 - this.width / 2,
-                         maxHeight: $("#attackButton").height() - 10}).attr("draggable", "false")
+                         left: $id("attackButton").offsetWidth / 2 - this.width / 2,
+                         maxHeight: $id("attackButton").offsetHeight - 10}).attr("draggable", "false")
         }).attr("src", weapon.invArt + ".png")
     }
 
@@ -872,10 +872,10 @@ function uiStartDialogue(force: boolean, target?: Critter) {
     if(!target) return
     var bbox = objectBoundingBox(target)
     if(bbox !== null) {
-        var dc = $("#dialogueContainer")
+        const dc = $id("dialogueContainer")
         // alternatively: dc.offset().left - $(heart.canvas).offset().left
-        var dx = (dc.width() / 2 | 0) + dc[0].offsetLeft
-        var dy = (dc.height() / 4 | 0) + dc[0].offsetTop - (bbox.h / 2 | 0)
+        const dx = (dc.offsetWidth / 2 | 0) + dc.offsetLeft
+        const dy = (dc.offsetHeight / 4 | 0) + dc.offsetTop - (bbox.h / 2 | 0)
         cameraX = bbox.x - dx
         cameraY = bbox.y - dy
     }

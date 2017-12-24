@@ -452,8 +452,8 @@ module Worldmap {
 	}
 
 	function centerWorldmapTarget(x: number, y: number): void {
-		$worldmapTarget.css({left: x - $worldmapTarget.width()/2|0,
-		                     top: y - $worldmapTarget.height()/2|0})
+		$worldmapTarget.css({left: x - $worldmapTarget[0].offsetWidth/2|0,
+		                     top: y - $worldmapTarget[0].offsetHeight/2|0})
 	}
 
 	export function init(): void {
@@ -525,8 +525,8 @@ module Worldmap {
 			                      .appendTo($area)
 
 			// transform the circle since (0,0) is the top-left instead of center
-			const x = area.worldPosition.x - $el.width() / 2
-			const y = area.worldPosition.y - $el.height() / 2
+			const x = area.worldPosition.x - $el[0].offsetWidth / 2
+			const y = area.worldPosition.y - $el[0].offsetHeight / 2
 			//console.log("adding one @ " + x + ", " + y + " | " + $el.width() + ", " + $el.height())
 			//console.log("size = " + area.size)
 			$area.css({left: x, top: y})
@@ -534,7 +534,7 @@ module Worldmap {
 			//if(area.name==="Arroyo")console.log("ARROYO IS " + key)
 
 			$("<div>").addClass("areaLabel")
-			          .css({left: 0, top: 2 + $el.height()})
+			          .css({left: 0, top: 2 + $el[0].offsetHeight})
 			          .html(area.name)
 			          .appendTo($area)
 		}
@@ -625,8 +625,8 @@ module Worldmap {
 
 
 			// center the worldmap to the player
-			const width = $worldmap.width()
-			const height = $worldmap.height()
+			const width = $worldmap[0].offsetWidth
+			const height = $worldmap[0].offsetHeight
 			const sx = clamp(0, width, Math.floor(worldmapPlayer.x - width/2))
 			const sy = clamp(0, height, Math.floor(worldmapPlayer.y - height/2))
 

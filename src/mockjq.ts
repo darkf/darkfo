@@ -1,9 +1,6 @@
 interface Jq {
     [key: number]: HTMLElement;
-    
-    width(): number;
-    height(): number;
-    
+        
     css(prop: string): string;
     css(prop: string, value: string|number): this;
     css(props: { [prop: string]: string|number }): this;
