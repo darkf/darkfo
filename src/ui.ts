@@ -600,25 +600,24 @@ function initUI() {
 
     $id("skilldexButton").onclick = () => { Ui.skilldexWindow.toggle() }
 
-    function makeScrollable($el: any, scroll?: number) {
-        // TODO: Use WheelEvent instead (and deltaX/Y/Z)
-        $el.bind("mousewheel DOMMouseScroll", (e: JqEvent<MouseWheelEvent>) => {
-            var delta = (e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) ? -1 : 1
-            $el.scrollTop($el.scrollTop() + (scroll || 60)*delta)
-        })
+    function makeScrollable($el: HTMLElement, scroll: number=60) {
+        $el.onwheel = (e: WheelEvent) => {
+            const delta = e.deltaY > 0 ? 1 : -1;
+            $el.scrollTop = $el.scrollTop + scroll*delta;
+        };
     }
 
-    makeScrollable($("#inventoryBoxList"))
+    makeScrollable($id("inventoryBoxList"))
 
-    makeScrollable($("#barterBoxInventoryLeft"))
-    makeScrollable($("#barterBoxInventoryRight"))
-    makeScrollable($("#barterBoxLeft"))
-    makeScrollable($("#barterBoxRight"))
-    makeScrollable($("#lootBoxLeft"))
-    makeScrollable($("#lootBoxRight"))
-    makeScrollable($("#worldMapLabels"))
-    makeScrollable($("#displayLog"))
-    makeScrollable($("#dialogueBoxReply"), 30)
+    makeScrollable($id("barterBoxInventoryLeft"))
+    makeScrollable($id("barterBoxInventoryRight"))
+    makeScrollable($id("barterBoxLeft"))
+    makeScrollable($id("barterBoxRight"))
+    makeScrollable($id("lootBoxLeft"))
+    makeScrollable($id("lootBoxRight"))
+    makeScrollable($id("worldMapLabels"))
+    makeScrollable($id("displayLog"))
+    makeScrollable($id("dialogueBoxReply"), 30)
 
     drawHP(critterGetStat(player, "HP"))
     uiDrawWeapon()
