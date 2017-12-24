@@ -604,6 +604,7 @@ function initUI() {
         $el.onwheel = (e: WheelEvent) => {
             const delta = e.deltaY > 0 ? 1 : -1;
             $el.scrollTop = $el.scrollTop + scroll*delta;
+            e.preventDefault();
         };
     }
 
