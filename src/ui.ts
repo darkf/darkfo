@@ -1296,15 +1296,15 @@ function uiWorldMap(onAreaMap: boolean=false) {
 }
 
 function uiWorldMapAreaView() {
-    $("#worldmap").css("visibility", "hidden")
-    $("#areamap").css("visibility", "visible")
+    hidev($id("worldmap"));
+    showv($id("areamap"));
 
     Worldmap.stop()
 }
 
 function uiWorldMapWorldView() {
-    $("#worldmap").css("visibility", "visible")
-    $("#areamap").css("visibility", "hidden")
+    showv($id("worldmap"));
+    hidev($id("areamap"));
 
     Worldmap.start()
 }
