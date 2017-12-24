@@ -366,9 +366,9 @@ module Worldmap {
 
 		//console.log("square: " + squarePos.x + ", " + squarePos.y + " | " + stateName[oldState] + " | " + stateName[newState])
 
-		$("div.worldmapSquare[square-x=" + squarePos.x + "][square-y=" + squarePos.y + "]")
-			.removeClass("worldmapSquare-" + stateName[oldState])
-			.addClass("worldmapSquare-" + stateName[newState])
+		const $square = document.querySelector(`div.worldmapSquare[square-x='${squarePos.x}'][square-y='${squarePos.y}']`);
+		$square.classList.remove("worldmapSquare-" + stateName[oldState]);
+		$square.classList.add("worldmapSquare-" + stateName[newState]);
 
 		if(seeAdjacent === true) {
 			setSquareStateAt({x: squarePos.x-1, y: squarePos.y}, WORLDMAP_SEEN, false)
