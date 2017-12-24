@@ -12,10 +12,7 @@ interface Jq {
     
     addClass(cls: string): this;
     removeClass(cls: string): this;
-    
-    show(): this;
-    hide(): this;
-        
+            
     on<T extends Event>(event: string, handler: (e?: JqEvent<T>) => void): this;
     bind<T extends Event>(event: string, handler: (e?: JqEvent<T>) => void): this;
     click<T extends Event>(_: (e?: JqEvent<T>) => void): this;

@@ -465,6 +465,14 @@ function clearEl($el: HTMLElement|Jq): void {
     $el.innerHTML = "";
 }
 
+function show($el: HTMLElement): void {
+    $el.style.display = "block";
+}
+
+function hide($el: HTMLElement): void {
+    $el.style.display = "none";
+}
+
 function initUI() {
     Ui.init();
 
@@ -661,9 +669,9 @@ function uiDrawWeapon() {
 
     // hide or show called shot sigil?
     if(weapon.weapon.mode === "called")
-        $("#attackButtonCalled").show()
+        show($id("attackButtonCalled"));
     else
-        $("#attackButtonCalled").hide()
+        hide($id("attackButtonCalled"));
 }
 
 // TODO: Rewrite this sanely (and not directly modify the player object's properties...)
@@ -1218,7 +1226,7 @@ function uiLog(msg: string) {
 function uiCloseWorldMap() {
     uiMode = UI_MODE_NONE
 
-    $("#worldMapContainer").hide()
+    hide($id("worldMapContainer"));
     $("#areamap").css("visibility", "hidden")
     $("#worldmap").css("visibility", "hidden")
 
@@ -1227,7 +1235,7 @@ function uiCloseWorldMap() {
 
 function uiWorldMap(onAreaMap: boolean=false) {
     uiMode = UI_MODE_WORLDMAP
-    $("#worldMapContainer").show()
+    show($id("worldMapContainer"));
 
     if(!mapAreas)
         mapAreas = loadAreas()
@@ -1368,12 +1376,12 @@ function uiElevator(elevator: Elevator) {
 
 function uiCloseCalledShot() {
     uiMode = UI_MODE_NONE
-    $("#calledShotBox").hide()
+    hide($id("calledShotBox"));
 }
 
 function uiCalledShot(art: string, target: Critter, callback?: (regionHit: string) => void) {
     uiMode = UI_MODE_CALLED_SHOT
-    $("#calledShotBox").show()
+    show($id("calledShotBox"));
 
     function drawChance(region: string) {
         var chance: any = Combat.prototype.getHitChance(player, target, region).hit
