@@ -87,7 +87,7 @@ function objectFindItemIndex(obj: Obj, item: Obj): number {
 	return -1
 }
 
-function cloneItem(item: Obj): Obj { return $.extend({}, item) }
+function cloneItem(item: Obj): Obj { return Object.assign({}, item); }
 
 function objectSwapItem(a: Obj, item: Obj, b: Obj, amount: number) {
 	// swap item from a -> b
@@ -650,7 +650,7 @@ class Obj {
 			console.log("cloning an object with a script: %o", this)
 			var _script = this._script
 			this._script = null
-			var obj = $.extend(true, {}, this)
+			var obj = deepClone(this)
 			this._script = _script
 			obj.loadScript() // load new copy of the script
 			return obj
@@ -658,7 +658,7 @@ class Obj {
 		}
 
 		// no script, just deep clone the object
-		return $.extend(true, {}, this)
+		return deepClone(this)
 	}
 
 	addInventoryItem(item: Obj, count: number=1): void {
