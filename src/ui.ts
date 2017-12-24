@@ -458,6 +458,10 @@ function $img(id: string): HTMLImageElement {
     return document.getElementById(id) as HTMLImageElement;
 }
 
+function $qa(selector: string): HTMLElement[] {
+    return Array.from(document.querySelectorAll(selector));
+}
+
 function clearEl($el: HTMLElement|Jq): void {
     if(!($el instanceof HTMLElement))
         $el = $el[0];
@@ -1365,7 +1369,10 @@ function uiElevatorDone() {
     hidev($id("elevatorBox"));
 
     // flip all buttons to hidden
-    $(".elevatorButton").css("visibility", "hidden").off("click")
+    for(const $elevatorButton of $qa(".elevatorButton")) {
+        hidev($elevatorButton);
+        $elevatorButton.onclick = null;
+    }
     hidev($id("elevatorLabel"));
 }
 
