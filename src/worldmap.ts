@@ -533,10 +533,10 @@ module Worldmap {
 
 			//if(area.name==="Arroyo")console.log("ARROYO IS " + key)
 
-			$("<div>").addClass("areaLabel")
-			          .css({left: 0, top: 2 + $el[0].offsetHeight})
-			          .html(area.name)
-			          .appendTo($area)
+			const $label = $("<div>").addClass("areaLabel")
+			                         .css({left: 0, top: 2 + $el[0].offsetHeight})
+			                         .appendTo($area)
+			$label[0].textContent = area.name;
 		}
 
 		for(let x = 0; x < NUM_SQUARES_X; x++) {

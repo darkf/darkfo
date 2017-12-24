@@ -5,9 +5,6 @@ interface Jq {
     css(prop: string, value: string|number): this;
     css(props: { [prop: string]: string|number }): this;
     
-    html(): string;
-    html(value: string): this;
-
     append(value: Jq|string): this;
     appendTo(other: Jq): this;
     

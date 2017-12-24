@@ -458,6 +458,13 @@ function $img(id: string): HTMLImageElement {
     return document.getElementById(id) as HTMLImageElement;
 }
 
+function clearEl($el: HTMLElement|Jq): void {
+    if(!($el instanceof HTMLElement))
+        $el = $el[0];
+
+    $el.innerHTML = "";
+}
+
 function initUI() {
     Ui.init();
 
@@ -572,9 +579,13 @@ function uiContextMenu(obj: Obj, evt: any) {
                           })
     }
 
-    var $menu = $("#itemContextMenu").css("visibility", "visible").html("").
-                                      css({left: evt.clientX,
-                                           top: evt.clientY})
+    var $menu = $id("itemContextMenu");
+    clearEl($menu);
+    Object.assign($menu.style, {
+        visibility: "visible",
+        left: `${evt.clientX}px`,
+        top: `${evt.clientY}px`
+    });
     var cancelBtn = button(obj, "cancel", () => {})
     var lookBtn = button(obj, "look", () => uiLog("You see: " + obj.getDescription()))
     var useBtn = button(obj, "use", () => playerUse()) // TODO: playerUse should take an object
@@ -584,13 +595,13 @@ function uiContextMenu(obj: Obj, evt: any) {
     })
     var pickupBtn = button(obj, "pickup", () => pickupObject(obj, player))
 
-    $menu.append(cancelBtn)
-    $menu.append(lookBtn)
+    $menu.appendChild(cancelBtn[0])
+    $menu.appendChild(lookBtn[0])
     if(obj._script && obj._script.talk_p_proc !== undefined)
-        $menu.append(talkBtn)
+        $menu.appendChild(talkBtn[0])
     if(canUseObject(obj))
-        $menu.append(useBtn)
-    $menu.append(pickupBtn)
+        $menu.appendChild(useBtn[0])
+    $menu.appendChild(pickupBtn[0])
 }
 
 function uiStartCombat() {
@@ -620,7 +631,7 @@ function uiEndCombatAnimationDone(this: HTMLElement) {
 function uiDrawWeapon() {
     // draw the active weapon in the interface bar
     var weapon = critterGetEquippedWeapon(player)
-    $id("attackButton").innerHTML = ""
+    clearEl($id("attackButton"));
     if(weapon === null)
         return
 
@@ -726,9 +737,9 @@ function uiInventoryScreen() {
     })
 
     function drawInventory($el: Jq, objects: Obj[], clickCallback?: (item: Obj, e: MouseEvent) => void) {
-        $el.html("")
-        $("#inventoryBoxItem1").html("")
-        $("#inventoryBoxItem2").html("")
+        clearEl($el);
+        clearEl($id("inventoryBoxItem1"));
+        clearEl($id("inventoryBoxItem2"));
 
         for(let i = 0; i < objects.length; i++) {
             const invObj = objects[i]
@@ -775,17 +786,21 @@ function uiInventoryScreen() {
     }
 
     function makeItemContextMenu(e: MouseEvent, obj: Obj, slot: keyof Player) {
-        var $menu = $("#itemContextMenu").css("visibility", "visible").html("").
-                                          css({left: e.clientX,
-                                               top: e.clientY})
+        var $menu = $id("itemContextMenu");
+        clearEl($menu);
+        Object.assign($menu.style, {
+            visibility: "visible",
+            left: `${e.clientX}px`,
+            top: `${e.clientY}px`
+        });
         var cancelBtn = makeContextButton(obj, slot, "cancel")
         var useBtn = makeContextButton(obj, slot, "use")
         var dropBtn = makeContextButton(obj, slot, "drop")
 
-        $menu.append(cancelBtn)
+        $menu.appendChild(cancelBtn[0])
         if(canUseObject(obj))
-            $menu.append(useBtn)
-        $menu.append(dropBtn)
+            $menu.appendChild(useBtn[0])
+        $menu.appendChild(dropBtn[0])
     }
 
     function drawSlot(slot: keyof Player, slotID: string) {
@@ -797,13 +812,16 @@ function uiInventoryScreen() {
             makeItemContextMenu(e.originalEvent, player[slot], slot)
         })
         makeDraggable(img[0], slot)
-        $(slotID).html("").append(img)
+
+        const $slotEl = $id(slotID);
+        clearEl($slotEl);
+        $slotEl.appendChild(img[0]);
     }
 
     if(player.leftHand)
-        drawSlot("leftHand", "#inventoryBoxItem1")
+        drawSlot("leftHand", "inventoryBoxItem1")
     if(player.rightHand)
-        drawSlot("rightHand", "#inventoryBoxItem2")
+        drawSlot("rightHand", "inventoryBoxItem2")
 }
 
 function drawHP(hp: number) {
@@ -1041,7 +1059,7 @@ function uiBarterMode(merchant: Critter) {
     }
 
     function drawInventory($el: Jq, who: "p"|"m"|"l"|"r", objects: Obj[]) {
-        $el.html("")
+        clearEl($el);
 
         for(var i = 0; i < objects.length; i++) {
             var inventoryImage = objects[i].invArt
@@ -1109,8 +1127,8 @@ function uiBarterMode(merchant: Critter) {
         var moneyLeft = totalAmount(playerBarterTable)
         var moneyRight = totalAmount(merchantBarterTable)
 
-        $("#barterBoxLeftAmount").html("$" + moneyLeft)
-        $("#barterBoxRightAmount").html("$" + moneyRight)
+        $id("barterBoxLeftAmount").innerHTML = "$" + moneyLeft;
+        $id("barterBoxRightAmount").innerHTML = "$" + moneyRight;
     }
 
     redrawBarterInventory()
@@ -1155,7 +1173,7 @@ function uiLoot(object: Obj) {
     }
 
     function drawInventory($el: Jq, who: "p"|"m"|"l"|"r", objects: Obj[]) {
-        $el.html("")
+        clearEl($el);
 
         for(var i = 0; i < objects.length; i++) {
             var inventoryImage = objects[i].invArt
@@ -1238,9 +1256,9 @@ function uiWorldMapWorldView() {
 function uiWorldMapShowArea(area: Area) {
     uiWorldMapAreaView()
 
-    $("#areamap").css({
-        backgroundImage: "url('" + area.mapArt + ".png')"
-    }).html("")
+    const $areamap = $id("areamap");
+    $areamap.style.backgroundImage = `url('${area.mapArt}.png')`;
+    clearEl($areamap);
 
     var entrances = area.entrances
     for(var j = 0; j < entrances.length; j++) {
@@ -1270,7 +1288,7 @@ function uiWorldMapShowArea(area: Area) {
 }
 
 function uiWorldMapLabels() {
-    $("#worldMapLabels").html("<div id='worldMapLabelsBackground'></div>")
+    $id("worldMapLabels").innerHTML = "<div id='worldMapLabelsBackground'></div>";
 
     var i = 0
     for(const areaID in mapAreas) {

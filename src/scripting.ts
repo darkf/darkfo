@@ -183,7 +183,7 @@ module scriptingEngine {
 		// End barter mode -- back to dialogue mode
 		$("#dialogue").css("visibility", "visible")
 		$("#barterLeft, #barterRight").css("visibility", "hidden")
-		$("#inventory").html("")
+		clearEl($id("inventory"));
 	}
 
 	function canSee(obj: Obj, target: Obj): boolean {
