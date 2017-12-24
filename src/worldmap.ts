@@ -251,7 +251,7 @@ module Worldmap {
 			const out: { [key: string]: string|number } = {}
 			for(let i = 0; i < items.length; i++) {
 				const s: any = items[i].split(":")
-				if($.isNumeric(s[1]))
+				if(isNumeric(s[1]))
 					s[1] = parseFloat(s[1])
 				out[s[0].toLowerCase()] = s[1]
 			}

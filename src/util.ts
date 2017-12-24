@@ -291,3 +291,7 @@ function jQuery_extend(deep: boolean, target: any, obj: any): any {
 function deepClone<T>(obj: T): T {
 	return jQuery_extend(true, {}, obj);
 }
+
+function isNumeric(str: string): boolean {
+	return !isNaN((str as any) - parseFloat(str));
+}
