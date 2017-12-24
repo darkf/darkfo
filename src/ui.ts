@@ -1103,11 +1103,12 @@ function uiBarterMode(merchant: Critter) {
 
         for(var i = 0; i < objects.length; i++) {
             var inventoryImage = objects[i].invArt
-            var img = $("<img>").attr("src", inventoryImage+'.png').
-                      attr("width", 72).attr("height", 60) // 90x60 // 70x40
-            img.attr("title", objects[i].name)
-            $el.append(img).append("x" + objects[i].amount)
-            makeDraggable(img[0], who + i)
+            // 90x60 // 70x40
+            var img = makeEl("img", { src: inventoryImage+'.png',
+                                      attrs: { width: 72, height: 60, title: objects[i].name } });
+            $el[0].appendChild(img);
+            $el[0].insertAdjacentHTML("beforeend", "x" + objects[i].amount);
+            makeDraggable(img, who + i)
         }
     }
 
@@ -1217,11 +1218,12 @@ function uiLoot(object: Obj) {
 
         for(var i = 0; i < objects.length; i++) {
             var inventoryImage = objects[i].invArt
-            var img = $("<img>").attr("src", inventoryImage+'.png').
-                      attr("width", 72).attr("height", 60) // 90x60 // 70x40
-            img.attr("title", objects[i].name)
-            $el.append(img).append("x" + objects[i].amount)
-            makeDraggable(img[0], who + i)
+            // 90x60 // 70x40
+            var img = makeEl("img", { src: inventoryImage+'.png',
+                                      attrs: { width: 72, height: 60, title: objects[i].name } });
+            $el[0].appendChild(img);
+            $el[0].insertAdjacentHTML("beforeend", "x" + objects[i].amount);
+            makeDraggable(img, who + i);
         }
     }
 
