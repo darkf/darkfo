@@ -671,14 +671,19 @@ function uiDrawWeapon() {
         return
 
     if(weapon.weapon.type !== "melee") {
-        $("#attackButtonWeapon").off("load")
-        $("#attackButtonWeapon").load(function(this: HTMLImageElement) {
-            if(!this.complete) return
-            $(this).css({position: "absolute",
-                         top: 5,
-                         left: $id("attackButton").offsetWidth / 2 - this.width / 2,
-                         maxHeight: $id("attackButton").offsetHeight - 10}).attr("draggable", "false")
-        }).attr("src", weapon.invArt + ".png")
+        const $attackButtonWeapon = $id("attackButtonWeapon") as HTMLImageElement;
+        $attackButtonWeapon.onload = null;
+        $attackButtonWeapon.onload = function(this: HTMLImageElement) {
+            if(!this.complete) return;
+            Object.assign(this.style, {
+                position: "absolute",
+                top: "5px",
+                left: ($id("attackButton").offsetWidth / 2 - this.width / 2) + "px",
+                maxHeight: ($id("attackButton").offsetHeight - 10) + "px"
+            });
+            this.setAttribute("draggable", "false");
+        };
+        $attackButtonWeapon.src = weapon.invArt + ".png";
     }
 
     // draw weapon AP
