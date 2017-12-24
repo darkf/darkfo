@@ -473,6 +473,15 @@ function hide($el: HTMLElement): void {
     $el.style.display = "none";
 }
 
+// TODO: Examine if we actually need visibility or we can replace them all with show/hide
+function showv($el: HTMLElement): void {
+    $el.style.visibility = "visible";
+}
+
+function hidev($el: HTMLElement): void {
+    $el.style.visibility = "hidden";
+}
+
 function appendHTML($el: HTMLElement, html: string): void {
     $el.insertAdjacentHTML("beforeend", html);
 }
@@ -653,8 +662,8 @@ function uiEndCombat() {
     $("#endContainer").css({animationPlayState: "running", webkitAnimationPlayState: "running"})
 
     // disable buttons
-    $("#endTurnButton").css("visibility", "hidden")
-    $("#endCombatButton").css("visibility", "hidden")
+    hidev($id("endTurnButton"));
+    hidev($id("endCombatButton"));
 }
 
 function uiEndCombatAnimationDone(this: HTMLElement) {
@@ -662,8 +671,8 @@ function uiEndCombatAnimationDone(this: HTMLElement) {
 
     if(inCombat === true) {
         // enable buttons
-        $("#endTurnButton").css("visibility", "visible")
-        $("#endCombatButton").css("visibility", "visible")
+        showv($id("endTurnButton"));
+        showv($id("endCombatButton"));
     }
 }
 
@@ -775,7 +784,7 @@ function makeDraggable($el: HTMLElement, data: string, endCallback?: () => void)
 function uiInventoryScreen() {
     uiMode = UI_MODE_INVENTORY
 
-    $("#inventoryBox").css("visibility", "visible")
+    showv($id("inventoryBox"));
     drawInventory($("#inventoryBoxList"), player.inventory, (obj: Obj, e: MouseEvent) => {
         makeItemContextMenu(e, obj, "inventory")
     })
@@ -825,7 +834,7 @@ function uiInventoryScreen() {
                                classes: ["itemContextMenuButton"],
                                click: () => {
                                     itemAction(obj, slot, action)
-                                    $("#itemContextMenu").css("visibility", "hidden")
+                                    hidev($id("itemContextMenu"));
                                }
         });
     }
@@ -1019,7 +1028,7 @@ function uiEndBarterMode() {
     const $barterBox = $id("barterBox");
 
     uiAnimateBox($barterBox, null, 480, () => {
-        $("#barterBox").css("visibility", "hidden")
+        hidev($id("barterBox"));
         $("#barterBoxLeft").off("drop dragenter dragover")
         $("#barterBoxRight").off("drop dragenter dragover")
         $("#barterBoxInventoryLeft").off("drop dragenter dragover")
@@ -1183,7 +1192,7 @@ function uiBarterMode(merchant: Critter) {
 function uiEndLoot() {
     uiMode = UI_MODE_NONE
     
-    $("#lootBox").css("visibility", "hidden")
+    hidev($id("lootBox"));
     $("#lootBoxLeft").off("drop dragenter dragover")
     $("#lootBoxRight").off("drop dragenter dragover")
     $("#lootBoxTakeAllButton").off("click")
@@ -1234,7 +1243,7 @@ function uiLoot(object: Obj) {
 
     console.log("looting...")
 
-    $("#lootBox").css("visibility", "visible")
+    showv($id("lootBox"));
 
     // loot drop targets
     makeDropTarget($id("lootBoxLeft"), (data: string) => { uiLootMove(data, "left") })
@@ -1266,8 +1275,8 @@ function uiCloseWorldMap() {
     uiMode = UI_MODE_NONE
 
     hide($id("worldMapContainer"));
-    $("#areamap").css("visibility", "hidden")
-    $("#worldmap").css("visibility", "hidden")
+    hidev($id("areamap"));
+    hidev($id("worldmap"));
 
     Worldmap.stop()
 }
@@ -1353,11 +1362,11 @@ function uiWorldMapLabels() {
 
 function uiElevatorDone() {
     uiMode = UI_MODE_NONE
-    $("#elevatorBox").css("visibility", "hidden")
+    hidev($id("elevatorBox"));
 
     // flip all buttons to hidden
     $(".elevatorButton").css("visibility", "hidden").off("click")
-    $("#elevatorLabel").css("visibility", "hidden")
+    hidev($id("elevatorLabel"));
 }
 
 function uiElevator(elevator: Elevator) {
@@ -1435,7 +1444,7 @@ function uiCalledShot(art: string, target: Critter, callback?: (regionHit: strin
     drawChance("leftLeg")
     drawChance("rightLeg")
 
-    $("#calledShotBackground").css("background-image", "url('" + art + ".png')")
+    $id("calledShotBackground").style.backgroundImage = `url('${art}.png')`;
 
     $(".calledShotLabel").click((evt: JqEvent<MouseEvent>) => {
         var id = evt.target.id

@@ -495,7 +495,7 @@ module Worldmap {
 			const ay = y + this.scrollTop
 
 			worldmapPlayer.target = {x: ax, y: ay}
-			$worldmapPlayer.css("visibility", "visible")
+			showv($worldmapPlayer[0]);
 			$worldmapTarget.css({backgroundImage: "url('art/intrface/wmaptarg.png')",
 				                 left: ax, top: ay})
 			console.log("targeting: " + ax + ", " + ay)
@@ -566,8 +566,8 @@ module Worldmap {
 		setSquareStateAt(positionToSquare(worldmapPlayer), WORLDMAP_DISCOVERED)
 
 		if(withinArea(worldmapPlayer) !== null) {
-			$worldmapPlayer.css("visibility", "hidden")
-			$worldmapTarget.css("backgroundImage", "url('art/intrface/hotspot1.png')")
+			hidev($worldmapPlayer[0]);
+			$worldmapTarget[0].style.backgroundImage = "url('art/intrface/hotspot1.png')";
 		}
 
 		// updateWorldmapPlayer()
@@ -614,8 +614,8 @@ module Worldmap {
 		    	worldmapPlayer.y = worldmapPlayer.target.y
 		    	worldmapPlayer.target = null
 
-		    	$worldmapPlayer.css("visibility", "hidden")
-		    	$worldmapTarget.css("backgroundImage", "url('art/intrface/hotspot1.png')")
+		    	hidev($worldmapPlayer[0]);
+		    	$worldmapTarget[0].style.backgroundImage = "url('art/intrface/hotspot1.png')";
     			centerWorldmapTarget(worldmapPlayer.x, worldmapPlayer.y)
 		    }
 		    else {
@@ -649,14 +649,14 @@ module Worldmap {
 
 			    const hadEncounter = didEncounter()
 			    if(hadEncounter === true) {
-			    	$worldmapPlayer.css("backgroundImage", "url('art/intrface/wmapfgt0.png')")
+			    	$worldmapPlayer[0].style.backgroundImage = "url('art/intrface/wmapfgt0.png')";
 
 			    	// TODO: Disable Worldmap UI while waiting on this!
 
 			    	setTimeout(function() {
 				    	doEncounter()
 				    	uiCloseWorldMap()
-				    	$worldmapPlayer.css("backgroundImage", "url('art/intrface/wmaploc.png')")
+				    	$worldmapPlayer[0].style.backgroundImage = "url('art/intrface/wmaploc.png')";
 				    }, 1000)
 
 			    	clearTimeout(worldmapTimer)
