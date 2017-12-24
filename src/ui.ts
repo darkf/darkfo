@@ -510,10 +510,9 @@ function initUI() {
     makeDropTarget($id("inventoryBoxItem1"), (data: string) => { uiMoveSlot(data, "leftHand") })
     makeDropTarget($id("inventoryBoxItem2"), (data: string) => { uiMoveSlot(data, "rightHand") })
 
-    for(var i = 0; i < 2; i++) {
-        $("#calledShotBox .calledShotChance")
-           .append(
-              $("<div class='number'>").css("left", i*9).attr("id", "digit" + (i+1)))
+    for(let i = 0; i < 2; i++) {
+        for(const $chance of Array.from(document.querySelectorAll("#calledShotBox .calledShotChance")))
+            $chance.appendChild(makeEl("div", { classes: ["number"], style: { left: (i*9) + "px" }, id: "digit" + (i+1) }));
     }
 
     $id("calledShotCancelBtn").onclick = () => { uiCloseCalledShot() }
