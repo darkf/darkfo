@@ -1320,27 +1320,24 @@ function uiWorldMapShowArea(area: Area) {
     $areamap.style.backgroundImage = `url('${area.mapArt}.png')`;
     clearEl($areamap);
 
-    var entrances = area.entrances
-    for(var j = 0; j < entrances.length; j++) {
-        console.log("entrance: " + entrances[j].mapLookupName)
+    for(const entrance of area.entrances) {
+        console.log("Area entrance: " + entrance.mapLookupName)
         var $entranceEl = $("<div class='worldmapEntrance'>")
         var $hotspot = $("<div class='worldmapEntranceHotspot'>")
 
-        $hotspot.click((function(entrance) {
-            return function() {
-                // hotspot click -- travel to relevant map
-                var mapName = lookupMapNameFromLookup(entrance.mapLookupName)
-                console.log("hotspot -> " + mapName + " (via " +
-                            entrance.mapLookupName + ")")
-                gMap.loadMap(mapName)
-                uiCloseWorldMap()
-            }
-        })(entrances[j]))
+        $hotspot[0].onclick = () => {
+            // hotspot click -- travel to relevant map
+            const mapName = lookupMapNameFromLookup(entrance.mapLookupName)
+            console.log("hotspot -> " + mapName + " (via " +
+                        entrance.mapLookupName + ")")
+            gMap.loadMap(mapName)
+            uiCloseWorldMap()
+        };
 
         $entranceEl[0].appendChild($hotspot[0])
-        appendHTML($entranceEl[0], entrances[j].mapLookupName);
-        $entranceEl[0].style.left = entrances[j].x + "px";
-        $entranceEl[0].style.top = entrances[j].y + "px";
+        appendHTML($entranceEl[0], entrance.mapLookupName);
+        $entranceEl[0].style.left = entrance.x + "px";
+        $entranceEl[0].style.top = entrance.y + "px";
         $id("areamap").appendChild($entranceEl[0]);
     }
 }
