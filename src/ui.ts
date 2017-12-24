@@ -1454,13 +1454,15 @@ function uiCalledShot(art: string, target: Critter, callback?: (regionHit: strin
 
     $id("calledShotBackground").style.backgroundImage = `url('${art}.png')`;
 
-    $(".calledShotLabel").click((evt: JqEvent<MouseEvent>) => {
-        var id = evt.target.id
-        var regionHit = id.split("-")[1]
-        console.log("clicked a called location (%s)", regionHit)
-        if(callback)
-            callback(regionHit)
-    })
+    for(const $label of $qa(".calledShotLabel")) {
+        $label.onclick = (evt: MouseEvent) => {
+            var id = (evt.target as HTMLElement).id
+            var regionHit = id.split("-")[1]
+            console.log("clicked a called location (%s)", regionHit)
+            if(callback)
+                callback(regionHit)
+        };
+    }
 }
 
 function uiSaveLoad(isSave: boolean): void {

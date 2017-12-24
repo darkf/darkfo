@@ -482,7 +482,7 @@ module Worldmap {
 		if(!mapAreas)
 			mapAreas = loadAreas()
 
-		$worldmap.click(function(this: HTMLElement, e: JqEvent<MouseEvent>) {
+		$worldmap[0].onclick = function(this: HTMLElement, e: MouseEvent) {
 			// Calculate viewport-relative offset
 			const box = this.getBoundingClientRect();
 			const offsetLeft = box.left|0 + window.pageXOffset;
@@ -499,9 +499,9 @@ module Worldmap {
 			Object.assign($worldmapTarget[0].style, { backgroundImage: "url('art/intrface/wmaptarg.png')",
 				                 left: ax + "px", top: ay + "px"});
 			console.log("targeting: " + ax + ", " + ay)
-		})
+		};
 
-		$worldmapTarget.click(function(e) {
+		$worldmapTarget[0].onclick = function(e: MouseEvent) {
 			const area = withinArea(worldmapPlayer)
 			if(area !== null) {
 				// we're on a hotspot, visit the area map
@@ -511,7 +511,7 @@ module Worldmap {
 			else {
 				// we're in an open area, do nothing
 			}
-		})
+		};
 
 		for(const key in mapAreas) {
 			const area = mapAreas[key]
