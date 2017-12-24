@@ -558,7 +558,7 @@ function initUI() {
 
     $id("lootBoxDoneButton").onclick = () => { uiEndLoot(); }
 
-    $("#attackButtonContainer").click(() => {
+    $id("attackButtonContainer").onclick = () => {
         if(!Config.engine.doCombat) return
         if(inCombat) {
             // TODO: targeting reticle for attacks
@@ -567,13 +567,15 @@ function initUI() {
             // begin combat
             Combat.start()
         }
-    }).bind("contextmenu", () => { // right mouse button (cycle weapon modes)
+    };
+    
+    $id("attackButtonContainer").oncontextmenu = () => { // right mouse button (cycle weapon modes)
         var wep = critterGetEquippedWeapon(player)
         if(!wep) return false
         wep.weapon.cycleMode()
         uiDrawWeapon()
         return false
-    })
+    };
 
     $id("endTurnButton").onclick = () => {
         if(inCombat && combat.inPlayerTurn) {
@@ -1174,8 +1176,8 @@ function uiBarterMode(merchant: Critter) {
     makeDropTarget($id("barterBoxInventoryLeft"), (data: string) => { uiBarterMove(data, "leftInv") })
     makeDropTarget($id("barterBoxInventoryRight"), (data: string) => { uiBarterMove(data, "rightInv") })
 
-    $("#barterTalkButton").click(uiEndBarterMode)
-    $("#barterOfferButton").click(offer)
+    $id("barterTalkButton").onclick = uiEndBarterMode;
+    $id("barterOfferButton").onclick = offer;
 
     function redrawBarterInventory() {
         drawInventory($("#barterBoxInventoryLeft"), "p", workingPlayerInventory)
@@ -1253,13 +1255,13 @@ function uiLoot(object: Obj) {
     makeDropTarget($id("lootBoxLeft"), (data: string) => { uiLootMove(data, "left") })
     makeDropTarget($id("lootBoxRight"), (data: string) => { uiLootMove(data, "right") })
 
-    $("#lootBoxTakeAllButton").click(() => {
+    $id("lootBoxTakeAllButton").onclick = () => {
         console.log("take all...")
         var inv = object.inventory.slice(0) // clone inventory
         for(var i = 0; i < inv.length; i++)
             uiSwapItem(object.inventory, inv[i], player.inventory, inv[i].amount)
         drawLoot()
-    })
+    };
 
     function drawLoot() {
         drawInventory($("#lootBoxLeft"), "l", player.inventory)
