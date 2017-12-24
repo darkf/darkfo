@@ -41,7 +41,6 @@ interface JqEvent<EventType extends Event> {
 type JQueryFn = (_: string|HTMLElement) => Jq;
 type JQuery = JQueryFn & {
     isNumeric: (_: string) => boolean;
-    ajax: (path: string, options: any) => void;
     extend: any;
 };
 

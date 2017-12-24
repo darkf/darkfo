@@ -48,50 +48,51 @@ function parseIni(text: string) {
 }
 
 function getFileText(path: string, err?: () => void): string {
-	let r = null
-	$.ajax(path, {async: false,
-		          success: (text: string) => { r = text },
-		          error: err || (() => { throw "getFileText: error getting path " + path }),
-		          dataType: "text"})
-	return r as string
+	const xhr = new XMLHttpRequest();
+	xhr.open("GET", path, false);
+	xhr.send(null);
+	if(xhr.status !== 200)
+		throw Error(`getFileText: got status ${xhr.status} when requesting '${path}'`);
+
+	return xhr.responseText;
 }
 
 function getFileJSON(path: string, err?: () => void): any {
-	var r = null
-	$.ajax(path, {async: false,
-		          success: (obj: any) => { r = obj },
-		          error: err || (() => { throw "getFileText: error getting path " + path }),
-		          dataType: "json"})
-	return r
+	return JSON.parse(getFileText(path, err));
 }
 
 // GET binary data into a DataView
 function getFileBinaryAsync(path: string, callback: (data: DataView) => void) {
-	var xhr = new XMLHttpRequest()
-	xhr.open("GET", path, true)
-	xhr.responseType = "arraybuffer"
-	xhr.onload = function(evt) { callback(new DataView(xhr.response)) }
-	xhr.send(null)
+	const xhr = new XMLHttpRequest();
+	xhr.open("GET", path, true);
+	xhr.responseType = "arraybuffer";
+	xhr.onload = (evt) => { callback(new DataView(xhr.response)); };
+	xhr.send(null);
 }
 
 function getFileBinarySync(path: string) {
-	var xhr = new XMLHttpRequest()
-	xhr.open("GET", path, false)
-	// tell browser not to mess with the response
-	xhr.overrideMimeType('text\/plain; charset=x-user-defined')
-	xhr.send(null)
+	// Synchronous requests aren't allowed by browsers to define response types
+	// in a misguided attempt to force developers to switch to asynchronous requests,
+	// so we transfer as a user-defined charset and then decode it manually.
+	
+	const xhr = new XMLHttpRequest();
+	xhr.open("GET", path, false);
+	// Tell browser not to mess with the response type/encoding
+	xhr.overrideMimeType("text/plain; charset=x-user-defined");
+	xhr.send(null);
+
 	if(xhr.status !== 200)
-		throw "getFileBinarySync: got status " + xhr.status + " when requesting " + path
+		throw Error(`getFileBinarySync: got status ${xhr.status} when requesting '${path}'`);
 
-	// convert to ArrayBuffer, and then DataView
-	var data = xhr.responseText
-	var buffer = new ArrayBuffer(data.length)
-	var arr = new Uint8Array(buffer)
+	// Convert to ArrayBuffer, and then to DataView
+	const data = xhr.responseText;
+	const buffer = new ArrayBuffer(data.length);
+	const arr = new Uint8Array(buffer);
 
-	for(var i = 0; i < data.length; i++)
-		arr[i] = data.charCodeAt(i) & 0xff
+	for(let i = 0; i < data.length; i++)
+		arr[i] = data.charCodeAt(i) & 0xff;
 
-	return new DataView(buffer)
+	return new DataView(buffer);
 }
 
 // Min inclusive, max inclusive
