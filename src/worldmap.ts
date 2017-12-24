@@ -517,26 +517,26 @@ module Worldmap {
 			const area = mapAreas[key]
 			if(area.state !== true) continue
 
-			const $area = $("<div>").addClass("area").appendTo($worldmap)
+			const $area = makeEl("div", { classes: ["area"] });
+			$worldmap[0].appendChild($area);
 
 			//console.log("adding one @ " + area.worldPosition.x + ", " + area.worldPosition.y)
-			const $el = $("<div>").addClass("areaCircle")
-			                      .addClass("areaSize-" + area.size)
-			                      .appendTo($area)
+			const $el = makeEl("div", { classes: ["areaCircle", "areaSize-" + area.size] });
+			$area.appendChild($el);
 
 			// transform the circle since (0,0) is the top-left instead of center
-			const x = area.worldPosition.x - $el[0].offsetWidth / 2
-			const y = area.worldPosition.y - $el[0].offsetHeight / 2
+			const x = area.worldPosition.x - $el.offsetWidth / 2
+			const y = area.worldPosition.y - $el.offsetHeight / 2
 			//console.log("adding one @ " + x + ", " + y + " | " + $el.width() + ", " + $el.height())
 			//console.log("size = " + area.size)
-			$area.css({left: x, top: y})
+			$area.style.left = x + "px";
+			$area.style.top = y + "px";
 
 			//if(area.name==="Arroyo")console.log("ARROYO IS " + key)
 
-			const $label = $("<div>").addClass("areaLabel")
-			                         .css({left: 0, top: 2 + $el[0].offsetHeight})
-			                         .appendTo($area)
-			$label[0].textContent = area.name;
+			const $label = makeEl("div", { classes: ["areaLabel"], style: { left: "0px", top: (2 + $el.offsetHeight) + "px" } });
+			$area.appendChild($label);
+			$label.textContent = area.name;
 		}
 
 		for(let x = 0; x < NUM_SQUARES_X; x++) {
@@ -546,12 +546,16 @@ module Worldmap {
 				else if(state === WORLDMAP_DISCOVERED) state = "discovered"
 				else if(state === WORLDMAP_SEEN) state = "seen"
 
-				$("<div>").addClass("worldmapSquare")
-				          .addClass("worldmapSquare-" + state)
-				          .attr("square-x", x)
-				          .attr("square-y", y)
-				          .css({left: x*SQUARE_SIZE, top: y*SQUARE_SIZE})
-				          .appendTo($worldmap)
+				const $el = makeEl("div", { classes: ["worldmapSquare", "worldmapSquare-" + state],
+											style: {
+												left: (x*SQUARE_SIZE) + "px",
+												top: (y*SQUARE_SIZE) + "px"
+											}
+				});
+
+				$el.setAttribute("square-x", x + "");
+				$el.setAttribute("square-y", y + "");
+				$worldmap[0].appendChild($el);
 			}
 		}
 
