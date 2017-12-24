@@ -486,6 +486,12 @@ function hidev($el: HTMLElement): void {
     $el.style.visibility = "hidden";
 }
 
+function off($el: HTMLElement, events: string): void {
+    const eventList = events.split(" ");
+    for(const event of eventList)
+        (<any>$el)["on" + event] = null;
+}
+
 function appendHTML($el: HTMLElement, html: string): void {
     $el.insertAdjacentHTML("beforeend", html);
 }
@@ -1035,12 +1041,12 @@ function uiEndBarterMode() {
 
     uiAnimateBox($barterBox, null, 480, () => {
         hidev($id("barterBox"));
-        $("#barterBoxLeft").off("drop dragenter dragover")
-        $("#barterBoxRight").off("drop dragenter dragover")
-        $("#barterBoxInventoryLeft").off("drop dragenter dragover")
-        $("#barterBoxInventoryRight").off("drop dragenter dragover")
-        $("#barterTalkButton").off("click")
-        $("#barterOfferButton").off("click")
+        off($id("barterBoxLeft"), "drop dragenter dragover");
+        off($id("barterBoxRight"), "drop dragenter dragover");
+        off($id("barterBoxInventoryLeft"), "drop dragenter dragover");
+        off($id("barterBoxInventoryRight"), "drop dragenter dragover");
+        off($id("barterTalkButton"), "click");
+        off($id("barterOfferButton"), "click");
         
         uiStartDialogue(true) // force dialogue mode
     });
@@ -1199,9 +1205,9 @@ function uiEndLoot() {
     uiMode = UI_MODE_NONE
     
     hidev($id("lootBox"));
-    $("#lootBoxLeft").off("drop dragenter dragover")
-    $("#lootBoxRight").off("drop dragenter dragover")
-    $("#lootBoxTakeAllButton").off("click")
+    off($id("lootBoxLeft"), "drop dragenter dragover");
+    off($id("lootBoxRight"), "drop dragenter dragover");
+    off($id("lootBoxTakeAllButton"), "click");
 }
 
 function uiLoot(object: Obj) {
