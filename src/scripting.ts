@@ -912,7 +912,10 @@ module scriptingEngine {
 			var msg = msgID
 			if(typeof msgID !== "string")
 				msg = getScriptMessage(msgList, msgID)
-			$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br><a href=\"javascript:dialogueEnd()\">[Done]</a><br>")
+			
+			// TODO: XXX: This has bitrotted, #dialogue no longer exists. [Done] needs testing.
+			// $("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br><a href=\"javascript:dialogueEnd()\">[Done]</a><br>")
+			// appendHTML($id("dialogue"), `&nbsp;&nbsp;"${msg}"<br><a href="javascript:dialogueEnd()">[Done]</a><br>`);
 		},
 		gsay_end: function() { stub("gSay_End", arguments) },
 		end_dialogue: function() { stub("end_dialogue", arguments) },

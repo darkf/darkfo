@@ -473,6 +473,10 @@ function hide($el: HTMLElement): void {
     $el.style.display = "none";
 }
 
+function appendHTML($el: HTMLElement, html: string): void {
+    $el.insertAdjacentHTML("beforeend", html);
+}
+
 interface ElementOptions {
     id?: string;
     src?: string;
@@ -1319,13 +1323,11 @@ function uiWorldMapShowArea(area: Area) {
             }
         })(entrances[j]))
 
-        $entranceEl.append($hotspot)
-        $entranceEl.append(entrances[j].mapLookupName)
-        $entranceEl.css({
-            left: entrances[j].x,
-            top:  entrances[j].y
-        })
-        $("#areamap").append($entranceEl)
+        $entranceEl[0].appendChild($hotspot[0])
+        appendHTML($entranceEl[0], entrances[j].mapLookupName);
+        $entranceEl[0].style.left = entrances[j].x + "px";
+        $entranceEl[0].style.top = entrances[j].y + "px";
+        $id("areamap").appendChild($entranceEl[0]);
     }
 }
 
