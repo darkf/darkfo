@@ -164,7 +164,6 @@ module scriptingEngine {
 	}
 
 	function dialogueExit() {
-		//$("#dialogue").css("visibility", "hidden") // todo: some sort of transition
 		uiEndDialogue()
 		info("[dialogue exit]")
 
@@ -177,13 +176,6 @@ module scriptingEngine {
 		}
 
 		currentDialogueObject = null
-	}
-
-	function endBarter() {
-		// End barter mode -- back to dialogue mode
-		$("#dialogue").css("visibility", "visible")
-		$("#barterLeft, #barterRight").css("visibility", "hidden")
-		clearEl($id("inventory"));
 	}
 
 	function canSee(obj: Obj, target: Obj): boolean {
@@ -890,7 +882,6 @@ module scriptingEngine {
 		start_gdialog: function(msgFileID: number, obj: Obj, mood: number, headNum: number, backgroundID: number) {
 			log("start_gdialog", arguments)
 			info("DIALOGUE START", "dialogue")
-			//$("#dialogue").css("visibility", "visible").html("[ DIALOGUE INTENSIFIES ]<br>")
 			if(!this.self_obj) throw "no self_obj for start_gdialog"
 			currentDialogueObject = this.self_obj
 		    uiStartDialogue(false, this.self_obj)
@@ -902,7 +893,6 @@ module scriptingEngine {
 			log("gSay_Reply", arguments)
 			var msg = getScriptMessage(msgList, msgID)
 			info("REPLY: " + msg, "dialogue")
-			//$("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br>")
 			uiSetDialogueReply(msg)
 		},
 		gsay_message: function(msgList: number, msgID: string|number, reaction: number) {

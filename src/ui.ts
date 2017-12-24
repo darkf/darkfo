@@ -944,6 +944,7 @@ function uiStartDialogue(force: boolean, target?: Critter) {
 }
 
 function uiEndDialogue() {
+    // TODO: Transition the dialogue box down?
     uiMode = UI_MODE_NONE;
 
     $id("dialogueContainer").style.visibility = "hidden";

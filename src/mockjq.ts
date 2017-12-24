@@ -4,9 +4,7 @@ interface Jq {
     css(prop: string): string;
     css(prop: string, value: string|number): this;
     css(props: { [prop: string]: string|number }): this;
-    
-    appendTo(other: Jq): this;
-                    
+                        
     on<T extends Event>(event: string, handler: (e?: JqEvent<T>) => void): this;
     bind<T extends Event>(event: string, handler: (e?: JqEvent<T>) => void): this;
     click<T extends Event>(_: (e?: JqEvent<T>) => void): this;
