@@ -550,11 +550,12 @@ module Worldmap {
 											style: {
 												left: (x*SQUARE_SIZE) + "px",
 												top: (y*SQUARE_SIZE) + "px"
+											},
+											attrs: {
+												"square-x": x + "",
+												"square-y": y + ""
 											}
 				});
-
-				$el.setAttribute("square-x", x + "");
-				$el.setAttribute("square-y", y + "");
 				$worldmap[0].appendChild($el);
 			}
 		}

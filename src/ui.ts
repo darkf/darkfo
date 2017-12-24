@@ -480,6 +480,7 @@ interface ElementOptions {
     click?: (e: MouseEvent) => void;
     style?: { [key in keyof CSSStyleDeclaration]?: string };
     children?: HTMLElement[];
+    attrs?: { [key: string]: string|number };
 }
 
 function makeEl(tag: string, options: ElementOptions): HTMLElement {
@@ -493,6 +494,10 @@ function makeEl(tag: string, options: ElementOptions): HTMLElement {
     if(options.children !== undefined) {
         for(const child of options.children)
             $el.appendChild(child);
+    }
+    if(options.attrs !== undefined) {
+        for(const prop in options.attrs)
+            $el.setAttribute(prop, options.attrs[prop] + "");
     }
 
     return $el;
