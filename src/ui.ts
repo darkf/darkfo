@@ -473,6 +473,31 @@ function hide($el: HTMLElement): void {
     $el.style.display = "none";
 }
 
+interface ElementOptions {
+    id?: string;
+    src?: string;
+    classes?: string[];
+    click?: (e: MouseEvent) => void;
+    style?: { [key in keyof CSSStyleDeclaration]?: string };
+    children?: HTMLElement[];
+}
+
+function makeEl(tag: string, options: ElementOptions): HTMLElement {
+    const $el = document.createElement(tag);
+
+    if(options.id !== undefined) $el.id = options.id;
+    if(options.src !== undefined) ($el as HTMLImageElement).src = options.src;
+    if(options.classes !== undefined) $el.className = options.classes.join(" ");
+    if(options.click !== undefined) $el.onclick = options.click;
+    if(options.style !== undefined) Object.assign($el.style, options.style);
+    if(options.children !== undefined) {
+        for(const child of options.children)
+            $el.appendChild(child);
+    }
+
+    return $el;
+}
+
 function initUI() {
     Ui.init();
 
@@ -579,12 +604,10 @@ function uiContextMenu(obj: Obj, evt: any) {
     uiMode = UI_MODE_CONTEXT_MENU
 
     function button(obj: Obj, action: string, onclick: () => void) {
-        return $("<img>").attr("id", "context_" + action).
-                          addClass("itemContextMenuButton").
-                          click(function() {
-                                onclick()
-                                uiHideContextMenu()
-                          })
+        return makeEl("img", { id: "context_" + action,
+                               classes: ["itemContextMenuButton"],
+                               click: () => { onclick(); uiHideContextMenu(); }
+        });
     }
 
     var $menu = $id("itemContextMenu");
@@ -603,13 +626,13 @@ function uiContextMenu(obj: Obj, evt: any) {
     })
     var pickupBtn = button(obj, "pickup", () => pickupObject(obj, player))
 
-    $menu.appendChild(cancelBtn[0])
-    $menu.appendChild(lookBtn[0])
+    $menu.appendChild(cancelBtn)
+    $menu.appendChild(lookBtn)
     if(obj._script && obj._script.talk_p_proc !== undefined)
-        $menu.appendChild(talkBtn[0])
+        $menu.appendChild(talkBtn)
     if(canUseObject(obj))
-        $menu.appendChild(useBtn[0])
-    $menu.appendChild(pickupBtn[0])
+        $menu.appendChild(useBtn)
+    $menu.appendChild(pickupBtn)
 }
 
 function uiStartCombat() {
@@ -785,12 +808,13 @@ function uiInventoryScreen() {
     }
 
     function makeContextButton(obj: Obj, slot: keyof Player, action: "cancel"|"use"|"drop") {
-        return $("<img>").attr("id", "context_" + action).
-                          addClass("itemContextMenuButton").
-                          click(() => {
-                              itemAction(obj, slot, action)
-                              $("#itemContextMenu").css("visibility", "hidden")
-        })
+        return makeEl("img", { id: "context_" + action,
+                               classes: ["itemContextMenuButton"],
+                               click: () => {
+                                    itemAction(obj, slot, action)
+                                    $("#itemContextMenu").css("visibility", "hidden")
+                               }
+        });
     }
 
     function makeItemContextMenu(e: MouseEvent, obj: Obj, slot: keyof Player) {
@@ -805,10 +829,10 @@ function uiInventoryScreen() {
         var useBtn = makeContextButton(obj, slot, "use")
         var dropBtn = makeContextButton(obj, slot, "drop")
 
-        $menu.appendChild(cancelBtn[0])
+        $menu.appendChild(cancelBtn)
         if(canUseObject(obj))
-            $menu.appendChild(useBtn[0])
-        $menu.appendChild(dropBtn[0])
+            $menu.appendChild(useBtn)
+        $menu.appendChild(dropBtn)
     }
 
     function drawSlot(slot: keyof Player, slotID: string) {
@@ -1303,15 +1327,13 @@ function uiWorldMapLabels() {
         var area = mapAreas[areaID]
         if(!area.labelArt) continue
 
-        var label = $("<img>").addClass("worldMapLabelImage").
-                               attr("src", area.labelArt + ".png")
-        var labelButton = $("<div>").addClass("worldMapLabelButton")
-                                    .click(() => { uiWorldMapShowArea(mapAreas[areaID]) })
+        var label = makeEl("img", { classes: ["worldMapLabelImage"], src: area.labelArt + ".png" });
+        var labelButton = makeEl("div", { classes: ["worldMapLabelButton"],
+                                          click: () => { uiWorldMapShowArea(mapAreas[areaID]) } });
 
-        var areaLabel = $("<div>").addClass("worldMapLabel").
-                                   css({top: 1 + i*(27)}).
-                                   append(label).append(labelButton)
-        $("#worldMapLabels").append(areaLabel)      
+        var areaLabel = makeEl("div", { classes: ["worldMapLabel"], style: {top: (1 + i*27) + "px"},
+                                        children: [label, labelButton] });
+        $id("worldMapLabels").appendChild(areaLabel)
         i++ 
     }
 }
