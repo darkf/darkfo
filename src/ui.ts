@@ -1393,36 +1393,34 @@ function uiElevator(elevator: Elevator) {
     $elevatorBox.style.backgroundImage = `url('${art}.png')`;
 
     // flip the buttons we need visible
-    for(var i = 1; i <= elevator.buttonCount; i++) {
-        const $elevatorButton = $("#elevatorButton" + i);
-        showv($elevatorButton[0]);
-        $elevatorButton.click(function(i) {
-            return function() {
-                // button i pushed
-                // todo: animate positioner/spinner (and come up with a better name for that)
+    for(let i = 1; i <= elevator.buttonCount; i++) {
+        const $elevatorButton = $id("elevatorButton" + i);
+        showv($elevatorButton);
+        $elevatorButton.onclick = () => {
+            // button `i` pushed
+            // todo: animate positioner/spinner (and come up with a better name for that)
 
-                var mapID = elevator.buttons[i-1].mapID
-                var level = elevator.buttons[i-1].level
-                var position = fromTileNum(elevator.buttons[i-1].tileNum)
+            var mapID = elevator.buttons[i-1].mapID
+            var level = elevator.buttons[i-1].level
+            var position = fromTileNum(elevator.buttons[i-1].tileNum)
 
-                if(mapID !== gMap.mapID) {
-                    // different map
-                    console.log("elevator -> map " + mapID + ", level " + level + " @ " +
-                                position.x + ", " + position.y)
-                    gMap.loadMapByID(mapID, position, level)
-                }
-                else if(level !== currentElevation) {
-                    // same map, different elevation
-                    console.log("elevator -> level " + level + " @ " + 
-                                position.x + ", " + position.y)
-                    player.move(position)
-                    gMap.changeElevation(level, true)
-                }
-
-                // else, same elevation, do nothing
-                uiElevatorDone()
+            if(mapID !== gMap.mapID) {
+                // different map
+                console.log("elevator -> map " + mapID + ", level " + level + " @ " +
+                            position.x + ", " + position.y)
+                gMap.loadMapByID(mapID, position, level)
             }
-        }(i))
+            else if(level !== currentElevation) {
+                // same map, different elevation
+                console.log("elevator -> level " + level + " @ " + 
+                            position.x + ", " + position.y)
+                player.move(position)
+                gMap.changeElevation(level, true)
+            }
+
+            // else, same elevation, do nothing
+            uiElevatorDone()
+        };
     }
 }
 
