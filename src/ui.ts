@@ -462,10 +462,7 @@ function $qa(selector: string): HTMLElement[] {
     return Array.from(document.querySelectorAll(selector));
 }
 
-function clearEl($el: HTMLElement|Jq): void {
-    if(!($el instanceof HTMLElement))
-        $el = $el[0];
-
+function clearEl($el: HTMLElement): void {
     $el.innerHTML = "";
 }
 
@@ -797,11 +794,11 @@ function uiInventoryScreen() {
     uiMode = UI_MODE_INVENTORY
 
     showv($id("inventoryBox"));
-    drawInventory($("#inventoryBoxList"), player.inventory, (obj: Obj, e: MouseEvent) => {
+    drawInventory($id("inventoryBoxList"), player.inventory, (obj: Obj, e: MouseEvent) => {
         makeItemContextMenu(e, obj, "inventory")
     })
 
-    function drawInventory($el: Jq, objects: Obj[], clickCallback?: (item: Obj, e: MouseEvent) => void) {
+    function drawInventory($el: HTMLElement, objects: Obj[], clickCallback?: (item: Obj, e: MouseEvent) => void) {
         clearEl($el);
         clearEl($id("inventoryBoxItem1"));
         clearEl($id("inventoryBoxItem2"));
@@ -812,8 +809,8 @@ function uiInventoryScreen() {
             const img = makeEl("img", { src: invObj.invArt+'.png',
                                         attrs: { width: 72, height: 60, title: invObj.name },
                                         click: clickCallback ? (e: MouseEvent) => { clickCallback(invObj, e); } : undefined });
-            $el[0].appendChild(img);
-            $el[0].insertAdjacentHTML("beforeend", "x" + invObj.amount);
+            $el.appendChild(img);
+            $el.insertAdjacentHTML("beforeend", "x" + invObj.amount);
             makeDraggable(img, "i" + i, () => { uiInventoryScreen(); });
         }
     }
@@ -1124,7 +1121,7 @@ function uiBarterMode(merchant: Critter) {
         }
     }
 
-    function drawInventory($el: Jq, who: "p"|"m"|"l"|"r", objects: Obj[]) {
+    function drawInventory($el: HTMLElement, who: "p"|"m"|"l"|"r", objects: Obj[]) {
         clearEl($el);
 
         for(var i = 0; i < objects.length; i++) {
@@ -1132,8 +1129,8 @@ function uiBarterMode(merchant: Critter) {
             // 90x60 // 70x40
             var img = makeEl("img", { src: inventoryImage+'.png',
                                       attrs: { width: 72, height: 60, title: objects[i].name } });
-            $el[0].appendChild(img);
-            $el[0].insertAdjacentHTML("beforeend", "x" + objects[i].amount);
+            $el.appendChild(img);
+            $el.insertAdjacentHTML("beforeend", "x" + objects[i].amount);
             makeDraggable(img, who + i)
         }
     }
@@ -1186,10 +1183,10 @@ function uiBarterMode(merchant: Critter) {
     $id("barterOfferButton").onclick = offer;
 
     function redrawBarterInventory() {
-        drawInventory($("#barterBoxInventoryLeft"), "p", workingPlayerInventory)
-        drawInventory($("#barterBoxInventoryRight"), "m", workingMerchantInventory)
-        drawInventory($("#barterBoxLeft"), "l", playerBarterTable)
-        drawInventory($("#barterBoxRight"), "r", merchantBarterTable)
+        drawInventory($id("barterBoxInventoryLeft"), "p", workingPlayerInventory)
+        drawInventory($id("barterBoxInventoryRight"), "m", workingMerchantInventory)
+        drawInventory($id("barterBoxLeft"), "l", playerBarterTable)
+        drawInventory($id("barterBoxRight"), "r", merchantBarterTable)
 
         var moneyLeft = totalAmount(playerBarterTable)
         var moneyRight = totalAmount(merchantBarterTable)
@@ -1239,7 +1236,7 @@ function uiLoot(object: Obj) {
         drawLoot()
     }
 
-    function drawInventory($el: Jq, who: "p"|"m"|"l"|"r", objects: Obj[]) {
+    function drawInventory($el: HTMLElement, who: "p"|"m"|"l"|"r", objects: Obj[]) {
         clearEl($el);
 
         for(var i = 0; i < objects.length; i++) {
@@ -1247,8 +1244,8 @@ function uiLoot(object: Obj) {
             // 90x60 // 70x40
             var img = makeEl("img", { src: inventoryImage+'.png',
                                       attrs: { width: 72, height: 60, title: objects[i].name } });
-            $el[0].appendChild(img);
-            $el[0].insertAdjacentHTML("beforeend", "x" + objects[i].amount);
+            $el.appendChild(img);
+            $el.insertAdjacentHTML("beforeend", "x" + objects[i].amount);
             makeDraggable(img, who + i);
         }
     }
@@ -1270,8 +1267,8 @@ function uiLoot(object: Obj) {
     };
 
     function drawLoot() {
-        drawInventory($("#lootBoxLeft"), "l", player.inventory)
-        drawInventory($("#lootBoxRight"), "r", object.inventory)
+        drawInventory($id("lootBoxLeft"), "l", player.inventory)
+        drawInventory($id("lootBoxRight"), "r", object.inventory)
     }
 
     drawLoot()

@@ -247,8 +247,8 @@ function initGame() {
 	$cnv.onmouseenter = () => { gameHasFocus = true; };
 	$cnv.onmouseleave = () => { gameHasFocus = false; };
 
-	tempCanvas = $("<canvas>")[0] as HTMLCanvasElement
-	tempCanvasCtx = tempCanvas.getContext("2d")
+	tempCanvas = document.createElement("canvas") as HTMLCanvasElement;
+	tempCanvasCtx = tempCanvas.getContext("2d");
 
 	SaveLoad.init()
 

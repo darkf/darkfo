@@ -21,9 +21,9 @@ limitations under the License.
 module Worldmap {
 	let worldmap: Worldmap = null
 	let worldmapPlayer: WorldmapPlayer = null
-	let $worldmap: Jq|null = null
-	let $worldmapPlayer: Jq|null = null
-	let $worldmapTarget: Jq|null = null
+	let $worldmap: HTMLElement|null = null
+	let $worldmapPlayer: HTMLElement|null = null
+	let $worldmapTarget: HTMLElement|null = null
 	let worldmapTimer: number = -1
 	let lastEncounterCheck = 0
 
@@ -452,8 +452,8 @@ module Worldmap {
 	}
 
 	function centerWorldmapTarget(x: number, y: number): void {
-		$worldmapTarget[0].style.left = (x - $worldmapTarget[0].offsetWidth/2|0) + "px";
-		$worldmapTarget[0].style.top = (y - $worldmapTarget[0].offsetHeight/2|0) + "px";
+		$worldmapTarget.style.left = (x - $worldmapTarget.offsetWidth/2|0) + "px";
+		$worldmapTarget.style.top = (y - $worldmapTarget.offsetHeight/2|0) + "px";
 	}
 
 	export function init(): void {
@@ -473,16 +473,16 @@ module Worldmap {
 			console.log(x + ", " + y)
 		})*/
 
-		$worldmapPlayer = $("#worldmapPlayer")
-		$worldmapTarget = $("#worldmapTarget")
-		$worldmap = $("#worldmap")
+		$worldmapPlayer = $id("worldmapPlayer")
+		$worldmapTarget = $id("worldmapTarget")
+		$worldmap = $id("worldmap")
 
 		worldmap = parseWorldmap(getFileText("data/data/worldmap.txt"))
 
 		if(!mapAreas)
 			mapAreas = loadAreas()
 
-		$worldmap[0].onclick = function(this: HTMLElement, e: MouseEvent) {
+		$worldmap.onclick = function(this: HTMLElement, e: MouseEvent) {
 			// Calculate viewport-relative offset
 			const box = this.getBoundingClientRect();
 			const offsetLeft = box.left|0 + window.pageXOffset;
@@ -495,13 +495,13 @@ module Worldmap {
 			const ay = y + this.scrollTop
 
 			worldmapPlayer.target = {x: ax, y: ay}
-			showv($worldmapPlayer[0]);
-			Object.assign($worldmapTarget[0].style, { backgroundImage: "url('art/intrface/wmaptarg.png')",
+			showv($worldmapPlayer);
+			Object.assign($worldmapTarget.style, { backgroundImage: "url('art/intrface/wmaptarg.png')",
 				                 left: ax + "px", top: ay + "px"});
 			console.log("targeting: " + ax + ", " + ay)
 		};
 
-		$worldmapTarget[0].onclick = function(e: MouseEvent) {
+		$worldmapTarget.onclick = function(e: MouseEvent) {
 			const area = withinArea(worldmapPlayer)
 			if(area !== null) {
 				// we're on a hotspot, visit the area map
@@ -518,7 +518,7 @@ module Worldmap {
 			if(area.state !== true) continue
 
 			const $area = makeEl("div", { classes: ["area"] });
-			$worldmap[0].appendChild($area);
+			$worldmap.appendChild($area);
 
 			//console.log("adding one @ " + area.worldPosition.x + ", " + area.worldPosition.y)
 			const $el = makeEl("div", { classes: ["areaCircle", "areaSize-" + area.size] });
@@ -556,19 +556,19 @@ module Worldmap {
 												"square-y": y + ""
 											}
 				});
-				$worldmap[0].appendChild($el);
+				$worldmap.appendChild($el);
 			}
 		}
 
 		worldmapPlayer = {x: mapAreas[0].worldPosition.x, y: mapAreas[0].worldPosition.y, target: null}
-		$worldmapTarget[0].style.left = worldmapPlayer.x + "px";
-		$worldmapTarget[0].style.top = worldmapPlayer.y + "px";
+		$worldmapTarget.style.left = worldmapPlayer.x + "px";
+		$worldmapTarget.style.top = worldmapPlayer.y + "px";
 
 		setSquareStateAt(positionToSquare(worldmapPlayer), WORLDMAP_DISCOVERED)
 
 		if(withinArea(worldmapPlayer) !== null) {
-			hidev($worldmapPlayer[0]);
-			$worldmapTarget[0].style.backgroundImage = "url('art/intrface/hotspot1.png')";
+			hidev($worldmapPlayer);
+			$worldmapTarget.style.backgroundImage = "url('art/intrface/hotspot1.png')";
 		}
 
 		// updateWorldmapPlayer()
@@ -598,8 +598,8 @@ module Worldmap {
 	}
 
 	function updateWorldmapPlayer() {
-		$worldmapPlayer[0].style.left = worldmapPlayer.x + "px";
-		$worldmapPlayer[0].style.top = worldmapPlayer.y + "px";
+		$worldmapPlayer.style.left = worldmapPlayer.x + "px";
+		$worldmapPlayer.style.top = worldmapPlayer.y + "px";
 
 		if(worldmapPlayer.target) {
 			let dx = worldmapPlayer.target.x - worldmapPlayer.x
@@ -615,8 +615,8 @@ module Worldmap {
 		    	worldmapPlayer.y = worldmapPlayer.target.y
 		    	worldmapPlayer.target = null
 
-		    	hidev($worldmapPlayer[0]);
-		    	$worldmapTarget[0].style.backgroundImage = "url('art/intrface/hotspot1.png')";
+		    	hidev($worldmapPlayer);
+		    	$worldmapTarget.style.backgroundImage = "url('art/intrface/hotspot1.png')";
     			centerWorldmapTarget(worldmapPlayer.x, worldmapPlayer.y)
 		    }
 		    else {
@@ -631,13 +631,13 @@ module Worldmap {
 
 
 			// center the worldmap to the player
-			const width = $worldmap[0].offsetWidth
-			const height = $worldmap[0].offsetHeight
+			const width = $worldmap.offsetWidth
+			const height = $worldmap.offsetHeight
 			const sx = clamp(0, width, Math.floor(worldmapPlayer.x - width/2))
 			const sy = clamp(0, height, Math.floor(worldmapPlayer.y - height/2))
 
-			$worldmap[0].scrollLeft = sx;
-			$worldmap[0].scrollTop = sy;
+			$worldmap.scrollLeft = sx;
+			$worldmap.scrollTop = sy;
 
 		    
 		    if(currentSquare.state !== WORLDMAP_DISCOVERED)
@@ -650,14 +650,14 @@ module Worldmap {
 
 			    const hadEncounter = didEncounter()
 			    if(hadEncounter === true) {
-			    	$worldmapPlayer[0].style.backgroundImage = "url('art/intrface/wmapfgt0.png')";
+			    	$worldmapPlayer.style.backgroundImage = "url('art/intrface/wmapfgt0.png')";
 
 			    	// TODO: Disable Worldmap UI while waiting on this!
 
 			    	setTimeout(function() {
 				    	doEncounter()
 				    	uiCloseWorldMap()
-				    	$worldmapPlayer[0].style.backgroundImage = "url('art/intrface/wmaploc.png')";
+				    	$worldmapPlayer.style.backgroundImage = "url('art/intrface/wmaploc.png')";
 				    }, 1000)
 
 			    	clearTimeout(worldmapTimer)
