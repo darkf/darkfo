@@ -452,8 +452,8 @@ module Worldmap {
 	}
 
 	function centerWorldmapTarget(x: number, y: number): void {
-		$worldmapTarget.css({left: x - $worldmapTarget[0].offsetWidth/2|0,
-		                     top: y - $worldmapTarget[0].offsetHeight/2|0})
+		$worldmapTarget[0].style.left = (x - $worldmapTarget[0].offsetWidth/2|0) + "px";
+		$worldmapTarget[0].style.top = (y - $worldmapTarget[0].offsetHeight/2|0) + "px";
 	}
 
 	export function init(): void {
@@ -496,8 +496,8 @@ module Worldmap {
 
 			worldmapPlayer.target = {x: ax, y: ay}
 			showv($worldmapPlayer[0]);
-			$worldmapTarget.css({backgroundImage: "url('art/intrface/wmaptarg.png')",
-				                 left: ax, top: ay})
+			Object.assign($worldmapTarget[0].style, { backgroundImage: "url('art/intrface/wmaptarg.png')",
+				                 left: ax + "px", top: ay + "px"});
 			console.log("targeting: " + ax + ", " + ay)
 		})
 
@@ -561,7 +561,8 @@ module Worldmap {
 		}
 
 		worldmapPlayer = {x: mapAreas[0].worldPosition.x, y: mapAreas[0].worldPosition.y, target: null}
-		$worldmapTarget.css({left: worldmapPlayer.x, top: worldmapPlayer.y})
+		$worldmapTarget[0].style.left = worldmapPlayer.x + "px";
+		$worldmapTarget[0].style.top = worldmapPlayer.y + "px";
 
 		setSquareStateAt(positionToSquare(worldmapPlayer), WORLDMAP_DISCOVERED)
 
@@ -597,8 +598,8 @@ module Worldmap {
 	}
 
 	function updateWorldmapPlayer() {
-		$worldmapPlayer.css({left: worldmapPlayer.x,
-			                 top: worldmapPlayer.y})
+		$worldmapPlayer[0].style.left = worldmapPlayer.x + "px";
+		$worldmapPlayer[0].style.top = worldmapPlayer.y + "px";
 
 		if(worldmapPlayer.target) {
 			let dx = worldmapPlayer.target.x - worldmapPlayer.x

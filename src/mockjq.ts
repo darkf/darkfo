@@ -1,8 +1,6 @@
 interface Jq {
     [key: number]: HTMLElement;
-        
-    css(props: { [prop: string]: string|number }): this;
-                        
+                            
     on<T extends Event>(event: string, handler: (e?: JqEvent<T>) => void): this;
     bind<T extends Event>(event: string, handler: (e?: JqEvent<T>) => void): this;
     click<T extends Event>(_: (e?: JqEvent<T>) => void): this;
