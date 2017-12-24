@@ -458,6 +458,10 @@ function $img(id: string): HTMLImageElement {
     return document.getElementById(id) as HTMLImageElement;
 }
 
+function $q(selector: string): HTMLElement {
+    return document.querySelector(selector);
+}
+
 function $qa(selector: string): HTMLElement[] {
     return Array.from(document.querySelectorAll(selector));
 }
@@ -897,16 +901,16 @@ function drawDigits(idPrefix: string, amount: number, maxDigits: number, hasSign
     var digits = amount.toString()
     var firstDigitIdx = (hasSign ? 2 : 1)
     if(hasSign)
-        $(idPrefix+"1")[0].style.backgroundPosition = (0 - CHAR_W*sign) + "px"; // sign
+        $q(idPrefix+"1").style.backgroundPosition = (0 - CHAR_W*sign) + "px"; // sign
     for(var i = firstDigitIdx; i <= maxDigits-digits.length; i++) // left-fill with zeroes
-        $(idPrefix + i)[0].style.backgroundPosition = "0px";
+        $q(idPrefix + i).style.backgroundPosition = "0px";
     for(var i = 0; i < digits.length; i++) {
         var idx = digits.length - 1 - i
         if(digits[idx] === '-')
             var digit = 12
         else
             var digit = parseInt(digits[idx])
-        $(idPrefix + (maxDigits-i))[0].style.backgroundPosition = (0 - CHAR_W*digit) + "px";
+        $q(idPrefix + (maxDigits-i)).style.backgroundPosition = (0 - CHAR_W*digit) + "px";
     }
 }
 
