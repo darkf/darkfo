@@ -589,8 +589,8 @@ function initUI() {
             combat.end()
     }
 
-    $("#endContainer").bind("animationiteration", uiEndCombatAnimationDone)
-    $("#endContainer").bind("webkitAnimationIteration", uiEndCombatAnimationDone)
+    $id("endContainer").addEventListener("animationiteration", uiEndCombatAnimationDone);
+    $id("endContainer").addEventListener("webkitAnimationIteration", uiEndCombatAnimationDone);
 
     $id("skilldexButton").onclick = () => { Ui.skilldexWindow.toggle() }
 

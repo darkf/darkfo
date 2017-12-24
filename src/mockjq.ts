@@ -2,7 +2,6 @@ interface Jq {
     [key: number]: HTMLElement;
                             
     on<T extends Event>(event: string, handler: (e?: JqEvent<T>) => void): this;
-    bind<T extends Event>(event: string, handler: (e?: JqEvent<T>) => void): this;
     load<T extends Event>(_: (e?: JqEvent<T>) => void): this;
     off(event: string): this;
 }
