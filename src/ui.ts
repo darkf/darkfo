@@ -886,18 +886,18 @@ function drawDigits(idPrefix: string, amount: number, maxDigits: number, hasSign
     var sign = (amount < 0) ? CHAR_NEG : 0
     if(amount < 0) amount = -amount
     var digits = amount.toString()
-    var firstDigitIdx = (hasSign ? 1 : 0)
+    var firstDigitIdx = (hasSign ? 2 : 1)
     if(hasSign)
-        $(idPrefix+"1").css("background-position", 0 - CHAR_W*sign) // sign
+        $(idPrefix+"1")[0].style.backgroundPosition = (0 - CHAR_W*sign) + "px"; // sign
     for(var i = firstDigitIdx; i <= maxDigits-digits.length; i++) // left-fill with zeroes
-        $(idPrefix + i).css("background-position", 0)
+        $(idPrefix + i)[0].style.backgroundPosition = "0px";
     for(var i = 0; i < digits.length; i++) {
         var idx = digits.length - 1 - i
         if(digits[idx] === '-')
             var digit = 12
         else
             var digit = parseInt(digits[idx])
-        $(idPrefix + (maxDigits-i)).css("background-position", 0 - CHAR_W*digit)
+        $(idPrefix + (maxDigits-i))[0].style.backgroundPosition = (0 - CHAR_W*digit) + "px";
     }
 }
 
@@ -1388,7 +1388,9 @@ function uiElevator(elevator: Elevator) {
 
     // flip the buttons we need visible
     for(var i = 1; i <= elevator.buttonCount; i++) {
-        $("#elevatorButton" + i).css("visibility", "visible").click(function(i) {
+        const $elevatorButton = $("#elevatorButton" + i);
+        showv($elevatorButton[0]);
+        $elevatorButton.click(function(i) {
             return function() {
                 // button i pushed
                 // todo: animate positioner/spinner (and come up with a better name for that)

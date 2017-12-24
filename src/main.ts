@@ -633,7 +633,7 @@ function recalcPath(start: Point, goal: Point, isGoalBlocking?: boolean) {
 }
 
 function changeCursor(image: string) {
-	$("#cnv").css("cursor", image)
+	document.getElementById("cnv").style.cursor = image;
 }
 
 function objectTransparentAt(obj: Obj, position: Point) {
