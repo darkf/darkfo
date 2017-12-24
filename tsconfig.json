@@ -14,8 +14,6 @@
     "files": [
         "src/config.ts",
 
-        "src/mockjq.ts",
-
         "src/util.ts",
         "src/geometry.ts",
 
