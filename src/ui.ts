@@ -782,14 +782,14 @@ function uiInventoryScreen() {
         clearEl($id("inventoryBoxItem2"));
 
         for(let i = 0; i < objects.length; i++) {
-            const invObj = objects[i]
-            const img = $("<img>").attr("src", invObj.invArt+'.png').
-                        attr("width", 72).attr("height", 60) // 90x60 // 70x40
-            img.attr("title", invObj.name)
-            if(clickCallback)
-                    img.click((e: JqEvent<MouseEvent>) => { clickCallback(invObj, e.originalEvent) })
-            $el.append(img).append("x" + invObj.amount)
-            makeDraggable(img[0], "i" + i, () => { uiInventoryScreen() })
+            const invObj = objects[i];
+            // 90x60 // 70x40
+            const img = makeEl("img", { src: invObj.invArt+'.png',
+                                        attrs: { width: 72, height: 60, title: invObj.name },
+                                        click: clickCallback ? (e: MouseEvent) => { clickCallback(invObj, e); } : undefined });
+            $el[0].appendChild(img);
+            $el[0].insertAdjacentHTML("beforeend", "x" + invObj.amount);
+            makeDraggable(img, "i" + i, () => { uiInventoryScreen(); });
         }
     }
 
@@ -846,17 +846,16 @@ function uiInventoryScreen() {
 
     function drawSlot(slot: keyof Player, slotID: string) {
         var art = player[slot].invArt
-        var img = $("<img>").attr("src", art+'.png').
-                  attr("width", 72).attr("height", 60) // 90x60 // 70x40
-        img.attr("title", player[slot].name)
-        img.click((e: JqEvent<MouseEvent>) => {
-            makeItemContextMenu(e.originalEvent, player[slot], slot)
-        })
-        makeDraggable(img[0], slot)
+        // 90x60 // 70x40
+        var img = makeEl("img", { src: art+'.png',
+                                  attrs: { width: 72, height: 60, title: player[slot].name },
+                                  click: (e: MouseEvent) => { makeItemContextMenu(e, player[slot], slot); }
+        });
+        makeDraggable(img, slot)
 
         const $slotEl = $id(slotID);
         clearEl($slotEl);
-        $slotEl.appendChild(img[0]);
+        $slotEl.appendChild(img);
     }
 
     if(player.leftHand)
