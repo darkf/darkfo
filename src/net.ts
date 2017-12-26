@@ -150,10 +150,10 @@ module Netcode {
 			
 			for(const netPlayer of getNetPlayers()) {
 				_.pull(gMap.objects[e.oldElevation], netPlayer);
-				gMap.objects[currentElevation].push(netPlayer);
+				gMap.objects[e.elevation].push(netPlayer);
 			}
 
-			send("changeElevation", { elevation: currentElevation, position: player.position, orientation: player.orientation });
+			send("changeElevation", { elevation: e.elevation, position: player.position, orientation: player.orientation });
 		});
 
 		Events.on("objMove", (e: any) => {
@@ -203,7 +203,7 @@ module Netcode {
 		});
 
 		on("elevationChanged", (msg: any) => {
-			const oldElevation = currentElevation;
+			const oldElevation = gMap.currentElevation;
 
 			gMap.changeElevation(msg.elevation, false, false);
 
@@ -237,7 +237,7 @@ module Netcode {
 		// Now send the map change notification
 		console.log("Sending map change request...");
 		send("changeMap", { mapName: gMap.name,
-			                player: { position: player.position, elevation: currentElevation, orientation: player.orientation }
+			                player: { position: player.position, elevation: gMap.currentElevation, orientation: player.orientation }
         });
 	}
 
