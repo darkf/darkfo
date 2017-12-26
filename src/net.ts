@@ -24,7 +24,7 @@ module Netcode {
 	export const netPlayerMap: { [uid: number]: NetPlayer } = {};
 
 	function send(t: string, msg: any={}) {
-		console.assert(connected, "Can't send message to unconnected socket");
+		assert(connected, "Can't send message to unconnected socket");
 		msg.t = t;
 		ws.send(JSON.stringify(msg));
 	}
@@ -94,7 +94,7 @@ module Netcode {
 		// Object open/close
 		on("objSetOpen", (msg: any) => {
 			const obj = findObjectByUID(msg.uid);
-			console.assert(obj !== null, "net.objSetOpen: No such object");
+			assert(obj !== null, "net.objSetOpen: No such object");
 			setObjectOpen(obj, msg.open, false, false);
 		});
 
@@ -211,13 +211,13 @@ module Netcode {
 			
 			for(const netPlayer of getNetPlayers()) {
 				_.pull(gMap.objects[oldElevation], netPlayer);
-				gMap.objects[currentElevation].push(netPlayer);
+				gMap.objects[gMap.currentElevation].push(netPlayer);
 			}
 		});
 
 		on("objMove", (e: any) => {
 			const obj = findObjectByUID(e.uid);
-			console.assert(obj !== null, "net.objMove: No such object");
+			assert(obj !== null, "net.objMove: No such object");
 
 			console.log("Move: uid %o, obj %o, pos %o", e.uid, obj, e.position);
 
