@@ -108,6 +108,7 @@ class GameMap {
 	changeElevation(level: number, updateScripts: boolean=false, isMapLoading: boolean=false) {
 		var oldElevation = this.currentElevation
 		this.currentElevation = level
+		currentElevation = level // TODO: Get rid of this global
 		this.floorMap = this.mapObj.levels[level].tiles.floor
 		this.roofMap  = this.mapObj.levels[level].tiles.roof
 		//this.spatials = this.mapObj.levels[level]["spatials"]
@@ -145,7 +146,7 @@ class GameMap {
 
 		centerCamera(player.position)
 
-		Events.emit("elevationChanged", { oldElevation, isMapLoading })
+		Events.emit("elevationChanged", { elevation: level, oldElevation, isMapLoading })
 	}
 
 	placeParty() {
