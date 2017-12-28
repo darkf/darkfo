@@ -544,7 +544,8 @@ class Obj {
 		}
 
 		if(scriptName != null) {
-			console.log("loadScript: loading %s (sid=%d)", scriptName, sid)
+			if(Config.engine.doLogScriptLoads)
+				console.log("loadScript: loading %s (sid=%d)", scriptName, sid)
 			// console.trace();
 			var script = scriptingEngine.loadScript(scriptName)
 			if(!script) {
