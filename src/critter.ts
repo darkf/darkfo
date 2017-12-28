@@ -515,7 +515,7 @@ class Critter extends Obj {
 
 		this.stats = StatSet.fromPro(this.pro)
 		this.skills = SkillSet.fromPro(this.pro.extra.skills)
-		console.log("Loaded stats/skills from PRO: HP=%d Speech=%d", this.stats.get("HP"), this.skills.get("Speech", this.stats))
+		// console.log("Loaded stats/skills from PRO: HP=%d Speech=%d", this.stats.get("HP"), this.skills.get("Speech", this.stats))
 		this.name = getMessage("pro_crit", this.pro.textID)
 
 		// initialize AI packet / team number
