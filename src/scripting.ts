@@ -74,9 +74,12 @@ module scriptingEngine {
 		console.log("log: " + name + ": " + a)
 	}
 
-	function warn(msg: string, type?: DebugLogShowType) {
+	function warn(msg: string, type?: DebugLogShowType, script?: ScriptType) {
 		if(type !== undefined && !Config.scripting.debugLogShowType[type]) return
-		console.log("WARNING: " + msg)
+		if(script)
+			console.log(`WARNING [${(script as any)._vm.intfile.name}]: ${msg}`)
+		else
+			console.log(`WARNING: ${msg}`)
 	}
 
 	export function info(msg: string, type?: DebugLogShowType) {
@@ -521,7 +524,7 @@ module scriptingEngine {
 		obj_can_see_obj: function(a: Critter, b: Critter) {
 			log("obj_can_see_obj", arguments);
 			if(!isGameObject(a) || !isGameObject(b)) {
-				warn("obj_can_see_obj: not game object");
+				warn("obj_can_see_obj: not game object", undefined, this);
 				return 0;
 			}
 			return +objCanSeeObj(a, b);
@@ -539,7 +542,7 @@ module scriptingEngine {
 			if(where === 0) {} // INVEN_TYPE_WORN
 			else if(where === 1) return obj.rightHand // INVEN_TYPE_RIGHT_HAND
 			else if(where === 2) return obj.leftHand // INVEN_TYPE_LEFT_HAND
-			else if(where === -2) { warn("INVEN_TYPE_INV_COUNT"); return 0; /*throw "INVEN_TYPE_INV_COUNT"*/ }
+			else if(where === -2) { warn("INVEN_TYPE_INV_COUNT", "inventory", this); return 0; /*throw "INVEN_TYPE_INV_COUNT"*/ }
 			stub("critter_inven_obj", arguments)
 			return undefined
 		},
@@ -621,7 +624,7 @@ module scriptingEngine {
 		obj_is_open: function(obj: Obj) {
 			info("obj_is_open")
 			if(!isGameObject(obj)) {
-				warn("obj_is_open: not game object: " + obj)
+				warn("obj_is_open: not game object: " + obj, undefined, this)
 				return 0
 			}
 			return obj.open ? 1 : 0
@@ -978,7 +981,7 @@ module scriptingEngine {
 		animate_move_obj_to_tile: function(obj: Critter, tileNum: any, isRun: number) {
 			log("animate_move_obj_to_tile", arguments, "movement")
 			if(!isGameObject(obj)) {
-				warn("animate_move_obj_to_tile: not a game object")
+				warn("animate_move_obj_to_tile: not a game object", "movement", this)
 				return
 			}
 			// XXX: is this correct? FCMALPNK passes a procedure name
@@ -987,19 +990,18 @@ module scriptingEngine {
 			if(typeof(tileNum) === "function")
 				tileNum = tileNum.call(this)
 			if(isNaN(tileNum)) {
-				warn("animate_move_obj_to_tile: invalid tile num")
+				warn("animate_move_obj_to_tile: invalid tile num", "movement", this)
 				return
 			}
 
 			var tile = fromTileNum(tileNum)
 			if(tile.x < 0 || tile.x >= 200 || tile.y < 0 || tile.y >= 200) {
 				warn("animate_move_obj_to_tile: invalid tile: " + tile.x +
-				      ", " + tile.y + " (" + tileNum + ")")
-				console.trace()
+				      ", " + tile.y + " (" + tileNum + ")", "movement", this)
 				return
 			}
 			if(!obj.walkTo(tile, !!isRun)) {
-				warn("animate_move_obj_to_tile: no path", "movement")
+				warn("animate_move_obj_to_tile: no path", "movement", this)
 				return
 			}
 		},
