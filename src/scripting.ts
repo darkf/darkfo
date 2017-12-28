@@ -113,7 +113,6 @@ module scriptingEngine {
 
 		//warn("is NOT GO: " + obj.toString())
 		console.log("is NOT GO: %o", obj)
-		console.trace()
 		return false
 	}
 
@@ -622,7 +621,7 @@ module scriptingEngine {
 		obj_lock: function(obj: Obj) { log("obj_lock", arguments); obj.locked = true },
 		obj_unlock: function(obj: Obj) { log("obj_unlock", arguments); obj.locked = false },
 		obj_is_open: function(obj: Obj) {
-			info("obj_is_open")
+			log("obj_is_open", arguments)
 			if(!isGameObject(obj)) {
 				warn("obj_is_open: not game object: " + obj, undefined, this)
 				return 0
