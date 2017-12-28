@@ -443,7 +443,7 @@ class Obj {
 	}
 
 	static fromPID_<T extends Obj>(obj: T, pid: number, sid?: number): T {
-		console.log("fromPID: %d, %d", pid, sid)
+		console.log(`fromPID: pid=${pid}, sid=${sid}`)
 		var pidType = (pid >> 24) & 0xff
 		var pidID = pid & 0xffff
 
@@ -459,7 +459,7 @@ class Obj {
 			obj.name = getMessage("pro_item", pro.textID)
 
 			var invPID = pro.extra.invFRM & 0xffff
-			console.log("invPID: " + invPID + ", also: " + pid)
+			console.log(`invPID: ${invPID}, pid=${pid}`)
 			if(invPID !== 0xffff)
 				obj.invArt = "art/inven/" + getLstId("art/inven/inven", invPID).split('.')[0]
 		}

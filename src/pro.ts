@@ -120,6 +120,6 @@ function lookupArt(frmPID: number) {
                 "scenery": "art/scenery/scenery", "misc": "art/misc/misc"}
 	var path = "art/" + type + "/" + getLstId(lsts[type], pidID).split('.')[0]
 
-	console.log("LOOKUP ART: " + path)
+	// console.log("LOOKUP ART: " + path)
 	return path.toLowerCase()
 }
