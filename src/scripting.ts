@@ -236,9 +236,9 @@ module scriptingEngine {
 		return dist <= reqDist;
 	}
 
-	function objCanSeeObj(obj: Critter, target: Critter): boolean {
-		// Is target within obj's perception?
-		if(isWithinPerception(obj, target)) {
+	function objCanSeeObj(obj: Critter, target: Obj): boolean {
+		// Is target within obj's perception, or is it a non-critter object (without perception)?
+		if(target.type !== "critter" || isWithinPerception(obj, target as Critter)) {
 			// Then, is anything blocking obj from drawing a straight line to target?
 			const hit = hexLinecast(obj.position, target.position);
 			return !hit;
