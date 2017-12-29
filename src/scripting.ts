@@ -543,7 +543,7 @@ module scriptingEngine {
 			else if(where === 2) return obj.leftHand // INVEN_TYPE_LEFT_HAND
 			else if(where === -2) { warn("INVEN_TYPE_INV_COUNT", "inventory", this); return 0; /*throw "INVEN_TYPE_INV_COUNT"*/ }
 			stub("critter_inven_obj", arguments)
-			return undefined
+			return null
 		},
 		critter_attempt_placement: function(obj: Obj, tileNum: number, elevation: number) {
 			stub("critter_attempt_placement", arguments)
