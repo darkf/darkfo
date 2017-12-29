@@ -424,7 +424,7 @@ module scriptingEngine {
 		},
 		has_trait: function(traitType: number, obj: Obj, trait: number) {
 			if(!isGameObject(obj)) {
-				warn("has_trait: not game object: " + obj)
+				warn("has_trait: not game object: " + obj, undefined, this)
 				return 0
 			}
 
@@ -523,7 +523,7 @@ module scriptingEngine {
 		obj_can_see_obj: function(a: Critter, b: Critter) {
 			log("obj_can_see_obj", arguments);
 			if(!isGameObject(a) || !isGameObject(b)) {
-				warn("obj_can_see_obj: not game object", undefined, this);
+				warn(`obj_can_see_obj: not game object: a=${a} b=${b}`, undefined, this);
 				return 0;
 			}
 			return +objCanSeeObj(a, b);
@@ -617,9 +617,30 @@ module scriptingEngine {
 		critter_set_flee_state: function(obj: Obj, isFleeing: number) { stub("critter_set_flee_state", arguments) },
 
 		// objects
-		obj_is_locked: function(obj: Obj) { log("obj_is_locked", arguments); return obj.locked ? 1 : 0 },
-		obj_lock: function(obj: Obj) { log("obj_lock", arguments); obj.locked = true },
-		obj_unlock: function(obj: Obj) { log("obj_unlock", arguments); obj.locked = false },
+		obj_is_locked: function(obj: Obj) {
+			log("obj_is_locked", arguments);
+			if(!isGameObject(obj)) {
+				warn("obj_is_locked: not game object: " + obj, undefined, this)
+				return 1
+			}
+			return obj.locked ? 1 : 0
+		},
+		obj_lock: function(obj: Obj) {
+			log("obj_lock", arguments);
+			if(!isGameObject(obj)) {
+				warn("obj_lock: not game object: " + obj, undefined, this)
+				return
+			}
+			obj.locked = true
+		},
+		obj_unlock: function(obj: Obj) {
+			log("obj_unlock", arguments);
+			if(!isGameObject(obj)) {
+				warn("obj_unlock: not game object: " + obj, undefined, this)
+				return
+			}
+			obj.locked = false
+		},
 		obj_is_open: function(obj: Obj) {
 			log("obj_is_open", arguments)
 			if(!isGameObject(obj)) {
@@ -735,7 +756,7 @@ module scriptingEngine {
 		},
 		obj_pid: function(obj: Obj) {
 			if(!isGameObject(obj)) {
-				warn("obj_pid: not game object: " + obj)
+				warn("obj_pid: not game object: " + obj, undefined, this)
 				return null
 			}
 			return obj.pid
@@ -785,7 +806,7 @@ module scriptingEngine {
 		},
 		tile_num: function(obj: Obj) {
 			if(!isSpatial(obj) && !isGameObject(obj)) {
-				console.log("tile_num: not a game object: " + obj)
+				warn("tile_num: not a game object: " + obj, undefined, this)
 				return null
 			}
 			return toTileNum(obj.position)
@@ -1164,6 +1185,9 @@ module scriptingEngine {
 		var intfile = parseIntFile(reader, name.toLowerCase())
 
 		//console.log("%s int file: %o", name, intfile)
+
+		if(!currentMapObject)
+			console.log("note: using current script (%s) as map script for this object", intfile.name);
 		
 		reader.seek(0)
 		var vm = new ScriptVMBridge.GameScriptVM(reader, intfile, obj)
