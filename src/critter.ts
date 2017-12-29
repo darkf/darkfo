@@ -63,12 +63,16 @@ const damageType: { [type: string]: string|number } = {
     4: 'Electrical', 5: 'EMP', 6: 'Explosive'
 };
 
+// TODO: Figure out if we can derive the correct info from the game somehow
 const weaponSkillMap: { [weapon: string]: string } = {
-    'uzi': 'Small Guns',
-    'rifle': 'Small Guns',
-    'spear': 'Melee Weapons',
-    'knife': 'Melee Weapons',
-    'flamethr': 'Big Guns',
+	'uzi': 'Small Guns',
+	'rifle': 'Small Guns',
+	'spear': 'Melee Weapons',
+	'knife': 'Melee Weapons',
+	'club': 'Melee Weapons',
+	'sledge': 'Melee Weapons',
+	'flamethr': 'Big Guns',
+	'pistol': 'Small Guns',
 };
 
 interface AttackInfo {
