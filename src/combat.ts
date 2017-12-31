@@ -375,7 +375,7 @@ class Combat {
 	findTarget(obj: Critter): Critter {
 		// TODO: find target according to AI rules
 		// Find the first combatant on a different team
-		return _.find(this.combatants, (x:Critter) => x.teamNum != obj.teamNum)
+		return _.find(this.combatants, (x:Critter) => !x.dead && x.teamNum != obj.teamNum)
 	}
 
 	walkUpTo(obj: Critter, idx: number, target: Point, maxDistance: number, callback: () => void): boolean {
