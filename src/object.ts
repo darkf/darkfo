@@ -537,10 +537,14 @@ class Obj {
 		else if(this.script)
 			scriptName = this.script
 		else if(this.pro) {
-			if(this.pro.extra !== undefined && this.pro.extra.scriptID >= 0)
-				scriptName = lookupScriptName(this.pro.extra.scriptID & 0xffff)
-			else if(this.pro.scriptID >= 0)
-				scriptName = lookupScriptName(this.pro.scriptID & 0xffff)
+			if(this.pro.extra !== undefined && this.pro.extra.scriptID >= 0) {
+				// scriptName = lookupScriptName(this.pro.extra.scriptID & 0xffff)
+				console.warn(`PRO says sid is ${this.pro.extra.scriptID & 0xffff} (${scriptName}), but we're not ascribing it one (test)`)
+			}
+			else if(this.pro.scriptID >= 0) {
+				// scriptName = lookupScriptName(this.pro.scriptID & 0xffff)
+				console.warn(`PRO says sid is ${this.pro.extra.scriptID & 0xffff} (${scriptName}), but we're not ascribing it one (test)`)
+			}
 		}
 
 		if(scriptName != null) {
