@@ -163,6 +163,7 @@ module ScriptVMBridge {
        ,0x80DF: bridged("end_dialogue", 0) // void?
        ,0x8120: bridged("gsay_message", 3, false)
        //,0x806B: bridged("display", 1)
+       ,0x814E: bridged("gdialog_set_barter_mod", 1, false)
 
        ,0x811D: function() { // gsay_end
             // halt where we are, saving our return address.
