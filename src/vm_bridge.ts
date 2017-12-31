@@ -80,6 +80,7 @@ module ScriptVMBridge {
        ,0x80FF: bridged("critter_attempt_placement", 3)
        ,0x8127: bridged("critter_injure", 2, false)
        ,0x80E8: bridged("critter_heal", 2, false)
+       ,0x8151: bridged("critter_is_fleeing", 1)
        ,0x8116: bridged("add_mult_objs_to_inven", 3, false)
        ,0x8117: bridged("rm_mult_objs_from_inven", 3)
        ,0x80D8: bridged("add_obj_to_inven", 2, false)
