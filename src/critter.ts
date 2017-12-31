@@ -493,8 +493,8 @@ class Critter extends Obj {
 		const obj = Obj.fromMapObject_(new Critter(), mobj, deserializing);
 
 		if(deserializing) { // deserialize critter: copy fields from SerializedCritter
-			console.log("Deserialize critter?");
-			console.trace();
+			console.log("Deserializing critter");
+			// console.trace();
 
 			for(const prop of SERIALIZED_CRITTER_PROPS) {
 				// console.log(`loading prop ${prop} from SerializedCritter = ${mobj[prop]}`);
