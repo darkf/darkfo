@@ -39,6 +39,7 @@ const Config = {
 		doAudio: false, // enable audio?
 		doLogLazyLoads: false, // Log lazy-loading of images? (Noisy)
 		doLogScriptLoads: false, // Log script loads? (Noisy)
+		doDisasmOnUnimplOp: true, // Disassemble script upon reaching unimplemented opcode?
 	},
 
 	combat: {
