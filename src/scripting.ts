@@ -80,11 +80,14 @@ module scriptingEngine {
 			console.log(`WARNING [${(script as any)._vm.intfile.name}]: ${msg}`)
 		else
 			console.log(`WARNING: ${msg}`)
-	}
-
-	export function info(msg: string, type?: DebugLogShowType) {
-		if(type !== undefined && !Config.scripting.debugLogShowType[type]) return
-		console.log("INFO: " + msg)
+		}
+		
+		export function info(msg: string, type?: DebugLogShowType, script?: ScriptType) {
+			if(type !== undefined && !Config.scripting.debugLogShowType[type]) return
+			if(script)
+				console.log(`INFO [${(script as any)._vm.intfile.name}]: ${msg}`)
+			else
+				console.log(`INFO: ${msg}`)
 	}
 
 	// http://stackoverflow.com/a/23304189/1958152
@@ -671,14 +674,14 @@ module scriptingEngine {
 		},
 		proto_data: function(pid: number, data_member: number): any { stub("proto_data", arguments); return null },
 		create_object_sid: function(pid: number, tile: number, elev: number, sid: number) { // Create object of pid and possibly script
-			info("create_object_sid: pid=" + pid + " tile=" + tile + " elev=" + elev + " sid=" + sid)
+			info("create_object_sid: pid=" + pid + " tile=" + tile + " elev=" + elev + " sid=" + sid, undefined, this)
 
 			if(elev < 0 || elev > 2)
 				throw "create_object_sid: elev out of range: elev=" + elev
 
 			var obj = createObjectWithPID(pid, sid)
 			if(!obj) {
-				warn("create_object_sid: couldn't create object")
+				warn("create_object_sid: couldn't create object", undefined, this)
 				return null
 			}
 			obj.position = fromTileNum(tile)
