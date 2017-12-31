@@ -1100,6 +1100,7 @@ module scriptingEngine {
 			}
 			else throw "mark_area_known: invalid area type " + areaType
 		},
+		wm_area_set_pos: function(area: number, x: number, y: number) { stub("wm_area_set_pos", arguments) },
 		game_ui_disable: function() { stub("game_ui_disable", arguments) },
 		game_ui_enable: function() { stub("game_ui_enable", arguments) },
 

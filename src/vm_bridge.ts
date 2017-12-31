@@ -74,6 +74,7 @@ module ScriptVMBridge {
        ,0x80C3: bridged("map_var", 1)
        ,0x80C4: bridged("set_map_var", 2, false)
        ,0x80B2: bridged("mark_area_known", 3, false)
+       ,0x80E5: bridged("wm_area_set_pos", 3, false)
        ,0x80B7: bridged("create_object_sid", 4)
        ,0x8102: bridged("critter_add_trait", 4)
        ,0x8106: bridged("critter_inven_obj", 2)
