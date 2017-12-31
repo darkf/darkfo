@@ -316,12 +316,21 @@ class GameMap {
 				obj._script._mapScript = this.mapScript
 			})
 
-			scriptingEngine.enterMap(this.mapScript, objectsAndSpatials, this.currentElevation, this.mapID, true)
+			const overridenStartPos = scriptingEngine.enterMap(this.mapScript, objectsAndSpatials, this.currentElevation, this.mapID, true)
+
+			if(overridenStartPos) {
+				// Starting position was overridden by map_enter_p_proc -- use the new one
+				console.log("Starting position overriden to %o", overridenStartPos)
+				player.position = overridenStartPos.position
+				player.orientation = overridenStartPos.orientation
+				elevation = this.currentElevation = currentElevation = overridenStartPos.elevation
+			}
 
 			// place party again, so if the map script overrided the start position we're in the right place
 			this.placeParty()
 	
 			// tell objects that they're now on the map
+			// TODO: Does this apply to all levels or just the current elevation?
 			this.objects.forEach(level => level.forEach(obj => obj.enterMap()))
 			this.spatials.forEach(level => level.forEach(spatial => scriptingEngine.objectEnterMap(spatial, this.currentElevation, this.mapID)))
 

@@ -40,6 +40,13 @@ module scriptingEngine {
 	var dialogueOptionProcs: (() => void)[] = [] // Maps dialogue options to handler callbacks
 	var currentDialogueObject: Obj|null = null
 	export var timeEventList: TimedEvent[] = []
+	let overrideStartPos: StartPos|null = null
+
+	export interface StartPos {
+		position: Point;
+		orientation: number;
+		elevation: number;
+	}
 
 	export interface TimedEvent {
 		obj: Obj;
@@ -750,12 +757,9 @@ module scriptingEngine {
 		set_light_level: function(level: number) { stub("set_light_level", arguments) },
 		obj_set_light_level: function(obj: Obj, intensity: number, distance: number) { stub("obj_set_light_level", arguments) },
 		override_map_start: function(x: number, y: number, elevation: number, rotation: number) {
-			stub("override_map_start", arguments)
-			if(elevation !== currentElevation)
-				gMap.changeElevation(elevation, true)
-			dudeObject.position = {x: x, y: y}
-			dudeObject.orientation = rotation
-			centerCamera(dudeObject.position)
+			console.warn("override_map_start", x, y, elevation)
+			log("override_map_start", arguments)
+			overrideStartPos = { position: {x, y}, orientation: rotation, elevation };
 		},
 		obj_pid: function(obj: Obj) {
 			if(!isGameObject(obj)) {
@@ -1383,7 +1387,7 @@ module scriptingEngine {
 		// info("updated " + updated + " objects")
 	}
 
-	export function enterMap(mapScript: ScriptType, objects: Obj[], elevation: number, mapID: number, isFirstRun: boolean) {
+	export function enterMap(mapScript: ScriptType, objects: Obj[], elevation: number, mapID: number, isFirstRun: boolean): StartPos {
 		gameObjects = objects
 		currentMapID = mapID
 		mapFirstRun = isFirstRun
@@ -1394,10 +1398,18 @@ module scriptingEngine {
 			mapScript.map_enter_p_proc()
 		}
 
+		if(overrideStartPos) {
+			const r = overrideStartPos
+			overrideStartPos = null
+			return r
+		}
+
 		// XXX: caller should do this for all objects, which is better?
 		/*for(var i = 0; i < gameObjects.length; i++) {
 			objectEnterMap(gameObjects[i], elevation, mapID)			
 		}*/
+
+		return null
 	}
 
 	export function objectEnterMap(obj: Obj, elevation: number, mapID: number) {
