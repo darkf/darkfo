@@ -514,7 +514,7 @@ module scriptingEngine {
 
 			for(var i = 0; i < obj.inventory.length; i++) {
 				if(obj.inventory[i].pid === pid)
-					return 1
+					return obj.inventory[i]
 			}	
 			return 0
 		},
