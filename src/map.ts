@@ -174,14 +174,38 @@ class GameMap {
 		})
 	}
 
-	loadMap(mapName: string, startingPosition?: Point, startingElevation?: number, loadedCallback?: () => void): void {
+	doEnterNewMap(isFirstRun: boolean): void {
+		// Tell scripts they've entered the new map
+
+		const objectsAndSpatials = this.getObjectsAndSpatials()
+		const overridenStartPos = scriptingEngine.enterMap(this.mapScript, objectsAndSpatials, this.currentElevation, this.mapID, isFirstRun)
+
+		if(overridenStartPos) {
+			// Starting position was overridden by map_enter_p_proc -- use the new one
+			console.log("Starting position overriden to %o", overridenStartPos)
+			player.position = overridenStartPos.position
+			player.orientation = overridenStartPos.orientation
+			this.currentElevation = currentElevation = overridenStartPos.elevation
+		}
+
+		// place party again, so if the map script overrided the start position we're in the right place
+		this.placeParty()
+
+		// Tell objects' scripts that they're now on the map
+		// TODO: Does this apply to all levels or just the current elevation?
+		this.objects.forEach(level => level.forEach(obj => obj.enterMap()))
+		this.spatials.forEach(level => level.forEach(spatial => scriptingEngine.objectEnterMap(spatial, this.currentElevation, this.mapID)))
+
+		scriptingEngine.updateMap(this.mapScript, objectsAndSpatials, this.currentElevation)
+	}
+
+	loadMap(mapName: string, startingPosition?: Point, startingElevation: number=0, loadedCallback?: () => void): void {
 		if(Config.engine.doSaveDirtyMaps && this.name !== null) { // if a map is already loaded, save it to the dirty map cache before loading
 			console.log(`[Main] Serializing map ${this.name} and committing to dirty map cache`);
 			dirtyMapCache[this.name] = this.serialize();
 		}
 
-
-		if(mapName in dirtyMapCache) { // previously loaded; load from dirty map cache
+		if(mapName in dirtyMapCache) { // Previously loaded; load from dirty map cache
 			console.log(`[Main] Loading map ${mapName} from dirty map cache`);
 
 			Events.emit("loadMapPre");
@@ -189,20 +213,27 @@ class GameMap {
 			const map = dirtyMapCache[mapName];
 			this.deserialize(map);
 
-			// set position and orientation
+			// Set position and orientation
 			if(startingPosition !== undefined)
 				player.position = startingPosition;
-			else // use default map starting position
+			else // Use default map starting position
 				player.position = map.mapObj.startPosition;
 
 			player.orientation = map.mapObj.startOrientation;
 
-			// set elevation
-			if(startingElevation !== undefined)
-				this.changeElevation(startingElevation, true, true);
-			else // use default map elevation (0)
-				this.changeElevation(0, true, true);
+			// Set elevation
+			this.currentElevation = currentElevation = startingElevation;
 
+			// Change to our new elevation (sets up map state)
+			this.changeElevation(this.currentElevation, false, true);
+
+			// Enter map
+			this.doEnterNewMap(false);
+
+			// Change elevation again
+			this.changeElevation(this.currentElevation, true, false);
+
+			// Done
 			console.log(`[Main] Loaded from dirty map cache`);
 			loadedCallback && loadedCallback();
 
@@ -316,28 +347,11 @@ class GameMap {
 				obj._script._mapScript = this.mapScript
 			})
 
-			const overridenStartPos = scriptingEngine.enterMap(this.mapScript, objectsAndSpatials, this.currentElevation, this.mapID, true)
-
-			if(overridenStartPos) {
-				// Starting position was overridden by map_enter_p_proc -- use the new one
-				console.log("Starting position overriden to %o", overridenStartPos)
-				player.position = overridenStartPos.position
-				player.orientation = overridenStartPos.orientation
-				elevation = this.currentElevation = currentElevation = overridenStartPos.elevation
-			}
-
-			// place party again, so if the map script overrided the start position we're in the right place
-			this.placeParty()
-	
-			// tell objects that they're now on the map
-			// TODO: Does this apply to all levels or just the current elevation?
-			this.objects.forEach(level => level.forEach(obj => obj.enterMap()))
-			this.spatials.forEach(level => level.forEach(spatial => scriptingEngine.objectEnterMap(spatial, this.currentElevation, this.mapID)))
-
-			scriptingEngine.updateMap(this.mapScript, objectsAndSpatials, elevation)
+			this.doEnterNewMap(true)
+			elevation = this.currentElevation
 
 			// change elevation with script updates
-			this.changeElevation(elevation, true, true)
+			this.changeElevation(this.currentElevation, true, true)
 		}
 
 		// TODO: is map_enter_p_proc called on elevation change?
