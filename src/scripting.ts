@@ -438,7 +438,7 @@ module scriptingEngine {
 				return 0
 			}
 
-			if(traitType === 1) {
+			if(traitType === 1) { // TRAIT_OBJECT
 				switch(trait) {
 					case 5: break // OBJECT_AI_PACKET (TODO)
 					case 6: break // OBJECT_TEAM_NUM (TODO)
@@ -452,7 +452,37 @@ module scriptingEngine {
 			stub("has_trait", arguments)
 			return 0
 		},
-		critter_add_trait: function(obj: Obj, traitType: number, trait: number, amount: number) { stub("critter_add_trait", arguments) },
+		critter_add_trait: function(obj: Obj, traitType: number, trait: number, amount: number) {
+			stub("critter_add_trait", arguments)
+
+			if(!isGameObject(obj)) {
+				warn("critter_add_trait: not game object: " + obj, undefined, this)
+				return
+			}
+
+			if(obj.type !== "critter") {
+				warn("critter_add_trait: not a critter: " + obj, undefined, this)
+				return
+			}
+
+			if(traitType === 1) { // TRAIT_OBJECT
+				switch(trait) {
+					case 5: // OBJECT_AI_PACKET
+						// Set critter's AI packet number
+						info("Setting critter AI packet to " + amount, undefined, this);
+						(<Critter>obj).aiNum = amount
+						break
+						case 6: // OBJECT_TEAM_NUM
+						// Set critter's team number
+						info("Setting critter team to " + amount, undefined, this);
+						(<Critter>obj).teamNum = amount
+						break
+					case 10: break // OBJECT_CUR_ROT (TODO)
+					case 666: break // OBJECT_VISIBILITY (TODO)
+					case 669: break // OBJECT_CUR_WEIGHT (TODO)
+				}
+			}
+		},
 		item_caps_total: function(obj: Obj) {
 			if(!isGameObject(obj)) throw "item_caps_total: not game object"
 			return objectGetMoney(obj)
