@@ -64,7 +64,7 @@ module scriptingEngine {
 	type DebugLogShowType = keyof typeof Config.scripting.debugLogShowType;
 
 	function stub(name: string, args: IArguments, type?: DebugLogShowType) {
-		if(!Config.scripting.debugLogShowType.stub || !Config.scripting.debugLogShowType[type]) return
+		if(Config.scripting.debugLogShowType.stub === false || Config.scripting.debugLogShowType[type] === false) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
 			if(i === args.length-1) a += args[i]
@@ -73,7 +73,7 @@ module scriptingEngine {
 	}
 
 	function log(name: string, args: IArguments, type?: DebugLogShowType) {
-		if(!Config.scripting.debugLogShowType.log || !Config.scripting.debugLogShowType[type]) return
+		if(Config.scripting.debugLogShowType.log === false || Config.scripting.debugLogShowType[type] === false) return
 		var a = ""
 		for(var i = 0; i < args.length; i++)
 			if(i === args.length-1) a += args[i]
@@ -82,7 +82,7 @@ module scriptingEngine {
 	}
 
 	function warn(msg: string, type?: DebugLogShowType, script?: ScriptType) {
-		if(type !== undefined && !Config.scripting.debugLogShowType[type]) return
+		if(type !== undefined && Config.scripting.debugLogShowType[type] === false) return
 		if(script)
 			console.log(`WARNING [${(script as any)._vm.intfile.name}]: ${msg}`)
 		else
@@ -90,7 +90,7 @@ module scriptingEngine {
 		}
 		
 		export function info(msg: string, type?: DebugLogShowType, script?: ScriptType) {
-			if(type !== undefined && !Config.scripting.debugLogShowType[type]) return
+			if(type !== undefined && Config.scripting.debugLogShowType[type] === false) return
 			if(script)
 				console.log(`INFO [${(script as any)._vm.intfile.name}]: ${msg}`)
 			else
