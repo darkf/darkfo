@@ -498,8 +498,11 @@ class Combat {
 	end() {
 		// TODO: check number of active combatants to see if we can end
 
-		// set all combatants to non-hostile
-		_.forEach(this.combatants, (obj:Critter) => obj.hostile = false)
+		// Set all combatants to non-hostile and remove their outline
+		for(const combatant of this.combatants) {
+			combatant.hostile = false;
+			combatant.outline = null;
+		}
 
 		console.log("[end combat]")
 		combat = null // todo: invert control
@@ -529,8 +532,9 @@ class Combat {
 			var inRange = hexDistance(obj.position, this.player.position) <= obj.ai.info.max_dist
 
 			if(inRange || obj.hostile) {
-				obj.hostile = true
-				numActive++
+				obj.hostile = true;
+				obj.outline = "red";
+				numActive++;
 			}
 		}
 
