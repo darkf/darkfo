@@ -248,6 +248,7 @@ function initGame() {
 	$cnv.onmouseleave = () => { gameHasFocus = false; };
 
 	tempCanvas = document.createElement("canvas") as HTMLCanvasElement;
+	tempCanvas.width = SCREEN_WIDTH; tempCanvas.height = SCREEN_HEIGHT;
 	tempCanvasCtx = tempCanvas.getContext("2d");
 
 	SaveLoad.init()

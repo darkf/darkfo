@@ -186,16 +186,67 @@ class CanvasRenderer extends Renderer {
 			this.drawTileMap(floor, 0)
 	}
 
-	renderObject(obj: Obj): void {
-		var renderInfo = this.objectRenderInfo(obj)
+	renderObjectOutlined(obj: Obj): void {
+		// Render an outlined object using the temporary canvas
+		//
+		// We render the outline by rendering the object 8 times for each 8 directions
+		// to achieve a uniformly spaced outline in all directions.
+		// We then draw over that silhouette, filling it with the outline color.
+		// Finally we can draw the actual object sprite over it normally.
+
+		if(!obj.outline)
+			throw Error("renderObjectOutlined received an object without an outline");
+
+		const renderInfo = this.objectRenderInfo(obj);
 		if(!renderInfo || !renderInfo.visible)
-			return
+			return;
+
+		// Clear temp canvas
+		tempCanvasCtx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+		const img = images[obj.art].img;
+		const w = renderInfo.frameWidth;
+		const h = renderInfo.frameHeight;
+		const srcX = renderInfo.spriteX;
+
+		// Draw object to temp canvas in 8 directions (up/down/left/right/diagonals)
+		// Note that we offset by (1, 1) so that we have a pixel reserved on the boundaries for the outline
+		tempCanvasCtx.drawImage(img, srcX, 0, w, h, 1+1, 0+1, w, h); // right
+		tempCanvasCtx.drawImage(img, srcX, 0, w, h, -1+1, 0+1, w, h); // left
+		tempCanvasCtx.drawImage(img, srcX, 0, w, h, 0+1, -1+1, w, h); // up
+		tempCanvasCtx.drawImage(img, srcX, 0, w, h, 0+1, 1+1, w, h); // down
+		tempCanvasCtx.drawImage(img, srcX, 0, w, h, -1+1, -1+1, w, h); // up-left
+		tempCanvasCtx.drawImage(img, srcX, 0, w, h, 1+1, 1+1, w, h); // down-right
+		tempCanvasCtx.drawImage(img, srcX, 0, w, h, -1+1, 1+1, w, h); // down-left
+		tempCanvasCtx.drawImage(img, srcX, 0, w, h, 1+1, -1+1, w, h); // down-right
+
+		// Use source-in blending to fill what we drew with the outline color
+		tempCanvasCtx.globalCompositeOperation = "source-in";
+		tempCanvasCtx.fillStyle = obj.outline;
+		tempCanvasCtx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+		// Revert back to the default source-over blend mode
+		tempCanvasCtx.globalCompositeOperation = "source-over";
+
+		// Render the object normally
+		tempCanvasCtx.drawImage(img, srcX, 0, w, h, 1, 1, w, h);
+
+		// Render the sprite from the temp canvas to the main canvas
+		heart.ctx.drawImage(tempCanvas, 0, 0, renderInfo.frameWidth, renderInfo.frameHeight,
+			renderInfo.x - cameraX,
+			renderInfo.y - cameraY,
+			renderInfo.frameWidth, renderInfo.frameHeight);
+	}
+
+	renderObject(obj: Obj): void {
+		const renderInfo = this.objectRenderInfo(obj);
+		if(!renderInfo || !renderInfo.visible)
+			return;
 
 		heart.ctx.drawImage(images[obj.art].img,
 			renderInfo.spriteX, 0, renderInfo.frameWidth, renderInfo.frameHeight,
 			renderInfo.x - cameraX,
 			renderInfo.y - cameraY,
-			renderInfo.frameWidth, renderInfo.frameHeight
-		)
+			renderInfo.frameWidth, renderInfo.frameHeight);
 	}
 }

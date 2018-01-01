@@ -430,6 +430,9 @@ class Obj {
 	// and the current frame.
 	shift: Point = null;
 
+	// Outline color, if outlined
+	outline: string|null = null;
+
 	amount: number = 1; // TODO: Where does this belong? Items and misc seem to have it, or is Money an Item?
 	position: Point = {x: -1, y: -1};
 	inventory: Obj[] = [];

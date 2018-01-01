@@ -154,8 +154,11 @@ class Renderer {
 	renderObjects(objs: Obj[]) {
 		objs.forEach(obj => {
 			if(!Config.ui.showWalls && obj.type === "wall")
-				return
-			this.renderObject.call(this, obj)
+				return;
+			if(obj.outline)
+				this.renderObjectOutlined(obj);
+			else
+				this.renderObject.call(this, obj);
 		})
 	}
 
@@ -170,5 +173,6 @@ class Renderer {
 
 	renderRoof(roof: TileMap): void { }
 	renderFloor(floor: TileMap): void { }
+	renderObjectOutlined(obj: Obj): void { this.renderObject(obj); }
 	renderObject(obj: Obj): void { }
 }
