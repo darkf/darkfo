@@ -18,13 +18,15 @@ limitations under the License.
 
 type TileMap = string[][]
 
-type ObjectRenderInfo = {x: number; y: number; spriteX: number;
-	                     frameWidth: number; frameHeight: number;
-	                     uniformFrameWidth: number;
-	                     uniformFrameHeight: number;
-	                     spriteFrameNum: number;
-	                     artInfo: any;
-	                     visible: boolean}
+interface ObjectRenderInfo {
+	x: number; y: number; spriteX: number;
+	frameWidth: number; frameHeight: number;
+	uniformFrameWidth: number;
+	uniformFrameHeight: number;
+	spriteFrameNum: number;
+	artInfo: any;
+	visible: boolean;
+}
 
 class Renderer {
 	objects: Obj[];
@@ -102,7 +104,7 @@ class Renderer {
 		}
 	}
 
-	objectRenderInfo(obj: Obj): ObjectRenderInfo {
+	objectRenderInfo(obj: Obj): ObjectRenderInfo|null {
 		var scr = hexToScreen(obj.position.x, obj.position.y)
 		var visible = obj.visible
 
