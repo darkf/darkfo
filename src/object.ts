@@ -377,8 +377,8 @@ interface SerializedObj {
 
 	extra: any;
 
-	script: any;
-	_script: any;
+	script: string;
+	_script: scriptingEngine.SerializedScript|undefined;
 
 	name: string;
 	subtype: string;

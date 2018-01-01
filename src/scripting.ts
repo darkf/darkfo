@@ -256,7 +256,7 @@ module scriptingEngine {
 		return false;
 	}
 
-	interface SerializedScript {
+	export interface SerializedScript {
 		name: string;
 		lvars: any[];
 	}
