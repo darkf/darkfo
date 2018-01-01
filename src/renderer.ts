@@ -152,14 +152,14 @@ class Renderer {
 	}
 
 	renderObjects(objs: Obj[]) {
-		objs.forEach(obj => {
+		for(const obj of objs) {
 			if(!Config.ui.showWalls && obj.type === "wall")
 				return;
 			if(obj.outline)
 				this.renderObjectOutlined(obj);
 			else
-				this.renderObject.call(this, obj);
-		})
+				this.renderObject(obj);
+		}
 	}
 
 	// stubs to be overriden
