@@ -114,7 +114,7 @@ class AI {
 class Combat {
 	combatants: Critter[];
 	playerIdx: number;
-	player: any;
+	player: Player;
 	turnNum: number;
 	whoseTurn: number;
 	inPlayerTurn: boolean;
@@ -144,7 +144,7 @@ class Combat {
 		if(this.playerIdx === -1)
 			throw "combat: couldn't find player?"
 
-		this.player = this.combatants[this.playerIdx]
+		this.player = this.combatants[this.playerIdx] as Player
 		this.turnNum = 1
 		this.whoseTurn = this.playerIdx - 1
 		this.inPlayerTurn = true
