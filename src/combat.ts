@@ -533,9 +533,10 @@ class Combat {
 
 			if(inRange || obj.hostile) {
 				obj.hostile = true;
-				obj.outline = "red";
+				obj.outline = obj.teamNum !== player.teamNum ? "red" : "green";
 				numActive++;
 			}
+
 		}
 
 		if(numActive === 0 && this.turnNum != 1)
