@@ -262,21 +262,29 @@ module scriptingEngine {
 	}
 
 	// The type of scripts -- everything that's in ScriptProto plus the script procedures and some script-local built-in vars
-	type ScriptType = typeof ScriptProto & {
+	export type ScriptType = typeof ScriptProto & {
 		// Stuff we hacked in
 		scriptName: string,
 		lvars: { [lvar: number]: any },
+		_vm?: ScriptVM,
+		_mapScript?: ScriptType,
 
 		// Special built-in variables
 		self_obj: { _script: ScriptType },
 		self_tile: number,
 		cur_map_index: number,
 		fixed_param: number,
+		source_obj: Obj,
+		target_obj: Obj,
+		action_being_used: number,
+		game_time_hour: number,
 
 		combat_is_initialized: 0 | 1,
 		game_time: number,
 
 		// Script procedures
+		start: () => void,
+
 		map_enter_p_proc: () => void,
 		map_update_p_proc: () => void,
 
