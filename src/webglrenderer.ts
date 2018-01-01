@@ -287,7 +287,7 @@ class WebGLRenderer extends Renderer {
 		//heart.graphics.print(txt, x, y)
 	}
 
-	image(img: any /*HTMLImageElement*/, x: number, y: number, w?: number, h?: number): void {
+	image(img: HTMLImageElement|HeartImage, x: number, y: number, w?: number, h?: number): void {
 		//heart.graphics.draw(img, x, y, w, h)
 	}
 

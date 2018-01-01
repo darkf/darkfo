@@ -169,7 +169,7 @@ class Renderer {
 	color(r: number, g: number, b: number, a: number=255): void { }
 	rectangle(x: number, y: number, w: number, h: number, filled: boolean=true): void { }
 	text(txt: string, x: number, y: number): void { }
-	image(img: any /*HTMLImageElement*/, x: number, y: number, w?: number, h?: number): void { }
+	image(img: HTMLImageElement|HeartImage, x: number, y: number, w?: number, h?: number): void { }
 
 	renderRoof(roof: TileMap): void { }
 	renderFloor(floor: TileMap): void { }
