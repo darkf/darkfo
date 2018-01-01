@@ -388,7 +388,7 @@ function critterKill(obj: Critter, source: Critter, useScript?: boolean, animNam
 	obj.dead = true
 
 	if(useScript === undefined || useScript === true) {
-		scriptingEngine.destroy(obj, source)
+		Scripting.destroy(obj, source)
 	}
 
 	if(!animName || !critterHasAnim(obj, animName))
@@ -667,7 +667,7 @@ class Critter extends Obj {
 				var spatial = hitSpatials[i]
 				console.log("triggered spatial " + spatial.script + " (" + spatial.range + ") @ " +
 					        spatial.position.x + ", " + spatial.position.y)
-				scriptingEngine.spatial(spatial, this)
+				Scripting.spatial(spatial, this)
 			}
 		}
 

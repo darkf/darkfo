@@ -182,7 +182,7 @@ module Encounters {
                 switch(node.name) {
                     case "global": // GVAR
                         if(node.arg.type !== "int") throw "evalCond: GVAR not a number";
-                        return scriptingEngine.getGlobalVar(node.arg.value)
+                        return Scripting.getGlobalVar(node.arg.value)
                     case "player":
                         if(node.arg.type !== "var") throw "evalCond: player arg not a var";
                         if(node.arg.name !== "level")

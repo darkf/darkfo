@@ -18,7 +18,7 @@ Scripting system/engine for DarkFO
 
 "use strict";
 
-module scriptingEngine {
+module Scripting {
 	var gameObjects: Obj[]|null = null
 	var dudeObject: Player|null = null
 	var mapVars: any = null

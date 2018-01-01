@@ -102,7 +102,7 @@ class GameMap {
 	}
 
 	updateMap(): void {
-		scriptingEngine.updateMap(this.mapScript, this.getObjectsAndSpatials(), this.currentElevation)
+		Scripting.updateMap(this.mapScript, this.getObjectsAndSpatials(), this.currentElevation)
 	}
 
 	changeElevation(level: number, updateScripts: boolean=false, isMapLoading: boolean=false) {
@@ -135,7 +135,7 @@ class GameMap {
 			// TODO: we need some kind of active/inactive flag on scripts to toggle here,
 			// since scripts should already be loaded
 			//loadObjectScripts(gObjects)
-			scriptingEngine.updateMap(this.mapScript, this.getObjectsAndSpatials(), level)
+			Scripting.updateMap(this.mapScript, this.getObjectsAndSpatials(), level)
 		}
 
 		// rebuild the lightmap
@@ -178,7 +178,7 @@ class GameMap {
 		// Tell scripts they've entered the new map
 
 		const objectsAndSpatials = this.getObjectsAndSpatials()
-		const overridenStartPos = scriptingEngine.enterMap(this.mapScript, objectsAndSpatials, this.currentElevation, this.mapID, isFirstRun)
+		const overridenStartPos = Scripting.enterMap(this.mapScript, objectsAndSpatials, this.currentElevation, this.mapID, isFirstRun)
 
 		if(overridenStartPos) {
 			// Starting position was overridden by map_enter_p_proc -- use the new one
@@ -194,9 +194,9 @@ class GameMap {
 		// Tell objects' scripts that they're now on the map
 		// TODO: Does this apply to all levels or just the current elevation?
 		this.objects.forEach(level => level.forEach(obj => obj.enterMap()))
-		this.spatials.forEach(level => level.forEach(spatial => scriptingEngine.objectEnterMap(spatial, this.currentElevation, this.mapID)))
+		this.spatials.forEach(level => level.forEach(spatial => Scripting.objectEnterMap(spatial, this.currentElevation, this.mapID)))
 
-		scriptingEngine.updateMap(this.mapScript, objectsAndSpatials, this.currentElevation)
+		Scripting.updateMap(this.mapScript, objectsAndSpatials, this.currentElevation)
 	}
 
 	loadMap(mapName: string, startingPosition?: Point, startingElevation: number=0, loadedCallback?: () => void): void {
@@ -268,7 +268,7 @@ class GameMap {
 		// clear any previous objects/events
 		this.objects = null
 		this.mapScript = null
-		scriptingEngine.reset(player, this.name)
+		Scripting.reset(player, this.name)
 
 		// reset player animation status (to idle)
 		player.clearAnim()
@@ -288,10 +288,10 @@ class GameMap {
 		var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
 		if(Config.engine.doLoadScripts) {
-			scriptingEngine.init(player, mapName)
+			Scripting.init(player, mapName)
 			try {
-				this.mapScript = scriptingEngine.loadScript(mapName)
-				scriptingEngine.setMapScript(this.mapScript)
+				this.mapScript = Scripting.loadScript(mapName)
+				Scripting.setMapScript(this.mapScript)
 			}
 			catch(e) {
 				this.mapScript = null
@@ -311,7 +311,7 @@ class GameMap {
 			if(Config.engine.doLoadScripts) {
 				// initialize spatial scripts
 				this.spatials.forEach((level: any) => level.forEach((spatial: Spatial) => {
-					var script = scriptingEngine.loadScript(spatial.script)
+					var script = Scripting.loadScript(spatial.script)
 					if(script === null)
 						console.log("load script failed for spatial " + spatial.script)
 					else {
@@ -406,7 +406,7 @@ class GameMap {
 		this.mapID = obj.mapID
 		this.numLevels = obj.numLevels
 		this.mapObj = obj.mapObj
-		this.mapScript = obj.mapScript ? scriptingEngine.deserializeScript(obj.mapScript) : null
+		this.mapScript = obj.mapScript ? Scripting.deserializeScript(obj.mapScript) : null
 		this.objects = obj.objects.map(level => level.map(obj => deserializeObj(obj)))
 		this.spatials = [[],[],[]] //obj.spatials // TODO: deserialize
 		this.roofMap = obj.roofMap

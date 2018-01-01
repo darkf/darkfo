@@ -143,7 +143,7 @@ function dropObject(source: Obj, obj: Obj) {
 function pickupObject(obj: Obj, source: Critter) {
 	if(obj._script) {
 		console.log("picking up %o", obj)
-		scriptingEngine.pickup(obj, source)
+		Scripting.pickup(obj, source)
 	}
 }
 
@@ -346,7 +346,7 @@ function playerUseSkill(skill: Skills, obj: Obj): void {
 
 	if(!isPassiveSkill(skill)) {
 		// use the skill on the object
-		scriptingEngine.useSkillOn(player, getSkillID(skill), obj)
+		Scripting.useSkillOn(player, getSkillID(skill), obj)
 	}
 	else
 		console.log("passive skills are not implemented")
@@ -459,7 +459,7 @@ function playerUse() {
 			   obj._script && obj._script.talk_p_proc !== undefined) {
 				// talk to a critter
 				console.log("Talking to " + who.name)
-				scriptingEngine.talk(who._script, who)
+				Scripting.talk(who._script, who)
 			}
 			else if(who.dead === true) {
 				// loot a dead body
@@ -510,7 +510,7 @@ heart.keydown = (k: string) => {
 		if(critter) {
 			if(critter._script && critter._script.talk_p_proc !== undefined) {
 				console.log("talking to " + critter.name)
-				scriptingEngine.talk(critter._script, critter)
+				Scripting.talk(critter._script, critter)
 			}
 		}
 	}
@@ -720,7 +720,7 @@ heart.update = function() {
 
 		if(Config.engine.doTimedEvents && !inCombat) {
 			// check and update timed events
-			var timedEvents = scriptingEngine.timeEventList
+			var timedEvents = Scripting.timeEventList
 			var numEvents = timedEvents.length
 			for(var i = 0; i < numEvents; i++) {
 				const event = timedEvents[i];
@@ -736,7 +736,7 @@ heart.update = function() {
 
 				event.ticks--
 				if(event.ticks <= 0) {
-					scriptingEngine.info("timed event triggered", "timer")
+					Scripting.info("timed event triggered", "timer")
 					event.fn()
 					timedEvents.splice(i--, 1)
 					numEvents--
@@ -751,7 +751,7 @@ heart.update = function() {
 		if(obj.type === "critter") {
 			if(didTick && Config.engine.doUpdateCritters && inCombat !== true && !(<Critter>obj).dead &&
 				!obj.inAnim() && obj._script)
-				scriptingEngine.updateCritter(obj._script, obj as Critter)
+				Scripting.updateCritter(obj._script, obj as Critter)
 		}
 
 		obj.updateAnim()
@@ -809,5 +809,5 @@ heart.draw = () => {
 function allCritters() { return gMap.getObjects().filter(obj => obj instanceof Critter) }
 
 // global callbacks for dialogue UI
-function dialogueReply(id: number) { scriptingEngine.dialogueReply(id) }
-function dialogueEnd() { scriptingEngine.dialogueEnd() }
+function dialogueReply(id: number) { Scripting.dialogueReply(id) }
+function dialogueEnd() { Scripting.dialogueEnd() }

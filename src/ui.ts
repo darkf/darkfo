@@ -652,7 +652,7 @@ function uiContextMenu(obj: Obj, evt: any) {
     var useBtn = button(obj, "use", () => playerUse()) // TODO: playerUse should take an object
     var talkBtn = button(obj, "talk", () => {
             console.log("talking to " + obj.name)
-            scriptingEngine.talk(obj._script, obj)
+            Scripting.talk(obj._script, obj)
     })
     var pickupBtn = button(obj, "pickup", () => pickupObject(obj, player))
 

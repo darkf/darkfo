@@ -204,7 +204,7 @@ module ScriptVMBridge {
 
     // define a game-oriented Script VM that has a ScriptProto instance
     export class GameScriptVM extends ScriptVM {
-    	scriptObj = _.clone(scriptingEngine.ScriptProto)
+    	scriptObj = _.clone(Scripting.ScriptProto)
 
     	constructor(script: BinaryReader, intfile: IntFile, obj: Obj) {
     	    super(script, intfile)

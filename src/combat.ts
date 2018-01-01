@@ -405,7 +405,7 @@ class Combat {
 
 		if(Config.engine.doLoadScripts === true && obj._script !== undefined) {
 			// notify the critter script of a combat event
-			if(scriptingEngine.combatEvent(obj, "turnBegin") === true)
+			if(Scripting.combatEvent(obj, "turnBegin") === true)
 				return // end of combat (script override)
 		}
 

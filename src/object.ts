@@ -135,7 +135,7 @@ function objectExplode(obj: Obj, source: Obj, minDmg: number, maxDmg: number): v
 					if(objs[j].type === "critter")
 						console.log("todo: damage", (<Critter>objs[j]).name)
 
-					scriptingEngine.damage(objs[j], obj, obj /*source*/, damage)
+					Scripting.damage(objs[j], obj, obj /*source*/, damage)
 				}
 			}
 
@@ -168,7 +168,7 @@ function useExplosive(obj: Obj, source: Critter): void {
 
 	console.log("arming explosive for " + ticks + " ticks")
 
-	scriptingEngine.timeEventList.push({ticks: ticks, obj: null, userdata: null, fn: function() {
+	Scripting.timeEventList.push({ticks: ticks, obj: null, userdata: null, fn: function() {
 		// explode!
 		// TODO: explosion damage calculations
 		objectExplode(obj, source, 10 /* min dmg */, 25 /* max dmg */)
@@ -219,7 +219,7 @@ function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean {
 	if(useScript !== false && obj._script && obj._script.use_p_proc !== undefined) {
 		if(source === undefined)
 			source = player
-		if(scriptingEngine.use(obj, source) === true) {
+		if(Scripting.use(obj, source) === true) {
 			console.log("useObject: overriden")
 			return true // script overrided us
 		}
@@ -378,7 +378,7 @@ interface SerializedObj {
 	extra: any;
 
 	script: string;
-	_script: scriptingEngine.SerializedScript|undefined;
+	_script: Scripting.SerializedScript|undefined;
 
 	name: string;
 	subtype: string;
@@ -412,7 +412,7 @@ class Obj {
 	extra: any; // TODO
 
 	script: string; // Script name
-	_script: scriptingEngine.ScriptType|undefined; // Live script object
+	_script: Scripting.ScriptType|undefined; // Live script object
 
 	// TOOD: unify these
 	name: string; // = "<unnamed obj>"; // Only for some critters at the moment.
@@ -513,7 +513,7 @@ class Obj {
 			obj.script = mobj.script
 
 			if(mobj._script)
-				obj._script = scriptingEngine.deserializeScript(mobj._script)
+				obj._script = Scripting.deserializeScript(mobj._script)
 
 			// TODO: Should we load the script if mobj._script does not exist?
 		}
@@ -554,13 +554,13 @@ class Obj {
 			if(Config.engine.doLogScriptLoads)
 				console.log("loadScript: loading %s (sid=%d)", scriptName, sid)
 			// console.trace();
-			var script = scriptingEngine.loadScript(scriptName)
+			var script = Scripting.loadScript(scriptName)
 			if(!script) {
 				console.log("loadScript: load script failed for %s (sid=%d)", scriptName, sid)
 			} else {
 				this.script = scriptName
 				this._script = script
-				scriptingEngine.initScript(this._script, this)
+				Scripting.initScript(this._script, this)
 			}
 		}
 	}
@@ -572,7 +572,7 @@ class Obj {
 		// are added in. @important
 		
 		if(this._script)
-			scriptingEngine.objectEnterMap(this, currentElevation, gMap.mapID)
+			Scripting.objectEnterMap(this, currentElevation, gMap.mapID)
 	}
 
 	setAmount(amount: number): Obj {
