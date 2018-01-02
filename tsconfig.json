@@ -6,6 +6,7 @@
         "alwaysStrict": true, // emit "use strict"
         "skipLibCheck": true,
         "noImplicitAny": true,
+        "noImplicitThis": true,
         "outDir": "js",
         // "target": "es6",
         "lib": ["es6", "dom", "es2017.object"]
