@@ -219,7 +219,7 @@ function jQuery_isPlainObject(obj: any): boolean {
 	return typeof Ctor === "function" && Object.toString.call( Ctor ) === Object.toString.call(Object);
 }
 
-function jQuery_extend(deep: boolean, target: any, obj: any): any {
+function jQuery_extend(this: any, deep: boolean, target: any, obj: any): any {
 	var options, name, src, copy, copyIsArray, clone,
 		target = arguments[ 0 ] || {},
 		i = 1,
