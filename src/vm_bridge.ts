@@ -25,7 +25,7 @@ module ScriptVMBridge {
 				args.push(this.pop())
 			args.reverse()
 
-			var r = this.scriptObj[procName].apply(this.scriptObj, args)
+			var r = (<any>this.scriptObj)[procName].apply(this.scriptObj, args)
             if(pushResult)
                 this.push(r)
 		}
@@ -204,7 +204,7 @@ module ScriptVMBridge {
 
     // define a game-oriented Script VM that has a ScriptProto instance
     export class GameScriptVM extends ScriptVM {
-    	scriptObj = _.clone(Scripting.ScriptProto)
+    	scriptObj = new Scripting.Script()
 
     	constructor(script: BinaryReader, intfile: IntFile, obj: Obj) {
     	    super(script, intfile)
@@ -213,7 +213,7 @@ module ScriptVMBridge {
     	    // patch scriptObj to allow transparent procedure calls
     	    // TODO: maybe we should check if we're interrupting the VM
     	    for(const procName in this.intfile.procedures) {
-                this.scriptObj[procName] = () => { this.call(procName) }
+                (<any>this.scriptObj)[procName] = () => { this.call(procName) }
     	    }
     	}
 

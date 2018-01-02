@@ -412,7 +412,7 @@ class Obj {
 	extra: any; // TODO
 
 	script: string; // Script name
-	_script: Scripting.ScriptType|undefined; // Live script object
+	_script: Scripting.Script|undefined; // Live script object
 
 	// TOOD: unify these
 	name: string; // = "<unnamed obj>"; // Only for some critters at the moment.
