@@ -200,7 +200,7 @@ module ScriptVMBridge {
     }
 
     // update VM opMap with our bridgeOpMap
-    _.assign(opMap, bridgeOpMap)
+    Object.assign(opMap, bridgeOpMap)
 
     // define a game-oriented Script VM that has a ScriptProto instance
     export class GameScriptVM extends ScriptVM {
