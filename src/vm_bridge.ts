@@ -212,10 +212,8 @@ module ScriptVMBridge {
 
     	    // patch scriptObj to allow transparent procedure calls
     	    // TODO: maybe we should check if we're interrupting the VM
-    	    for(var _procName in this.intfile.procedures) {
-    	    	(procName => {
-	    	    	this.scriptObj[procName] = () => { this.call(procName) }
-	    	    })(_procName)
+    	    for(const procName in this.intfile.procedures) {
+                this.scriptObj[procName] = () => { this.call(procName) }
     	    }
     	}
 
