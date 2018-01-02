@@ -156,7 +156,7 @@ class Renderer {
 	renderObjects(objs: Obj[]) {
 		for(const obj of objs) {
 			if(!Config.ui.showWalls && obj.type === "wall")
-				return;
+				continue;
 			if(obj.outline)
 				this.renderObjectOutlined(obj);
 			else
