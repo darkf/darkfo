@@ -20,7 +20,6 @@ Scripting system/engine for DarkFO
 
 module Scripting {
 	var gameObjects: Obj[]|null = null
-	var dudeObject: Player|null = null
 	var mapVars: any = null
 	var globalVars: any = {
 		0: 50, // GVAR_PLAYER_REPUTATION
@@ -305,13 +304,7 @@ module Scripting {
 	};
 
 	export var ScriptProto = {
-		dude_obj: null as Player|null,
-		'true': true,
-		'false': false,
 		_didOverride: false,
-
-		// TODO: Does float and integer division in scripts work the same? Does floor truncate or floor? Test.
-		floor: function(x: number) { return Math.floor(x) },
 
 		set_global_var: function(gvar: number, value: any) {
 			globalVars[gvar] = value
@@ -983,7 +976,7 @@ module Scripting {
 			info("DIALOGUE OPTION: " + msg +
 				 " [INT " + ((iqTest >= 0) ? (">="+iqTest) : ("<="+-iqTest)) + "]", "dialogue")
 
-			var INT = critterGetStat(dudeObject, "INT")
+			var INT = critterGetStat(player, "INT")
 			if((iqTest > 0 && INT < iqTest) || (iqTest < 0 && INT > -iqTest))
 				return // not enough intelligence for this option
 
@@ -1462,20 +1455,17 @@ module Scripting {
 		}
 	}
 
-	export function reset(dude: Player, mapName: string, mapID?: number) {
+	export function reset(mapName: string, mapID?: number) {
 		timeEventList.length = 0 // clear timed events
 		dialogueOptionProcs.length = 0
 		gameObjects = null
 		currentMapObject = null
 		currentMapID = (mapID !== undefined) ? mapID : null
 		mapVars = {}
-
-		dudeObject = dude
-		ScriptProto.dude_obj = dudeObject
 	}
 
-	export function init(dude: Player, mapName: string, mapID?: number) {
+	export function init(mapName: string, mapID?: number) {
 		seed(123)
-		reset(dude, mapName, mapID)
+		reset(mapName, mapID)
 	}
 }

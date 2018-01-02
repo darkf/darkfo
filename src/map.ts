@@ -268,7 +268,7 @@ class GameMap {
 		// clear any previous objects/events
 		this.objects = null
 		this.mapScript = null
-		Scripting.reset(player, this.name)
+		Scripting.reset(this.name)
 
 		// reset player animation status (to idle)
 		player.clearAnim()
@@ -288,7 +288,7 @@ class GameMap {
 		var elevation = (startingElevation !== undefined) ? startingElevation : 0
 
 		if(Config.engine.doLoadScripts) {
-			Scripting.init(player, mapName)
+			Scripting.init(mapName)
 			try {
 				this.mapScript = Scripting.loadScript(mapName)
 				Scripting.setMapScript(this.mapScript)
