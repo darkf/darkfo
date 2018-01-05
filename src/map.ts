@@ -101,6 +101,14 @@ class GameMap {
 		// TODO: notify scripts with destroy_p_proc
 	}
 
+	hasRoofAt(pos: Point, elevation?: number): boolean {
+		if(elevation === undefined)
+			elevation = this.currentElevation;
+
+		const tilePos = hexToTile(pos);
+		return this.mapObj.levels[elevation].tiles.roof[tilePos.y][tilePos.x] !== "grid000";
+	}
+
 	updateMap(): void {
 		Scripting.updateMap(this.mapScript, this.getObjectsAndSpatials(), this.currentElevation)
 	}

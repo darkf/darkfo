@@ -70,6 +70,13 @@ function tileFromScreen(x: number, y: number): Point {
 	return {x: 99 - Math.round(tx), y: Math.round(ty)}
 }
 
+function hexToTile(pos: Point): Point {
+	// Calculate screen position of `pos`, then look up which roof tile that belongs to,
+	// and then calculate the square tile position from the screen position.
+	const scrPos = hexToScreen(pos.x, pos.y);
+	return tileFromScreen(scrPos.x, scrPos.y);
+}
+
 function centerTile(): Point {
 	return hexFromScreen(cameraX + ((SCREEN_WIDTH / 2)|0) - 32,
 		                 cameraY + ((SCREEN_HEIGHT / 2)|0) - 16)
