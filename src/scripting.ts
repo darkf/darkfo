@@ -585,6 +585,11 @@ module Scripting {
 			stub("critter_inven_obj", arguments)
 			return null
 		}
+		inven_cmds(obj: Critter, invenCmd: number, itemIndex: number): Obj|null {
+			stub("inven_cmds", arguments, "inventory");
+			assert(invenCmd === 13 /* INVEN_CMD_INDEX_PTR */, "Invalid invenCmd");
+			return null;
+		}
 		critter_attempt_placement(obj: Obj, tileNum: number, elevation: number) {
 			stub("critter_attempt_placement", arguments)
 			// TODO: it should find a place around tileNum if it's occupied

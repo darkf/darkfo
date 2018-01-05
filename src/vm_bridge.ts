@@ -78,6 +78,7 @@ module ScriptVMBridge {
        ,0x80B7: bridged("create_object_sid", 4)
        ,0x8102: bridged("critter_add_trait", 4)
        ,0x8106: bridged("critter_inven_obj", 2)
+       ,0x8109: bridged("inven_cmds", 3)
        ,0x80FF: bridged("critter_attempt_placement", 3)
        ,0x8127: bridged("critter_injure", 2, false)
        ,0x80E8: bridged("critter_heal", 2, false)
