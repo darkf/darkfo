@@ -145,6 +145,7 @@ module ScriptVMBridge {
        ,0x80D4: bridged("tile_num", 1)
        ,0x80D5: bridged("tile_num_in_direction", 3)
        ,0x80CE: bridged("animate_move_obj_to_tile", 3, false)
+       ,0x80CC: bridged("animate_stand_obj", 1, false)
        ,0x80D0: bridged("attack_complex", 8, false)
        ,0x8153: bridged("terminate_combat", 0, false)
        ,0x8145: bridged("use_obj_on_obj", 2, false)

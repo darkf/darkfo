@@ -1068,6 +1068,12 @@ module Scripting {
 			}
 		}
 		reg_anim_obj_move_to_tile(obj: Obj, tileNum: number, delay: number) { stub("reg_anim_obj_move_to_tile", arguments, "movement") }
+
+		animate_stand_obj(obj: Critter) {
+			stub("animate_stand_obj", arguments, "animation");
+			// TODO: Play idle animation (animation 0)
+		}
+
 		explosion(tile: number, elevation: number, damage: number) {
 			log("explosion", arguments)
 
