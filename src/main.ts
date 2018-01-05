@@ -622,21 +622,21 @@ heart.keydown = (k: string) => {
 }
 
 function recalcPath(start: Point, goal: Point, isGoalBlocking?: boolean) {
-	var matrix = new Array(HEX_GRID_SIZE)
+	const matrix = new Array(HEX_GRID_SIZE)
 
-	for(var y = 0; y < HEX_GRID_SIZE; y++)
+	for(let y = 0; y < HEX_GRID_SIZE; y++)
 		matrix[y] = new Array(HEX_GRID_SIZE)
 
-	gMap.getObjects().forEach(obj => {
-			// if there are multiple, any blocking one will block
-			matrix[obj.position.y][obj.position.x] |= <any>obj.blocks()
-	})
+	for(const obj of gMap.getObjects()) {
+		// if there are multiple, any blocking one will block
+		matrix[obj.position.y][obj.position.x] |= <any>obj.blocks()
+	}
 
 	if(isGoalBlocking === false)
 		matrix[goal.y][goal.x] = 0
 
-	var grid = new PF.Grid(HEX_GRID_SIZE, HEX_GRID_SIZE, matrix)
-	var finder = new PF.BestFirstFinder()
+	const grid = new PF.Grid(HEX_GRID_SIZE, HEX_GRID_SIZE, matrix)
+	const finder = new PF.BestFirstFinder()
 	return finder.findPath(start.x, start.y, goal.x, goal.y, grid)
 }
 
