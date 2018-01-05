@@ -754,15 +754,15 @@ heart.update = function() {
 		audioEngine.tick()
 	}
 
-	gMap.getObjects().forEach(obj => {
+	for(const obj of gMap.getObjects()) {
 		if(obj.type === "critter") {
-			if(didTick && Config.engine.doUpdateCritters && inCombat !== true && !(<Critter>obj).dead &&
+			if(didTick && Config.engine.doUpdateCritters && !inCombat && !(<Critter>obj).dead &&
 				!obj.inAnim() && obj._script)
-				Scripting.updateCritter(obj._script, obj as Critter)
+				Scripting.updateCritter(obj._script, obj as Critter);
 		}
 
-		obj.updateAnim()
-	})
+		obj.updateAnim();
+	}
 }
 
 // Hopefully this gets inlined!
