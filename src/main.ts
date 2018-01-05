@@ -256,6 +256,13 @@ function initGame() {
 	Worldmap.init()
 	
 	initUI()
+
+	if(Config.ui.hideRoofWhenUnder) {
+		// Only show roofs if the player is not under them
+		Events.on("playerMoved", (e: Point) => {
+			Config.ui.showRoof = !gMap.hasRoofAt(e);
+		});
+	}
 }
 
 heart.load = function() {

@@ -14,6 +14,7 @@ const Config = {
 		showPath: false, // show player's path?
 		showFloor: true, // show floor tiles?
 		showRoof: true, // show roof tiles?
+		hideRoofWhenUnder: true, // hide roof when we walk under it?
 		showObjects: true, // show objects?
 		showWalls: true, // show walls?
 		showBoundingBox: false, // show bounding boxes around objects?
