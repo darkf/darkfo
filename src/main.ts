@@ -765,11 +765,6 @@ heart.update = function() {
 	}
 }
 
-// Hopefully this gets inlined!
-function getPixelIndex(x: number, y: number, w: number) {
-	return (x + y * w) * 4
-}
-
 // get an object's bounding box in screen-space (note: not camera-space)
 function objectBoundingBox(obj: Obj): BoundingBox {
 	var scr = hexToScreen(obj.position.x, obj.position.y)

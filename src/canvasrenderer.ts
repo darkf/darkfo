@@ -16,6 +16,11 @@ limitations under the License.
 
 // HTML5 Canvas game renderer
 
+// Hopefully this gets inlined!
+function getPixelIndex(x: number, y: number, w: number) {
+	return (x + y * w) * 4
+}
+
 class CanvasRenderer extends Renderer {
 	tileDataCache: {[key: string]: any} = {}
 
