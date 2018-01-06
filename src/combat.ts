@@ -372,10 +372,15 @@ class Combat {
 		this.log("[TAUNT " + obj.name + ": " + this.getCombatAIMessage(msgID) + "]")
 	}
 
-	findTarget(obj: Critter): Critter {
+	findTarget(obj: Critter): Critter|null {
 		// TODO: find target according to AI rules
-		// Find the first combatant on a different team
-		return _.find(this.combatants, (x:Critter) => !x.dead && x.teamNum != obj.teamNum)
+		// Find the closest living combatant on a different team
+
+		const targets = this.combatants.filter(x => !x.dead && x.teamNum !== obj.teamNum);
+		if(targets.length === 0)
+			return null;
+		targets.sort((a, b) => hexDistance(obj.position, a.position) - hexDistance(obj.position, b.position));
+		return targets[0];
 	}
 
 	walkUpTo(obj: Critter, idx: number, target: Point, maxDistance: number, callback: () => void): boolean {
