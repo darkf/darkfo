@@ -402,21 +402,21 @@ function critterKill(obj: Critter, source: Critter, useScript?: boolean, animNam
 	}, true)
 }
 
-function critterDamage(obj: Critter, damage: number, source: Critter, useScript?: boolean, useAnim?: boolean, damageType?: string, callback?: () => void) {
-	decreaseStat(obj, 'HP', damage, false, false, true)
-	if(critterGetStat(obj, 'HP') <= 0)
-		return critterKill(obj, source, useScript)
+function critterDamage(obj: Critter, damage: number, source: Critter, useScript: boolean=true, useAnim: boolean=true, damageType?: string, callback?: () => void) {
+	obj.stats.modifyBase("HP", -damage);
+	if(critterGetStat(obj, "HP") <= 0)
+		return critterKill(obj, source, useScript);
 
-	if(useScript === undefined || useScript === true) {
-		// todo
+	if(useScript) {
+		// TODO: Call damage_p_proc
 	}
 
-	// todo: other hit animations
-	if((useAnim === undefined || useAnim === true) && critterHasAnim(obj, "hitFront")) {
-		critterStaticAnim(obj, "hitFront", function() {
-			obj.clearAnim()
-			if(callback !== undefined) callback()
-		})
+	// TODO: other hit animations
+	if(useAnim && critterHasAnim(obj, "hitFront")) {
+		critterStaticAnim(obj, "hitFront", () => {
+			obj.clearAnim();
+			if(callback) callback();
+		});
 	}
 }
 
