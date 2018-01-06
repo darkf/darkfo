@@ -125,14 +125,16 @@ class SkillSet {
 
 class StatSet {
     baseStats: { [name: string]: number } = {};
+    useBonuses: boolean;
 
-    constructor(baseStats?: { [name: string]: number }) {
+    constructor(baseStats?: { [name: string]: number }, useBonuses: boolean=true) {
         // Copy construct a StatSet
         if(baseStats) this.baseStats = baseStats;
+        this.useBonuses = useBonuses;
     }
 
     clone(): StatSet {
-        return new StatSet(this.baseStats);
+        return new StatSet(this.baseStats, this.useBonuses);
     }
 
     static fromPro(pro: any): StatSet {
@@ -157,7 +159,7 @@ class StatSet {
         if(stats["HP"] === undefined && stats["Max HP"] !== undefined)
             stats["HP"] = stats["Max HP"];
 
-        return new StatSet(stats);
+        return new StatSet(stats, false);
     }
 
     getBase(stat: string): number {
@@ -178,9 +180,11 @@ class StatSet {
             throw Error(`No dependencies for stat '${stat}'`);
 
         let statValue = base;
-        for(const dep of statDep.dependencies) {
-            if(dep.statType)
-                statValue += Math.floor(this.get(dep.statType) * dep.multiplier);
+        if(this.useBonuses) {
+            for(const dep of statDep.dependencies) {
+                if(dep.statType)
+                    statValue += Math.floor(this.get(dep.statType) * dep.multiplier);
+            }
         }
 
         return clamp(statDep.min, statDep.max, statValue);

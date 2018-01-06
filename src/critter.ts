@@ -502,7 +502,7 @@ class Critter extends Obj {
 			}
 
 			if(mobj.stats) {
-				obj.stats = new StatSet(mobj.stats.baseStats);
+				obj.stats = new StatSet(mobj.stats.baseStats, mobj.stats.useBonuses);
 				console.warn("Deserializing stat set: %o to: %o", mobj.stats, obj.stats)
 			}
 			if(mobj.skills) {
