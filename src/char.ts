@@ -198,28 +198,3 @@ class StatSet {
         this.setBase(stat, this.getBase(stat) + change);
     }
 }
-
-// TODO: Replace this with StatSet.modifyBase
-// @ts-ignore
-function decreaseStat(obj, stat, amount, useTemp, costsPoints, allowOverBounds) {
-    if(obj.stats[stat] === undefined || (useTemp && obj.tempChanges.stats[stat] === undefined))
-        return false
-    var statValue = critterGetStat(obj, stat)
-    var curTemp =  (useTemp && obj.tempChanges.stats[stat] !== undefined) ? obj.tempChanges.stats[stat] : 0
-    if(allowOverBounds === false && statValue !== null && (curTemp + critterGetRawStat(obj, stat)-amount) < statDependencies[stat].min) {
-        amount = curTemp + critterGetRawStat(obj, stat) - statDependencies[stat].min
-        if(amount <= 0)
-            return false
-    }
-    if(costsPoints === true) {
-        if(obj.StatPoints === undefined)
-            obj.StatPoints = 0
-        obj.StatPoints += amount
-    }
-    if(useTemp) {
-        obj.tempChanges.stats[stat] -= 1
-    }else{
-        critterSetRawStat(obj, stat, statValue - amount)
-    }
-    return true
-}
