@@ -19,7 +19,6 @@ limitations under the License.
 "use strict";
 
 // make TypeScript happy about external libraries (TODO: use .d.ts files)
-declare var _: any;
 declare var heart: any;
 declare var PF: any;
 declare var pako: any;
