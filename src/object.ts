@@ -269,7 +269,7 @@ function useObject(obj: Obj, source?: Critter, useScript?: boolean): boolean {
 }
 
 function objectFindIndex(obj: Obj): number {
-	return _.findIndex(gMap.getObjects(), (object: Obj) => object === obj)
+	return gMap.getObjects().findIndex(object => object === obj);
 }
 
 function objectZCompare(a: Obj, b: Obj): number {
@@ -720,7 +720,7 @@ class Obj {
 			invArt: this.invArt,
 			frame: this.frame,
 			amount: this.amount,
-			position: _.clone(this.position),
+			position: {x: this.position.x, y: this.position.y},
 			inventory: this.inventory.map(obj => obj.serialize()),
 			lightRadius: this.lightRadius,
 			lightIntensity: this.lightIntensity

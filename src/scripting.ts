@@ -257,7 +257,7 @@ module Scripting {
 
 	export interface SerializedScript {
 		name: string;
-		lvars: any[];
+		lvars: { [lvar: number]: any };
 	}
 
 	export class Script {
@@ -1171,7 +1171,7 @@ module Scripting {
 
 		_serialize(): SerializedScript {
 			return {name: this.scriptName,
-			        lvars: _.clone(this.lvars)}
+			        lvars: Object.assign({}, this.lvars)}
 		}
 	}
 
