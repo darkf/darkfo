@@ -143,6 +143,10 @@ function arrayRemove<T>(array: T[], value: T) {
 	return false
 }
 
+function arrayIncludes<T>(array: T[], value: T): boolean {
+	return array.indexOf(value) !== -1;
+}
+
 function clamp(min: number, max: number, value: number) {
 	return Math.max(min, Math.min(max, value))
 }

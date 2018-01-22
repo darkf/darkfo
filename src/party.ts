@@ -27,7 +27,8 @@ class Party {
 
 	removePartyMember(obj: Critter) {
 		console.log("party member %o removed", obj)
-		_.pull(this.party, obj)
+		if(!arrayRemove(this.party, obj))
+			throw Error("Could not remove party member");
 	}
 
 	getPartyMembers(): Critter[] {
@@ -39,11 +40,11 @@ class Party {
 	}
 
 	isPartyMember(obj: Critter) {
-		return _.includes(this.party, obj)
+		return arrayIncludes(this.party, obj)
 	}
 
 	getPartyMemberByPID(pid: number) {
-		return _.find(this.party, (obj: Critter) => obj.pid === pid) || null
+		return this.party.find(obj => obj.pid === pid) || null
 	}
 
 	serialize(): SerializedObj[] {
