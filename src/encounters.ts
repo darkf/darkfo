@@ -217,7 +217,7 @@ module Encounters {
     }
 
     function evalConds(conds: Node[]): boolean {
-        // TODO: _.every
+        // TODO: Array.every
         for(var i = 0; i < conds.length; i++) {
             if(evalCond(conds[i]) === false)
                 return false

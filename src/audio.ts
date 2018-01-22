@@ -71,13 +71,13 @@ class HTMLAudioEngine implements AudioEngine {
 
 	rollNextSfx(): string {
 		// Randomly obtain the next map sfx
-		var curMapInfo = getCurrentMapInfo()
+		const curMapInfo = getCurrentMapInfo()
 		if(!curMapInfo)
 			return ""
 
-		var sfx = curMapInfo.ambientSfx
-		var sumFreqs = _.sum(sfx, (x: number[]) => x[1])
-		var roll = getRandomInt(0, sumFreqs)
+		const sfx = curMapInfo.ambientSfx
+		const sumFreqs = sfx.reduce((sum: number, x: [string, number]) => sum + x[1], 0)
+		let roll = getRandomInt(0, sumFreqs)
 
 		for(var i = 0; i < sfx.length; i++) {
 			var freq = sfx[i][1]
@@ -88,7 +88,8 @@ class HTMLAudioEngine implements AudioEngine {
 			roll -= freq
 		}
 
-		throw "shouldn't be here"
+		// XXX: What happens here when none roll?
+		throw Error("shouldn't be here")
 	}
 
 	tick(): void {
