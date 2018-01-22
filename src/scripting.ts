@@ -792,8 +792,8 @@ module Scripting {
 		set_light_level(level: number) { stub("set_light_level", arguments) }
 		obj_set_light_level(obj: Obj, intensity: number, distance: number) { stub("obj_set_light_level", arguments) }
 		override_map_start(x: number, y: number, elevation: number, rotation: number) {
-			console.warn("override_map_start", x, y, elevation)
 			log("override_map_start", arguments)
+			info(`override_map_start: ${x}, ${y} / elevation ${elevation}`);
 			overrideStartPos = { position: {x, y}, orientation: rotation, elevation };
 		}
 		obj_pid(obj: Obj) {
