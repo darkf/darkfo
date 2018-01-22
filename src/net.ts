@@ -77,7 +77,7 @@ module Netcode {
 	}
 
 	function findObjectByUID(uid: number): Obj|null {
-		return _.find(gMap.getObjects(), (obj: Obj) => obj.uid === uid) || null;
+		return gMap.getObjects().find(obj => obj.uid === uid) || null;
 	}
 
 	function setupCommonEvents(): void {
@@ -149,7 +149,7 @@ module Netcode {
 			console.log("net: Changing elevation...");
 			
 			for(const netPlayer of getNetPlayers()) {
-				_.pull(gMap.objects[e.oldElevation], netPlayer);
+				arrayRemove(gMap.objects[e.oldElevation], netPlayer);
 				gMap.objects[e.elevation].push(netPlayer);
 			}
 
@@ -210,7 +210,7 @@ module Netcode {
 			console.log("net: Changing elevation...");
 			
 			for(const netPlayer of getNetPlayers()) {
-				_.pull(gMap.objects[oldElevation], netPlayer);
+				arrayRemove(gMap.objects[oldElevation], netPlayer);
 				gMap.objects[gMap.currentElevation].push(netPlayer);
 			}
 		});
