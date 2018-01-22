@@ -102,12 +102,12 @@ var opMap: { [opcode: number]: (this: ScriptVM) => void } = {
             	var num = this.script.read32()
             	var nextOpcode = this.script.peek16()
 
-            	if([0x8014 // op_fetch_external
-				   ,0x8015 // op_store_external
-				   ,0x8016 // op_export_var
-				   //,0x8017 // op_export_proc (TODO: verify)
-				   //,0x8005: // op_call (TODO: verify, might need more operands)
-				   ].indexOf(nextOpcode) !== -1) {
+            	if(arrayIncludes([0x8014 // op_fetch_external
+				                 ,0x8015 // op_store_external
+				                 ,0x8016 // op_export_var
+				                 //,0x8017 // op_export_proc (TODO: verify)
+				                 //,0x8005: // op_call (TODO: verify, might need more operands)
+				                 ], nextOpcode)) {
             		// fetch an identifier
 	            	if(this.intfile.identifiers[num] === undefined)
 	            		throw Error("ScriptVM: 9001 requested identifier " + num + " but it doesn't exist");
