@@ -121,7 +121,7 @@ class Combat {
 
 	constructor(objects: Obj[]) {
 		// Gather a list of combatants (critters meeting a certain criteria)
-		this.combatants = _.filter(objects, (obj: Obj) => {
+		this.combatants = objects.filter(obj => {
 			if(obj instanceof Critter) {
 				if(obj.dead || !obj.visible)
 					return false
@@ -138,9 +138,9 @@ class Combat {
 			}
 			
 			return false
-		})
+		}) as Critter[];
 
-		this.playerIdx = _.findIndex(this.combatants, (x:Critter) => x.isPlayer)
+		this.playerIdx = this.combatants.findIndex(x => x.isPlayer)
 		if(this.playerIdx === -1)
 			throw "combat: couldn't find player?"
 
