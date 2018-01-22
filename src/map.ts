@@ -130,7 +130,7 @@ class GameMap {
 		// and add the them to the new one
 		var party = gParty.getPartyMembersAndPlayer()
 		party.forEach((obj: Critter) => {
-			_.pull(this.objects[oldElevation], obj)
+			arrayRemove(this.objects[oldElevation], obj)
 			this.objects[level].push(obj)
 		})
 
@@ -404,7 +404,7 @@ class GameMap {
 
 			mapScript: this.mapScript ? this.mapScript._serialize() : null,
 			objects: this.objects.map((level: Obj[]) =>
-				_.without(level, player).map((obj: Obj) => obj.serialize())), // TODO: Should be without entire party?
+				arrayWithout(level, player).map(obj => obj.serialize())), // TODO: Should be without entire party?
 			spatials: null //this.spatials.map(level => level.map(spatial:> spatial.serialize()))
 		}
 	}

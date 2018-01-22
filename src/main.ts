@@ -167,7 +167,7 @@ function objectsAtPosition(position: Point): Obj[] {
 }
 
 function critterAtPosition(position: Point): Critter|null {
-	return _.find(objectsAtPosition(position), (obj: Obj) => obj.type === "critter") || null
+	return objectsAtPosition(position).find(obj => obj.type === "critter") as Critter || null
 }
 
 function centerCamera(around: Point) {

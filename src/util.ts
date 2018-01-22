@@ -143,6 +143,10 @@ function arrayRemove<T>(array: T[], value: T) {
 	return false
 }
 
+function arrayWithout<T>(array: T[], value: T): T[] {
+	return array.filter(x => x !== value);
+}
+
 function arrayIncludes<T>(array: T[], value: T): boolean {
 	return array.indexOf(value) !== -1;
 }
