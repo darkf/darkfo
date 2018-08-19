@@ -384,6 +384,7 @@ function hitSpatialTrigger(position: Point): any { // TODO: return type (Spatial
 
 function critterKill(obj: Critter, source: Critter, useScript?: boolean, animName?: string, callback?: () => void) {
     obj.dead = true
+    obj.outline = null
 
     if(useScript === undefined || useScript === true) {
         Scripting.destroy(obj, source)
