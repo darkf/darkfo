@@ -16,8 +16,6 @@ limitations under the License.
 
 // Contains the Player class and relevant initialization logic
 
-"use strict";
-
 class Player extends Critter {
     name = "Player"
 

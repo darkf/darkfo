@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-"use strict";
-
 var mapAreas: AreaMap|null = null
 
 var proMap: any = null // TODO: type

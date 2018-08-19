@@ -16,8 +16,6 @@ limitations under the License.
 
 // World Map system
 
-"use strict";
-
 module Worldmap {
     let worldmap: Worldmap = null
     let worldmapPlayer: WorldmapPlayer = null

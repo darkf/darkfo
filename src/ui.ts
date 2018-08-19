@@ -24,8 +24,6 @@ limitations under the License.
 // TODO: fix style for inventory image amount
 // TODO: option for scaling the UI
 
-"use strict";
-
 module Ui {
     // Container that all of the top-level UI elements reside in
     let $uiContainer: HTMLElement = null as HTMLElement;

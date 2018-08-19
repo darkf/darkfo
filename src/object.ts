@@ -16,8 +16,6 @@ limitations under the License.
 
 // Collection of functions for working with game objects
 
-"use strict";
-
 let _lastObjectUID = 0;
 
 function objectGetMoney(obj: Obj): number {

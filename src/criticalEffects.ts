@@ -16,8 +16,6 @@ limitations under the License.
 
 // Critical Effects system
 
-"use strict";
-
 module CriticalEffects {
     interface Dict<T> {
         [key: string]: T;

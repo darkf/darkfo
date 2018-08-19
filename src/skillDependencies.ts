@@ -17,8 +17,6 @@ limitations under the License.
 
 // Skill Dependencies system
 
-"use strict";
-
 enum StatType { STR, PER, END, CHR, INT, AGI, LCK, One }
 
 class Skill {

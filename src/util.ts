@@ -17,8 +17,6 @@ limitations under the License.
 
 // Utility functions
 
-"use strict";
-
 function parseIni(text: string) {
     // Parse a .ini-style categorized key-value format
     const ini: { [category: string]: any } = {}

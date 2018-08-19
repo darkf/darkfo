@@ -16,8 +16,6 @@ limitations under the License.
 
 // Main file with a lot of ugly global singletons
 
-"use strict";
-
 // make TypeScript happy about external libraries (TODO: use .d.ts files)
 declare var heart: any;
 declare var PF: any;

@@ -17,8 +17,6 @@ limitations under the License.
 
 // Collection of functions for dealing with critters
 
-"use strict";
-
 const animInfo: { [anim: string]: { type: string } } = {
                  "idle": {type: "static"},
                  "attack": {type: "static"},

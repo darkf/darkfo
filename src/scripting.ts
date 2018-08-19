@@ -16,8 +16,6 @@ limitations under the License.
 Scripting system/engine for DarkFO
 */
 
-"use strict";
-
 module Scripting {
     var gameObjects: Obj[]|null = null
     var mapVars: any = null

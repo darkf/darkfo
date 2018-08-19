@@ -16,8 +16,6 @@ limitations under the License.
 
 // Audio engine for handling music and sound effects
 
-"use strict";
-
 interface AudioEngine {
     playSfx(sfx: string): void;
     playMusic(music: string): void;
