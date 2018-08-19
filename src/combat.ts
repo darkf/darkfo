@@ -488,7 +488,10 @@ class Combat {
                 that.doAITurn(obj, idx, depth+1) // if we can, do another turn
             })
         }
-        else this.nextTurn()
+        else {
+            console.log("[AI IS STUMPED]")
+            this.nextTurn()
+        }
     }
 
     static start(forceTurn?: Critter): void {
@@ -544,10 +547,9 @@ class Combat {
                 obj.outline = obj.teamNum !== player.teamNum ? "red" : "green";
                 numActive++;
             }
-
         }
 
-        if(numActive === 0 && this.turnNum != 1)
+        if(numActive === 0 && this.turnNum !== 1)
             return this.end()
 
         this.turnNum++
@@ -556,7 +558,7 @@ class Combat {
         if(this.whoseTurn >= this.combatants.length)
             this.whoseTurn = 0
 
-        if(this.combatants[this.whoseTurn].isPlayer === true) {
+        if(this.combatants[this.whoseTurn].isPlayer) {
             // player turn
             this.inPlayerTurn = true
             this.player.AP.resetAP()
