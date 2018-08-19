@@ -63,7 +63,7 @@ var isInitializing: boolean = true // are we initializing the engine?
 var loadingAssetsLoaded: number = 0 // how many images we've loaded
 var loadingAssetsTotal: number = 0 // out of this total
 var loadingLoadedCallback: (() => void)|null = null // loaded callback
-var lazyAssetLoadingQueue: { [name: string]: ((img: any) => void)[] } = {} // set of lazily-loaded assets being loaded
+var lazyAssetLoadingQueue: { [name: string]: ((img: any) => void)[]|undefined } = {} // set of lazily-loaded assets being loaded
 
 interface FloatMessage {
     msg: string;
@@ -93,7 +93,7 @@ function lazyLoadImage(art: string, callback?: (x: any) => void, isHeartImg?: bo
     
     if(lazyAssetLoadingQueue[art] !== undefined) {
         if(callback)
-            lazyAssetLoadingQueue[art].push(callback)
+            lazyAssetLoadingQueue[art]!.push(callback)
         return
     }
 
@@ -115,9 +115,11 @@ function lazyLoadImage(art: string, callback?: (x: any) => void, isHeartImg?: bo
     img.src = art + '.png'
 }
 
-function lookupScriptName(scriptID: number) {
+function lookupScriptName(scriptID: number): string {
     console.log("SID: " + scriptID)
-    return getLstId("scripts/scripts", scriptID - 1).split('.')[0].toLowerCase()
+    const lookupName = getLstId("scripts/scripts", scriptID - 1);
+    if(lookupName === null) throw Error("lookupScriptName: failed to look up script name");
+    return lookupName.split('.')[0].toLowerCase()
 }
 
 function dropObject(source: Obj, obj: Obj) {
@@ -146,9 +148,10 @@ function pickupObject(obj: Obj, source: Critter) {
 
 // Draws a line between a and b, returning the first object hit
 function hexLinecast(a: Point, b: Point): Obj|null {
-    var line = hexLine(a, b).slice(1, -1)
+    var line = hexLine(a, b)
     if(line === null)
         return null
+    line = line.slice(1, -1)
     for(var i = 0; i < line.length; i++) {
         // todo: we could optimize this by only
         // checking in a certain radius of `a`
@@ -240,7 +243,7 @@ function initGame() {
         CriticalEffects.loadTable()
 
     document.oncontextmenu = () => false;
-    const $cnv = document.getElementById("cnv");
+    const $cnv = document.getElementById("cnv")!;
     $cnv.onmouseenter = () => { gameHasFocus = true; };
     $cnv.onmouseleave = () => { gameHasFocus = false; };
 
@@ -379,23 +382,23 @@ function playerUse() {
     if(obj === null) { // walk to the destination if there is no usable object
         // Walking in combat (TODO: This should probably be in Combat...)
         if(inCombat) {
-            if(!(combat.inPlayerTurn || Config.combat.allowWalkDuringAnyTurn)) {
+            if(!(combat!.inPlayerTurn || Config.combat.allowWalkDuringAnyTurn)) {
                 console.log("Wait your turn.");
                 return;
             }
 
-            if(player.AP.getAvailableMoveAP() === 0) {
-                uiLog(getProtoMsg(700)); // "You don't have enough action points."
+            if(player.AP!.getAvailableMoveAP() === 0) {
+                uiLog(getProtoMsg(700)!); // "You don't have enough action points."
                 return;
             }
 
-            const maxWalkingDist = player.AP.getAvailableMoveAP();
+            const maxWalkingDist = player.AP!.getAvailableMoveAP();
             if(!player.walkTo(mouseHex, Config.engine.doAlwaysRun, undefined, maxWalkingDist)) {
                 console.log("Cannot walk there");
             }
             else {
-                if(!player.AP.subtractMoveAP(player.path.path.length - 1))
-                    throw "subtraction issue: has AP: " + player.AP.getAvailableMoveAP() +
+                if(!player.AP!.subtractMoveAP(player.path.path.length - 1))
+                    throw "subtraction issue: has AP: " + player.AP!.getAvailableMoveAP() +
                         " needs AP:"+player.path.path.length+" and maxDist was:"+maxWalkingDist;
             }
         }
@@ -412,13 +415,13 @@ function playerUse() {
 
         if(inCombat && !who.dead) {
             // attack a critter
-            if(!combat.inPlayerTurn || player.inAnim()) {
+            if(!combat!.inPlayerTurn || player.inAnim()) {
                 console.log("You can't do that yet.")
                 return
             }
 
-            if(player.AP.getAvailableCombatAP() < 4) {
-                uiLog(getProtoMsg(700)) // "You don't have enough action points."
+            if(player.AP!.getAvailableCombatAP() < 4) {
+                uiLog(getProtoMsg(700)!) // "You don't have enough action points."
                 return
             }
 
@@ -430,7 +433,7 @@ function playerUse() {
                 return
             }
 
-            if(weapon.weapon.isCalled()) {
+            if(weapon.weapon!.isCalled()) {
                 var art = "art/critters/hmjmpsna" // default art
                 if(critterHasAnim(who, "called-shot"))
                     art = critterGetAnim(who, "called-shot")
@@ -438,16 +441,16 @@ function playerUse() {
                 console.log("art: %s", art)
 
                 uiCalledShot(art, who, (region: string) => {
-                    player.AP.subtractCombatAP(4)
+                    player.AP!.subtractCombatAP(4)
                     console.log("Attacking %s...", region)
-                    combat.attack(player, <Critter>obj, region)
+                    combat!.attack(player, <Critter>obj, region)
                     uiCloseCalledShot()
                 })
             }
             else {
-                player.AP.subtractCombatAP(4)
+                player.AP!.subtractCombatAP(4)
                 console.log("Attacking the torso...")
-                combat.attack(player, <Critter>obj, "torso")
+                combat!.attack(player, <Critter>obj, "torso")
             }
 
             return
@@ -456,6 +459,8 @@ function playerUse() {
 
     var callback = function() {
         player.clearAnim()
+        
+        if(!obj) throw Error();
 
         // if there's an object under the cursor, use it
         if(obj.type === "critter") {
@@ -463,6 +468,10 @@ function playerUse() {
                obj._script && obj._script.talk_p_proc !== undefined) {
                 // talk to a critter
                 console.log("Talking to " + who.name)
+                if(!who._script) {
+                    console.warn("obj has no script");
+                    return;
+                }    
                 Scripting.talk(who._script, who)
             }
             else if(who.dead === true) {
@@ -533,21 +542,21 @@ heart.keydown = (k: string) => {
         player.walkTo(mouseHex, true)
     }
     if(k === Config.controls.attack) {
-        if(!inCombat || !combat.inPlayerTurn || player.anim !== "idle") {
+        if(!inCombat || !combat!.inPlayerTurn || player.anim !== "idle") {
             console.log("You can't do that yet.")
             return
         }
 
-        if(player.AP.getAvailableCombatAP() < 4) {
-            uiLog(getProtoMsg(700))
+        if(player.AP!.getAvailableCombatAP() < 4) {
+            uiLog(getProtoMsg(700)!)
             return
         }
 
-        for(var i = 0; i < combat.combatants.length; i++) {
-            if(combat.combatants[i].position.x === mouseHex.x && combat.combatants[i].position.y === mouseHex.y && !combat.combatants[i].dead) {
-                player.AP.subtractCombatAP(4)
+        for(var i = 0; i < combat!.combatants.length; i++) {
+            if(combat!.combatants[i].position.x === mouseHex.x && combat!.combatants[i].position.y === mouseHex.y && !combat!.combatants[i].dead) {
+                player.AP!.subtractCombatAP(4)
                 console.log("Attacking...")
-                combat.attack(player, combat.combatants[i])
+                combat!.attack(player, combat!.combatants[i])
                 break
             }
         }
@@ -555,9 +564,9 @@ heart.keydown = (k: string) => {
 
     if(k === Config.controls.combat) {
         if(!Config.engine.doCombat) return
-        if(inCombat === true && combat.inPlayerTurn === true) {
+        if(inCombat === true && combat!.inPlayerTurn === true) {
             console.log("[TURN]")
-            combat.nextTurn()
+            combat!.nextTurn()
         }
         else if(inCombat === true) {
             console.log("Wait your turn...")
@@ -574,6 +583,7 @@ heart.keydown = (k: string) => {
         var obj = objectsAtPosition(mouseHex)[0]
         if(obj !== undefined) {
             var hit = hexLinecast(player.position, obj.position)
+            if(!hit) return;
             console.log("hit obj: " + hit.art)
         }
     }
@@ -599,7 +609,8 @@ heart.keydown = (k: string) => {
 
     if(k === Config.controls.kill) {
         var critter = critterAtPosition(mouseHex)
-        critterKill(critter, player)
+        if(critter)
+            critterKill(critter, player)
     }
 
     if(k === Config.controls.worldmap)
@@ -638,12 +649,14 @@ function recalcPath(start: Point, goal: Point, isGoalBlocking?: boolean) {
 }
 
 function changeCursor(image: string) {
-    document.getElementById("cnv").style.cursor = image;
+    document.getElementById("cnv")!.style.cursor = image;
 }
 
 function objectTransparentAt(obj: Obj, position: Point) {
     var frame = obj.frame !== undefined ? obj.frame : 0
     var sx = imageInfo[obj.art].frameOffsets[obj.orientation][frame].sx
+
+    if(!tempCanvasCtx) throw Error();
 
     tempCanvasCtx.clearRect(0, 0, 1, 1) // clear previous color
     tempCanvasCtx.drawImage(images[obj.art].img, sx+position.x, position.y, 1, 1, 0, 0, 1, 1)
@@ -688,7 +701,7 @@ heart.update = function() {
     var time = heart.timer.getTime()
 
     if(time - _lastFPSTime >= 500) {
-        $fpsOverlay.textContent = "fps: " + heart.timer.getFPS();
+        $fpsOverlay!.textContent = "fps: " + heart.timer.getFPS();
         _lastFPSTime = time;
     }
 
@@ -763,7 +776,7 @@ heart.update = function() {
 }
 
 // get an object's bounding box in screen-space (note: not camera-space)
-function objectBoundingBox(obj: Obj): BoundingBox {
+function objectBoundingBox(obj: Obj): BoundingBox|null {
     var scr = hexToScreen(obj.position.x, obj.position.y)
 
     if(images[obj.art] === undefined) // no art

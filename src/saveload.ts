@@ -17,7 +17,7 @@ limitations under the License.
 // Saving and loading support
 
 module SaveLoad {
-    let db: IDBDatabase = null;
+    let db: IDBDatabase;
 
     // Save game metadata + maps
     export interface SaveGame {

@@ -266,7 +266,7 @@ class Combat {
             if(isCrit === true) {
                 var critLevel = Math.floor(Math.max(0, getRandomInt(critModifer, 100 + critModifer)) / 20)
                 this.log("crit level: " + critLevel)
-                var crit = CriticalEffects.getCritical(critterGetKillType(target), region, critLevel)
+                var crit = CriticalEffects.getCritical(critterGetKillType(target)!, region, critLevel)
                 var critStatus = crit.doEffectsOn(target)
 
                 return {hit: true, crit: true, DM: critStatus.DM, msgID: critStatus.msgID} // crit

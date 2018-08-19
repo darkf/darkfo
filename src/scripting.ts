@@ -46,7 +46,7 @@ module Scripting {
     }
 
     export interface TimedEvent {
-        obj: Obj;
+        obj: Obj|null;
         ticks: number;
         userdata: any;
         fn: () => void;
@@ -129,8 +129,9 @@ module Scripting {
         return obj.isSpatial === true
     }
 
-    function getScriptName(id: number) {
-        return getLstId("scripts/scripts", id - 1).split(".")[0].toLowerCase()
+    function getScriptName(id: number): string {
+        // return getLstId("scripts/scripts", id - 1).split(".")[0].toLowerCase()
+        return lookupScriptName(id);
     }
 
     function getScriptMessage(id: number, msg: string|number) {
@@ -1113,7 +1114,8 @@ module Scripting {
             log("rm_timer_event", arguments)
             info("rm_timer_event: " + obj + ", " + obj.pid)
             for(var i = 0; i < timeEventList.length; i++) {
-                if(timeEventList[i].obj.pid === obj.pid) { // TODO: better object equality
+                const timedEvent = timeEventList[i];
+                if(timedEvent.obj && timedEvent.obj.pid === obj.pid) { // TODO: better object equality
                     info("removing timed event for obj")
                     timeEventList.splice(i--, 1)
                     break
