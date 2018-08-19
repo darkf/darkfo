@@ -149,6 +149,9 @@ class Combat {
         this.whoseTurn = this.playerIdx - 1
         this.inPlayerTurn = true
 
+        // Stop the player from walking combat is initiating
+        this.player.clearAnim();
+
         uiStartCombat()
     }
 
