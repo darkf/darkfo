@@ -16,8 +16,6 @@ limitations under the License.
 
 // Representation of game map and its serialized forms
 
-"use strict";
-
 // TODO: Spatial type
 type Spatial = any;
 
@@ -122,19 +120,19 @@ class GameMap {
 		//this.spatials = this.mapObj.levels[level]["spatials"]
 
 		// If we're in combat, end it since we're moving off of that elevation
-		inCombat && combat.end();
+		if(inCombat) combat.end();
 
-		player.clearAnim()
+		player.clearAnim();
 
-		// remove the player/party from the old objects list
-		// and add the them to the new one
-		var party = gParty.getPartyMembersAndPlayer()
-		party.forEach((obj: Critter) => {
-			arrayRemove(this.objects[oldElevation], obj)
-			this.objects[level].push(obj)
-		})
+		// Remove player & party (unless we're loading a new map, in which case they're not present)
+		// and place them on the new map
+		for(const obj of gParty.getPartyMembersAndPlayer()) {
+			if(!isMapLoading)
+				arrayRemove(this.objects[oldElevation], obj);
+			this.objects[level].push(obj);
+		}
 
-		this.placeParty()
+		this.placeParty();
 
 		// set up renderer data
 		renderer.initData(this.roofMap, this.floorMap, this.getObjects())
