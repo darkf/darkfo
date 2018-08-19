@@ -17,127 +17,127 @@ limitations under the License.
 // Parser for .INT files
 
 interface Procedure {
-	nameIndex: number;
-	name: string;
-	offset: number;
-	index: number;
-	argc: number;
+    nameIndex: number;
+    name: string;
+    offset: number;
+    index: number;
+    argc: number;
 }
 
 interface IntFile {
-	procedures: { [name: string]: Procedure };
-	proceduresTable: Procedure[];
-	identifiers: { [offset: number]: string };
-	strings: { [offset: number]: string };
-	codeOffset: number;
-	name: string;
+    procedures: { [name: string]: Procedure };
+    proceduresTable: Procedure[];
+    identifiers: { [offset: number]: string };
+    strings: { [offset: number]: string };
+    codeOffset: number;
+    name: string;
 }
 
 // parse .INT files
 function parseIntFile(reader: BinaryReader, name: string=""): IntFile {
-	reader.seek(0x2A) // seek to procedure table
+    reader.seek(0x2A) // seek to procedure table
 
-	// read procedure table
-	var numProcs = reader.read32()
-	var procs: Procedure[] = []
-	var procedures: { [name: string]: Procedure } = {}
-	//console.log("procs: %d", numProcs)
-	//console.log("")
+    // read procedure table
+    var numProcs = reader.read32()
+    var procs: Procedure[] = []
+    var procedures: { [name: string]: Procedure } = {}
+    //console.log("procs: %d", numProcs)
+    //console.log("")
 
-	for(var i = 0; i < numProcs; i++) {
-		var nameIndex = reader.read32()
-		var flags = reader.read32()
-		//console.log("name index: %d", nameIndex)
-		//console.log("flags: %d", flags)
-		assertEq(reader.read32(), 0, "unk0 != 0")
-		assertEq(reader.read32(), 0, "unk1 != 0")
-		var offset = reader.read32()
-		//console.log("offset: %d", offset)
-		var argc = reader.read32()
-		//console.log("argc: %d", argc)
-		//console.log("")
+    for(var i = 0; i < numProcs; i++) {
+        var nameIndex = reader.read32()
+        var flags = reader.read32()
+        //console.log("name index: %d", nameIndex)
+        //console.log("flags: %d", flags)
+        assertEq(reader.read32(), 0, "unk0 != 0")
+        assertEq(reader.read32(), 0, "unk1 != 0")
+        var offset = reader.read32()
+        //console.log("offset: %d", offset)
+        var argc = reader.read32()
+        //console.log("argc: %d", argc)
+        //console.log("")
 
-		procs.push({nameIndex: nameIndex
-			       ,name: ""
-			       ,offset: offset
-			       ,index: i
-			       ,argc: argc
-			       })
-	}
+        procs.push({nameIndex: nameIndex
+                   ,name: ""
+                   ,offset: offset
+                   ,index: i
+                   ,argc: argc
+                   })
+    }
 
-	// offset->identifier table
-	var identEnd = reader.read32()
-	var identifiers: { [offset: number]: string } = {}
+    // offset->identifier table
+    var identEnd = reader.read32()
+    var identifiers: { [offset: number]: string } = {}
 
-	var baseOffset = reader.offset
-	while(true) {
-		if(reader.offset - baseOffset >= identEnd)
-			break
+    var baseOffset = reader.offset
+    while(true) {
+        if(reader.offset - baseOffset >= identEnd)
+            break
 
-		var len = reader.read16()
-		var offset = reader.offset - baseOffset + 4
-		var str = ""
-		// console.log("len=%d, offset=%d", len, offset)
+        var len = reader.read16()
+        var offset = reader.offset - baseOffset + 4
+        var str = ""
+        // console.log("len=%d, offset=%d", len, offset)
 
-		for(var j = 0; j < len; j++) {
-			var c = reader.read8()
-			if(c)
-				str += String.fromCharCode(c)
-		}
+        for(var j = 0; j < len; j++) {
+            var c = reader.read8()
+            if(c)
+                str += String.fromCharCode(c)
+        }
 
-		// console.log("str=%s", str)
-		identifiers[offset] = str
-	}
+        // console.log("str=%s", str)
+        identifiers[offset] = str
+    }
 
-	assertEq(reader.read32(), 0xFFFFFFFF, "did not get 0xFFFFFFFF signature")
+    assertEq(reader.read32(), 0xFFFFFFFF, "did not get 0xFFFFFFFF signature")
 
-	// give procedures their names from the identifier table
-	procs.forEach(proc => proc.name = identifiers[proc.nameIndex])
+    // give procedures their names from the identifier table
+    procs.forEach(proc => proc.name = identifiers[proc.nameIndex])
 
-	// and populate the procedures table
-	procs.forEach(proc => procedures[proc.name] = proc)
+    // and populate the procedures table
+    procs.forEach(proc => procedures[proc.name] = proc)
 
-	// procs.forEach(proc => console.log("proc: %o", proc))
+    // procs.forEach(proc => console.log("proc: %o", proc))
 
-	/*console.log("")
-	console.log("strings:")
-	console.log("")*/
+    /*console.log("")
+    console.log("strings:")
+    console.log("")*/
 
-	// offset->strings table
-	var stringEnd = reader.read32()
-	var strings: { [offset: number]: string } = {}
+    // offset->strings table
+    var stringEnd = reader.read32()
+    var strings: { [offset: number]: string } = {}
 
-	//assertEq(stringEnd, 0xFFFFFFFF, "TODO: string table")
+    //assertEq(stringEnd, 0xFFFFFFFF, "TODO: string table")
 
-	if(stringEnd !== 0xFFFFFFFF) {
-		// read string table
-		var baseOffset = reader.offset
-		while(true) {
-			if(reader.offset - baseOffset >= stringEnd)
-				break
+    if(stringEnd !== 0xFFFFFFFF) {
+        // read string table
+        var baseOffset = reader.offset
+        while(true) {
+            if(reader.offset - baseOffset >= stringEnd)
+                break
 
-			var len = reader.read16()
-			var offset = reader.offset - baseOffset + 4
-			var str = ""
-			// console.log("len=%d, offset=%d, stringEnd=%d", len, offset, stringEnd)
+            var len = reader.read16()
+            var offset = reader.offset - baseOffset + 4
+            var str = ""
+            // console.log("len=%d, offset=%d, stringEnd=%d", len, offset, stringEnd)
 
-			for(var j = 0; j < len; j++) {
-				var c = reader.read8()
-				if(c)
-					str += String.fromCharCode(c)
-			}
+            for(var j = 0; j < len; j++) {
+                var c = reader.read8()
+                if(c)
+                    str += String.fromCharCode(c)
+            }
 
-			// console.log("str=%s", str)
-			strings[offset] = str
-		}
-	}
+            // console.log("str=%s", str)
+            strings[offset] = str
+        }
+    }
 
-	var codeOffset = reader.offset
+    var codeOffset = reader.offset
 
-	return {procedures: procedures
-		   ,proceduresTable: procs
-		   ,identifiers: identifiers
-	       ,strings: strings
-	       ,codeOffset: codeOffset
-	       ,name: name}
+    return {procedures: procedures
+           ,proceduresTable: procs
+           ,identifiers: identifiers
+           ,strings: strings
+           ,codeOffset: codeOffset
+           ,name: name}
 }
