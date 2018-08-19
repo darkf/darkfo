@@ -17,45 +17,45 @@ limitations under the License.
 // Party member system for DarkFO
 
 class Party {
-	// party members
-	party: Critter[] = []
+    // party members
+    party: Critter[] = []
 
-	addPartyMember(obj: Critter) {
-		console.log("party member %o added", obj)
-		this.party.push(obj)
-	}
+    addPartyMember(obj: Critter) {
+        console.log("party member %o added", obj)
+        this.party.push(obj)
+    }
 
-	removePartyMember(obj: Critter) {
-		console.log("party member %o removed", obj)
-		if(!arrayRemove(this.party, obj))
-			throw Error("Could not remove party member");
-	}
+    removePartyMember(obj: Critter) {
+        console.log("party member %o removed", obj)
+        if(!arrayRemove(this.party, obj))
+            throw Error("Could not remove party member");
+    }
 
-	getPartyMembers(): Critter[] {
-		return this.party
-	}
+    getPartyMembers(): Critter[] {
+        return this.party
+    }
 
-	getPartyMembersAndPlayer(): Critter[] {
-		return [<Critter>player].concat(this.party)
-	}
+    getPartyMembersAndPlayer(): Critter[] {
+        return [<Critter>player].concat(this.party)
+    }
 
-	isPartyMember(obj: Critter) {
-		return arrayIncludes(this.party, obj)
-	}
+    isPartyMember(obj: Critter) {
+        return arrayIncludes(this.party, obj)
+    }
 
-	getPartyMemberByPID(pid: number) {
-		return this.party.find(obj => obj.pid === pid) || null
-	}
+    getPartyMemberByPID(pid: number) {
+        return this.party.find(obj => obj.pid === pid) || null
+    }
 
-	serialize(): SerializedObj[] {
-		return this.party.map(obj => obj.serialize())
-	}
+    serialize(): SerializedObj[] {
+        return this.party.map(obj => obj.serialize())
+    }
 
-	deserialize(objs: SerializedObj[]): void {
-		this.party.length = 0
-		for(const obj of objs)
-			this.party.push(<Critter>deserializeObj(obj))
-	}
+    deserialize(objs: SerializedObj[]): void {
+        this.party.length = 0
+        for(const obj of objs)
+            this.party.push(<Critter>deserializeObj(obj))
+    }
 }
 
 var gParty = new Party()
