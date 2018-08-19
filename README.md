@@ -34,12 +34,12 @@ Some features are more middle ground:
 - The world map is rough and buggy, and on the area screens entrances are misplaced
 - Random encounters work, but not all of the setups are implemented
 - Lighting works, but has some minor bugs and inaccuracies. It is also particularly slow, especially outside of the WebGL backend.
-- Saving and loading is at an alpha stage: it works to a basic degree, but is missing large features and is not tested. As such, consider it experimental.
+- Saving and loading is at an alpha stage: it works to a basic degree, but is missing some features and is not tested. As such, consider it experimental.
 - Some animations are off, particularly related to combat
+- Leveling up (including XP, leveling stats/skills, etc) partially works
 
 Some features are not implemented at all:
 
-- Leveling up (including XP, leveling stats/skills, etc.)
 - The PipBoy map
 
 and other minor features here and there.
@@ -104,6 +104,8 @@ OPTIONAL: If you want sound, run `python convertAudio.py`. You'll need the `acm2
 - **Q:** Why do I need `acm2wav` for sound?
   
   A: Because it hasn't been ported to Python yet. If you're willing to contribute, give it a shot: the original Pascal source code is available online.
+
+  Additionally, FFmpeg might be able to transcode ACM audio, so give that a shot. (See #30.)
    
 - **Q:** Why convert all assets up front, why not load them directly?
   
