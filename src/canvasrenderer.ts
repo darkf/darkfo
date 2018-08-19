@@ -237,10 +237,10 @@ class CanvasRenderer extends Renderer {
         tempCanvasCtx.drawImage(img, srcX, 0, w, h, 1, 1, w, h);
 
         // Render the sprite from the temp canvas to the main canvas
-        heart.ctx.drawImage(tempCanvas, 0, 0, renderInfo.frameWidth, renderInfo.frameHeight,
+        heart.ctx.drawImage(tempCanvas, 0, 0, renderInfo.frameWidth + 2, renderInfo.frameHeight + 2,
             renderInfo.x - cameraX,
             renderInfo.y - cameraY,
-            renderInfo.frameWidth, renderInfo.frameHeight);
+            renderInfo.frameWidth + 2, renderInfo.frameHeight + 2);
     }
 
     renderObject(obj: Obj): void {
