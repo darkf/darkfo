@@ -276,7 +276,7 @@ module Scripting {
         self_tile!: number;
         cur_map_index!: number|null;
         fixed_param!: number;
-        source_obj!: Obj;
+        source_obj!: Obj|0;
         target_obj!: Obj;
         action_being_used!: number;
         game_time_hour!: number;
@@ -614,7 +614,7 @@ module Scripting {
         }
         kill_critter(obj: Critter, deathFrame: number) {
             log("kill_critter", arguments)
-            critterKill(obj, null)
+            critterKill(obj)
         }
         get_poison(obj: Obj) { stub("get_poison", arguments); return 0 }
         get_pc_stat(pcstat: number) {
@@ -1324,12 +1324,12 @@ module Scripting {
         script.spatial_p_proc()
     }
 
-    export function destroy(obj: Obj, source: Obj) {
-        if(!obj._script || obj._script.destroy_p_proc === undefined)
+    export function destroy(obj: Obj, source?: Obj) {
+        if(!obj._script || !obj._script.destroy_p_proc)
             return null
 
         obj._script.self_obj = obj as ScriptableObj
-        obj._script.source_obj = source
+        obj._script.source_obj = source || 0
         obj._script.game_time = Math.max(1, gameTickTime)
         obj._script.cur_map_index = currentMapID
         obj._script._didOverride = false

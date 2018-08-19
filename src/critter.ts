@@ -382,7 +382,7 @@ function hitSpatialTrigger(position: Point): any { // TODO: return type (Spatial
     return gMap.getSpatials().filter(spatial => hexDistance(position, spatial.position) <= spatial.range)
 }
 
-function critterKill(obj: Critter, source: Critter, useScript?: boolean, animName?: string, callback?: () => void) {
+function critterKill(obj: Critter, source?: Critter, useScript?: boolean, animName?: string, callback?: () => void) {
     obj.dead = true
     obj.outline = null
 
