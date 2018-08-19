@@ -71,7 +71,7 @@ function getElevator(type: number): Elevator {
         elevatorInfo = getFileJSON("lut/elevators.json")
     }
 
-    return elevatorInfo.elevators[type]
+    return elevatorInfo!.elevators[type]
 }
 
 function parseAreas(data: string): AreaMap {
@@ -140,6 +140,7 @@ function parseAreas(data: string): AreaMap {
 }
 
 function areaContainingMap(mapName: string) {
+    if(!mapAreas) throw Error("mapAreas not loaded");
     for(var area in mapAreas) {
         var entrances = mapAreas[area].entrances
         for(var i = 0; i < entrances.length; i++) {
@@ -203,7 +204,7 @@ function loadLst(lst: string): string[] {
     return getFileText("data/" + lst + ".lst").split('\n')
 }
 
-function getLstId(lst: string, id: number): string {
+function getLstId(lst: string, id: number): string|null {
     if(lstFiles[lst] === undefined)
         lstFiles[lst] = loadLst(lst)
     if(lstFiles[lst] === undefined)
@@ -220,12 +221,15 @@ function parseMapInfo() {
     
     // parse map info from data/data/maps.txt
     mapInfo = {}
-    var text = getFileText("data/data/maps.txt")
-    var ini: any = parseIni(text)
+    const text = getFileText("data/data/maps.txt")
+    const ini = parseIni(text)
     for(var category in ini) {
-        var id: any = category.match(/Map (\d+)/)[1]
-        if(id === null) throw "maps.txt: invalid category: " + category
-        id = parseInt(id)
+        const m = category.match(/Map (\d+)/);
+        if(!m) throw Error("maps.txt: invalid category: " + category);
+
+        let id: string|number = m[1]
+        if(id === null) throw "maps.txt: invalid category: " + category;
+        id = parseInt(id);
 
         var randomStartPoints = []
         for(var key in ini[category]) {
@@ -261,9 +265,9 @@ function lookupMapFromLookup(lookupName: string) {
     if(mapInfo === null)
         parseMapInfo()
 
-    for(var mapID in mapInfo) {
-        if(mapInfo[mapID].lookupName === lookupName)
-            return mapInfo[mapID]
+    for(var mapID in mapInfo!) {
+        if(mapInfo![mapID].lookupName === lookupName)
+            return mapInfo![mapID]
     }
     return null
 }
@@ -272,9 +276,9 @@ function lookupMapNameFromLookup(lookupName: string) {
     if(mapInfo === null)
         parseMapInfo()
 
-    for(var mapID in mapInfo) {
-        if(mapInfo[mapID].lookupName.toLowerCase() === lookupName.toLowerCase())
-            return mapInfo[mapID].name
+    for(var mapID in mapInfo!) {
+        if(mapInfo![mapID].lookupName.toLowerCase() === lookupName.toLowerCase())
+            return mapInfo![mapID].name
     }
     return null
 }
@@ -283,16 +287,16 @@ function lookupMapName(mapID: number): string|null {
     if(mapInfo === null)
         parseMapInfo()
 
-    return mapInfo[mapID].name || null
+    return mapInfo![mapID].name || null
 }
 
 function getMapInfo(mapName: string) {
     if(mapInfo === null)
         parseMapInfo()
 
-    for(var mapID in mapInfo) {
-        if(mapInfo[mapID].name.toLowerCase() === mapName.toLowerCase())
-            return mapInfo[mapID]
+    for(var mapID in mapInfo!) {
+        if(mapInfo![mapID].name.toLowerCase() === mapName.toLowerCase())
+            return mapInfo![mapID]
     }
     return null
 }

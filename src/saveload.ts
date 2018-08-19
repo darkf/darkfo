@@ -56,7 +56,7 @@ module SaveLoad {
 
     function withTransaction(f: (trans: IDBTransaction) => void, finished?: () => void) {
         const trans = db.transaction("saves", "readwrite");
-        trans.oncomplete = finished;
+        if(finished) trans.oncomplete = finished;
         trans.onerror = (e: any) => { console.error("Database error: " + (<any>e.target).errorCode) };
         f(trans);
     }
@@ -66,11 +66,11 @@ module SaveLoad {
 
         store.openCursor().onsuccess = function(e) {
           const cursor = (<any>e.target).result;
-          if (cursor) {
+          if(cursor) {
             out.push(cursor.value);
             cursor.continue();
           }
-          else
+          else if(callback)
               callback(out);
         };
     }
