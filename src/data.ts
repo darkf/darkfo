@@ -106,21 +106,25 @@ function parseAreas(data: string): AreaMap {
             newArea.labelArt = lookupInterfaceArt(labelArtIdx)
 
         // entrances
-        for(var _key in area) {
+        for(const _key in area) {
             // entrance_N
             // e.g.: entrance_0=On,345,230,Destroyed Arroyo Bridge,-1,26719,0
 
-            var s = _key.split("_")
+            let s = _key.split("_")
             if(s[0] === "entrance") {
-                var entranceString = area[_key]
+                const entranceString = area[_key]
                 s = entranceString.split(",")
 
-                var entrance = {
+                const mapLookupName = s[3].trim();
+                const mapName = lookupMapNameFromLookup(mapLookupName);
+                if(!mapName) throw Error("Couldn't look up map name");
+
+                const entrance = {
                     startState: s[0],
                     x: parseInt(s[1]),
                     y: parseInt(s[2]),
-                    mapLookupName: s[3],
-                    mapName: lookupMapNameFromLookup(s[3]),
+                    mapLookupName,
+                    mapName,
                     elevation: parseInt(s[4]),
                     tileNum: parseInt(s[5]),
                     orientation: parseInt(s[6])
