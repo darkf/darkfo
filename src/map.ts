@@ -129,7 +129,10 @@ class GameMap {
         for(const obj of gParty.getPartyMembersAndPlayer()) {
             if(!isMapLoading)
                 arrayRemove(this.objects[oldElevation], obj);
-            this.objects[level].push(obj);
+            
+            // Only add the member once, in case changeElevation is called multiple times
+            if(this.objects[level].indexOf(obj) === -1)
+                this.objects[level].push(obj);
         }
 
         this.placeParty();
