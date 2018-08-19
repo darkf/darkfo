@@ -584,6 +584,10 @@ function initUI() {
 
     $id("endTurnButton").onclick = () => {
         if(inCombat && combat.inPlayerTurn) {
+            if(player.anim !== null && player.anim !== "idle") {
+                console.log("Can't end turn while player is in an animation.");
+                return;
+            }
             console.log("[TURN]")
             combat.nextTurn()
         }
