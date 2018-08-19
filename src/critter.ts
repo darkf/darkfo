@@ -110,8 +110,8 @@ class Weapon {
     maxDmg: number;
     weaponSkillType: string;
 
-    attackOne: {mode: number; APCost: number; maxRange: number};
-    attackTwo: {mode: number; APCost: number; maxRange: number};
+    attackOne!: {mode: number; APCost: number; maxRange: number};
+    attackTwo!: {mode: number; APCost: number; maxRange: number};
 
     constructor(weapon: WeaponObj) {
         this.weapon = weapon
@@ -176,7 +176,7 @@ class Weapon {
         return this.weapon.pro.extra["APCost" + attackMode]
     }
 
-    getSkin(): string {
+    getSkin(): string|null {
         if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
             return null
         const animCodeMap: { [animCode: number]: string } = {
@@ -194,7 +194,7 @@ class Weapon {
         return animCodeMap[this.weapon.pro.extra.animCode]
     }
 
-    getAttackSkin(): string {
+    getAttackSkin(): string|null {
         if(this.weapon.pro === undefined || this.weapon.pro.extra === undefined)
             return null
         if(this.weapon === 'punch') return 'q'
@@ -218,7 +218,7 @@ class Weapon {
         throw "TODO"
     }
 
-    getAnim(anim: string): string {
+    getAnim(anim: string): string|null {
         if(weaponAnims[this.name] && weaponAnims[this.name][anim])
             return weaponAnims[this.name][anim]
 
@@ -251,8 +251,8 @@ function critterGetBase(obj: Critter): string {
 
 function critterGetEquippedWeapon(obj: Critter): WeaponObj|null {
     // TODO: Get actual selection
-    if(objectIsWeapon(obj.leftHand)) return obj.leftHand
-    if(objectIsWeapon(obj.rightHand)) return obj.rightHand
+    if(objectIsWeapon(obj.leftHand)) return obj.leftHand || null
+    if(objectIsWeapon(obj.rightHand)) return obj.rightHand || null
     return null
 }
 
@@ -262,6 +262,7 @@ function critterGetAnim(obj: Critter, anim: string): string {
     // try weapon animation first
     var weaponObj = critterGetEquippedWeapon(obj)
     if(weaponObj !== null && Config.engine.doUseWeaponModel === true) {
+        if(!weaponObj.weapon) throw Error();
         var wepAnim = weaponObj.weapon.getAnim(anim)
         if(wepAnim)
             return base + wepAnim
@@ -300,7 +301,7 @@ function critterHasAnim(obj: Critter, anim: string): boolean {
     return imageInfo[critterGetAnim(obj, anim)] !== undefined
 }
 
-function critterGetKillType(obj: Critter): number {
+function critterGetKillType(obj: Critter): number|null {
     if(obj.isPlayer) return 19 // last type
     if(!obj.pro || !obj.pro.extra) return null
     return obj.pro.extra.killType
@@ -318,7 +319,7 @@ function getAnimDistance(art: string): number {
     return Math.floor((lastShift - firstShift + 16) / 32)
 }
 
-function critterStaticAnim(obj: Critter, anim: string, callback: () => void, waitForLoad: boolean=true): void {
+function critterStaticAnim(obj: Critter, anim: string, callback?: () => void, waitForLoad: boolean=true): void {
     obj.art = critterGetAnim(obj, anim)
     obj.frame = 0
     obj.lastFrameTime = 0
@@ -465,20 +466,20 @@ interface SerializedCritter extends SerializedObj {
 const SERIALIZED_CRITTER_PROPS = ["stats", "skills", "aiNum", "teamNum", "hostile", "isPlayer", "dead"];
 
 class Critter extends Obj {
-    stats: StatSet;
-    skills: SkillSet;
+    stats!: StatSet;
+    skills!: SkillSet;
 
-    leftHand: WeaponObj; // Left-hand object slot (TODO: Obj?)
-    rightHand: WeaponObj; // Right-hand object slot
+    leftHand?: WeaponObj; // Left-hand object slot
+    rightHand?: WeaponObj; // Right-hand object slot
 
     type = "critter";
     anim = "idle";
     path: any = null; // Holds pathfinding objects
-    AP: ActionPoints = null;
+    AP: ActionPoints|null = null;
 
     aiNum: number = -1; // AI packet number
     teamNum: number = -1; // AI team number (TODO: implement this)
-    ai: AI = null; // AI packet
+    ai: AI|null = null; // AI packet
     hostile: boolean = false; // Currently engaging an enemy?
 
     isPlayer: boolean = false; // Is this critter the player character?
@@ -519,7 +520,7 @@ class Critter extends Obj {
         this.stats = StatSet.fromPro(this.pro)
         this.skills = SkillSet.fromPro(this.pro.extra.skills)
         // console.log("Loaded stats/skills from PRO: HP=%d Speech=%d", this.stats.get("HP"), this.skills.get("Speech", this.stats))
-        this.name = getMessage("pro_crit", this.pro.textID)
+        this.name = getMessage("pro_crit", this.pro.textID) || ""
 
         // initialize AI packet / team number
         this.aiNum = this.pro.extra.AI
@@ -530,11 +531,11 @@ class Critter extends Obj {
             if(inv.subtype === "weapon") {
                 var w = <WeaponObj>inv
                 if(this.leftHand === undefined) {
-                    if(w.weapon.canEquip(this))
+                    if(w.weapon!.canEquip(this))
                         this.leftHand = w
                 }
                 else if(this.rightHand === undefined) {
-                    if(w.weapon.canEquip(this))
+                    if(w.weapon!.canEquip(this))
                         this.rightHand = w
                 }
                 //console.log("left: " + this.leftHand + " | right: " + this.rightHand)
@@ -617,8 +618,11 @@ class Critter extends Obj {
 
                 // set orientation towards new path hex
                 pos = this.path.path[this.path.index]
-                if(pos)
-                    this.orientation = directionOfDelta(this.position.x, this.position.y, pos[0], pos[1])
+                if(pos) {
+                    const dir = directionOfDelta(this.position.x, this.position.y, pos[0], pos[1]);
+                    if(dir == null) throw Error();
+                    this.orientation = dir;
+                }
             }
             else {
                 // advance frame
@@ -720,7 +724,9 @@ class Critter extends Obj {
         this.frame = 0
         this.lastFrameTime = heart.timer.getTime()
         this.shift = {x: 0, y: 0}
-        this.orientation = directionOfDelta(this.position.x, this.position.y, path[1][0], path[1][1])
+        const dir = directionOfDelta(this.position.x, this.position.y, path[1][0], path[1][1])
+        if(dir == null) throw Error();
+        this.orientation = dir;
         //console.log("start dir: %o", this.orientation)
 
         return true

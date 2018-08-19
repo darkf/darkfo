@@ -88,7 +88,7 @@ class CanvasRenderer extends Renderer {
                     if(this.tileDataCache[img] === undefined) {
                         // temp canvas to get tile framebuffer
                         if(!tmpCtx)
-                            tmpCtx = document.createElement("canvas").getContext("2d")
+                            tmpCtx = document.createElement("canvas").getContext("2d")!
 
                         tmpCtx.drawImage(images[img].img, 0, 0)
                         tileData = tmpCtx.getImageData(0, 0, images[img].img.width, images[img].img.height)
@@ -100,7 +100,7 @@ class CanvasRenderer extends Renderer {
                     const tileWidth = tileData.width
 
                     const isTriangleLit = Lighting.initTile(hex)
-                    let framebuffer
+                    let framebuffer: number[]
                     let intensity_
 
                     if(isTriangleLit)
@@ -122,7 +122,7 @@ class CanvasRenderer extends Renderer {
                                 continue
 
                             if(isTriangleLit) {
-                                intensity_ = framebuffer[160 + 80*y + x]
+                                intensity_ = framebuffer![160 + 80*y + x]
                             }
                             else { // uniformly lit
                                 intensity_ = Lighting.vertices[3]
@@ -205,6 +205,8 @@ class CanvasRenderer extends Renderer {
         const renderInfo = this.objectRenderInfo(obj);
         if(!renderInfo || !renderInfo.visible)
             return;
+
+        if(!tempCanvasCtx) throw Error();
 
         // Clear temp canvas
         tempCanvasCtx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);

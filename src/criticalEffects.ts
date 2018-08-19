@@ -203,7 +203,7 @@ module CriticalEffects {
 
     function parseCritLevel(critLevel: CritLevelData): CritType {
         var stat = critLevel.statCheck
-        var statVal : string = undefined
+        var statVal: string|undefined = undefined
         if(stat.stat != -1)
             statVal = StatType[stat.stat]
         var tempStatCheck = new StatCheck(statVal, stat.checkModifier, parseEffects(stat.failureEffect), stat.failureMessage)
@@ -221,7 +221,7 @@ module CriticalEffects {
 
     // tries to obtain the CritType object partaining to the critLevel of the region of the critterType in question, returns a default CritType object otherwise
     export function getCritical(critterKillType: number, region: string, critLevel: number): CritType {
-        var ret: CritType = undefined
+        let ret: CritType|undefined = undefined;
 
         try {
             // ensure we aren't exceeding the highest crit level existing for this type of critter and region
@@ -243,12 +243,12 @@ module CriticalEffects {
     // constructs a default Crit Type object which doesn't apply any modifications to the shot, only changes the logging.
     function defaultCritType(critterKillType: number, region: string, critLevel: number): CritType
     {
-        return new CritType(2, new Effects([]), new StatCheck(undefined, undefined, undefined, undefined),undefined)
+        return new CritType(2, new Effects([]), new StatCheck(undefined, undefined, undefined, undefined), undefined)
     }
 
     export function getCriticalFail(weaponType: string, failLevel: number): EffectsFunction[]
     {
-        var ret: EffectsFunction[] = undefined
+        var ret: EffectsFunction[]|undefined = undefined
         try {
             // get the appropriate Critical Fail from the table
             ret = criticalFailTable[weaponType][failLevel]
@@ -258,7 +258,7 @@ module CriticalEffects {
 
         if(ret === undefined)
             //default crit fail error, which doesn't do anything but print an error message
-            ret = [function(critter) { console.log("error: could not find critical fail: " + weaponType + "/" + failLevel); }];
+            ret = [(critter) => { console.log("error: could not find critical fail: " + weaponType + "/" + failLevel); }];
 
         return ret;
     }

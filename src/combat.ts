@@ -224,6 +224,8 @@ class Combat {
         var weapon = weaponObj.weapon
         var weaponSkill
 
+        if(!weapon) throw Error("getHitChance: No weapon");
+
         if(weapon.weaponSkillType === undefined) {
             this.log("weaponSkillType is undefined")
             weaponSkill = 0
@@ -283,7 +285,10 @@ class Combat {
     }
 
     getDamageDone(obj: Critter, target: Critter, critModifer: number) {
-        var wep = critterGetEquippedWeapon(obj).weapon
+        var weapon = critterGetEquippedWeapon(obj)
+        if(!weapon) throw Error("getDamageDone: No weapon");
+        var wep = weapon.weapon
+        if(!wep) throw Error("getDamageDone: Weapon has no weapon data");
         var damageType = wep.getDamageType()
 
         var RD = getRandomInt(wep.minDmg, wep.maxDmg) // rand damage min..max
@@ -331,8 +336,8 @@ class Combat {
 
             critterDamage(target, damage, obj)
 
-            if(target.dead === true)
-                combat.perish(target)
+            if(target.dead)
+                this.perish(target)
         }
         else {
             this.log(who + " missed " + targetName + (hitRoll.crit === true ? " critically" : ""))		
@@ -370,8 +375,8 @@ class Combat {
 
     maybeTaunt(obj: Critter, type: string, roll: boolean) {
         if(roll === false) return
-        var msgID = getRandomInt(parseInt(obj.ai.info[type+"_start"]),
-                                 parseInt(obj.ai.info[type+"_end"]))
+        var msgID = getRandomInt(parseInt(obj.ai!.info[type+"_start"]),
+                                 parseInt(obj.ai!.info[type+"_end"]))
         this.log("[TAUNT " + obj.name + ": " + this.getCombatAIMessage(msgID) + "]")
     }
 
@@ -390,8 +395,8 @@ class Combat {
         // Walk up to `maxDistance` hexes, adjusting AP to fit
         if(obj.walkTo(target, false, callback, maxDistance)) {
             // OK
-            if(obj.AP.subtractMoveAP(obj.path.path.length - 1) === false)
-                throw "subtraction issue: has AP: " + obj.AP.getAvailableMoveAP() +
+            if(obj.AP!.subtractMoveAP(obj.path.path.length - 1) === false)
+                throw "subtraction issue: has AP: " + obj.AP!.getAvailableMoveAP() +
                        " needs AP:"+obj.path.path.length+" and maxDist was:"+maxDistance
             return true
         }
@@ -407,9 +412,13 @@ class Combat {
         
         var that = this
         var target = this.findTarget(obj)
+        if(!target) {
+            console.log("[AI has no target]");
+            return this.nextTurn();
+        }
         var distance = hexDistance(obj.position, target.position)
-        var AP = obj.AP
-        var messageRoll = rollSkillCheck(obj.ai.info.chance, 0, false)
+        var AP = obj.AP!
+        var messageRoll = rollSkillCheck(obj.ai!.info.chance, 0, false)
 
         if(Config.engine.doLoadScripts === true && obj._script !== undefined) {
             // notify the critter script of a combat event
@@ -422,7 +431,7 @@ class Combat {
 
         // behaviors
 
-        if(critterGetStat(obj, "HP") <= obj.ai.info.min_hp) { // hp <= min fleeing hp, so flee
+        if(critterGetStat(obj, "HP") <= obj.ai!.info.min_hp) { // hp <= min fleeing hp, so flee
             this.log("[AI FLEES]")
 
             // todo: pick the closest edge of the map
@@ -441,8 +450,9 @@ class Combat {
         }
 
         var weaponObj = critterGetEquippedWeapon(obj)
-        if(weaponObj === null) throw "AI has no weapon"
+        if(!weaponObj) throw Error("AI has no weapon")
         var weapon = weaponObj.weapon
+        if(!weapon) throw Error("AI weapon has no weapon data")
         var fireDistance = weapon.getMaximumRange(1)
         this.log("DEBUG: weapon: " + weapon + " fireDistance: " + fireDistance +
                  " obj: " + obj.art + " distance: " + distance)
@@ -540,7 +550,7 @@ class Combat {
         for(var i = 0; i < this.combatants.length; i++) {
             var obj = this.combatants[i]
             if(obj.dead || obj.isPlayer) continue
-            var inRange = hexDistance(obj.position, this.player.position) <= obj.ai.info.max_dist
+            var inRange = hexDistance(obj.position, this.player.position) <= obj.ai!.info.max_dist
 
             if(inRange || obj.hostile) {
                 obj.hostile = true;
@@ -561,7 +571,7 @@ class Combat {
         if(this.combatants[this.whoseTurn].isPlayer) {
             // player turn
             this.inPlayerTurn = true
-            this.player.AP.resetAP()
+            this.player.AP!.resetAP()
         }
         else {
             this.inPlayerTurn = false
@@ -570,7 +580,7 @@ class Combat {
                 return this.nextTurn()
 
             // TODO: convert unused AP into AC
-            critter.AP.resetAP()
+            critter.AP!.resetAP()
             this.doAITurn(critter, this.whoseTurn, 1)
         }	
     }
