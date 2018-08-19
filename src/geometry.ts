@@ -94,7 +94,7 @@ function setCenterTile() {
 // tile_coord(0x319F) should be the same
 // tile_coord(0x5018) should be (230, 304)
 
-function tile_coord(tileNum: number): Point {
+function tile_coord(tileNum: number): Point|null {
     if(tileNum < 0 || tileNum >= 200*200)
         return null
 

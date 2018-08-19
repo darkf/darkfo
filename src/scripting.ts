@@ -178,7 +178,7 @@ module Scripting {
 
         if(currentDialogueObject) {
             // resume from when we halted in gsay_end
-            var vm = currentDialogueObject._script._vm
+            var vm = currentDialogueObject._script!._vm!
             vm.pc = vm.popAddr()
             info(`[resuming from gsay_end (pc=0x${vm.pc.toString(16)})]`)
             vm.run()
@@ -258,48 +258,52 @@ module Scripting {
         lvars: { [lvar: number]: any };
     }
 
+    interface ScriptableObj {
+        _script: Script;
+    }
+
     export class Script {
         // Stuff we hacked in
         _didOverride = false; // Did the procedure call override the default action?
 
-        scriptName: string;
-        lvars: { [lvar: number]: any };
+        scriptName!: string;
+        lvars!: { [lvar: number]: any };
         _vm?: ScriptVM;
         _mapScript?: Script;
 
         // Special built-in variables
-        self_obj: { _script: Script };
-        self_tile: number;
-        cur_map_index: number;
-        fixed_param: number;
-        source_obj: Obj;
-        target_obj: Obj;
-        action_being_used: number;
-        game_time_hour: number;
+        self_obj!: { _script: Script };
+        self_tile!: number;
+        cur_map_index!: number|null;
+        fixed_param!: number;
+        source_obj!: Obj;
+        target_obj!: Obj;
+        action_being_used!: number;
+        game_time_hour!: number;
 
-        combat_is_initialized: 0 | 1;
-        game_time: number;
+        combat_is_initialized!: 0 | 1;
+        game_time!: number;
 
         // Script procedure prototypes
-        start: () => void;
+        start!: () => void;
 
-        map_enter_p_proc: () => void;
-        map_update_p_proc: () => void;
+        map_enter_p_proc!: () => void;
+        map_update_p_proc!: () => void;
 
-        timed_event_p_proc: () => void;
+        timed_event_p_proc!: () => void;
 
-        critter_p_proc: () => void;
-        spatial_p_proc: () => void;
+        critter_p_proc!: () => void;
+        spatial_p_proc!: () => void;
         
-        use_p_proc: () => void;
-        talk_p_proc: () => void;
-        pickup_p_proc: () => void;
+        use_p_proc!: () => void;
+        talk_p_proc!: () => void;
+        pickup_p_proc!: () => void;
 
-        combat_p_proc: () => void;
-        damage_p_proc: () => void;
-        destroy_p_proc: () => void;
+        combat_p_proc!: () => void;
+        damage_p_proc!: () => void;
+        destroy_p_proc!: () => void;
 
-        use_skill_on_p_proc: () => void;
+        use_skill_on_p_proc!: () => void;
 
         // Actual scripting engine API implementations
 
@@ -340,6 +344,7 @@ module Scripting {
             return mapVars[scriptName][mvar]
         }
         set_map_var(mvar: number, value: any) {
+            if(!this._mapScript) throw Error("set_map_var: no map script")
             var scriptName = this._mapScript.scriptName
             if(scriptName === undefined) {
                 warn("map_var: map script has no name")
@@ -655,7 +660,7 @@ module Scripting {
         }
         terminate_combat() {
             info("[terminate_combat]")
-            combat.end()
+            if(combat) combat.end()
         }
         critter_set_flee_state(obj: Obj, isFleeing: number) { stub("critter_set_flee_state", arguments) }
 
@@ -821,8 +826,8 @@ module Scripting {
         }
         set_exit_grids(onElev: number, mapID: number, elevation: number, tileNum: number, rotation: number) {
             stub("set_exit_grids", arguments)
-            for(var i = 0; i < gameObjects.length; i++) {
-                var obj = gameObjects[i]
+            for(var i = 0; i < gameObjects!.length; i++) {
+                var obj = gameObjects![i]
                 if(obj.type === "misc" && obj.extra && obj.extra.exitMapID !== undefined) {
                     obj.extra.exitMapID = mapID
                     obj.extra.startingPosition = tileNum
@@ -955,16 +960,19 @@ module Scripting {
         gsay_reply(msgList: number, msgID: string|number) {
             log("gSay_Reply", arguments)
             var msg = getScriptMessage(msgList, msgID)
+            if(msg === null) throw Error("gsay_reply: msg is null");
             info("REPLY: " + msg, "dialogue")
             uiSetDialogueReply(msg)
         }
         gsay_message(msgList: number, msgID: string|number, reaction: number) {
             // TODO: update this for ui
             log("gsay_message", arguments)
+            /*
             // message with [Done] option
             var msg = msgID
             if(typeof msgID !== "string")
                 msg = getScriptMessage(msgList, msgID)
+            */
             
             // TODO: XXX: This has bitrotted, #dialogue no longer exists. [Done] needs testing.
             // $("#dialogue").append("&nbsp;&nbsp;\"" + msg + "\"<br><a href=\"javascript:dialogueEnd()\">[Done]</a><br>")
@@ -975,6 +983,7 @@ module Scripting {
         giq_option(iqTest: number, msgList: number, msgID: string|number, target: any, reaction: number) {
             log("giQ_Option", arguments)
             var msg = getScriptMessage(msgList, msgID)
+            if(msg === null) { console.warn("giq_option: msg is null"); return; }
             info("DIALOGUE OPTION: " + msg +
                  " [INT " + ((iqTest >= 0) ? (">="+iqTest) : ("<="+-iqTest)) + "]", "dialogue")
 
@@ -1097,7 +1106,7 @@ module Scripting {
             info("timer event added in " + ticks + " ticks (userdata " + userdata + ")", "timer")
             // trigger timedEvent in `ticks` game ticks
             timeEventList.push({ticks: ticks, obj: obj, userdata: userdata, fn: function() {
-                timedEvent(obj._script, userdata)
+                timedEvent(obj._script!, userdata)
             }.bind(this)})
         }
         rm_timer_event(obj: Obj) {
@@ -1221,8 +1230,6 @@ module Scripting {
     }
 
     export function loadScript(name: string): Script {
-        var obj = null
-
         info("loading script " + name, "load")
 
         var path = "data/scripts/" + name.toLowerCase() + ".int"
@@ -1237,7 +1244,7 @@ module Scripting {
             console.log("note: using current script (%s) as map script for this object", intfile.name);
         
         reader.seek(0)
-        var vm = new ScriptVMBridge.GameScriptVM(reader, intfile, obj)
+        var vm = new ScriptVMBridge.GameScriptVM(reader, intfile)
         vm.scriptObj.scriptName = name
         vm.scriptObj.lvars = {}
         vm.scriptObj._mapScript = currentMapObject || vm.scriptObj // map scripts are their own map scripts
@@ -1251,10 +1258,10 @@ module Scripting {
     }
 
     export function initScript(script: Script, obj: Obj) {
-        obj._script.self_obj = obj
-        obj._script.cur_map_index = currentMapID
-        if(obj._script.start !== undefined)
-            obj._script.start()
+        script.self_obj = obj as ScriptableObj
+        script.cur_map_index = currentMapID!
+        if(script.start !== undefined)
+            script.start()
     }
 
     export function timedEvent(script: Script, userdata: any): boolean {
@@ -1270,19 +1277,19 @@ module Scripting {
         return script._didOverride
     }
 
-    export function use(obj: Obj, source: Obj): boolean {
+    export function use(obj: Obj, source: Obj): boolean|null {
         if(!obj._script || obj._script.use_p_proc === undefined)
             return null
 
         obj._script.source_obj = source
-        obj._script.self_obj = obj
+        obj._script.self_obj = obj as ScriptableObj
         obj._script._didOverride = false
         obj._script.use_p_proc()
         return obj._script._didOverride
     }
 
     export function talk(script: Script, obj: Obj): boolean {
-        script.self_obj = obj
+        script.self_obj = obj as ScriptableObj
         script.game_time = Math.max(1, gameTickTime)
         script.cur_map_index = currentMapID
         script._didOverride = false
@@ -1292,27 +1299,28 @@ module Scripting {
 
     export function updateCritter(script: Script, obj: Critter): boolean {
         // critter heartbeat (critter_p_proc)
-        if(script.critter_p_proc === undefined)
+        if(!script.critter_p_proc)
             return false // TODO: Should we override or not if it doesn't exist? Probably not.
 
         script.game_time = gameTickTime
         script.cur_map_index = currentMapID
         script._didOverride = false
-        script.self_obj = obj
+        script.self_obj = obj as ScriptableObj
         script.self_tile = toTileNum(obj.position)
         script.critter_p_proc()
         return script._didOverride
     }
 
     export function spatial(spatialObj: Obj, source: Obj) { // TODO: Spatial type
-        var script = spatialObj._script
-        if(script.spatial_p_proc === undefined)
-            throw "spatial script without a spatial_p_proc triggered"
+        const script = spatialObj._script
+        if(!script) throw Error("spatial without a script being triggered");
+        if(!script.spatial_p_proc)
+            throw Error("spatial script without a spatial_p_proc triggered")
 
         script.game_time = gameTickTime
         script.cur_map_index = currentMapID
         script.source_obj = source
-        script.self_obj = spatialObj
+        script.self_obj = spatialObj as ScriptableObj
         script.spatial_p_proc()
     }
 
@@ -1320,7 +1328,7 @@ module Scripting {
         if(!obj._script || obj._script.destroy_p_proc === undefined)
             return null
 
-        obj._script.self_obj = obj
+        obj._script.self_obj = obj as ScriptableObj
         obj._script.source_obj = source
         obj._script.game_time = Math.max(1, gameTickTime)
         obj._script.cur_map_index = currentMapID
@@ -1333,7 +1341,7 @@ module Scripting {
         if(!obj._script || obj._script.damage_p_proc === undefined)
             return null
 
-        obj._script.self_obj = obj
+        obj._script.self_obj = obj as ScriptableObj
         obj._script.target_obj = target
         obj._script.source_obj = source
         obj._script.game_time = Math.max(1, gameTickTime)
@@ -1344,7 +1352,8 @@ module Scripting {
     }
 
     export function useSkillOn(who: Critter, skillId: number, obj: Obj): boolean {
-        obj._script.self_obj = obj
+        if(!obj._script) throw Error("useSkillOn: Object has no script");
+        obj._script.self_obj = obj as ScriptableObj
         obj._script.source_obj = who
         obj._script.cur_map_index = currentMapID
         obj._script._didOverride = false
@@ -1354,7 +1363,8 @@ module Scripting {
     }
 
     export function pickup(obj: Obj, source: Critter): boolean {
-        obj._script.self_obj = obj
+        if(!obj._script) throw Error("pickup: Object has no script");
+        obj._script.self_obj = obj as ScriptableObj
         obj._script.source_obj = source
         obj._script.cur_map_index = currentMapID
         obj._script._didOverride = false
@@ -1363,20 +1373,22 @@ module Scripting {
     }
 
     export function combatEvent(obj: Obj, event: "turnBegin"): boolean {
-        var fixed_param = null
+        if(!obj._script) throw Error("combatEvent: Object has no script");
+
+        let fixed_param: number|null = null
         switch(event) {
             case "turnBegin": fixed_param = 4; break // COMBAT_SUBTYPE_TURN
             default: throw "combatEvent: unknown event " + event
         }
 
-        if(obj._script.combat_p_proc === undefined)
+        if(!obj._script.combat_p_proc)
             return false
 
         info("[COMBAT EVENT " + event + "]")
 
         obj._script.combat_is_initialized = 1
         obj._script.fixed_param = fixed_param
-        obj._script.self_obj = obj
+        obj._script.self_obj = obj as ScriptableObj
         obj._script.game_time = Math.max(1, gameTickTime)
         obj._script.cur_map_index = currentMapID
         obj._script._didOverride = false
@@ -1414,7 +1426,7 @@ module Scripting {
             var script = gameObjects[i]._script
             if(script !== undefined && script.map_update_p_proc !== undefined) {
                 script.combat_is_initialized = inCombat ? 1 : 0
-                script.self_obj = gameObjects[i]
+                script.self_obj = gameObjects[i] as ScriptableObj
                 script.game_time = Math.max(1, gameTickTime)
                 script.game_time_hour = 1200 // hour of the day
                 script.cur_map_index = currentMapID
@@ -1426,7 +1438,7 @@ module Scripting {
         // info("updated " + updated + " objects")
     }
 
-    export function enterMap(mapScript: Script, objects: Obj[], elevation: number, mapID: number, isFirstRun: boolean): StartPos {
+    export function enterMap(mapScript: Script, objects: Obj[], elevation: number, mapID: number, isFirstRun: boolean): StartPos|null {
         gameObjects = objects
         currentMapID = mapID
         mapFirstRun = isFirstRun
@@ -1455,7 +1467,7 @@ module Scripting {
         var script = obj._script
         if(script !== undefined && script.map_enter_p_proc !== undefined) {
             script.combat_is_initialized = 0
-            script.self_obj = obj
+            script.self_obj = obj as ScriptableObj
             script.game_time = Math.max(1, gameTickTime)
             script.game_time_hour = 1200 // hour of the day
             script.cur_map_index = currentMapID

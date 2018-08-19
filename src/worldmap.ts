@@ -150,6 +150,7 @@ module Worldmap {
             const party = "(?:\\((\\d+)-(\\d+)\\) ([a-z0-9_]+))"
             const re = party + " ?(?:(ambush player)|(fighting) " + party + ")?"
             const m = data.match(new RegExp(re))
+            if(!m) throw Error("Error parsing encounter reference");
             //console.log("%o %o", re, data)
 
             const firstParty = {start: parseInt(m[1]),
@@ -185,7 +186,7 @@ module Worldmap {
                     isSpecial = true
             }
 
-            let cond = s[i-1].toLowerCase().trim()
+            let cond: string|null = s[i-1].toLowerCase().trim()
             if(cond.indexOf('if') !== 0) // conditions start with "if"
                 cond = null
 

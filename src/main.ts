@@ -27,7 +27,7 @@ interface HeartImage {
     getHeight(): number;
 }
 
-var gMap: GameMap|null = null
+let gMap!: GameMap;
 const images: { [name: string]: HeartImage } = {} // Image cache
 var imageInfo: any = null // Metadata about images (Number of frames, FPS, etc)
 var currentElevation = 0 // current map elevation
@@ -75,10 +75,10 @@ interface FloatMessage {
 const floatMessages: FloatMessage[] = []
 
 // the global player object
-var player: Player|null = null
+let player!: Player;
 
-var renderer: Renderer|null = null
-var audioEngine: AudioEngine|null = null
+let renderer!: Renderer;
+let audioEngine!: AudioEngine;
 
 let $fpsOverlay: HTMLElement|null = null;
 

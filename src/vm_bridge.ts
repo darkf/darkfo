@@ -208,9 +208,8 @@ module ScriptVMBridge {
     export class GameScriptVM extends ScriptVM {
         scriptObj = new Scripting.Script()
 
-        constructor(script: BinaryReader, intfile: IntFile, obj: Obj) {
+        constructor(script: BinaryReader, intfile: IntFile) {
             super(script, intfile)
-            this.scriptObj.self_obj = obj
 
             // patch scriptObj to allow transparent procedure calls
             // TODO: maybe we should check if we're interrupting the VM
