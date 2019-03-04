@@ -11,9 +11,7 @@ import Foundation
 import WebKit
 
 final class ViewController: NSViewController {
-  let wv = WKWebView(frame: .zero)
-
-  let center = NSTextView(frame: .zero)
+  private let webView = WKWebView(frame: .zero)
 
   init() {
     super.init(nibName: nil, bundle: nil)
@@ -24,25 +22,23 @@ final class ViewController: NSViewController {
   }
 
   override func viewDidLoad() {
-    wv.translatesAutoresizingMaskIntoConstraints = false
-    center.string = "blah"
-    center.translatesAutoresizingMaskIntoConstraints = false
+    webView.translatesAutoresizingMaskIntoConstraints = false
 
-    view.addSubview(wv)
+    view.addSubview(webView)
 
     NSLayoutConstraint.activate([
       view.widthAnchor.constraint(greaterThanOrEqualToConstant: 800),
       view.heightAnchor.constraint(greaterThanOrEqualToConstant: 700),
 
-      wv.topAnchor.constraint(equalTo: view.topAnchor),
-      wv.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-      wv.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-      wv.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+      webView.topAnchor.constraint(equalTo: view.topAnchor),
+      webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+      webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      webView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
     ])
 
     let req = URLRequest(url: URL(string: "http://localhost:8000/play.html?artemple")!)
-    wv.navigationDelegate = self
-    wv.load(req)
+    webView.navigationDelegate = self
+    webView.load(req)
   }
   
   required init?(coder: NSCoder) {
