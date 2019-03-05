@@ -28,7 +28,7 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2019 Max Desiatov. All rights reserved.</string>
+	<string>Copyright © 2019 Max Desiatov. DarkFO is licensed under the terms of the Apache 2 license. See LICENSE.txt for the full license text.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
