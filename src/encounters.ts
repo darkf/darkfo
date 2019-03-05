@@ -116,7 +116,7 @@ module Encounters {
                     expect(Tok.RPAREN)
                     return checkOp({type: 'if', cond: cond})
                 case Tok.IDENT:
-                    if(peek()[0] === Tok.LPAREN)
+                    if(peek()![0] === Tok.LPAREN)
                         return checkOp(call(t[1]))
                     return checkOp({type: 'var', name: t[1]})
                 case Tok.INT:
@@ -231,7 +231,7 @@ module Encounters {
             var item = critter.items[i]
             var amount = 1
 
-            if(item.range !== null) {
+            if(item.range) {
                 amount = getRandomInt(item.range.start, item.range.end)
             }
 
@@ -248,7 +248,7 @@ module Encounters {
         for(var i = 0; i < group.critters.length; i++) {
             var critter = group.critters[i]
 
-            if(critter.cond !== null) {
+            if(critter.cond) {
                 if(!evalConds(critter.cond)) {
                     console.log("critter cond false: %o", critter.cond)
                     continue
@@ -257,7 +257,7 @@ module Encounters {
                     console.log("critter cond true: %o", critter.cond)
             }
 
-            if(critter.ratio === null)
+            if(critter.ratio === undefined)
                 critters.push(evalEncounterCritter(critter))
             else {
                 var num = Math.ceil(critter.ratio/100 * count)
@@ -315,7 +315,7 @@ module Encounters {
         groups.forEach(function(group) {
             var dir = getRandomInt(0, 5)
             var formation = group.position.type
-            var pos: Point|null = null
+            let pos: Point
 
             if(formation === "surrounding")
                 pos = {x: playerPos.x, y: playerPos.y}
@@ -412,12 +412,14 @@ module Encounters {
             var secondParty = encounter.enc.secondParty
             console.log("two factions: %o vs %o", firstParty, secondParty)
 
+            if(!firstParty) throw Error();
+
             var firstGroup = Worldmap.getEncounterGroup(firstParty.name)
             var firstCritterCount = getRandomInt(firstParty.start, firstParty.end)
             groups.push({critters: evalEncounterCritters(firstCritterCount, firstGroup), target: 1, position: firstGroup.position})
 
             // one-party fighting? TODO: check what all is allowed with `fighting`
-            if(secondParty.name !== undefined) {
+            if(secondParty && secondParty.name !== undefined) {
                 var secondGroup = Worldmap.getEncounterGroup(secondParty.name)
                 var secondCritterCount = getRandomInt(secondParty.start, secondParty.end)
                 groups.push({critters: evalEncounterCritters(secondCritterCount, secondGroup), target: 0, position: secondGroup.position})

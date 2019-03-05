@@ -24,19 +24,17 @@ limitations under the License.
 // TODO: fix style for inventory image amount
 // TODO: option for scaling the UI
 
-"use strict";
-
 module Ui {
     // Container that all of the top-level UI elements reside in
-    let $uiContainer: HTMLElement = null as HTMLElement;
+    let $uiContainer: HTMLElement;
 
     export function init() {
-        $uiContainer = document.getElementById("game-container");
+        $uiContainer = document.getElementById("game-container")!;
 
         initSkilldex();
         // initCharacterScreen();
 
-        document.getElementById("chrButton").onclick = () => {
+        document.getElementById("chrButton")!.onclick = () => {
             characterWindow && characterWindow.close();
             initCharacterScreen();
         };
@@ -89,7 +87,7 @@ module Ui {
         close(): void {
             if(!this.showing) return;
             this.showing = false;
-            this.elem.parentNode.removeChild(this.elem);
+            this.elem.parentNode!.removeChild(this.elem);
         }
 
         toggle(): this {
@@ -214,7 +212,7 @@ module Ui {
         // Select the given item (and optionally, give its element for performance reasons)
         select(item: ListItem, itemElem?: HTMLElement): boolean {
             if(!itemElem) // Find element belonging to this item
-                itemElem = this.elem.querySelector(`[data-uid="${item.uid}"]`);
+                itemElem = this.elem.querySelector(`[data-uid="${item.uid}"]`) as HTMLElement;
 
             if(!itemElem) {
                 console.warn(`Can't find item's element for item UID ${item.uid}`);
@@ -272,8 +270,8 @@ module Ui {
         }
     }
 
-    export let skilldexWindow: WindowFrame|null = null;
-    export let characterWindow: WindowFrame|null = null;
+    export let skilldexWindow: WindowFrame;
+    export let characterWindow: WindowFrame;
 
     function initSkilldex() {
         function useSkill(skill: Skills) {
@@ -391,9 +389,8 @@ module Ui {
         const canChangeStats = true; // TODO
 
         if(isLevelUp) {
-
             const modifySkill = (inc: boolean) => {
-                const skill = skillList.getSelection().id;
+                const skill = skillList.getSelection()!.id;
                 console.log("skill: %s currently: %d", skill, newSkillSet.get(skill, newStatSet));
 
                 if(inc) {
@@ -410,7 +407,7 @@ module Ui {
             };
 
             const toggleTagSkill = () => {
-                const skill = skillList.getSelection().id;
+                const skill = skillList.getSelection()!.id;
                 const tagged = newSkillSet.isTagged(skill);
                 console.log("skill: %s currently: %d tagged: %s", skill, newSkillSet.get(skill, newStatSet), tagged);
 
@@ -450,8 +447,9 @@ var UI_MODE_NONE = 0, UI_MODE_DIALOGUE = 1, UI_MODE_BARTER = 2, UI_MODE_LOOT = 3
     UI_MODE_CONTEXT_MENU = 10, UI_MODE_SAVELOAD = 11, UI_MODE_CHAR = 12
 var uiMode: number = UI_MODE_NONE
 
+// XXX: Should this throw if the element doesn't exist?
 function $id(id: string): HTMLElement {
-    return document.getElementById(id);
+    return document.getElementById(id)!;
 }
 
 function $img(id: string): HTMLImageElement {
@@ -459,7 +457,7 @@ function $img(id: string): HTMLImageElement {
 }
 
 function $q(selector: string): HTMLElement {
-    return document.querySelector(selector);
+    return document.querySelector(selector) as HTMLElement;
 }
 
 function $qa(selector: string): HTMLElement[] {
@@ -578,22 +576,26 @@ function initUI() {
     
     $id("attackButtonContainer").oncontextmenu = () => { // right mouse button (cycle weapon modes)
         var wep = critterGetEquippedWeapon(player)
-        if(!wep) return false
+        if(!wep || !wep.weapon) return false
         wep.weapon.cycleMode()
         uiDrawWeapon()
         return false
     };
 
     $id("endTurnButton").onclick = () => {
-        if(inCombat && combat.inPlayerTurn) {
+        if(inCombat && combat!.inPlayerTurn) {
+            if(player.anim !== null && player.anim !== "idle") {
+                console.log("Can't end turn while player is in an animation.");
+                return;
+            }
             console.log("[TURN]")
-            combat.nextTurn()
+            combat!.nextTurn()
         }
     }
 
     $id("endCombatButton").onclick = () => {
         if(inCombat)
-            combat.end()
+            combat!.end()
     }
 
     $id("endContainer").addEventListener("animationiteration", uiEndCombatAnimationDone);
@@ -652,6 +654,10 @@ function uiContextMenu(obj: Obj, evt: any) {
     var useBtn = button(obj, "use", () => playerUse()) // TODO: playerUse should take an object
     var talkBtn = button(obj, "talk", () => {
             console.log("talking to " + obj.name)
+            if(!obj._script) {
+                console.warn("obj has no script");
+                return;
+            }
             Scripting.talk(obj._script, obj)
     })
     var pickupBtn = button(obj, "pickup", () => pickupObject(obj, player))
@@ -693,8 +699,7 @@ function uiDrawWeapon() {
     // draw the active weapon in the interface bar
     var weapon = critterGetEquippedWeapon(player)
     clearEl($id("attackButton"));
-    if(weapon === null)
-        return
+    if(!weapon || !weapon.weapon) return;
 
     if(weapon.weapon.type !== "melee") {
         const $attackButtonWeapon = $id("attackButtonWeapon") as HTMLImageElement;
@@ -931,7 +936,7 @@ function uiAnimateBox($el: HTMLElement, origin: number|null, target: number, cal
             let listener = () => {
                 callback();
                 $el.removeEventListener("transitionend", listener);
-                listener = null; // Allow listener to be GC'd
+                (listener as any) = null; // Allow listener to be GC'd
             };
 
             $el.addEventListener("transitionend", listener);

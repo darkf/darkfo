@@ -17,19 +17,19 @@ limitations under the License.
 // Bridge between Scripting API and the Scripting VM
 
 module ScriptVMBridge {
-	// create a bridged function that calls procedures on scriptObj
-	function bridged(procName: string, argc: number, pushResult: boolean=true) {
-		return function(this: GameScriptVM) {
-			var args = []
-			for(var i = 0; i < argc; i++)
-				args.push(this.pop())
-			args.reverse()
+    // create a bridged function that calls procedures on scriptObj
+    function bridged(procName: string, argc: number, pushResult: boolean=true) {
+        return function(this: GameScriptVM) {
+            var args = []
+            for(var i = 0; i < argc; i++)
+                args.push(this.pop())
+            args.reverse()
 
-			var r = (<any>this.scriptObj)[procName].apply(this.scriptObj, args)
+            var r = (<any>this.scriptObj)[procName].apply(this.scriptObj, args)
             if(pushResult)
                 this.push(r)
-		}
-	}
+        }
+    }
 
     function varName(this: ScriptVM, value: any): string {
         if(typeof value === "number")
@@ -37,9 +37,9 @@ module ScriptVMBridge {
         return value
     }
 
-	var bridgeOpMap: { [opcode: number]: (this: GameScriptVM) => void } = {
-	    0x80BF: function() { this.push(player) } // dude_obj
-	   ,0x80BC: function() { this.push(this.scriptObj.self_obj) } // self_obj
+    var bridgeOpMap: { [opcode: number]: (this: GameScriptVM) => void } = {
+        0x80BF: function() { this.push(player) } // dude_obj
+       ,0x80BC: function() { this.push(this.scriptObj.self_obj) } // self_obj
        ,0x8128: function() { this.push(this.scriptObj.combat_is_initialized) } // combat_is_initialized
        ,0x8118: function() { this.push(1) } // get_month // TODO
        ,0x80F6: function() { this.push(1200) } // game_time_hour // TODO
@@ -182,23 +182,23 @@ module ScriptVMBridge {
        //,0x8121: bridged("giq_option", 5) // TODO: wrap this so that target becomes a function
        // giq_option
        ,0x8121: function() { // giq_option
-       		var reaction = this.pop()
-       		var target = this.pop()
-       		var msgId = this.pop()
-       		var msgList = this.pop()
-       		var iqTest = this.pop()
+            var reaction = this.pop()
+            var target = this.pop()
+            var msgId = this.pop()
+            var msgList = this.pop()
+            var iqTest = this.pop()
 
-       		// wrap target in a function
-       		//var targetFn = () => { this.call() }
-       		//console.log("TARGET=%o, proc=%o this=%o", targetFn, this.intfile.proceduresTable[target], this)
-       		var targetProc = this.intfile.proceduresTable[target].name
-       		// TODO: do we save the current PC as the return address?
-       		// otherwise when end_dialogue is reached, we will have
-       		// interrupted to this targetFn, and have no way back
-       		var targetFn = () => { this.call(targetProc) }
+            // wrap target in a function
+            //var targetFn = () => { this.call() }
+            //console.log("TARGET=%o, proc=%o this=%o", targetFn, this.intfile.proceduresTable[target], this)
+            var targetProc = this.intfile.proceduresTable[target].name
+            // TODO: do we save the current PC as the return address?
+            // otherwise when end_dialogue is reached, we will have
+            // interrupted to this targetFn, and have no way back
+            var targetFn = () => { this.call(targetProc) }
 
-       		this.scriptObj.giq_option(iqTest, msgList, msgId, targetFn, reaction)
-       	}
+            this.scriptObj.giq_option(iqTest, msgList, msgId, targetFn, reaction)
+        }
     }
 
     // update VM opMap with our bridgeOpMap
@@ -206,18 +206,17 @@ module ScriptVMBridge {
 
     // define a game-oriented Script VM that has a ScriptProto instance
     export class GameScriptVM extends ScriptVM {
-    	scriptObj = new Scripting.Script()
+        scriptObj = new Scripting.Script()
 
-    	constructor(script: BinaryReader, intfile: IntFile, obj: Obj) {
-    	    super(script, intfile)
-    	    this.scriptObj.self_obj = obj
+        constructor(script: BinaryReader, intfile: IntFile) {
+            super(script, intfile)
 
-    	    // patch scriptObj to allow transparent procedure calls
-    	    // TODO: maybe we should check if we're interrupting the VM
-    	    for(const procName in this.intfile.procedures) {
+            // patch scriptObj to allow transparent procedure calls
+            // TODO: maybe we should check if we're interrupting the VM
+            for(const procName in this.intfile.procedures) {
                 (<any>this.scriptObj)[procName] = () => { this.call(procName) }
-    	    }
-    	}
+            }
+        }
 
         mapScript(): any {
             if(this.scriptObj._mapScript)
