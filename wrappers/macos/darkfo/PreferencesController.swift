@@ -3,7 +3,8 @@
 //  darkfo
 //
 //  Created by Max Desiatov on 05/03/2019.
-//  Copyright © 2019 Max Desiatov. All rights reserved.
+//  Copyright © 2019 Max Desiatov. DarkFO is licensed under the terms of the
+//  Apache 2 license. See LICENSE.txt for the full license text.
 //
 
 import AppKit
