@@ -5,3 +5,6 @@
 *.pyc
 data/
 art/
+.DS_Store
+xcuserdata
+contents.xcworkspacedata
